@@ -616,6 +616,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     # Event
 
     fee_invoice_reference = models.CharField(max_length=50, null=True, blank=True, default='')
+    property_cache = JSONField(null=True, blank=True, default={})
 
     class Meta:
         app_label = 'commercialoperator'
@@ -627,6 +628,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     #Append 'P' to Proposal id to generate Lodgement number. Lodgement number and lodgement sequence are used to generate Reference.
     def save(self, *args, **kwargs):
+        self.update_property_cache(False)
         orig_processing_status = self._original_state['processing_status']
         super(Proposal, self).save(*args,**kwargs)
         if self.processing_status != orig_processing_status:
@@ -637,19 +639,92 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             self.lodgement_number = new_lodgment_id
             self.save(version_comment='processing_status: {}'.format(self.processing_status))
 
+    def get_property_cache(self):
+        '''
+        Get properties which were previously resolved.
+        '''
+        if len(self.property_cache) == 0:
+            self.update_property_cache()
+
+        if self.processing_status == self.PROCESSING_STATUS_AWAITING_PAYMENT:
+            self.update_property_cache()
+
+        return self.property_cache
+
+    def get_property_cache_key(self, key):
+        '''
+        Get properties which were previously resolved with key.
+        '''
+        try:
+
+            self.property_cache[key]
+
+        except KeyError:
+            self.update_property_cache()
+
+        return self.property_cache
+
+    def update_property_cache(self, save=True):
+        '''
+        Refresh cached properties with updated properties.
+        '''
+        logger.debug('Proposal.update_property_cache()')
+
+        self.property_cache['fee_paid'] = self._fee_paid
+        self.set_property_cache_fee_amount(self._fee_amount)
+
+        if save is True:
+            self.save()
+
+        return self.property_cache
+
     @property
     def invoice(self):
         return Invoice.objects.get(reference=self.fee_invoice_reference) if self.fee_invoice_reference else None
 
     @property
     def fee_paid(self):
+        """ get cached value, if it exists """
+        if 'fee_paid' not in self.property_cache:
+            self.update_property_cache()
+
+        return self.get_property_cache_key('fee_paid')
+
+    @property
+    def _fee_paid(self):
         if (self.invoice and self.invoice.payment_status in ['paid','over_paid']) or self.proposal_type=='amendment':
             return True
         return False
 
     @property
     def fee_amount(self):
-        return self.invoice.amount if self.fee_paid else None
+        """ get cached value, if it exists """
+        if 'fee_amount' not in self.property_cache:
+            self.update_property_cache()
+
+        return self.get_property_cache_key('fee_amount')
+
+    @property
+    def _fee_amount(self):
+        return self.invoice.amount if self._fee_paid else None
+
+    def set_property_cache_fee_amount(self, amount):
+        '''
+        Setter for fee_amount on the property cache.
+        '''
+        import json
+        from decimal import Decimal as D
+
+        class DecimalEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, D):
+                    return float(obj)
+                return json.JSONEncoder.default(self, obj)
+
+        if self.id:
+            data = DecimalEncoder().encode(amount)
+            self.property_cache['fee_amount'] = data
+
 
     @property
     def filming_fee_invoice_reference(self):
