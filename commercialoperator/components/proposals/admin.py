@@ -143,6 +143,7 @@ class SystemMaintenanceAdmin(admin.ModelAdmin):
 class ApplicationTypeAdmin(admin.ModelAdmin):
     list_display = ['name', 'order', 'visible', 'max_renewals', 'max_renewal_period', 'application_fee']
     ordering = ('order',)
+    readonly_fields = ['name']
 
     def get_form(self, request, obj=None, **kwargs):
         self.exclude = ()
