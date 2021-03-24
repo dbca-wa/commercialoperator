@@ -464,6 +464,7 @@ export default {
               }
             }
           }
+          vm.checkAllowedActivitiesPark();
         },
         selected_parks_activities: function(){
             let vm=this;
@@ -656,7 +657,7 @@ export default {
             }
           }
           },
-          checkAllowedActivities: function(){
+          checkAllowedActivitiesOriginal: function(){
             let trails=[]
             let vm=this;
             trails=vm.trail_options[0].children
@@ -695,7 +696,47 @@ export default {
               }
             }
           },
-          checkAllowedActivitiesPark: function(){
+          checkAllowedActivities: function(){
+            let trails=[]
+            let vm=this;
+            trails=vm.trail_options[0].children
+            vm.trail_error_list=[]
+            let trails_list=[]
+
+            //let vm=this;
+            for (var i=0; i<vm.selected_trails_activities.length; i++)
+            {
+              for(var j=0; j<trails.length; j++)
+              {
+                let allowed=false;
+                if(vm.selected_trails_activities[i].trail== trails[j].id)
+                {
+                  var not_allowed_activities=[];
+                  for(var k=0; k<vm.selected_trails_activities[i].activities.length; k++){
+                      // if(vm.selected_trails_activities[i].activities[k].activities.indexOf(added[j])<0){
+                      // vm.selected_trails_activities[i].activities[k].activities.push(added[j]);
+                      // }
+                      for(var l=0; l<vm.selected_trails_activities[i].activities[k].activities.length; l++){
+                              //console.log('here')
+                            if(trails[j].allowed_activities_ids.indexOf(vm.selected_trails_activities[i].activities[k].activities[l])!=-1){
+                                allowed=true;
+                            }
+                        }
+                    }
+                    if(!allowed){
+                      trails_list.push(trails[j].name)
+                    }
+                }
+              }
+            }
+            if(trails_list.length>0){
+              let unique_trail_list=[]
+              unique_trail_list=[...new Set(trails_list)]
+              vm.trail_error_list.push('Notice: You have not selected any activity that is permitted within following trail(s): '+ unique_trail_list+'. Click the trail name to view and edit the permitted activities.')
+            }
+          },
+
+          checkAllowedActivitiesParkOriginal: function(){
             let parks=[]
             let vm=this;
             //parks=vm.park_options[0].children
@@ -743,6 +784,79 @@ export default {
             }
             }
             }
+          },
+          checkAllowedActivitiesPark: function(){
+            let parks=[]
+            let vm=this;
+            //parks=vm.park_options[0].children
+            vm.park_error_list=[]
+            let parks_list=[]
+
+            //let vm=this;
+            var regions=[];
+            regions=vm.park_options[0].children
+            for(var x=0; x<regions.length; x++){
+              var districts=[];
+              districts=regions[x].children;
+              for (var  y= 0; y < districts.length; y++) {
+                //var parks=[];
+                parks=districts[y].children;
+              
+
+            for (var j=0; j<parks.length; j++)
+            {
+              for(var i=0; i<vm.selected_parks_activities.length; i++)
+              {
+                let allowed=false;
+                if(vm.selected_parks_activities[i].park== parks[j].id)
+                {
+                  var not_allowed_activities=[];
+                  for(var k=0; k<vm.selected_parks_activities[i].activities.length; k++){
+                      
+                      
+                              //console.log('here',vm.selected_parks_activities[i].activities[k])
+                            if(parks[j].allowed_activities_ids.indexOf(vm.selected_parks_activities[i].activities[k])!=-1){
+                              allowed=true;
+                              //;,.-console.log('inside')
+                              // var activity_name=''
+                              // activity_name=vm.land_activity_options[0].children.find(act => parseInt(act.id) === parseInt(vm.selected_parks_activities[i].activities[k])).name;
+                              // if(not_allowed_activities.indexOf(activity_name)==-1){
+                              //   not_allowed_activities.push(activity_name);
+                              // }
+                              // not_allowed=true;
+                            }
+                        
+                    }
+                    for(var l=0; l<vm.selected_parks_activities[i].access.length; l++){
+                      
+                      
+                              //console.log('here2', vm.selected_parks_activities[i].access[l])
+                            if(parks[j].allowed_access_ids.indexOf(vm.selected_parks_activities[i].access[l])!=-1){
+                              allowed=true;
+                              //;,.-console.log('inside')
+                              // var activity_name=''
+                              // activity_name=vm.land_activity_options[0].children.find(act => parseInt(act.id) === parseInt(vm.selected_parks_activities[i].activities[k])).name;
+                              // if(not_allowed_activities.indexOf(activity_name)==-1){
+                              //   not_allowed_activities.push(activity_name);
+                              // }
+                              // not_allowed=true;
+                            }
+                        
+                    }
+                    if(!allowed){
+                      parks_list.push(parks[j].name)
+                    }
+                }
+              }
+            }
+            }
+            }
+            if(parks_list.length>0){
+              let unique_park_list=[]
+              unique_park_list=[...new Set(parks_list)]
+              vm.park_error_list.push('Notice: You have not selected any activity or access that is permitted within following park(s): '+ unique_park_list+'. Click the park name to view and edit the permitted access and activities.')
+            }
+
           },
           edit_activities_child_test:function(node){
               alert("IN PARENT:  park_id: " + node.raw.id + ", park_name: " + node.raw.label );

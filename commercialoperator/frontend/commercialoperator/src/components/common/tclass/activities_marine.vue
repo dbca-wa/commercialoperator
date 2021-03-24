@@ -474,11 +474,12 @@ from '@/utils/hooks'
             }
           }
           },
-          checkAllowedActivities: function(){
+          checkAllowedActivitiesOrig: function(){
             let parks=[]
             let vm=this;
             parks=vm.marine_park_options
             vm.park_error_list=[]
+
             var marine_parks_activities=[];
             marine_parks_activities=vm.marine_parks_activities
             for (var i=0; i<marine_parks_activities.length; i++){
@@ -537,6 +538,75 @@ from '@/utils/hooks'
               }
             }
 
+          },
+          checkAllowedActivities: function(){
+            let parks=[]
+            let vm=this;
+            parks=vm.marine_park_options
+            vm.park_error_list=[]
+            let parks_list=[]
+            var marine_parks_activities=[];
+            marine_parks_activities=vm.marine_parks_activities
+            for (var i=0; i<marine_parks_activities.length; i++){
+              for(var j=0; j<marine_parks_activities[i].activities.length; j++){
+                  marine_parks_activities[i].activities[j].calculated=false;
+                }   
+            }
+            for (var i=0; i<marine_parks_activities.length; i++)
+            {
+              for(var j=0; j<parks.length; j++)
+              {
+                let allowed=false;
+                var not_allowed_activities=[];
+                if(marine_parks_activities[i].park== parks[j].id)
+                {
+                  //var not_allowed_activities=[];
+                  for(var k=0; k<marine_parks_activities[i].activities.length; k++){
+                     //not_allowed_activities=[];
+                      //loop through maring_parks_activities
+                     for(var v=0; v < parks[j]["children"].length; v++) {
+                      if(parks[j].children[v].id==marine_parks_activities[i].activities[k].zone &&!marine_parks_activities[i].activities[k].calculated)
+                      {
+                        //not_allowed_activities=[];
+                        allowed=false;
+                      for(var l=0; l<marine_parks_activities[i].activities[k].activities.length; l++){
+                              //console.log('here')
+                            if(parks[j].children[v].allowed_activities_ids.indexOf(marine_parks_activities[i].activities[k].activities[l])==-1){
+                              
+                              // var activity_name=''
+                              // for(var s=0; s< vm.marine_activity_options[0].children.length; s++)
+                              // {
+                              //   var res=null;
+                              //   res=vm.marine_activity_options[0].children[s].children.find(act => parseInt(act.id) === parseInt(marine_parks_activities[i].activities[k].activities[l]));
+                              //   if(typeof res !=="undefined"|| res!= null){
+                              //     activity_name=res.name;
+                              //   }
+                              // }
+                              // if(not_allowed_activities.indexOf(activity_name)==-1){
+                              //   not_allowed_activities.push(activity_name);
+                              // }
+                              allowed=true;
+                            }
+                        }
+                        if(!allowed){                        
+                          parks_list.push(parks[j].name+'-'+parks[j].children[v].name)
+                      }
+                        
+                      }
+                      // if(not_allowed){                        
+                      //     vm.park_error_list.push('Warning: ' +not_allowed_activities+ ' activities is/are not allowed for the park: '+parks[j].name+'-'+parks[j].children[v].name)
+                      // }
+                    }
+                      marine_parks_activities[i].activities[k].calculated=true;
+                    }
+                }
+              }
+            }
+            if(parks_list.length>0){
+              let unique_park_list=[]
+              unique_park_list=[...new Set(parks_list)]
+              vm.park_error_list.push('Notice: You have not selected any activity that is permitted within following park(s): '+ unique_park_list+'. Click the park name to view and edit the permitted activities.')
+            }
           },
           edit_activities: function(node){
             let vm=this;
