@@ -2265,9 +2265,16 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         with transaction.atomic():
             previous_proposal = self
             try:
-                proposal=Proposal.objects.get(previous_application = previous_proposal)
-                if proposal.customer_status=='with_assessor':
-                    raise ValidationError('A renewal for this licence has already been lodged and is awaiting review.')
+                renew_conditions = {
+                    'previous_application': previous_proposal,
+                    'customer_status': 'with_assessor'
+
+                }
+                #proposal=Proposal.objects.get(previous_application = previous_proposal)
+                proposal=Proposal.objects.get(**renew_conditions)
+                #if proposal.customer_status=='with_assessor':
+                if proposal:
+                    raise ValidationError('A renewal/ amendment for this licence has already been lodged and is awaiting review.')
             except Proposal.DoesNotExist:
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
@@ -2366,7 +2373,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 }
                 proposal=Proposal.objects.get(**amend_conditions)
-                if proposal.customer_status=='under_review':
+                if proposal.customer_status=='with_assessor':
                     raise ValidationError('An amendment for this licence has already been lodged and is awaiting review.')
             except Proposal.DoesNotExist:
                 previous_proposal = Proposal.objects.get(id=self.id)
