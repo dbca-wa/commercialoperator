@@ -74,7 +74,7 @@
                 <Activity :proposal="proposal" id="proposalStartActivity" :hasDistrictAssessorMode="hasDistrictAssessorMode" :district_proposal= "district_proposal" :canEditActivities="canEditActivities" :canEditPeriod="canEditPeriod" :is_external= "is_external"></Activity>
               </div>
               <div class="tab-pane fade" id="pills-access" role="tabpanel" aria-labelledby="pills-access-tab">
-                <Access :proposal="proposal" id="proposalStartAccess" :hasDistrictAssessorMode="hasDistrictAssessorMode" :district_proposal= "district_proposal" :canEditActivities="canEditActivities" :canEditPeriod="canEditPeriod" :is_external= "is_external" ></Access>
+                <Access :proposal="proposal" id="proposalStartAccess" :hasDistrictAssessorMode="hasDistrictAssessorMode" :district_proposal= "district_proposal" :canEditActivities="canEditActivities" :canEditPeriod="canEditPeriod" :is_external= "is_external" ref="filming_access"></Access>
               </div>
               <div class="tab-pane fade" id="pills-equipment" role="tabpanel" aria-labelledby="pills-equipment-tab">
                 <Equipment :proposal="proposal" id="proposalStartEquipment" ref="filming_equipment"></Equipment>
@@ -186,11 +186,21 @@
                 $('#pills-confirm-tab').attr('style', 'background-color:#E5E8E8 !important; color: #99A3A4;');
                 $('#li-confirm').attr('class', 'nav-item disabled');
             },
+            eventListener: function(){
+              let vm=this;
+              $('a[href="#pills-access"]').on('shown.bs.tab', function (e) {
+                vm.$refs.filming_access.$refs.parks_table.$refs.park_datatable.vmDataTable.columns.adjust().responsive.recalc();
+              });
+              $('a[href="#pills-equipment"]').on('shown.bs.tab', function (e) {
+                vm.$refs.filming_equipment.$refs.vessel_table.$refs.vessel_datatable.vmDataTable.columns.adjust().responsive.recalc();
+              });
+            },
         },
         mounted: function() {
             let vm = this;
             $('#pills-tab a[href="#pills-applicant"]').tab('show');
             vm.set_tabs();
+            vm.eventListener();
             vm.form = document.forms.new_proposal;
             //window.addEventListener('beforeunload', vm.leaving);
             //indow.addEventListener('onblur', vm.leaving);
