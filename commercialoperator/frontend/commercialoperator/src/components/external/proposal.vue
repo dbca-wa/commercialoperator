@@ -264,6 +264,27 @@ export default {
 
       vm.$http.post(vm.proposal_form_url,formData);
     },
+    save_before_submit: function(e) {
+      let vm = this;
+      vm.save_applicant_data();
+      let formData = vm.set_formData()
+
+      //vm.$http.post(vm.proposal_form_url,formData);
+      vm.$http.post(vm.proposal_form_url,formData).then(res=>{
+          return true;
+      },err=>{
+                  var errorText=helpers.apiVueResourceError(err);
+                  swal(
+                          'Submit Error',
+                          //helpers.apiVueResourceError(err),
+                          errorText,
+                          'error'
+                      )
+                  vm.paySubmitting=false;
+        return false;
+      });
+      return true;
+    },
 
     save_and_redirect: function(e) {
       let vm = this;
@@ -677,20 +698,25 @@ export default {
 
             } else {
                 /* just save and submit - no payment required (probably application was pushed back by assessor for amendment */
-                vm.save_wo_confirm()
-                vm.$http.post(helpers.add_endpoint_json(api_endpoints.proposals,vm.proposal.id+'/submit'),formData).then(res=>{
-                    vm.proposal = res.body;
-                    vm.$router.push({
-                        name: 'submit_proposal',
-                        params: { proposal: vm.proposal}
-                    });
-                },err=>{
-                    swal(
-                        'Submit Error',
-                        helpers.apiVueResourceError(err),
-                        'error'
-                    )
-                });
+                var saved=true;
+                //vm.save_wo_confirm()
+                saved=vm.save_before_submit()
+                console.log(saved);
+                if(saved){
+                  vm.$http.post(helpers.add_endpoint_json(api_endpoints.proposals,vm.proposal.id+'/submit'),formData).then(res=>{
+                      vm.proposal = res.body;
+                      vm.$router.push({
+                          name: 'submit_proposal',
+                          params: { proposal: vm.proposal}
+                      });
+                  },err=>{
+                      swal(
+                          'Submit Error',
+                          helpers.apiVueResourceError(err),
+                          'error'
+                      )
+                  });
+                }
             }
         },(error) => {
           vm.paySubmitting=false;
