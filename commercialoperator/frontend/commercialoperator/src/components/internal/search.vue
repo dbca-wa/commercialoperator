@@ -16,17 +16,12 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="control-label" for="Organisation">Search Organisation</label>
-                                    <select v-if="organisations == null" class="form-control" name="organisation" v-model="selected_organisation">
-                                        <option value="">Loading...</option>
-                                    </select>
-                                    <select v-else ref="searchOrg" class="form-control" name="organisation">
-                                        <option value="">Select Organisation</option>
-                                        <option v-for="o in organisations" :value="o.id">{{ o.name }} ({{ o.trading_name }})</option>
-                                    </select>
+
+                                    <TextFilteredOrgField :url="filtered_org_url" name="Organisation" id="id_org"/>
                                 </div>
                             </div>
                             <div class="col-md-12 text-center">
-                                <router-link :disabled="selected_organisation == ''" :to="{name:'internal-org-detail',params:{'org_id':parseInt(selected_organisation)}}" class="btn btn-primary">View Details</router-link>
+                                <input type="button" @click.prevent="viewOrgDetails" class="btn btn-primary" style="margin-bottom: 5px" value="View Details"/>
                             </div>
                         </form>
                     </div>
@@ -177,6 +172,7 @@
 import $ from 'jquery'
 import datatable from '@/utils/vue/datatable.vue'
 import TextFilteredField from '@/components/forms/text-filtered.vue'
+import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue'
 import {
   api_endpoints,
   helpers
@@ -197,6 +193,7 @@ export default {
       kBody: 'kBody' + vm._uid,
       loading: [],
       filtered_url: api_endpoints.filtered_users + '?search=',
+      filtered_org_url: api_endpoints.filtered_organisations + '?search=',
       user_id:null,
       searchKeywords: [],
       searchProposal: true,
@@ -267,17 +264,18 @@ export default {
     components: {
         datatable,
         TextFilteredField,
+        TextFilteredOrgField,
     },
-    beforeRouteEnter:function(to,from,next){
-        utils.fetchOrganisations().then((response)=>{
-            next(vm => {
-                vm.organisations = response;
-            });
-        },
-        (error) =>{
-            console.log(error);
-        });
-    },
+//    beforeRouteEnter:function(to,from,next){
+//        utils.fetchOrganisations().then((response)=>{
+//            next(vm => {
+//                vm.organisations = response;
+//            });
+//        },
+//        (error) =>{
+//            console.log(error);
+//        });
+//    },
     computed: {
         showError: function() {
             var vm = this;
@@ -305,6 +303,28 @@ export default {
                 var selected = $(e.currentTarget);
                 vm.selected_organisation = selected.val();
             });
+        },
+        viewOrgDetails: function(){
+          let vm=this;
+          let form=document.forms.searchOrganisationForm
+          var org_selected=form.elements['Organisation-selected']
+          if(org_selected!=undefined || org_selected!=null){
+            var org_id= org_selected.value;
+            vm.$router.push({
+              name:"internal-org-detail",
+              params:{org_id:org_id}
+            });
+          }
+          else{
+            swal({
+                    title: 'Organisation not selected',
+                    html: 'Please select the organisation to view the details',
+                    type: 'error'
+                }).then(() => {
+                    
+                });
+                return;
+          }
         },
         viewUserDetails: function(){
           let vm=this;
