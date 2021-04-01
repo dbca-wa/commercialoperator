@@ -706,7 +706,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def _fee_amount(self):
-        return self.invoice.amount if self._fee_paid else None
+        return self.invoice.amount if self.invoice and self._fee_paid else None
 
     def set_property_cache_fee_amount(self, amount):
         '''
