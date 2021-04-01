@@ -605,7 +605,7 @@ from '@/utils/hooks'
             if(parks_list.length>0){
               let unique_park_list=[]
               unique_park_list=[...new Set(parks_list)]
-              vm.park_error_list.push('Notice: You have not selected any activity that is permitted within following park(s): '+ unique_park_list+'. Click the park name to view and edit the permitted activities.')
+              vm.park_error_list.push('Notice: You have not selected any activity that is permitted within the following park(s): '+ unique_park_list+'. Click the park name to view and edit the permitted activities.')
             }
           },
           edit_activities: function(node){

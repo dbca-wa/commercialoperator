@@ -663,7 +663,7 @@ class OrganisationListFilterView(generics.ListAPIView):
 	queryset = ledger_organisation.objects.none()
 	serializer_class = LedgerOrganisationFilterSerializer
 	filter_backends = (filters.SearchFilter,)
-	search_fields = ('name',)
+	search_fields = ('name', 'trading_name',)
 
 	def get_queryset(self):
 		org_list = Organisation.objects.all().values_list('organisation_id', flat=True)
