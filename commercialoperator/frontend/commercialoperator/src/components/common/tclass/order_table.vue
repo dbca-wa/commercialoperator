@@ -21,7 +21,7 @@
                 <tbody>
                   <tr v-for="(row, row_idx) in table.tbody">
                       <td v-if="col_types[index]=='select'" width="30%" v-for="(value, index) in row">
-                          <v-select class="tbl_input" :options="options" v-model="row[index]" @change="park_change(row[index], row, row_idx)" :title="'Adult Price: '+ row[index] +  ', Child Price: ' + row[index]"i :disabled="disabled"/>
+                          <v-select class="tbl_input" :options="options" v-model="row[index]" @change="park_change(row[index], row, row_idx)" :title="'Adult Price: '+ row[index] +  ', Child Price: ' + row[index]"i :disabled="disabled" :clearable="false"/>
                       </td>
 
                       <td v-if="col_types[index]=='date'" v-for="(value, index) in row">
@@ -336,7 +336,8 @@ export default {
         },
         disable_same_tour_group_checkbox: function(row, row_idx) {
             let vm = this;
-            if (!(row && row[vm.idx_park]=="")) {
+            //if (!(row && row[vm.idx_park]=="")) {
+            if (!(row && (row[vm.idx_park]=="" || row[vm.idx_park]==null))) {
                 var selected_arrival = row[vm.idx_arrival_date]
                 var selected_region_id = row[vm.idx_park].region_id
                 if (selected_arrival=="" || selected_region_id=="") {
