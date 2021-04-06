@@ -21,7 +21,7 @@
                             </ul>
                         </div>
 
-                        <label>Licence</label><v-select :options="licences" @change="proposal_parks()" v-model="selected_licence" />
+                        <label>Licence</label><v-select :options="licences" @change="proposal_parks()" v-model="selected_licence" :clearable="false"/>
                         <OrderTable ref="order_table" :expiry_date="selected_licence.expiry_date" :disabled="!parks_available" :headers="headers" :options="parks" name="payment" label="" id="id_payment" />
 
                         <div v-if="selected_licence.org_applicant==null">
