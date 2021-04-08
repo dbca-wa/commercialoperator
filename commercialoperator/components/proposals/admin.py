@@ -175,6 +175,16 @@ class ApplicationTypeAdmin(admin.ModelAdmin):
         form = super(ApplicationTypeAdmin, self).get_form(request, obj, **kwargs)
         return form
 
+#    def get_fieldsets(self, request, obj=None):
+#        #import ipdb; ipdb.set_trace()
+#        fieldsets = super(ApplicationTypeAdmin, self).get_fieldsets(request, obj)
+#        fieldsets[0][1]['fields'] += ['photography_fee_half_day'] 
+#        return fieldsets
+#
+#    def get_exclude(self, request, obj=None):
+#        #import ipdb; ipdb.set_trace()
+#        if float(obj.application_fee)==117.0:
+#            return ['visible']
 
 class OracleCodeInline(admin.TabularInline):
     model = OracleCode
