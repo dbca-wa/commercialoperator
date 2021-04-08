@@ -102,6 +102,7 @@ export default {
       form: null,
       amendment_request: [],
       //isDataSaved: false,
+      saveError: false,
       proposal_readonly: true,
       hasAmendmentRequest: false,
       submitting: false,
@@ -178,7 +179,7 @@ export default {
       if (vm.proposal.application_type==vm.application_type_filming) {
           // Filming has deferred payment once assessor decides whether 'Licence' (has a fee) or 'Lawful Authority' (has no fee) is to be issued
           return 'Submit';
-      } else if (vm.proposal.fee_paid) {
+      } else if (vm.proposal.fee_paid.fee_paid) {
           return 'Resubmit';
       } else if (vm.proposal.allow_full_discount)  {
           return 'Submit';
@@ -242,6 +243,13 @@ export default {
           );
           vm.savingProposal=false;
       },err=>{
+        var errorText=helpers.apiVueResourceError(err); 
+                  swal(
+                          'Save Error',
+                          //helpers.apiVueResourceError(err),
+                          errorText,
+                          'error'
+                      )
         vm.savingProposal=false;
       });
     },
@@ -264,16 +272,18 @@ export default {
 
       vm.$http.post(vm.proposal_form_url,formData);
     },
-    save_before_submit: function(e) {
+    save_before_submit: async function(e) {
+      //console.log('save before submit');
       let vm = this;
       vm.save_applicant_data();
       let formData = vm.set_formData()
+      vm.saveError=false;
 
       //vm.$http.post(vm.proposal_form_url,formData);
-      vm.$http.post(vm.proposal_form_url,formData).then(res=>{
-          return true;
+      const result = await vm.$http.post(vm.proposal_form_url,formData).then(res=>{
+          //return true;
       },err=>{
-                  var errorText=helpers.apiVueResourceError(err);
+                  var errorText=helpers.apiVueResourceError(err); 
                   swal(
                           'Submit Error',
                           //helpers.apiVueResourceError(err),
@@ -281,9 +291,10 @@ export default {
                           'error'
                       )
                   vm.paySubmitting=false;
-        return false;
+                  vm.saveError=true;
+        //return false;
       });
-      return true;
+      return result;
     },
 
     save_and_redirect: function(e) {
@@ -295,6 +306,14 @@ export default {
           /* after the above save, redirect to the Django post() method in ApplicationFeeView */
           vm.post_and_redirect(vm.application_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});
       },err=>{
+        var errorText=helpers.apiVueResourceError(err); 
+                  swal(
+                          'Submit Error',
+                          //helpers.apiVueResourceError(err),
+                          errorText,
+                          'error'
+                      )
+                  vm.paySubmitting=false;
       });
     },
 
@@ -689,20 +708,21 @@ export default {
             type: "question",
             showCancelButton: true,
             confirmButtonText: vm.submit_text()
-        }).then(() => {
+        }).then(async () => {
           
             // Filming has deferred payment once assessor decides whether 'Licence' (fee) or 'Lawful Authority' (no fee) is to be issued
             // if (!vm.proposal.fee_paid || vm.proposal.application_type!='Filming') {
-            if (!vm.proposal.fee_paid && vm.proposal.application_type!=vm.application_type_filming) {
+            if (!vm.proposal.fee_paid.fee_paid && vm.proposal.application_type!=vm.application_type_filming) {
                 vm.save_and_redirect();
 
             } else {
                 /* just save and submit - no payment required (probably application was pushed back by assessor for amendment */
-                var saved=true;
+                // var saved=true;
                 //vm.save_wo_confirm()
-                saved=vm.save_before_submit()
-                console.log(saved);
-                if(saved){
+                let result = await vm.save_before_submit()
+                //vm.save_before_submit();
+                //console.log(result);
+                if(!vm.saveError){
                   vm.$http.post(helpers.add_endpoint_json(api_endpoints.proposals,vm.proposal.id+'/submit'),formData).then(res=>{
                       vm.proposal = res.body;
                       vm.$router.push({
