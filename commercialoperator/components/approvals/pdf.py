@@ -920,6 +920,12 @@ def create_approval_doc(approval,proposal, copied_to_permit, user):
         if proposal.is_lawful_authority:
             _create_approval_lawful_authority(approval_buffer, approval, proposal, copied_to_permit, user)
         else:
+            try:
+                # 'user' needed because applicant initiates licence generation via 'Awaiting Payment' status
+                user = approval.approved_by
+            except:
+                raise ValidationError('Approval Officer (approved_by) field not set')
+
             _create_approval_filming(approval_buffer, approval, proposal, copied_to_permit, user)
     #filename = 'licence-{}.pdf'.format(approval.lodgement_number)
     filename = '{}.pdf'.format(approval.lodgement_number)
