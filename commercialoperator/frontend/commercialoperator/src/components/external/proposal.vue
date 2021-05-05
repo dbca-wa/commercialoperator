@@ -179,7 +179,7 @@ export default {
       if (vm.proposal.application_type==vm.application_type_filming) {
           // Filming has deferred payment once assessor decides whether 'Licence' (has a fee) or 'Lawful Authority' (has no fee) is to be issued
           return 'Submit';
-      } else if (vm.proposal.fee_paid.fee_paid) {
+      } else if (vm.proposal.fee_paid) {
           return 'Resubmit';
       } else if (vm.proposal.allow_full_discount)  {
           return 'Submit';
@@ -712,7 +712,7 @@ export default {
           
             // Filming has deferred payment once assessor decides whether 'Licence' (fee) or 'Lawful Authority' (no fee) is to be issued
             // if (!vm.proposal.fee_paid || vm.proposal.application_type!='Filming') {
-            if (!vm.proposal.fee_paid.fee_paid && vm.proposal.application_type!=vm.application_type_filming) {
+            if (!vm.proposal.fee_paid && vm.proposal.application_type!=vm.application_type_filming) {
                 vm.save_and_redirect();
 
             } else {

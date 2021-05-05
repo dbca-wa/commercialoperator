@@ -555,6 +555,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     assigned_officer = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proposals_assigned', on_delete=models.SET_NULL)
     assigned_approver = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proposals_approvals', on_delete=models.SET_NULL)
+    approved_by = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_approved_by')
     processing_status = models.CharField('Processing Status', max_length=30, choices=PROCESSING_STATUS_CHOICES,
                                          default=PROCESSING_STATUS_CHOICES[1][0])
     prev_processing_status = models.CharField(max_length=30, blank=True, null=True)
@@ -662,7 +663,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         except KeyError:
             self.update_property_cache()
 
-        return self.property_cache
+        return self.property_cache[key]
 
     def update_property_cache(self, save=True):
         '''
@@ -1733,7 +1734,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             if self.processing_status == 'with_referral' or self.can_user_edit:
                 raise ValidationError('You cannot change the current status at this time')
             if self.processing_status != status:
-                #import ipdb; ipdb.set_trace()
                 if self.processing_status =='with_approver':
                     self.approver_comment=''
                     if approver_comment:
@@ -2091,12 +2091,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 if (self.application_type.name == ApplicationType.FILMING and self.filming_approval_type == self.LICENCE and \
                         self.processing_status in [Proposal.PROCESSING_STATUS_WITH_APPROVER]) and \
-                        not self.proposal_type=='amendment':
+                        not self.proposal_type=='amendment' and \
+                        not self.fee_paid:
 
                     self.processing_status = self.PROCESSING_STATUS_AWAITING_PAYMENT
                     self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
+                    self.approved_by = request.user
                     invoice = self.__create_filming_fee_invoice(request)
-                    #import ipdb; ipdb.set_trace()
                     #confirmation = self.__create_filming_fee_confirmation(request)
                     #
                     #if confirmation:
@@ -3409,7 +3410,6 @@ class Referral(RevisionedMixin):
     def add_referral_document(self, request):
         with transaction.atomic():
             try:
-                #import ipdb; ipdb.set_trace()
                 #if request.data.has_key('referral_document'):
                 if 'referral_document' in request.data:
                     referral_document = request.data['referral_document']

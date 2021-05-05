@@ -266,7 +266,7 @@ export default {
                                 else if (full.can_user_view) {
                                     links +=  `<a href='/external/proposal/${full.id}'>View</a><br/>`;
                                 }
-                                if (full.customer_status=='Awaiting Payment' && !full.fee_paid.fee_paid) {
+                                if (full.customer_status=='Awaiting Payment' && !full.fee_paid) {
                                     links +=  `<a href='/filming_fee/${full.id}'>Make Payment</a><br/>`;
                                     links +=  `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp Pending Invoice</a><br/>`;
                                 }
@@ -405,7 +405,7 @@ export default {
                                 }
                             }
 
-                            if (!full.fee_paid.fee_paid && full.processing_status=='Awaiting Payment'){
+                            if (!full.fee_paid && full.processing_status=='Awaiting Payment'){
                                 if(vm.is_payment_admin){
                                     //links +=  `<a href='/ledger/payments/invoice/payment?invoice=${full.fee_invoice_reference}' target='_blank'>Record Payment</a><br/>`;
                                     links +=  `<a href='/filming_fee/${full.id}'>Record Payment</a><br/>`;

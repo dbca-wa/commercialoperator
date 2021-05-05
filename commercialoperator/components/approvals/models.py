@@ -326,25 +326,20 @@ class Approval(RevisionedMixin):
             return self.can_reissue
         return False    
         
+    @property
+    def approved_by(self):
+        return self.current_proposal.approved_by
+
+#    @property
+#    def approved_by(self):
+#        try:
+#            proposal = self.proposal_set.all().order_by('-id')[0]
+#            if proposal.application_type.name == ApplicationType.FILMING:
+#                return proposal.action_logs.filter(what__contains='Awaiting Payment').last().who
+#            return proposal.action_logs.filter(what__contains='Issue Licence').last().who
+#        except:
+#            return None
     
-
-    # @property
-    # def can_amend(self):
-    #     try:
-    #         amend_conditions = {
-    #                 'previous_application': self.current_proposal,
-    #                 'proposal_type': 'amendment'
-    #                 }
-    #         proposal=Proposal.objects.get(**amend_conditions)
-    #         if proposal:
-    #             return False
-    #     except Proposal.DoesNotExist:
-    #             if self.can_renew:
-    #                 return True
-    #             else:
-    #                 return False
-
-
     def generate_doc(self, user, preview=False):
         from commercialoperator.components.approvals.pdf import create_approval_doc, create_approval_pdf_bytes
         copied_to_permit = self.copiedToPermit_fields(self.current_proposal) #Get data related to isCopiedToPermit tag
