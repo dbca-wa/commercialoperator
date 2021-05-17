@@ -464,9 +464,10 @@ class FilmingFee(Payment):
     deferred_payment_date = models.DateField(blank=True, null=True)
     payment_due_notification_sent = models.BooleanField(default=False)
     lines = JSONField(default=[''])
+    lines_aggregated = JSONField(default=[])
 
     def __str__(self):
-        return 'Proposal {} : Invoice {}'.format(self.proposal, self.filming_fee_invoices.last())
+        return 'Proposal {} : Invoice {}'.format(self.proposal, self.filming_fee_invoices.order_by('-id').first())
 
     class Meta:
         app_label = 'commercialoperator'

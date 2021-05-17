@@ -285,7 +285,6 @@ def _create_invoice(invoice_buffer, invoice, proposal):
         ('GRID',(0, 0), (-1, -1),1, colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT')
         ])
-    items = invoice.order.lines.all()
     discounts = invoice.order.basket_discounts
     if invoice.text:
         elements.append(Paragraph(invoice.text, styles['Left']))
@@ -297,17 +296,38 @@ def _create_invoice(invoice_buffer, invoice, proposal):
     s = styles["BodyText"]
     s.wordWrap = 'CJK'
 
-    for item in items:
-        data.append(
-            [
-                val,
-                Paragraph(item.description, s),
-                item.quantity,
-                currency(item.unit_price_incl_tax),
-                currency(item.line_price_before_discounts_incl_tax)
-            ]
-        )
-        val += 1
+
+    filming_fee = proposal.filming_fees.order_by('-id').first()
+    items = filming_fee.lines_aggregated
+    if items:
+        for item in items:
+            amount = float(item['price_incl_tax']) * item['quantity']
+            data.append(
+                [
+                    val,
+                    Paragraph(item['ledger_description'], s),
+                    item['quantity'],
+                    currency(item['price_incl_tax']),
+                    currency(amount)
+                ]
+            )
+            val += 1
+    else:
+        items = invoice.order.lines.all()
+        # Older Filming invoices has no 'filming_fee.lines_aggregated'
+        for item in items:
+            data.append(
+                [
+                    val,
+                    Paragraph(item.description, s),
+                    item.quantity,
+                    currency(item.unit_price_incl_tax),
+                    currency(item.line_price_before_discounts_incl_tax)
+                ]
+            )
+            val += 1
+
+
     # Discounts
     data.append(
         [
