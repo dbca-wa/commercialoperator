@@ -2066,6 +2066,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     def final_approval(self,request,details):
         from commercialoperator.components.approvals.models import Approval
+        from commercialoperator.helpers import is_departmentUser
         with transaction.atomic():
             try:
                 self.proposed_decline_status = False
@@ -2089,6 +2090,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         'cc_email':details.get('cc_email')
                     }
 
+                    if is_departmentUser(request):
+                        # needed because external users come through this workflow following 'awaiting_payment; status
+                        self.approved_by = request.user
 
                 if (self.application_type.name == ApplicationType.FILMING and self.filming_approval_type == self.LICENCE and \
                         self.processing_status in [Proposal.PROCESSING_STATUS_WITH_APPROVER]) and \
@@ -2124,11 +2128,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     # Log entry for organisation
                     applicant_field=getattr(self, self.applicant_field)
                     applicant_field.log_user_action(ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),request)
-
-
-                if is_departmentUser(request):
-                    # needed because external users come through this workflow following 'awaiting_payment; status
-                    self.approved_by = request.user
 
                 if self.processing_status == self.PROCESSING_STATUS_APPROVED:
                     # TODO if it is an ammendment proposal then check appropriately

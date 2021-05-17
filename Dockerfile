@@ -28,9 +28,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y python3.7 python3.7-dev
 
-RUN ln -s /usr/bin/python3.7 /usr/bin/python && \
-    ln -s /usr/bin/pip3 /usr/bin/pip
-#RUN pip install --upgrade pip
+RUN ln -s /usr/bin/python3.7 /usr/bin/python 
 RUN python3.7 -m pip install --upgrade pip
 RUN apt-get install -yq vim
 
