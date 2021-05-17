@@ -730,7 +730,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def filming_fee_invoice_reference(self):
         try: 
-            return self.filming_fees.last().filming_fee_invoices.last().invoice_reference
+            filming_fee = self.filming_fees.order_by('-id').first()
+            return filming_fee.filming_fee_invoices.order_by('-id').first().invoice_reference
         except:
             return None
 
@@ -2125,6 +2126,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     applicant_field.log_user_action(ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),request)
 
 
+                if is_departmentUser(request):
+                    # needed because external users come through this workflow following 'awaiting_payment; status
+                    self.approved_by = request.user
+
                 if self.processing_status == self.PROCESSING_STATUS_APPROVED:
                     # TODO if it is an ammendment proposal then check appropriately
                     checking_proposal = self
@@ -2236,7 +2241,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         if self.application_type.name == ApplicationType.FILMING and self.filming_approval_type==self.LICENCE \
             and not self.fee_invoice_reference and len(self.filming_activity.film_type)>0:
 
-            lines = create_filming_fee_lines(self)
+            lines, lines_aggregated = create_filming_fee_lines(self)
 
             with transaction.atomic():
                 try:
@@ -2250,7 +2255,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         ).create_invoice_and_order(basket, 0, None, None, user=request.user, invoice_text='Payment Invoice')
                     invoice = Invoice.objects.get(order_number=order.number)
 
-                    filming_fee = FilmingFee.objects.create(proposal=self, lines=lines, created_by=request.user, payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY, deferred_payment_date=deferred_payment_date)
+                    filming_fee = FilmingFee.objects.create(proposal=self,
+                            lines=lines, 
+                            lines_aggregated=lines_aggregated,
+                            created_by=request.user, 
+                            payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY, 
+                            deferred_payment_date=deferred_payment_date
+                    )
                     filming_fee.filming_fee_invoices.create(invoice_reference=invoice.reference)
 
                 except Exception as e:

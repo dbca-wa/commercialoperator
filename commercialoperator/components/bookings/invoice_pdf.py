@@ -293,6 +293,7 @@ def _create_invoice(invoice_buffer, invoice, proposal):
         ('ALIGN', (0, 0), (-1, -1), 'LEFT')
         ])
     items = invoice.order.lines.all()
+
     discounts = invoice.order.basket_discounts
     if invoice.text:
         elements.append(Paragraph(invoice.text, styles['Left']))
