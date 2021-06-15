@@ -215,17 +215,18 @@ def _create_header(canvas, doc, draw_page_number=True):
     current_x += 435
 
     total_amount = 0.0
+    filming_fee = proposal.filming_fees.order_by('-id').first()
     if hasattr(proposal.invoice, 'payment_status') and proposal.invoice.payment_status in ['paid', 'over_paid']:
         pass
     else:
         # Calc Total Amount
-        for item in proposal.filming_fees.last().lines:
+        for item in filming_fee.lines:
             amount = float(item['price_incl_tax']) * item['quantity']
             total_amount += amount
 
     #write Invoice details
     canvas.drawString(current_x, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER),'Date')
-    canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER), to_local_tz(proposal.filming_fees.last().created).strftime(DATE_FORMAT)  + ' (AWST)' )
+    canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER), to_local_tz(filming_fee.created).strftime(DATE_FORMAT)  + ' (AWST)' )
     canvas.drawString(current_x, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 2, 'Page')
     canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 2, str(canvas.getPageNumber()))
     canvas.drawRightString(current_x + 20, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 3, 'Proposal Number')
@@ -236,7 +237,7 @@ def _create_header(canvas, doc, draw_page_number=True):
         canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 4, proposal.filming_fee_invoice_reference)
     
     canvas.drawRightString(current_x + 20, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 5, 'Payment Due Date')
-    canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 5, proposal.filming_fees.last().deferred_payment_date.strftime(DATE_FORMAT))
+    canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 5, filming_fee.deferred_payment_date.strftime(DATE_FORMAT))
     canvas.drawRightString(current_x + 20, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 6, 'Outstanding (AUD)')
     canvas.drawString(current_x + invoice_details_offset, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 6, currency(total_amount))
 #    if hasattr(booking, 'booking_type'):
@@ -294,7 +295,12 @@ def _create_invoice(invoice_buffer, proposal):
 
     #for val, item in enumerate(booking.as_line_items, 1):
     total_amount = 0.0
-    for val, item in enumerate(proposal.filming_fees.last().lines, 1):
+    filming_fee = proposal.filming_fees.order_by('-id').first()
+    lines = filming_fee.lines_aggregated
+    if len(lines) == 0:
+        lines = filming_fee.lines
+
+    for val, item in enumerate(lines, 1):
         amount = float(item['price_incl_tax']) * item['quantity']
         data.append(
             [

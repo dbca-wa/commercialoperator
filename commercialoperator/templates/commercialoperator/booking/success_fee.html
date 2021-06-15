@@ -44,7 +44,7 @@
                             </tr>
                         </table>
                         <br/>
-                        {% if proposal and proposal.application_type.name == 'Event' %}
+                        {% if proposal and proposal.application_type.name == proposal.application_type.EVENT %}
                             <label>Please note that it may take up to 6 weeks to process your application.<br/><br/>If there is any missing information, the Department may assign this application back to you to complete. In that case you will be notified by email.</label>
                         {% else %}
                             <label>Please note that it may take up to 21 business days to process your application.<br/><br/>If there is any missing information, the Department may assign this application back to you to complete. In that case you will be notified by email.</label>
@@ -64,7 +64,11 @@
 
                 {% if request.user.is_authenticated %}
                     <span>
-                    <a href="{% url 'cols-invoice-pdf' fee_invoice.invoice_reference %}" class="btn btn-info btn-lg"  target="_blank">Invoice</a>
+                    {% if proposal and proposal.application_type.name == proposal.application_type.FILMING %}
+                        <a href="{% url 'cols-invoice-filmingfee-pdf' fee_invoice.invoice_reference %}" class="btn btn-info btn-lg"  target="_blank">Invoice</a>
+                    {% else %}
+                        <a href="{% url 'cols-invoice-pdf' fee_invoice.invoice_reference %}" class="btn btn-info btn-lg"  target="_blank">Invoice</a>
+                    {% endif %}
                     </span>
                     <span style="float:right;">
                     <a href="{% url 'external' %}" class="btn btn-info btn-lg">Return to Dashboard</a>
