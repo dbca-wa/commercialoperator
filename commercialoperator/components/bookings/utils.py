@@ -496,6 +496,42 @@ def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=Fa
         logger.info('{}'.format(line_items))
         return line_items
 
+def create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_period):
+        """ Create the ledger lines, line items for each park - filming licence fee divided evenly and sent to payment system """
+
+        def add_line_item(park, price):
+            return {
+                    'ledger_description': f'{park.name} ({park.oracle_code(proposal.application_type)}: {licence_text} - {filming_period})',
+                    'oracle_code': park.oracle_code(proposal.application_type),
+                    'price_incl_tax':  float(price),
+                    'price_excl_tax':  float(price), # NO GST
+                    'quantity': 1 # no_persons,
+            }
+
+
+        now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        filming_parks = proposal.filming_parks.all().distinct('park__name')
+        invoice_total = licence_fee
+        if settings.DEBUG:
+                # since Ledger UAT only handles whole integer total
+                invoice_total = round(invoice_total, 0)
+
+        alloc_per_park = round(invoice_total / len(filming_parks), 2)
+        rounding_error = round(invoice_total - (alloc_per_park * len(filming_parks)), 2)
+
+        lines = []
+        for idx, filming_park in enumerate(filming_parks, 1):
+                park = filming_park.park
+                if idx==len(filming_parks):
+                        # add rounding error to last line/product
+                        lines.append(add_line_item(park, price=alloc_per_park+rounding_error))
+                else:
+                        lines.append(add_line_item(park, price=alloc_per_park))
+
+        #logger.info('{}'.format(lines))
+        return lines
+
+
 def create_filming_fee_lines(proposal, invoice_text=None, vouchers=[], internal=False):
         if 'motion_film' in proposal.filming_activity.film_type:
                 # Filming (and perhaps Photography)
@@ -541,24 +577,27 @@ def create_filming_fee_lines(proposal, invoice_text=None, vouchers=[], internal=
         application_fee = proposal.application_type.application_fee
         filming_period = '{} - {}'.format(proposal.filming_activity.commencement_date, proposal.filming_activity.completion_date)
 
-        lines = [
+        lines_app = [
                 {
                         'ledger_description': '{} Application Fee - {}'.format(desc, proposal.lodgement_number),
                         'oracle_code': proposal.application_type.oracle_code_licence,
                         'price_incl_tax':  str(application_fee),
                         'price_excl_tax':  str(application_fee) if proposal.application_type.is_gst_exempt else str(calculate_excl_gst(application_fee)),
                         'quantity': 1
-                },
+                }
+        ]
+        lines_parks_aggregated = [
                 {
                         'ledger_description': '{} Licence Fee ({} - {}) - {}'.format(desc, licence_text, filming_period, proposal.lodgement_number),
                         'oracle_code': proposal.application_type.oracle_code_licence,
                         'price_incl_tax': str( licence_fee),
                         'price_excl_tax':  str(licence_fee) if proposal.application_type.is_gst_exempt else str(calculate_excl_gst(licence_fee)),
                         'quantity': 1
-                },
+                }
         ]
-
-        return lines
+        lines_aggregated = lines_app + lines_parks_aggregated
+        lines            = lines_app + create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_period)
+        return lines, lines_aggregated
 
 
 def create_lines(request, invoice_text=None, vouchers=[], internal=False):

@@ -211,8 +211,8 @@ class FilmingFeeView(TemplateView):
 
         proposal = self.get_object()
         #filming_fee = FilmingFee.objects.create(proposal=proposal, created_by=request.user, payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY)
-        filming_fee = proposal.filming_fees.last()
-        inv_ref = filming_fee.filming_fee_invoices.last().invoice_reference
+        filming_fee = proposal.filming_fees.order_by('-id').first()
+        inv_ref = filming_fee.filming_fee_invoices.order_by('-id').first().invoice_reference
 
         try:
             with transaction.atomic():
@@ -504,7 +504,7 @@ class FilmingFeeSuccessView(TemplateView):
             context = template_context(self.request)
             basket = None
             filming_fee = get_session_filming_invoice(request.session)
-            fee_inv = filming_fee.filming_fee_invoices.last()
+            fee_inv = filming_fee.filming_fee_invoices.order_by('-id').first()
             invoice_ref = fee_inv.invoice_reference
             proposal = filming_fee.proposal
 
@@ -887,23 +887,23 @@ class InvoicePDFView(View):
     def check_owner(self, organisation):
         return is_in_organisation_contacts(self.request, organisation) or is_internal(self.request) or self.request.user.is_superuser
 
-#class InvoiceFilmingFeePDFView(View):
-#    def get(self, request, *args, **kwargs):
-#        invoice = get_object_or_404(Invoice, reference=self.kwargs['reference'])
-#        proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
-#
-#        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
-#        if self.check_owner(organisation):
-#            response = HttpResponse(content_type='application/pdf')
-#            response.write(create_invoice_filmingfee_pdf_bytes('invoice.pdf', invoice, proposal))
-#            return response
-#        raise PermissionDenied
-#
-#    def get_object(self):
-#        return  get_object_or_404(Invoice, reference=self.kwargs['reference'])
-#
-#    def check_owner(self, organisation):
-#        return is_in_organisation_contacts(self.request, organisation) or is_internal(self.request) or self.request.user.is_superuser
+class InvoiceFilmingFeePDFView(View):
+    def get(self, request, *args, **kwargs):
+        invoice = get_object_or_404(Invoice, reference=self.kwargs['reference'])
+        proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
+
+        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        if self.check_owner(organisation):
+            response = HttpResponse(content_type='application/pdf')
+            response.write(create_invoice_filmingfee_pdf_bytes('invoice.pdf', invoice, proposal))
+            return response
+        raise PermissionDenied
+
+    def get_object(self):
+        return  get_object_or_404(Invoice, reference=self.kwargs['reference'])
+
+    def check_owner(self, organisation):
+        return is_in_organisation_contacts(self.request, organisation) or is_internal(self.request) or self.request.user.is_superuser
 
 
 
