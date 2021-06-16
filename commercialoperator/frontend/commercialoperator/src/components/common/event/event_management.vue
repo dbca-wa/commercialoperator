@@ -374,7 +374,8 @@
                             <div class="row">&nbsp;</div>
                             <div class="row">    
                                 <div class="col-sm-6">
-                                    <label class="control-label pull-left"  for="Name">Have you developed a Traffic Management Plan that has been prepared and approved by an accredited body in line with Mainroads WA -  <a :href="event_traffic_code_of_practice" target="_blank">Traffic Management for Events Code of Practice</a>? </label>                                   
+                                    <!-- <label class="control-label pull-left"  for="Name">Have you developed a Traffic Management Plan that has been prepared and approved by an accredited body in line with Mainroads WA -  <a :href="event_traffic_code_of_practice" target="_blank">Traffic Management for Events Code of Practice</a>? </label> -->
+                                    <label class="control-label pull-left"  for="Name">Does your event route cross or use sections of public road on Conservation and Land Management Act 1984 Land?</label>                                   
                                 </div>
                                 <div class="col-sm-6">
                                     <ul class="list-inline"  >
@@ -391,7 +392,7 @@
                             </div>
                             <div class="row" v-if="proposal.event_management.traffic_management_plan">
                                 <div class="col-sm-6">
-                                    <label class="control-label pull-left"  for="Name">Please attach </label>                               
+                                    <label class="control-label pull-left"  for="Name">Please attach Traffic Management Plan that has been prepared and approved by an accredited body in line with Mainroads WA -  <a :href="event_traffic_code_of_practice" target="_blank">Traffic Management for Events Code of Practice</a> </label>                               
                                 </div>
                                 <div class="col-sm-6">
                                     <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_management_traffic_management_plan" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="event_management_traffic_management_plan"></FileField>
