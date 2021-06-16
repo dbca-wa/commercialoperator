@@ -17,7 +17,7 @@
         
         {{settings.COLS_FILMING_HANDBOOK_URL}} 
         
-        Please ensure you have a copy of this handbook on hand either in hardcopy or an electronic version.
+        Please ensure contact is made with the relevant departmental region(s) and district(s) prior to conducting your filming operation, as per section 5.3 of the handbook. A copy of this handbook must be on hand either in hardcopy or an electronic version while conducting the filming operation.
 
         Additional Conditions
         Additional conditions are listed in schedule 2 of the lawful authority. If you are required to submit additional documentation based on these conditions, it will show under the “Compliance with requirements” section on your COLS homepage. You will need to login to your account and ensure you have completed any compliance requirements by the due date by uploading the requested documents.
