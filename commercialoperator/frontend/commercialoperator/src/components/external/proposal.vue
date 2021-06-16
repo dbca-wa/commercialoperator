@@ -535,7 +535,7 @@ export default {
           }
       }
       if(vm.proposal.event_management.num_spectators==null||vm.proposal.event_management.num_spectators==''){
-        blank_fields.push(' Number of participants expected is missing')
+        blank_fields.push(' Number of spectators expected is missing')
       }
       if(vm.proposal.event_management.num_officials==null||vm.proposal.event_management.num_officials==''){
         blank_fields.push(' Number of officials expected is missing')

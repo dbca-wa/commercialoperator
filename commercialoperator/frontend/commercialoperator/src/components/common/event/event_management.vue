@@ -19,7 +19,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of participants expected</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_participants" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_participants">
+                                    <input type="number" class="form-control" name="num_participants" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_participants">
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -28,7 +28,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of spectators expected</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_spectators" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_spectators">
+                                    <input type="number" class="form-control" name="num_spectators" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_spectators">
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -37,7 +37,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of officials</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_officials" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_officials">
+                                    <input type="number" class="form-control" name="num_officials" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_officials">
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -46,7 +46,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of vehicles/ vessels</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_vehicles" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_vehicles">
+                                    <input type="number" class="form-control" name="num_vehicles" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_vehicles">
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
