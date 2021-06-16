@@ -633,16 +633,23 @@ def send_district_proposal_approval_email_notification(district_proposal,approva
     print(url)
     attachments = []
     licence_document= approval.licence_document._file
+    approved_district_proposals= approval.current_proposal.district_proposals.filter(processing_status='approved')
     if licence_document is not None:
         file_name = approval.licence_document.name
         attachment = (file_name, licence_document.file.read(), 'application/pdf')
         attachments.append(attachment)
 
-        for requirement in district_proposal.district_proposal_requirements.all():
-            for doc in requirement.requirement_documents.all():
-                file_name = doc._file.name
-                attachment = (file_name, doc._file.file.read())
-                attachments.append(attachment)
+        # for requirement in district_proposal.district_proposal_requirements.all():
+        #     for doc in requirement.requirement_documents.all():
+        #         file_name = doc._file.name
+        #         attachment = (file_name, doc._file.file.read())
+        #         attachments.append(attachment)
+        for dp in approved_district_proposals:
+            for requirement in dp.district_proposal_requirements.all():
+                for doc in requirement.requirement_documents.all():
+                    file_name = doc._file.name
+                    attachment = (file_name, doc._file.file.read())
+                    attachments.append(attachment)
     context = {
         'proposal': proposal,
         'district_proposal': district_proposal,
