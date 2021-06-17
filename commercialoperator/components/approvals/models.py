@@ -19,7 +19,7 @@ from ledger.accounts.models import EmailUser, RevisionedMixin
 from ledger.licence.models import  Licence
 from commercialoperator import exceptions
 from commercialoperator.components.organisations.models import Organisation
-from commercialoperator.components.proposals.models import Proposal, ProposalUserAction, DistrictProposal
+from commercialoperator.components.proposals.models import Proposal, ProposalUserAction, DistrictProposal, RequirementDocument
 from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, ApplicationType
 from commercialoperator.components.approvals.email import (
     send_approval_expire_email_notification,
@@ -324,11 +324,24 @@ class Approval(RevisionedMixin):
     def can_reissue_lawful_authority(self):
         if self.current_proposal.is_lawful_authority and self.current_proposal.is_lawful_authority_finalised:
             return self.can_reissue
-        return False    
+        return False
         
     @property
     def approved_by(self):
         return self.current_proposal.approved_by
+
+    @property
+    def requirement_docs(self):
+        if self.is_lawful_authority:
+            approved_district_proposals_ids= self.current_proposal.district_proposals.filter(processing_status='approved').values_list('id', flat=True)
+            requirement_ids = self.current_proposal.requirements.filter(district_proposal_id__in = approved_district_proposals_ids).exclude(is_deleted=True).values_list('id', flat=True)
+        else:
+            requirement_ids=self.current_proposal.requirements.all().exclude(is_deleted=True).values_list('id', flat=True)
+        if requirement_ids:
+            req_doc=RequirementDocument.objects.filter(requirement__in=requirement_ids, visible=True)
+            return req_doc
+        return None
+    
 
 #    @property
 #    def approved_by(self):
