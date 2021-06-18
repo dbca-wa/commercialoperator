@@ -2031,7 +2031,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         from commercialoperator.components.approvals.models import PreviewTempApproval
         with transaction.atomic():
             try:
-                if self.processing_status != 'with_approver':
+                #if self.processing_status != 'with_assessor_requirements' or self.processing_status != 'with_approver':
+                if not (self.processing_status == 'with_assessor_requirements' or self.processing_status == 'with_approver'):
                     raise ValidationError('Licence preview only available when processing status is with_approver. Current status {}'.format(self.processing_status))
                 if not self.can_assess(request.user):
                     raise exceptions.ProposalNotAuthorized()
