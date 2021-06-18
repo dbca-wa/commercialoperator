@@ -281,7 +281,9 @@ class ApprovalSerializer(serializers.ModelSerializer):
         return obj.is_approver(user)
 
     def get_requirement_docs(self,obj):
-        return [[d.name,d._file.url] for d in obj.requirement_docs]
+        if  obj.requirement_docs:
+            return [[d.name,d._file.url] for d in obj.requirement_docs]
+        return None
 
 class ApprovalExtendSerializer(serializers.Serializer):
     extend_details = serializers.CharField()
