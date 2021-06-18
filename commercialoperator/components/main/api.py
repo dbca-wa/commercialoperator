@@ -371,10 +371,11 @@ class TrailTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     def list(self, request):
         #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-        Container = namedtuple('TrailTab', ('land_activity_types', 'trails',))
+        Container = namedtuple('TrailTab', ('land_activity_types', 'trails', 'event_activity_types',))
         container = Container(
             land_activity_types=Activity.objects.filter(activity_category__activity_type='land').order_by('id'),
             trails=Trail.objects.all().order_by('id'),
+            event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
         )
         serializer = TrailTabSerializer(container)
         return Response(serializer.data)

@@ -54,7 +54,7 @@
                                     </div>
                                     <!-- <div class="col-sm-9" v-if="">
                                         <select style="width:100%" class="form-control input-sm" multiple ref="activities_select" v-model="selected_activities">
-                                            <option v-for="a in allowed_activities" :value="a.id">{{a.name}}</option>
+                                            <option v-for="a in trail_activities" :value="a.id">{{a.name}}</option>
                                         </select>
                                     </div> -->
 
@@ -62,6 +62,22 @@
                                         
                                         <input type="text" class="form-control" name="pre_event_name"  v-model="trail.event_trail_activities">
                                     </div>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        
+                                        <label class="control-label pull-left"  for="Name">Activity Types (internal) </label>
+                                    </div>
+                                    <div class="col-sm-9" v-if="">
+                                        <select style="width:100%" class="form-control input-sm" multiple ref="activities_select" v-model="selected_activities">
+                                            <option v-for="a in trail_activities" :value="a.id">{{a.name}}</option>
+                                        </select>
+                                    </div>
+
 
                                 </div>
                             </div>
@@ -105,7 +121,7 @@ import alert from '@vue-utils/alert.vue'
 import {helpers,api_endpoints} from "@/utils/hooks.js"
 import FileField2 from '@/components/forms/filefield2.vue'
 export default {
-    name:'Edit-Trail-Activity',
+    name:'Edit-Trail-Activity-Event',
     components:{
         modal,
         alert,
@@ -135,6 +151,7 @@ export default {
             issuingPark: false,
             trails_list:[],
             section_list:[],
+            trail_activities:[],
             selected_activities:[],
             validation_form: null,
             errors: false,
@@ -216,15 +233,25 @@ export default {
             } );
         },
         
-        fetchAllTrails: function(id){
+        fetchAllTrails_orig: function(id){
             let vm = this;
             vm.$http.get(api_endpoints.trails).then((response) => {
                 vm.trails_list = response.body; 
+
             },(error) => {
                 console.log(error);
             } );
         },
+        fetchAllTrails: function(id){
+            let vm = this;
+            vm.$http.get(api_endpoints.event_trail_container).then((response) => {
+                vm.trails_list = response.body['trails'];
+                vm.trail_activities= response.body['event_activity_types'] 
 
+            },(error) => {
+                console.log(error);
+            } );
+        },
 
         
         fetchTrail: function(vid){
@@ -410,20 +437,20 @@ export default {
                 vm.section_id = selected.val();
                 //vm.fetchAllowedActivities();
             });
-            // Initialise select2 for Activity types
-                // $(vm.$refs.activities_select).select2({
-                //     "theme": "bootstrap",
-                //     allowClear: true,
-                //     placeholder:"Select Activities"
-                // }).
-                // on("select2:select",function (e) {
-                //     var selected = $(e.currentTarget);
-                //     vm.selected_activities = selected.val();
-                // }).
-                // on("select2:unselect",function (e) {
-                //     var selected = $(e.currentTarget);
-                //     vm.selected_activities = selected.val();
-                // });
+            //Initialise select2 for Activity types
+                $(vm.$refs.activities_select).select2({
+                    "theme": "bootstrap",
+                    allowClear: true,
+                    placeholder:"Select Activities"
+                }).
+                on("select2:select",function (e) {
+                    var selected = $(e.currentTarget);
+                    vm.selected_activities = selected.val();
+                }).
+                on("select2:unselect",function (e) {
+                    var selected = $(e.currentTarget);
+                    vm.selected_activities = selected.val();
+                });
             
        }
    },

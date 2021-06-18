@@ -92,6 +92,7 @@ class ActivityCategory(models.Model):
         ('land', 'Land'),
         ('marine', 'Marine'),
         ('Film', 'Film'),
+        ('event', 'Event'),
     )
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
