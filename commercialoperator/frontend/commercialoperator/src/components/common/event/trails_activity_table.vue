@@ -75,7 +75,7 @@ export default {
             uuid: 0,
             // Filters for Parks
             //park_headers:["Park or Reserve","Activities","Itinerary/ Maps","Action"],
-            park_headers:["Trail","Section","Activities","Action"],
+            park_headers:["Trail","Section","Activities (application)","Action"],
             park_options:{
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
@@ -124,7 +124,7 @@ export default {
                         //     links +=  `<a href='#${full.id}' data-discard-trail='${full.id}'>Discard</a><br/>`;
                         // }
                         if(vm.canEditActivities){
-                            links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit Trail</a><br/>`;
+                            links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit</a><br/>`;
                             links +=  `<a href='#${full.id}' data-discard-trail='${full.id}'>Discard</a><br/>`;
                         }
                             return links;
