@@ -406,3 +406,7 @@ class TrailTabSerializer(serializers.Serializer):
     land_activity_types = ActivitySerializer(many=True, read_only=True)
     event_activity_types = ActivitySerializer(many=True, read_only=True)    
     trails = TrailSerializer(many=True, read_only=True)
+
+class EventsTabSerializer(serializers.Serializer):
+    event_activity_types = ActivitySerializer(many=True, read_only=True)    
+    parks = FilmingParkSerializer(many=True, read_only=True)

@@ -42,6 +42,7 @@ module.exports = {
     vessels:"/api/vessels.json",
     assessments:"/api/assessments.json",
     event_trail_container:"/api/event_trail_container",
+    event_park_container:"/api/event_park_container",
     
     //filming
     proposal_filming_parks:"/api/proposal_filming_parks.json",

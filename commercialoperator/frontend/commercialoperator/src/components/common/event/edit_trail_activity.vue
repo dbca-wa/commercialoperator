@@ -66,7 +66,7 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group" v-if="is_internal">
                                 <div class="row">
                                     <div class="col-sm-3">
                                         
@@ -128,6 +128,18 @@ export default {
         FileField2
     },
     props:{
+        // level:{
+        //     type: String,
+        //     required: true,
+        //     validator:function(val) {
+        //         let options = ['internal','referral','external'];
+        //         return options.indexOf(val) != -1 ? true: false;
+        //     }
+        // },
+        is_internal:{
+              type: Boolean,
+              default: false
+        },
         trail_id: {
             type: Number,
             required: true
@@ -214,7 +226,7 @@ export default {
             this.errors = false;
             $('.has-error').removeClass('has-error');
             //this.$refs.activities_select=[];
-            //$(this.$refs.activities_select).val(null).trigger('change');
+            $(this.$refs.activities_select).val(null).trigger('change');
             //this.events_trail_id=null;
             $(this.$refs.events_trail).val(null).trigger('change');
             $(this.$refs.events_section).val(null).trigger('change');
@@ -275,11 +287,11 @@ export default {
                         
                         // vm.fetchSections();
                       }
-                      // if(vm.trail.activities)
-                      // {
-                      //   vm.selected_activities=vm.trail.activities;
-                      //   $(vm.$refs.activities_select).val(vm.trail.activities).trigger('change');
-                      // }
+                      if(vm.trail.activities_assessor)
+                      {
+                        vm.selected_activities=vm.trail.activities_assessor;
+                        $(vm.$refs.activities_select).val(vm.trail.activities_assessor).trigger('change');
+                      }
                       // if(vm.trail.from_date){
                       //   vm.trail.from_date=vm.trail.from_date.format('DD/MM/YYYY')
                       //   }
@@ -301,7 +313,7 @@ export default {
                     vm.section_list = helpers.copyObject(vm.trails_list[i].sections)
                 }
             }
-            console.log(vm.section_list);
+            //console.log(vm.section_list);
             $(vm.$refs.events_section).val(vm.section_list).trigger('change');
         },
         sendData:function(){
@@ -315,7 +327,8 @@ export default {
                 vm.trail.section=vm.section_id
             }
             //console.log('trail.section',vm.trail.section);
-            //vm.trail.activities = vm.selected_activities;
+            vm.trail.activities_assessor = vm.selected_activities;
+            //console.log(vm.trail.activities_assessor);
             // if(vm.trail.from_date){
             //     vm.trail.from_date=vm.trail.from_date.format('YYYY-MM-DD')
             // }
