@@ -127,7 +127,7 @@
                 <div class="row">
                     <label v-if="trail_section_map" class="col-sm-12"  for="Name">List the the track and trail sections where this event is proposed to occur and add the proposed activties to be undertaken. A map of the sections can be viewed <a :href="trail_section_map" target="_blank">here</a>.</label>
                     <label v-else="trail_section_map" class="col-sm-12"  for="Name">List the the track and trail sections where this event is proposed to occur and add the proposed activties to be undertaken. A map of the sections can be viewed here.</label>
-                        <TrailsActivityTable :url="trails_url" :proposal="proposal"  ref="trails_table":canEditActivities="canEditActivities"></TrailsActivityTable>
+                        <TrailsActivityTable :url="trails_url" :proposal="proposal"  ref="trails_table":canEditActivities="canEditActivities" :is_internal="is_internal" :is_external="is_external"></TrailsActivityTable>
                 </div>
                 <div class="row">&nbsp;</div>
             </div> 

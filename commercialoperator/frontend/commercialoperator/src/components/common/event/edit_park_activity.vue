@@ -172,6 +172,14 @@ export default {
                 console.log(error);
             } );
         },
+        fetchAllParks_orig: function(id){
+            let vm = this;
+            vm.$http.get(api_endpoints.event_park_container).then((response) => {
+                vm.parks_list = response.body; 
+            },(error) => {
+                console.log(error);
+            } );
+        },
         fetchAllParks: function(id){
             let vm = this;
             vm.$http.get(helpers.add_endpoint_json(api_endpoints.parks,'events_parks_list')).then((response) => {

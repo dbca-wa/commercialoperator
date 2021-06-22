@@ -5654,7 +5654,7 @@ class ProposalEventsTrails(models.Model):
     proposal = models.ForeignKey(Proposal, related_name='events_trails', null=True)
     trail= models.ForeignKey(Trail, related_name='events_proposal', null=True)
     section= models.ForeignKey(Section, related_name='events_proposal', null=True)
-    #activities=models.ManyToManyField(Activity) #not used any more
+    activities_assessor=models.ManyToManyField(Activity, blank=True, null=True) #not used any more
     event_trail_activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):

@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, B
 from rest_framework.pagination import PageNumberPagination
 from django.urls import reverse
 from commercialoperator.components.main.models import Region, District, Tenure, ApplicationType, ActivityMatrix, AccessType, Park, Trail, ActivityCategory, Activity, RequiredDocument, Question, GlobalSettings
-from commercialoperator.components.main.serializers import RegionSerializer, DistrictSerializer, TenureSerializer, ApplicationTypeSerializer, ActivityMatrixSerializer,  AccessTypeSerializer, ParkSerializer, ParkFilterSerializer, TrailSerializer, ActivitySerializer, ActivityCategorySerializer, RequiredDocumentSerializer, QuestionSerializer, GlobalSettingsSerializer, OracleSerializer, BookingSettlementReportSerializer, LandActivityTabSerializer, MarineActivityTabSerializer, EventsParkSerializer, TrailTabSerializer, FilmingParkSerializer
+from commercialoperator.components.main.serializers import RegionSerializer, DistrictSerializer, TenureSerializer, ApplicationTypeSerializer, ActivityMatrixSerializer,  AccessTypeSerializer, ParkSerializer, ParkFilterSerializer, TrailSerializer, ActivitySerializer, ActivityCategorySerializer, RequiredDocumentSerializer, QuestionSerializer, GlobalSettingsSerializer, OracleSerializer, BookingSettlementReportSerializer, LandActivityTabSerializer, MarineActivityTabSerializer, EventsParkSerializer, TrailTabSerializer, FilmingParkSerializer, EventsTabSerializer
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from commercialoperator.components.proposals.models import Proposal
@@ -378,4 +378,19 @@ class TrailTabViewSet(viewsets.ReadOnlyModelViewSet):
             event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
         )
         serializer = TrailTabSerializer(container)
+        return Response(serializer.data)
+
+#To display only trails and activity types on Event activity tab
+class EventsParkTabViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A simple ViewSet for listing the various serialized viewsets in a single container
+    """
+    def list(self, request):
+        #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
+        Container = namedtuple('EventTab', ('parks', 'event_activity_types',))
+        container = Container(
+            parks=Park.objects.all().order_by('id'),
+            event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
+        )
+        serializer = EventsTabSerializer(container)
         return Response(serializer.data)

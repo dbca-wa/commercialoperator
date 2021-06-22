@@ -138,12 +138,16 @@ class SaveProposalPreEventsParksSerializer(serializers.ModelSerializer):
 class ProposalEventsTrailsSerializer(serializers.ModelSerializer):
     trail=TrailSerializer()
     section=SectionSerializer()
+    activities_assessor_names=serializers.SerializerMethodField()
     class Meta:
         model = ProposalEventsTrails
-        fields = ('id', 'trail','section',  'proposal', 'event_trail_activities')
+        fields = ('id', 'trail','section',  'proposal', 'event_trail_activities', 'activities_assessor', 'activities_assessor_names')
+
+    def get_activities_assessor_names(self,obj):
+        return [a.name for a in obj.activities_assessor.all() ] if obj.activities_assessor else None
 
 class SaveProposalEventsTrailsSerializer(serializers.ModelSerializer):
     #park=ParkFilterSerializer()
     class Meta:
         model = ProposalEventsTrails
-        fields = ('id', 'trail','proposal','section', 'event_trail_activities')
+        fields = ('id', 'trail','proposal','section', 'event_trail_activities', 'activities_assessor')
