@@ -62,7 +62,7 @@
                         <div class="">
                             <div class="row">
                                 <label class="col-sm-12"  for="Name">List the parks (terrestrial and/or marine) where this event is proposed to occur and add the proposed activities to be undertaken in each park.</label>
-                                <ParksActivityTable :url="parks_url" :proposal="proposal"  ref="parks_table":canEditActivities="canEditActivities"></ParksActivityTable>
+                                <ParksActivityTable :url="parks_url" :proposal="proposal"  ref="parks_table":canEditActivities="canEditActivities" :is_internal="is_internal" :is_external="is_external"></ParksActivityTable>
                             </div>
                             <div class="row">&nbsp;</div>
                         </div> 
