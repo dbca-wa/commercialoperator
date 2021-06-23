@@ -5542,7 +5542,7 @@ class ProposalEventsParks(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(Proposal, related_name='events_parks', null=True)
     park= models.ForeignKey(Park, related_name='events_proposal')
-    #activities=models.ManyToManyField(Activity) #not used any more
+    activities_assessor=models.ManyToManyField(Activity, null=True, blank=True) #not used any more
     event_activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):
