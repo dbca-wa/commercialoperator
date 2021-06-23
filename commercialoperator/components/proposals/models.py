@@ -5554,6 +5554,10 @@ class ProposalEventsParks(models.Model):
     # @property
     # def activities_names(self):
     #     return [a.name for a in self.activities.all()]
+    @property
+    def activities_assessor_names(self):
+        return [a.name for a in self.activities_assessor.all() ] if self.activities_assessor else None
+
 
     def add_documents(self, request):
         with transaction.atomic():
@@ -5662,6 +5666,11 @@ class ProposalEventsTrails(models.Model):
 
     class Meta:
         app_label = 'commercialoperator'
+
+    @property
+    def activities_assessor_names(self):
+        return [a.name for a in self.activities_assessor.all() ] if self.activities_assessor else None
+
 
 # --------------------------------------------------------------------------------------
 # Event Models End
