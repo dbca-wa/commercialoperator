@@ -2570,15 +2570,96 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
-
+    def reapply_event(self,request):
+        with transaction.atomic():
+            previous_proposal = self
+            previous_proposal = Proposal.objects.get(id=self.id)
+            proposal = clone_proposal_with_status_reset(previous_proposal)
+            proposal.proposal_type = 'new_proposal'
+            proposal.training_completed = False
+            #proposal.schema = ProposalType.objects.first().schema
+            ptype = ProposalType.objects.filter(name=proposal.application_type).latest('version')
+            proposal.schema = ptype.schema
+            proposal.submitter = request.user
+            #proposal.previous_application = self
+            proposal.proposed_issuance_approval= None
+            if proposal.application_type.name==ApplicationType.TCLASS:
+                # require user to re-enter mandatory info in 'Other Details' tab, when renewing
+                proposal.other_details.insurance_expiry = None
+                proposal.other_details.preferred_licence_period = None
+                proposal.other_details.nominated_start_date = None
+                ProposalAccreditation.objects.filter(proposal_other_details__proposal=proposal).delete()
+                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                # require  user to pay Application and Licence Fee again
+                proposal.fee_invoice_reference = None
+                try:
+                    ProposalOtherDetails.objects.get(proposal=proposal)
+                except ProposalOtherDetails.DoesNotExist:
+                    ProposalOtherDetails.objects.create(proposal=proposal)
+                # Create a log entry for the proposal
+                proposal.other_details.nominated_start_date=self.approval.expiry_date+ datetime.timedelta(days=1)
+                proposal.other_details.save()
+            if proposal.application_type.name==ApplicationType.FILMING:
+                proposal.filming_other_details.insurance_expiry = None
+                proposal.filming_other_details.save()
+                proposal.filming_activity.commencement_date=None
+                proposal.filming_activity.completion_date=None
+                proposal.filming_activity.save()
+                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                # require  user to pay Application and Licence Fee again
+                proposal.fee_invoice_reference = None
+            if proposal.application_type.name==ApplicationType.EVENT:
+                proposal.event_other_details.insurance_expiry = None
+                proposal.event_other_details.save()
+                proposal.event_activity.commencement_date=None
+                proposal.event_activity.completion_date=None
+                proposal.event_activity.save()
+                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                # require  user to pay Application and Licence Fee again
+                proposal.fee_invoice_reference = None
+            req=self.requirements.all().exclude(is_deleted=True)
+            from copy import deepcopy
+            if req:
+                for r in req:
+                    old_r = deepcopy(r)
+                    r.proposal = proposal
+                    r.copied_from=None
+                    r.copied_for_renewal=True
+                    if r.due_date:
+                        r.due_date=None
+                        r.require_due_date=True
+                    r.id = None
+                    r.district_proposal=None
+                    r.save()
+            #copy all the requirement documents from previous proposal
+            for requirement in proposal.requirements.all():
+                for requirement_document in RequirementDocument.objects.filter(requirement=requirement.copied_from):
+                    requirement_document.requirement = requirement
+                    requirement_document.id = None
+                    requirement_document._file.name = u'{}/proposals/{}/requirement_documents/{}'.format(settings.MEDIA_APP_DIR, proposal.id, requirement_document.name)
+                    requirement_document.can_delete = True
+                    requirement_document.save()
+                    # Create a log entry for the proposal
+            #self.log_user_action(ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),request)
+            # Create a log entry for the organisation
+            #applicant_field=getattr(self, self.applicant_field)
+            #applicant_field.log_user_action(ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),request)
+            #Log entry for approval
+            #from commercialoperator.components.approvals.models import ApprovalUserAction
+            #self.approval.log_user_action(ApprovalUserAction.ACTION_RENEW_APPROVAL.format(self.approval.id),request)
+            #proposal.save(version_comment='New Amendment/Renewal Application created, from origin {}'.format(proposal.previous_application_id))
+            #proposal.save()
+            return proposal
+        
+    
+    
 class ApplicationFeeDiscount(RevisionedMixin):
     DISCOUNT_TYPE_APPLICATION = 0
     DISCOUNT_TYPE_LICENCE = 1
     DISCOUNT_TYPE_CHOICES = (
-        (DISCOUNT_TYPE_APPLICATION, 'Discount application'),
-        (DISCOUNT_TYPE_LICENCE, 'Discount licence'),
+                (DISCOUNT_TYPE_APPLICATION, 'Discount application'),
+                (DISCOUNT_TYPE_LICENCE, 'Discount licence'),
     )
-
     proposal = models.ForeignKey(Proposal, related_name='fee_discounts', null=True)
     discount_type = models.CharField(max_length=40, choices=DISCOUNT_TYPE_CHOICES)
     discount = models.FloatField(validators=[MinValueValidator(0.0)])
@@ -2991,6 +3072,7 @@ class ProposalStandardRequirement(RevisionedMixin):
     application_type = models.ForeignKey(ApplicationType, null=True, blank=True)
     participant_number_required=models.BooleanField(default=False)
     default=models.BooleanField(default=False)
+    #require_due_date = models.BooleanField(default=False)
 
 
     def __str__(self):
@@ -3915,7 +3997,7 @@ def delete_documents(sender, instance, *args, **kwargs):
     for document in instance.documents.all():
         document.delete()
 
-def clone_proposal_with_status_reset(proposal):
+def clone_proposal_with_status_reset(proposal, copy_requirement_documents=False):
     """
     To Test:
          from commercialoperator.components.proposals.models import clone_proposal_with_status_reset
@@ -3960,7 +4042,10 @@ def clone_proposal_with_status_reset(proposal):
             proposal.save(no_revision=True)
 
             #clone_documents(proposal, original_proposal, media_prefix='media')
-            _clone_documents(proposal, original_proposal, media_prefix='media')
+            if copy_requirement_documents:
+                _clone_requirement_documents(proposal, original_proposal, media_prefix='media')
+            else:
+                _clone_documents(proposal, original_proposal, media_prefix='media')
             return proposal
         except:
             raise
@@ -4016,6 +4101,18 @@ def _clone_documents(proposal, original_proposal, media_prefix):
         proposal_document.can_delete = True
         proposal_document.save()
 
+    for proposal_required_document in ProposalRequiredDocument.objects.filter(proposal=original_proposal.id):
+        proposal_required_document.proposal = proposal
+        proposal_required_document.id = None
+        proposal_required_document._file.name = u'{}/proposals/{}/required_documents/{}'.format(settings.MEDIA_APP_DIR, proposal.id, proposal_required_document.name)
+        proposal_required_document.can_delete = True
+        proposal_required_document.save()
+
+    # copy documents on file system and reset can_delete flag
+    media_dir = '{}/{}'.format(media_prefix, settings.MEDIA_APP_DIR)
+    subprocess.call('cp -pr {0}/proposals/{1} {0}/proposals/{2}'.format(media_dir, original_proposal.id, proposal.id), shell=True)
+
+def _clone_requirement_documents(proposal, original_proposal, media_prefix):
     for proposal_required_document in ProposalRequiredDocument.objects.filter(proposal=original_proposal.id):
         proposal_required_document.proposal = proposal
         proposal_required_document.id = None
