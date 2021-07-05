@@ -152,7 +152,7 @@ class ParkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Park
         #fields=('id', 'name', 'can_edit', 'last_leaf', 'code', 'park_type', 'allowed_activities', 'zone_ids', 'adult_price', 'child_price', 'oracle_code', 'zones', 'district', 'region', 'max_group_arrival_by_date' )
-        fields=('id', 'name', 'can_edit', 'last_leaf', 'code', 'park_type', 'allowed_activities', 'zone_ids', 'adult_price', 'child_price', 'zones', 'district', 'region', 'max_group_arrival_by_date','allowed_activities_ids', 'allowed_access_ids',)
+        fields=('id', 'name', 'can_edit', 'last_leaf', 'code', 'park_type', 'allowed_activities', 'zone_ids', 'adult_price', 'child_price', 'zones', 'district', 'region', 'max_group_arrival_by_date','allowed_activities_ids', 'allowed_access_ids','visible_to_external')
 
     def get_can_edit(self, obj):
         #proposal = self.context['request'].GET.get('proposal')
@@ -340,8 +340,47 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ('id', 'question_text', 'answer_one', 'answer_two', 'answer_three', 'answer_four','correct_answer', 'correct_answer_value')
 
 
+class ExternalDistrictSerializer(serializers.ModelSerializer):
+    pk = serializers.SerializerMethodField()
+    last_leaf = serializers.SerializerMethodField()
+    is_disabled = serializers.SerializerMethodField()
+    #children = ParkSerializer2(many=True, read_only=True, source='land_parks')
+    children = ParkSerializer(many=True, read_only=True, source='land_parks_external')
+
+    class Meta:
+        model = District
+        #fields = ('id', 'name', 'land_parks', 'marine_parks')
+        fields = ('pk', 'id', 'name', 'last_leaf', 'is_disabled', 'children')
+
+    def get_pk(self, obj):
+        return obj.id
+
+    def get_last_leaf(self, obj):
+        return False
+
+    def get_is_disabled(self, obj):
+        return True if obj.parks.count()==0 else False
+
+
+class ExternalRegionSerializer(serializers.ModelSerializer):
+    pk = serializers.SerializerMethodField()
+    last_leaf = serializers.SerializerMethodField()
+    children = ExternalDistrictSerializer(many=True, read_only=True, source='districts')
+
+    class Meta:
+        model = Region
+        fields = ('pk', 'id', 'name', 'last_leaf', 'children')
+
+    def get_pk(self, obj):
+        return obj.id
+
+    def get_last_leaf(self, obj):
+        return False
+
+
 class LandActivityTabSerializer(serializers.Serializer):
     land_parks = RegionSerializer2(many=True, read_only=True, source='regions')
+    #land_parks_external = ExternalRegionSerializer(many=True, read_only=True, source='regions')
     access_types = AccessTypeSerializer(many=True, read_only=True)
     land_activity_types = ActivitySerializer(many=True, read_only=True)
     trail_activity_types = ActivitySerializer(many=True, read_only=True)
