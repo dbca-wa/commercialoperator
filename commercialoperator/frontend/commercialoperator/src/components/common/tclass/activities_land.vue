@@ -179,8 +179,11 @@ export default {
             proposal_parks:{
               type:Object,
               required:true
-            }
-
+            },
+            is_external:{
+              type: Boolean,
+              default: true
+            },
         },
         data:function () {
           let vm = this;
@@ -558,13 +561,32 @@ export default {
             //console.log('treeview_url: ' + api_endpoints.tclass_container_land)
             vm.$http.get(api_endpoints.tclass_container_land)
             .then((response) => {
-                vm.park_options = [
+                if(vm.is_external){
+                    vm.park_options = [
+                    {
+                        'id': 'All',
+                        'name':'Select all parks from all regions external',
+                        'children': response.body['land_parks'] // land_parks --> regions/districts/parks nested json
+                    }
+                  ]
+                }
+                else{
+                  vm.park_options = [
                     {
                         'id': 'All',
                         'name':'Select all parks from all regions',
                         'children': response.body['land_parks'] // land_parks --> regions/districts/parks nested json
                     }
                 ]
+
+                }
+                // vm.park_options = [
+                //     {
+                //         'id': 'All',
+                //         'name':'Select all parks from all regions',
+                //         'children': response.body['land_parks'] // land_parks --> regions/districts/parks nested json
+                //     }
+                // ]
                 vm.api_regions = response.body['land_parks']
 
                 vm.land_access_options = [
