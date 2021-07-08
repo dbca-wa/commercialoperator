@@ -123,13 +123,14 @@ class MarineActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     def list(self, request):
         #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-        Container = namedtuple('ActivityMarineTab', ('marine_activities', 'marine_parks', 'required_documents'))
+        Container = namedtuple('ActivityMarineTab', ('marine_activities', 'marine_parks', 'required_documents', 'marine_parks_external'))
         container = Container(
             #marine_activity_types=Activity.objects.filter(activity_category__activity_type='marine').order_by('id'),
             marine_activities=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
             #marine_parks=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
             marine_parks=Park.objects.filter(park_type='marine').order_by('id'),
             required_documents=RequiredDocument.objects.filter().order_by('id'),
+            marine_parks_external=Park.objects.filter(park_type='marine').exclude(visible_to_external=False).order_by('id'),
         )
         serializer = MarineActivityTabSerializer(container)
         return Response(serializer.data)

@@ -380,7 +380,7 @@ class ExternalRegionSerializer(serializers.ModelSerializer):
 
 class LandActivityTabSerializer(serializers.Serializer):
     land_parks = RegionSerializer2(many=True, read_only=True, source='regions')
-    #land_parks_external = ExternalRegionSerializer(many=True, read_only=True, source='regions')
+    land_parks_external = ExternalRegionSerializer(many=True, read_only=True, source='regions')
     access_types = AccessTypeSerializer(many=True, read_only=True)
     land_activity_types = ActivitySerializer(many=True, read_only=True)
     trail_activity_types = ActivitySerializer(many=True, read_only=True)
@@ -394,6 +394,7 @@ class MarineActivityTabSerializer(serializers.Serializer):
     required_documents = RequiredDocumentSerializer(many=True, read_only=True)
     marine_activities = ActivityCategorySerializer(many=True, read_only=True)
     marine_parks = MarineParkSerializer(many=True, read_only=True)
+    marine_parks_external=MarineParkSerializer(many=True, read_only=True)
 
 
 class BookingSettlementReportSerializer(serializers.Serializer):

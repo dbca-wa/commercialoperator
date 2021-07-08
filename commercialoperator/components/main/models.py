@@ -58,6 +58,10 @@ class District(models.Model):
     def marine_parks(self):
         return Park.objects.filter(district=self, park_type='marine')
 
+    @property
+    def marine_parks_external(self):
+        return Park.objects.filter(district=self, park_type='marine').exclude(visible_to_external=False)
+
 
 
 @python_2_unicode_compatible
