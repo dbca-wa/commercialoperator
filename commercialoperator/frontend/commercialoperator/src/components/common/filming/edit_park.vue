@@ -120,6 +120,10 @@ export default {
             type:Object,
             default:null
         },
+        is_external:{
+              type: Boolean,
+              default: false
+        },
     },
     data:function () {
         let vm = this;
@@ -213,11 +217,21 @@ export default {
         },
         fetchAllParks: function(id){
             let vm = this;
-            vm.$http.get(helpers.add_endpoint_json(api_endpoints.parks,'filming_parks_list')).then((response) => {
-                vm.all_parks = response.body; 
-            },(error) => {
-                console.log(error);
-            } );
+            if(vm.is_external){
+                vm.$http.get(helpers.add_endpoint_json(api_endpoints.parks,'filming_parks_external_list')).then((response) => {
+                    vm.all_parks = response.body; 
+                },(error) => {
+                    console.log(error);
+                } );
+
+            }
+            else{
+                vm.$http.get(helpers.add_endpoint_json(api_endpoints.parks,'filming_parks_list')).then((response) => {
+                    vm.all_parks = response.body; 
+                },(error) => {
+                    console.log(error);
+                } );
+            }
         },
 
         fetchDistrictParks: function(id){
