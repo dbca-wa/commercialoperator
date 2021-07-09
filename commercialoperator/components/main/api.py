@@ -155,6 +155,13 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = FilmingParkSerializer(self.get_queryset(),context={'request':request}, many=True)
         return Response(serializer.data)
 
+    @list_route(methods=['GET',])
+    def filming_parks_external_list(self, request, *args, **kwargs):
+        qs=self.get_queryset()
+        new_qs=qs.exclude(visible_to_external=False)
+        serializer = FilmingParkSerializer(new_qs,context={'request':request}, many=True)
+        return Response(serializer.data)
+
 
     @list_route(methods=['GET',])
     def marine_parks(self, request, *args, **kwargs):
@@ -388,9 +395,10 @@ class EventsParkTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     def list(self, request):
         #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-        Container = namedtuple('EventTab', ('parks', 'event_activity_types',))
+        Container = namedtuple('EventTab', ('parks', 'event_activity_types','parks_external'))
         container = Container(
             parks=Park.objects.all().order_by('id'),
+            parks_external=Park.objects.all().exclude(visible_to_external=False).order_by('id'),
             event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
         )
         serializer = EventsTabSerializer(container)

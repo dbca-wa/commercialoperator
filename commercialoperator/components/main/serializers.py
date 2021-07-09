@@ -106,7 +106,7 @@ class ZoneSerializer(serializers.ModelSerializer):
 class ParkFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Park
-        fields=('id', 'name', 'park_type')
+        fields=('id', 'name', 'park_type', 'visible_to_external')
 
 class MarineParkSerializer(serializers.ModelSerializer):
     can_edit = serializers.SerializerMethodField()
@@ -439,7 +439,7 @@ class FilmingParkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Park
-        fields=('id', 'name',)
+        fields=('id', 'name','visible_to_external',)
 
 
 class TrailTabSerializer(serializers.Serializer):
@@ -450,3 +450,4 @@ class TrailTabSerializer(serializers.Serializer):
 class EventsTabSerializer(serializers.Serializer):
     event_activity_types = ActivitySerializer(many=True, read_only=True)    
     parks = FilmingParkSerializer(many=True, read_only=True)
+    parks_external = FilmingParkSerializer(many=True, read_only=True)

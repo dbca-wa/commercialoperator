@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <editPark ref="edit_park" :park_id="park_id" @refreshFromResponse="refreshFromResponse" :is_internal="is_internal"></editPark>
+        <editPark ref="edit_park" :park_id="park_id" @refreshFromResponse="refreshFromResponse" :is_internal="is_internal" :is_external="is_external"></editPark>
         <!-- v-bind:key="editParkBindId" -->
     </div>
 </template> 
@@ -135,8 +135,18 @@ export default {
                         //     links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
                         // }
                         if(vm.canEditActivities){
+                            if(vm.is_external){
+                                if(full.park.visible_to_external){
+                                    links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit</a><br/>`;
+                                    links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
+                                }
+                            }
+                            else{
+
                             links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit</a><br/>`;
                             links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
+                            }
+                        
                         }
                             return links;
                         },

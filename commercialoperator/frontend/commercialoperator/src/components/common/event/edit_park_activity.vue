@@ -117,6 +117,10 @@ export default {
             type: String,
             default: 'edit'
         },
+        is_external:{
+              type: Boolean,
+              default: false
+        },
     },
     data:function () {
         let vm = this;
@@ -207,7 +211,13 @@ export default {
         fetchAllParks: function(id){
             let vm = this;
             vm.$http.get(api_endpoints.event_park_container).then((response) => {
-                vm.parks_list = response.body['parks'];
+                //vm.parks_list = response.body['parks'];
+                if(vm.is_external){
+                    vm.parks_list = response.body['parks_external'];
+                }
+                else{
+                    vm.parks_list = response.body['parks'];
+                }
                 vm.park_activities=response.body['event_activity_types'];
             },(error) => {
                 console.log(error);
