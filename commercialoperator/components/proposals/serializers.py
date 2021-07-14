@@ -1087,6 +1087,7 @@ class ProposalRequirementSerializer(serializers.ModelSerializer):
             'can_district_assessor_edit',
             'require_due_date',
             'copied_for_renewal',
+            'notification_only',
         )
         read_only_fields = ('order','requirement', 'copied_from')
 
