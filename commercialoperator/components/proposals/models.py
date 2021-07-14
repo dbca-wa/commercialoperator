@@ -3653,6 +3653,7 @@ class ProposalRequirement(OrderedModel):
     #To determing requirements related to district Proposal
     district_proposal = models.ForeignKey('DistrictProposal',null=True,blank=True,related_name='district_proposal_requirements')
     district = models.ForeignKey(District, related_name='district_requirements', null=True,blank=True)
+    notification_only = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'commercialoperator'
