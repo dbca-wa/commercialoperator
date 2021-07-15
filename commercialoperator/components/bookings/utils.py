@@ -580,7 +580,7 @@ def create_filming_fee_lines(proposal, invoice_text=None, vouchers=[], internal=
         lines_app = [
                 {
                         'ledger_description': '{} Application Fee - {}'.format(desc, proposal.lodgement_number),
-                        'oracle_code': proposal.application_type.oracle_code_licence,
+                        'oracle_code': proposal.application_type.oracle_code_application,
                         'price_incl_tax':  str(application_fee),
                         'price_excl_tax':  str(application_fee) if proposal.application_type.is_gst_exempt else str(calculate_excl_gst(application_fee)),
                         'quantity': 1
@@ -589,7 +589,7 @@ def create_filming_fee_lines(proposal, invoice_text=None, vouchers=[], internal=
         lines_parks_aggregated = [
                 {
                         'ledger_description': '{} Licence Fee ({} - {}) - {}'.format(desc, licence_text, filming_period, proposal.lodgement_number),
-                        'oracle_code': proposal.application_type.oracle_code_licence,
+                        'oracle_code': proposal.application_type.oracle_code_licence, # this line is dummy, for aggregated (externally generated) invoice
                         'price_incl_tax': str( licence_fee),
                         'price_excl_tax':  str(licence_fee) if proposal.application_type.is_gst_exempt else str(calculate_excl_gst(licence_fee)),
                         'quantity': 1
