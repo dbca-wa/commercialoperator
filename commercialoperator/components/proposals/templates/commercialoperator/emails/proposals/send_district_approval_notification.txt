@@ -3,9 +3,14 @@
 {%  block content %}
 
  
-       
+       {% if district_proposal.is_kensington_proposal %}
+
+                Your lawful authority to conduct commercial filming operations on Conservation and Land Management Act 1984 lands and waters has been approved and expires on {{approval.expiry_date}}. A copy of your lawful authority is attached to this email and can be accessed via Commercial Operator Licensing System (COLS) under your account, click {{url}} here to login.
+
+       {% else %}
         
-        Your lawful authority to conduct commercial filming operations on Conservation and Land Management Act 1984 lands and waters within the {{ district_proposal.district_name }}  district/region has been approved and expires on {{approval.expiry_date}}. A copy of your lawful authority is attached to this email and can be accessed via Commercial Operator Licensing System (COLS) under your account, click {{url}} here to login.
+                Your lawful authority to conduct commercial filming operations on Conservation and Land Management Act 1984 lands and waters within the {{ district_proposal.district_name }}  district/region has been approved and expires on {{approval.expiry_date}}. A copy of your lawful authority is attached to this email and can be accessed via Commercial Operator Licensing System (COLS) under your account, click {{url}} here to login.
+        {% endif %}
 
         If your application includes parks and reserves across multiple districts/regions, please note as each district/region provides their approval a new lawful authority will be granted with the additional parks and reserves that supersedes your previous lawful authority.
 
