@@ -2570,6 +2570,59 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
+    #Filming application method
+    #This is to show basic logic behind creating district Proposal for each district related to parks listed with Filming Application.
+    def send_to_kensington(self, request):
+        with transaction.atomic():
+            try:
+                if self.application_type.name==ApplicationType.FILMING and self.processing_status=='with_assessor':
+                    #If reissueing approval check for compare previous district proposals and new district proposals
+                    new_district_proposal_ids=[]
+                    previous_district_proposal_ids=[]
+                    if self.approval:
+                        previous_district_proposal_ids= self.district_proposals.all().values_list('id', flat=True)
+                    try:
+                        district_instance=District.objects.get(name__icontains='Kensington')
+                        district_proposal, created=DistrictProposal.objects.update_or_create(district=district_instance,proposal= self)
+                        status=district_proposal.processing_status #for reissue
+                        district_proposal.processing_status='with_assessor'
+                        district_proposal.save()
+                        new_district_proposal_ids.append(district_proposal.id)
+                        if created or status!='with_assessor' :
+                            send_district_proposal_submit_email_notification(district_proposal, request)
+                        self.processing_status='with_district_assessor'
+                        self.save()
+                        self.log_user_action(ProposalUserAction.SEND_TO_DISTRICTS.format(self.id),request)
+
+                        #for Amendment Proposal, Find the Requirements copied from previous application and assign to district Proposal according to distrcit
+                        if self.proposal_type=='amendment':
+                            for district_proposal in self.district_proposals.all():
+                                qs=self.requirements.filter(district=district_proposal.district, district_proposal__isnull=True)
+                                qs.update(district_proposal=district_proposal)
+                            #Mark the remaining requirements as deleted
+                            qs_requirements= self.requirements.filter(district_proposal__isnull=True)
+                            qs_requirements.update(is_deleted=True)
+
+                        if self.approval: #If reissuing proposal
+                            for item in previous_district_proposal_ids:
+                                if item not in new_district_proposal_ids:
+                                    instance=DistrictProposal.objects.get(id=item)
+                                    instance.processing_status='discarded' #Mark proposal as discarded
+                                    instance.save()
+                                    qs= instance.district_proposal_requirements.all()
+                                    qs.update(is_deleted=True)#Delete all the requirements
+                                    from commercialoperator.components.compliances.models import Compliance, ComplianceUserAction
+                                    due_compliances=Compliance.objects.filter(processing_status='due', district_proposal=item)
+                                    due_compliances.update(processing_status='discarded', customer_status='discarded', reminder_sent=True, post_reminder_sent=True)
+                                    future_compliances=Compliance.objects.filter(processing_status='future', district_proposal=item)
+                                    future_compliances.delete()
+                        return self
+                    except:
+                        raise
+
+            except:
+                raise
+
     def reapply_event(self,request):
         with transaction.atomic():
             previous_proposal = self
@@ -4752,23 +4805,40 @@ class ProposalFilmingParks(models.Model):
         allowed_status=['with_district_assessor', 'partially_declined', 'partially_approved']
         if self.proposal.processing_status in allowed_status:
             if self.park.district:
-                check_group = DistrictProposalAssessorGroup.objects.filter(
-                        district__name=self.park.district.name
-                    ).distinct()
-                if check_group:
-                    assessor_group = check_group[0]
-                else:
-                    assessor_group = DistrictProposalAssessorGroup.objects.get(default=True)
-
-                district_proposal=self.proposal.district_proposals.filter(district=self.park.district)
-                if district_proposal:
-                    district_proposal=district_proposal[0]
-                    if district_proposal.processing_status=='with_assessor':
+                qs=self.proposal.district_proposals.filter(district__name='Kensington')
+                if qs:
+                    kens_proposal=qs[0]
+                    check_group = DistrictProposalAssessorGroup.objects.filter(
+                            district__name='Kensington'
+                        ).distinct()
+                    if check_group:
+                        assessor_group = check_group[0]
+                    else:
+                        assessor_group = DistrictProposalAssessorGroup.objects.get(default=True)
+                    if kens_proposal.processing_status=='with_assessor':
                         return assessor_group in user.districtproposalassessorgroup_set.all()
                     else:
                         return False
+
                 else:
-                    return False
+
+                    check_group = DistrictProposalAssessorGroup.objects.filter(
+                            district__name=self.park.district.name
+                        ).distinct()
+                    if check_group:
+                        assessor_group = check_group[0]
+                    else:
+                        assessor_group = DistrictProposalAssessorGroup.objects.get(default=True)
+
+                    district_proposal=self.proposal.district_proposals.filter(district=self.park.district)
+                    if district_proposal:
+                        district_proposal=district_proposal[0]
+                        if district_proposal.processing_status=='with_assessor':
+                            return assessor_group in user.districtproposalassessorgroup_set.all()
+                        else:
+                            return False
+                    else:
+                        return False
         elif self.proposal.processing_status == 'with_assessor':
                 return self.proposal.can_assess(user)
         else:
@@ -4919,15 +4989,31 @@ class DistrictProposal(models.Model):
         #return self.region.split(',') if self.region else []
         return [self.district.name] if self.district else []
 
+    # @property
+    # def parks_list(self):
+    #     #return self.region.split(',') if self.region else []
+    #     return ProposalFilmingParks.objects.filter(park__district=self.district, proposal=self.proposal) if self.district else None
+
     @property
     def parks_list(self):
         #return self.region.split(',') if self.region else []
-        return ProposalFilmingParks.objects.filter(park__district=self.district, proposal=self.proposal) if self.district else None
+        if self.district:
+            if self.district.name=='Kensington':
+                return ProposalFilmingParks.objects.filter(proposal=self.proposal)
+            else:
+                return ProposalFilmingParks.objects.filter(park__district=self.district, proposal=self.proposal)
+        return None
+
 
     @property
     def district_name(self):
         #return self.region.split(',') if self.region else []
         return self.district.name if self.district else ''
+
+    @property
+    def is_kensington_proposal(self):
+        #return self.region.split(',') if self.region else []
+        return True if self.district and self.district.name=='Kensington' else False
 
     @property
     def submitter(self):
