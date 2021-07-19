@@ -268,10 +268,11 @@ def send_approval_eclass_renewal_email_notification(approval):
         sender_user = EmailUser.objects.get(email__icontains=sender)
     
     all_ccs = []
-    if proposal.org_applicant and proposal.org_applicant.email:
-        cc_list = proposal.org_applicant.email
-        if cc_list:
-            all_ccs = [cc_list]
+    # cc list commented below 15-Jul-2021 --> eclass renewal emails should only go to assessors
+#    if proposal.org_applicant and proposal.org_applicant.email:
+#        cc_list = proposal.org_applicant.email
+#        if cc_list:
+#            all_ccs = [cc_list]
     msg = email.send(proposal.assessor_recipients,cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
@@ -299,10 +300,11 @@ def send_approval_eclass_expiry_email_notification(approval):
         sender_user = EmailUser.objects.get(email__icontains=sender)
     
     all_ccs = []
-    if proposal.org_applicant and proposal.org_applicant.email:
-        cc_list = proposal.org_applicant.email
-        if cc_list:
-            all_ccs = [cc_list]
+    # cc list commented below 15-Jul-2021 --> eclass expiry emails should only go to assessors
+#    if proposal.org_applicant and proposal.org_applicant.email:
+#        cc_list = proposal.org_applicant.email
+#        if cc_list:
+#            all_ccs = [cc_list]
     msg = email.send(proposal.assessor_recipients,cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
