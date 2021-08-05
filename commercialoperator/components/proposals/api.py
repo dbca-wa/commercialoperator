@@ -1810,6 +1810,26 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
+    @detail_route(methods=['post'])
+    def send_to_kensington(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            instance.send_to_kensington(request)
+            #serializer = InternalProposalSerializer(instance,context={'request':request})
+            serializer_class = self.internal_serializer_class()
+            serializer = serializer_class(instance,context={'request':request})
+            return Response(serializer.data)
+        except serializers.ValidationError:
+            print(traceback.print_exc())
+            raise
+        except ValidationError as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(repr(e.error_dict))
+        except Exception as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(str(e))
+
+
 
     @detail_route(methods=['post'])
     @renderer_classes((JSONRenderer,))
@@ -1839,89 +1859,94 @@ class ProposalViewSet(viewsets.ModelViewSet):
             sub_activity2 = request.data.get('sub_activity2')
             category = request.data.get('category')
             approval_level = request.data.get('approval_level')
+            selected_copy_from = request.data.get('selected_copy_from', None)
 
             application_name = ApplicationType.objects.get(id=application_type).name
             # Get most recent versions of the Proposal Types
             qs_proposal_type = ProposalType.objects.all().order_by('name', '-version').distinct('name')
             proposal_type = qs_proposal_type.get(name=application_name)
 
+            if application_name==ApplicationType.EVENT and selected_copy_from:
+                copy_from_proposal=Proposal.objects.get(id=selected_copy_from)
+                instance=copy_from_proposal.reapply_event(request)
 
-            data = {
-                #'schema': qs_proposal_type.order_by('-version').first().schema,
-                'schema': proposal_type.schema,
-                'submitter': request.user.id,
-                'org_applicant': request.data.get('org_applicant'),
-                'application_type': application_type,
-                'region': region,
-                'district': district,
-                'activity': activity,
-                'approval_level': approval_level,
-                #'other_details': {},
-                #'tenure': tenure,
-                'data': [
-                    {
-                        u'regionActivitySection': [{
-                            'Region': Region.objects.get(id=region).name if region else None,
-                            'District': District.objects.get(id=district).name if district else None,
-                            #'Tenure': Tenure.objects.get(id=tenure).name if tenure else None,
-                            #'ApplicationType': ApplicationType.objects.get(id=application_type).name
-                            'ActivityType': activity,
-                            'Sub-activity level 1': sub_activity1,
-                            'Sub-activity level 2': sub_activity2,
-                            'Management area': category,
-                        }]
+            else:
+                data = {
+                    #'schema': qs_proposal_type.order_by('-version').first().schema,
+                    'schema': proposal_type.schema,
+                    'submitter': request.user.id,
+                    'org_applicant': request.data.get('org_applicant'),
+                    'application_type': application_type,
+                    'region': region,
+                    'district': district,
+                    'activity': activity,
+                    'approval_level': approval_level,
+                    #'other_details': {},
+                    #'tenure': tenure,
+                    'data': [
+                        {
+                            u'regionActivitySection': [{
+                                'Region': Region.objects.get(id=region).name if region else None,
+                                'District': District.objects.get(id=district).name if district else None,
+                                #'Tenure': Tenure.objects.get(id=tenure).name if tenure else None,
+                                #'ApplicationType': ApplicationType.objects.get(id=application_type).name
+                                'ActivityType': activity,
+                                'Sub-activity level 1': sub_activity1,
+                                'Sub-activity level 2': sub_activity2,
+                                'Management area': category,
+                            }]
+                        }
+
+                    ],
+                }
+                serializer = SaveProposalSerializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                #serializer.save()
+                instance=serializer.save()
+                #Create ProposalOtherDetails instance for T Class/Filming/Event licence
+                if application_name==ApplicationType.TCLASS:
+                    other_details_data={
+                        'proposal': instance.id
                     }
+                    serializer=SaveProposalOtherDetailsSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                elif application_name==ApplicationType.FILMING:
+                    other_details_data={
+                        'proposal': instance.id
+                    }
+                    #serializer=SaveProposalOtherDetailsFilmingSerializer(data=other_details_data)
+                    serializer=ProposalFilmingActivitySerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    serializer=ProposalFilmingAccessSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    serializer=ProposalFilmingEquipmentSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    serializer=ProposalFilmingOtherDetailsSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                elif application_name==ApplicationType.EVENT:
+                    other_details_data={
+                        'proposal': instance.id
+                    }
+                    serializer=ProposalEventOtherDetailsSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
 
-                ],
-            }
-            serializer = SaveProposalSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            #serializer.save()
-            instance=serializer.save()
-            #Create ProposalOtherDetails instance for T Class/Filming/Event licence
-            if application_name==ApplicationType.TCLASS:
-                other_details_data={
-                    'proposal': instance.id
-                }
-                serializer=SaveProposalOtherDetailsSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-            elif application_name==ApplicationType.FILMING:
-                other_details_data={
-                    'proposal': instance.id
-                }
-                #serializer=SaveProposalOtherDetailsFilmingSerializer(data=other_details_data)
-                serializer=ProposalFilmingActivitySerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                serializer=ProposalFilmingAccessSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                serializer=ProposalFilmingEquipmentSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                serializer=ProposalFilmingOtherDetailsSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-            elif application_name==ApplicationType.EVENT:
-                other_details_data={
-                    'proposal': instance.id
-                }
-                serializer=ProposalEventOtherDetailsSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
+                    serializer=ProposalEventActivitiesSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
 
-                serializer=ProposalEventActivitiesSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
+                    serializer=ProposalEventVehiclesVesselsSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
 
-                serializer=ProposalEventVehiclesVesselsSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-
-                serializer=ProposalEventManagementSerializer(data=other_details_data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
+                    serializer=ProposalEventManagementSerializer(data=other_details_data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
 
 
             serializer = SaveProposalSerializer(instance)

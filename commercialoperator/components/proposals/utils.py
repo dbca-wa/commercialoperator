@@ -296,7 +296,7 @@ class SpecialFieldsSearch(object):
             item_data[item['name']] = item_data_list
         return item_data
 
-def save_park_activity_data(instance,select_parks_activities, request):
+def save_park_activity_data(instance,select_parks_activities, request, assessor_save=False):
     with transaction.atomic():
         try:
             if select_parks_activities or len(select_parks_activities)==0:
@@ -396,6 +396,12 @@ def save_park_activity_data(instance,select_parks_activities, request):
                                 instance.log_user_action(ProposalUserAction.ACTION_UNLINK_ACCESS.format(d,park.park.id),request)
                     new_parks=instance.parks.filter(park__park_type='land')
                     new_parks_id=set(p.park_id for p in new_parks)
+                    if not assessor_save:
+                        internal_parks=instance.parks.filter(park__park_type='land',park__visible_to_external=False)
+                        if internal_parks:
+                            for p in internal_parks:
+                                selected_parks.append(p.park_id)
+                            #selected_parks.append(p.park_id for p in internal_parks)
                     diff_parks=set(new_parks_id).difference(set(selected_parks))
                     for d in diff_parks:
                         pk=ProposalPark.objects.get(park=d, proposal=instance)
@@ -526,7 +532,7 @@ def save_trail_section_activity_data(instance,select_trails_activities, request)
             raise
 
 
-def save_park_zone_activity_data(instance,marine_parks_activities, request):
+def save_park_zone_activity_data(instance,marine_parks_activities, request, assessor_save=False):
     with transaction.atomic():
         try:
             if marine_parks_activities or len(marine_parks_activities)==0:
@@ -619,8 +625,13 @@ def save_park_zone_activity_data(instance,marine_parks_activities, request):
                                     instance.log_user_action(ProposalUserAction.ACTION_UNLINK_ZONE.format(d, park.park.id),request)
                     new_parks=instance.parks.filter(park__park_type='marine')
                     new_parks_id=set(p.park_id for p in new_parks)
-                    diff_parks=set(new_parks_id).difference(set(selected_parks))
                     #print("new_parks", new_parks_id, "diff:", diff_parks)
+                    if not assessor_save:
+                        internal_parks=instance.parks.filter(park__park_type='marine',park__visible_to_external=False)
+                        if internal_parks:
+                            for p in internal_parks:
+                                selected_parks.append(p.park_id)
+                    diff_parks=set(new_parks_id).difference(set(selected_parks))
                     for d in diff_parks:
                         pk=ProposalPark.objects.get(park=d, proposal=instance)
                         pk.delete()
@@ -1095,6 +1106,7 @@ def save_assessor_data_tclass(instance, request, viewset):
                 schema=request.POST.get('schema')
             import json
             sc=json.loads(schema)
+            assessor_save=True
             #select_parks_activities=sc['selected_parks_activities']
             #select_trails_activities=sc['selected_trails_activities']
             try:
@@ -1114,7 +1126,7 @@ def save_assessor_data_tclass(instance, request, viewset):
             #print select_parks_activities, selected_trails_activities
             if select_parks_activities or len(select_parks_activities)==0:
                 try:
-                    save_park_activity_data(instance, select_parks_activities, request)
+                    save_park_activity_data(instance, select_parks_activities, request, assessor_save)
                 except:
                     raise
             if select_trails_activities or len(select_trails_activities)==0:
@@ -1124,7 +1136,7 @@ def save_assessor_data_tclass(instance, request, viewset):
                     raise
             if marine_parks_activities or len(marine_parks_activities)==0:
                 try:
-                    save_park_zone_activity_data(instance, marine_parks_activities, request)
+                    save_park_zone_activity_data(instance, marine_parks_activities, request, assessor_save)
                 except:
                     raise
             # Save Documents

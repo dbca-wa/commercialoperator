@@ -160,7 +160,7 @@ export default {
             return this.proposal_type == 'Amendment' ? true : false;
         },
         can_preview: function(){
-            return this.processing_status == 'With Approver' ? true : false;
+            return (this.processing_status == 'With Approver' || 'With Assessor (Requirements)') && this.approval.start_date && this.approval.expiry_date ? true : false;
         },
         preview_licence_url: function() {
           return (this.proposal_id) ? `/preview/licence-pdf/${this.proposal_id}` : '';

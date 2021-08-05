@@ -179,8 +179,11 @@ export default {
             proposal_parks:{
               type:Object,
               required:true
-            }
-
+            },
+            is_external:{
+              type: Boolean,
+              default: true
+            },
         },
         data:function () {
           let vm = this;
@@ -558,13 +561,32 @@ export default {
             //console.log('treeview_url: ' + api_endpoints.tclass_container_land)
             vm.$http.get(api_endpoints.tclass_container_land)
             .then((response) => {
-                vm.park_options = [
+                if(vm.is_external){
+                    vm.park_options = [
+                    {
+                        'id': 'All',
+                        'name':'Select all parks from all regions external',
+                        'children': response.body['land_parks_external'] // land_parks --> regions/districts/parks nested json
+                    }
+                  ]
+                }
+                else{
+                  vm.park_options = [
                     {
                         'id': 'All',
                         'name':'Select all parks from all regions',
                         'children': response.body['land_parks'] // land_parks --> regions/districts/parks nested json
                     }
                 ]
+
+                }
+                // vm.park_options = [
+                //     {
+                //         'id': 'All',
+                //         'name':'Select all parks from all regions',
+                //         'children': response.body['land_parks'] // land_parks --> regions/districts/parks nested json
+                //     }
+                // ]
                 vm.api_regions = response.body['land_parks']
 
                 vm.land_access_options = [
@@ -1034,21 +1056,24 @@ export default {
             //--end--
             if(vm.proposal_parks){
             for (var i = 0; i < vm.proposal_parks.land_parks.length; i++) {
-              var current_park=vm.proposal_parks.land_parks[i].park.id
-              var current_activities=[]
-              var current_access=[]
-              for (var j = 0; j < vm.proposal_parks.land_parks[i].land_activities.length; j++) {
-                current_activities.push(vm.proposal_parks.land_parks[i].land_activities[j].activity.id);
-              }
-               for (var k = 0; k < vm.proposal_parks.land_parks[i].access_types.length; k++){
-                current_access.push(vm.proposal_parks.land_parks[i].access_types[k].access_type.id);
+              if(vm.is_external && !vm.proposal_parks.land_parks[i].park.visible_to_external){}
+              else{
+                var current_park=vm.proposal_parks.land_parks[i].park.id
+                var current_activities=[]
+                var current_access=[]
+                for (var j = 0; j < vm.proposal_parks.land_parks[i].land_activities.length; j++) {
+                  current_activities.push(vm.proposal_parks.land_parks[i].land_activities[j].activity.id);
+                }
+                 for (var k = 0; k < vm.proposal_parks.land_parks[i].access_types.length; k++){
+                  current_access.push(vm.proposal_parks.land_parks[i].access_types[k].access_type.id);
+                 }
+                 var data={
+                  'park': current_park,
+                  'activities': current_activities,
+                  'access':current_access  
+                 }
+                 vm.selected_parks_activities.push(data)
                }
-               var data={
-                'park': current_park,
-                'activities': current_activities,
-                'access':current_access  
-               }
-               vm.selected_parks_activities.push(data)
             }
 
             var activity_list=[]
