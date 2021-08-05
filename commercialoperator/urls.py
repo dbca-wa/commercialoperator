@@ -79,6 +79,7 @@ router.register(r'required_documents', main_api.RequiredDocumentViewSet)
 router.register(r'questions', main_api.QuestionViewSet)
 router.register(r'payment', main_api.PaymentViewSet)
 router.register(r'event_trail_container', main_api.TrailTabViewSet, base_name='event_trail_container')
+router.register(r'event_park_container', main_api.EventsParkTabViewSet, base_name='event_park_container')
 
 
 # Filming

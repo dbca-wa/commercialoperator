@@ -105,7 +105,11 @@ from '@/utils/hooks'
             proposal_parks:{
               type:Object,
               required:true
-            }
+            },
+            is_external:{
+              type: Boolean,
+              default: true
+            },
         },
         data:function () {
             let vm = this;
@@ -406,7 +410,12 @@ from '@/utils/hooks'
                     }
                 ]
                 */
-                vm.marine_park_options = response.body['marine_parks']
+                if(vm.is_external){
+                  vm.marine_park_options = response.body['marine_parks_external'];
+                }
+                else{
+                  vm.marine_park_options = response.body['marine_parks'];
+                }
                 vm.marine_parks = response.body['marine_parks']
                 vm.park_map = vm.get_park_map();
                 vm.park_activities = vm.get_park_activities();
@@ -702,31 +711,35 @@ from '@/utils/hooks'
           var all_activities=[] //to store all activities for all zones so can find recurring onees to display selected_activities
           var zone_ids=[]
           for (var i = 0; i < parks.length; i++) {
-              var current_park=parks[i].park.id
-              var current_activities=[]
-              var current_zones=[]
+            if(vm.is_external && !parks[i].park.visible_to_external){}
+              else{
 
-              for (var j = 0; j < parks[i].zones.length; j++) {
-                var park_activities=[];
-                for (var k = 0; k < parks[i].zones[j].park_activities.length; k++) {
-                  park_activities.push(parks[i].zones[j].park_activities[k].activity);
+                var current_park=parks[i].park.id
+                var current_activities=[]
+                var current_zones=[]
+
+                for (var j = 0; j < parks[i].zones.length; j++) {
+                  var park_activities=[];
+                  for (var k = 0; k < parks[i].zones[j].park_activities.length; k++) {
+                    park_activities.push(parks[i].zones[j].park_activities[k].activity);
+                  }
+
+                  var data_zone={
+                    'zone': parks[i].zones[j].zone,
+                    'activities': park_activities,
+                    'access_point': parks[i].zones[j].access_point
+                  }
+                  current_activities.push(data_zone)
+                  all_activities.push({'key': park_activities})
+                  zone_ids.push(parks[i].zones[j].zone)
                 }
 
-                var data_zone={
-                  'zone': parks[i].zones[j].zone,
-                  'activities': park_activities,
-                  'access_point': parks[i].zones[j].access_point
-                }
-                current_activities.push(data_zone)
-                all_activities.push({'key': park_activities})
-                zone_ids.push(parks[i].zones[j].zone)
+                 var data={
+                  'park': current_park,
+                  'activities': current_activities 
+                 }
+                 vm.marine_parks_activities.push(data)
               }
-
-               var data={
-                'park': current_park,
-                'activities': current_activities 
-               }
-               vm.marine_parks_activities.push(data)
             }
 
           vm.selected_zone_ids=zone_ids

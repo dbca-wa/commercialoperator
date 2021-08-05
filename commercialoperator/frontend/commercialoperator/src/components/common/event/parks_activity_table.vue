@@ -15,7 +15,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-12">
-                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_park_maps" :id="'proposal'+proposal.id" :readonly="proposal.readonly"></FileField>    
+                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_park_maps" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="event_park_maps"></FileField>    
                 </div>
             </div>
 
@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <editPark ref="edit_park" :park_id="park_id" @refreshFromResponse="refreshFromResponse" ></editPark>
+        <editPark ref="edit_park" :park_id="park_id" @refreshFromResponse="refreshFromResponse" :is_internal="is_internal" :is_external="is_external"></editPark>
         <!-- v-bind:key="editParkBindId" -->
     </div>
 </template> 
@@ -60,6 +60,14 @@ export default {
               type: Boolean,
               default: true
         },
+        is_internal:{
+              type: Boolean,
+              default: false
+        },
+        is_external:{
+              type: Boolean,
+              default: false
+        },
     },
     data() {
         let vm = this;
@@ -74,7 +82,7 @@ export default {
             uuid: 0,
             // Filters for Parks
             //park_headers:["Park or Reserve","Activities","Itinerary/ Maps","Action"],
-            park_headers:["Park or Reserve","Activities","Action"],
+            park_headers:["Park or Reserve","Activities (application)","Activities (assessor)","Action"],
             park_options:{
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
@@ -104,6 +112,10 @@ export default {
 
                         //name: "park__activity",
                     },
+                    {
+                        data: "activities_assessor_names",
+
+                    },
                     // {
                     //     data: 'events_park_documents',
                     //     mRender:function (data,type,full) {
@@ -123,8 +135,18 @@ export default {
                         //     links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
                         // }
                         if(vm.canEditActivities){
-                            links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit Park</a><br/>`;
+                            if(vm.is_external){
+                                if(full.park.visible_to_external){
+                                    links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit</a><br/>`;
+                                    links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
+                                }
+                            }
+                            else{
+
+                            links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit</a><br/>`;
                             links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
+                            }
+                        
                         }
                             return links;
                         },
@@ -143,9 +165,9 @@ export default {
     watch:{
     },
     computed: {
-        is_external: function(){
-            return this.level == 'external';
-        },
+        // is_external: function(){
+        //     return this.level == 'external';
+        // },
         editParkBindId: function(){
             let edit_park_bind_id='';
             edit_park_bind_id='editPark' + parseInt(this.uuid);
@@ -251,7 +273,7 @@ export default {
             vm.initialiseSearch();
         });
         if(vm.is_external){
-            var column = vm.$refs.park_datatable.vmDataTable.columns(8); //Hide 'Assigned To column for external'
+            var column = vm.$refs.park_datatable.vmDataTable.columns(2); 
             column.visible(false);
         }
         
