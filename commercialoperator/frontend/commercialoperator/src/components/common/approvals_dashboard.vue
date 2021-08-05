@@ -317,6 +317,11 @@ export default {
                                         tick: icon
                                     });
                             }
+                            if(full.requirement_docs){
+                                _.forEach(full.requirement_docs, function (item) {
+                                    result += `<br><a href="${item[1]}" target="_blank">${item[0]}</a>`;
+                                });
+                            }
                             return result;
                         },
                         'createdCell': helpers.dtPopoverCellFn,

@@ -58,6 +58,16 @@
                                 <div class="form-group">
                                     <div class="row">
                                         <div class="col-sm-3">
+                                            <label class="control-label pull-left"  for="Name">Notification only</label>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <label class="checkbox-inline"><input type="checkbox" v-model="requirement.notification_only"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-3">
                                             <label class="control-label pull-left"  for="Name">Recurrence</label>
                                         </div>
                                         <div class="col-sm-9">

@@ -526,13 +526,16 @@ export default {
       if(vm.proposal.event_activity.commencement_date =='' || vm.proposal.event_activity.commencement_date ==null || vm.proposal.event_activity.completion_date =='' || vm.proposal.event_activity.completion_date ==''){
         blank_fields.push(' Period of proposed event is required')
       }
+      if(vm.$refs.proposal_event.$refs.event_activities.$refs.parks_table.$refs.event_park_maps.documents.length==0){
+            blank_fields.push(' A detailed itinerary and map of the event route document is missing')
+      }
       if(vm.proposal.event_activity.pdswa_location){
         if(vm.$refs.proposal_event.$refs.event_activities.$refs.event_activity_pdswa_file.documents.length==0){
             blank_fields.push(' Department of Water and Environmental Regulation application form document is missing')
           }
       }
       if(vm.proposal.event_management.num_spectators==null||vm.proposal.event_management.num_spectators==''){
-        blank_fields.push(' Number of participants expected is missing')
+        blank_fields.push(' Number of spectators expected is missing')
       }
       if(vm.proposal.event_management.num_officials==null||vm.proposal.event_management.num_officials==''){
         blank_fields.push(' Number of officials expected is missing')

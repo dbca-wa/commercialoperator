@@ -2031,7 +2031,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         from commercialoperator.components.approvals.models import PreviewTempApproval
         with transaction.atomic():
             try:
-                if self.processing_status != 'with_approver':
+                #if self.processing_status != 'with_assessor_requirements' or self.processing_status != 'with_approver':
+                if not (self.processing_status == 'with_assessor_requirements' or self.processing_status == 'with_approver'):
                     raise ValidationError('Licence preview only available when processing status is with_approver. Current status {}'.format(self.processing_status))
                 if not self.can_assess(request.user):
                     raise exceptions.ProposalNotAuthorized()
@@ -2569,15 +2570,149 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
+    #Filming application method
+    #This is to show basic logic behind creating district Proposal for each district related to parks listed with Filming Application.
+    def send_to_kensington(self, request):
+        with transaction.atomic():
+            try:
+                if self.application_type.name==ApplicationType.FILMING and self.processing_status=='with_assessor':
+                    #If reissueing approval check for compare previous district proposals and new district proposals
+                    new_district_proposal_ids=[]
+                    previous_district_proposal_ids=[]
+                    if self.approval:
+                        previous_district_proposal_ids= self.district_proposals.all().values_list('id', flat=True)
+                    try:
+                        district_instance=District.objects.get(name__icontains='Kensington')
+                        district_proposal, created=DistrictProposal.objects.update_or_create(district=district_instance,proposal= self)
+                        status=district_proposal.processing_status #for reissue
+                        district_proposal.processing_status='with_assessor'
+                        district_proposal.save()
+                        new_district_proposal_ids.append(district_proposal.id)
+                        if created or status!='with_assessor' :
+                            send_district_proposal_submit_email_notification(district_proposal, request)
+                        self.processing_status='with_district_assessor'
+                        self.save()
+                        self.log_user_action(ProposalUserAction.SEND_TO_DISTRICTS.format(self.id),request)
 
+                        #for Amendment Proposal, Find the Requirements copied from previous application and assign to district Proposal according to distrcit
+                        if self.proposal_type=='amendment':
+                            for district_proposal in self.district_proposals.all():
+                                qs=self.requirements.filter(district=district_proposal.district, district_proposal__isnull=True)
+                                qs.update(district_proposal=district_proposal)
+                            #Mark the remaining requirements as deleted
+                            qs_requirements= self.requirements.filter(district_proposal__isnull=True)
+                            qs_requirements.update(is_deleted=True)
+
+                        if self.approval: #If reissuing proposal
+                            for item in previous_district_proposal_ids:
+                                if item not in new_district_proposal_ids:
+                                    instance=DistrictProposal.objects.get(id=item)
+                                    instance.processing_status='discarded' #Mark proposal as discarded
+                                    instance.save()
+                                    qs= instance.district_proposal_requirements.all()
+                                    qs.update(is_deleted=True)#Delete all the requirements
+                                    from commercialoperator.components.compliances.models import Compliance, ComplianceUserAction
+                                    due_compliances=Compliance.objects.filter(processing_status='due', district_proposal=item)
+                                    due_compliances.update(processing_status='discarded', customer_status='discarded', reminder_sent=True, post_reminder_sent=True)
+                                    future_compliances=Compliance.objects.filter(processing_status='future', district_proposal=item)
+                                    future_compliances.delete()
+                        return self
+                    except:
+                        raise
+
+            except:
+                raise
+
+    def reapply_event(self,request):
+        with transaction.atomic():
+            previous_proposal = self
+            previous_proposal = Proposal.objects.get(id=self.id)
+            proposal = clone_proposal_with_status_reset(previous_proposal)
+            proposal.proposal_type = 'new_proposal'
+            proposal.training_completed = False
+            #proposal.schema = ProposalType.objects.first().schema
+            ptype = ProposalType.objects.filter(name=proposal.application_type).latest('version')
+            proposal.schema = ptype.schema
+            proposal.submitter = request.user
+            #proposal.previous_application = self
+            proposal.proposed_issuance_approval= None
+            if proposal.application_type.name==ApplicationType.TCLASS:
+                # require user to re-enter mandatory info in 'Other Details' tab, when renewing
+                proposal.other_details.insurance_expiry = None
+                proposal.other_details.preferred_licence_period = None
+                proposal.other_details.nominated_start_date = None
+                ProposalAccreditation.objects.filter(proposal_other_details__proposal=proposal).delete()
+                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                # require  user to pay Application and Licence Fee again
+                proposal.fee_invoice_reference = None
+                try:
+                    ProposalOtherDetails.objects.get(proposal=proposal)
+                except ProposalOtherDetails.DoesNotExist:
+                    ProposalOtherDetails.objects.create(proposal=proposal)
+                # Create a log entry for the proposal
+                proposal.other_details.nominated_start_date=self.approval.expiry_date+ datetime.timedelta(days=1)
+                proposal.other_details.save()
+            if proposal.application_type.name==ApplicationType.FILMING:
+                proposal.filming_other_details.insurance_expiry = None
+                proposal.filming_other_details.save()
+                proposal.filming_activity.commencement_date=None
+                proposal.filming_activity.completion_date=None
+                proposal.filming_activity.save()
+                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                # require  user to pay Application and Licence Fee again
+                proposal.fee_invoice_reference = None
+            if proposal.application_type.name==ApplicationType.EVENT:
+                proposal.event_other_details.insurance_expiry = None
+                proposal.event_other_details.save()
+                proposal.event_activity.commencement_date=None
+                proposal.event_activity.completion_date=None
+                proposal.event_activity.save()
+                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                # require  user to pay Application and Licence Fee again
+                proposal.fee_invoice_reference = None
+            req=self.requirements.all().exclude(is_deleted=True)
+            from copy import deepcopy
+            if req:
+                for r in req:
+                    old_r = deepcopy(r)
+                    r.proposal = proposal
+                    r.copied_from=None
+                    r.copied_for_renewal=True
+                    if r.due_date:
+                        r.due_date=None
+                        r.require_due_date=True
+                    r.id = None
+                    r.district_proposal=None
+                    r.save()
+            #copy all the requirement documents from previous proposal
+            for requirement in proposal.requirements.all():
+                for requirement_document in RequirementDocument.objects.filter(requirement=requirement.copied_from):
+                    requirement_document.requirement = requirement
+                    requirement_document.id = None
+                    requirement_document._file.name = u'{}/proposals/{}/requirement_documents/{}'.format(settings.MEDIA_APP_DIR, proposal.id, requirement_document.name)
+                    requirement_document.can_delete = True
+                    requirement_document.save()
+                    # Create a log entry for the proposal
+            #self.log_user_action(ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),request)
+            # Create a log entry for the organisation
+            #applicant_field=getattr(self, self.applicant_field)
+            #applicant_field.log_user_action(ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),request)
+            #Log entry for approval
+            #from commercialoperator.components.approvals.models import ApprovalUserAction
+            #self.approval.log_user_action(ApprovalUserAction.ACTION_RENEW_APPROVAL.format(self.approval.id),request)
+            #proposal.save(version_comment='New Amendment/Renewal Application created, from origin {}'.format(proposal.previous_application_id))
+            #proposal.save()
+            return proposal
+        
+    
+    
 class ApplicationFeeDiscount(RevisionedMixin):
     DISCOUNT_TYPE_APPLICATION = 0
     DISCOUNT_TYPE_LICENCE = 1
     DISCOUNT_TYPE_CHOICES = (
-        (DISCOUNT_TYPE_APPLICATION, 'Discount application'),
-        (DISCOUNT_TYPE_LICENCE, 'Discount licence'),
+                (DISCOUNT_TYPE_APPLICATION, 'Discount application'),
+                (DISCOUNT_TYPE_LICENCE, 'Discount licence'),
     )
-
     proposal = models.ForeignKey(Proposal, related_name='fee_discounts', null=True)
     discount_type = models.CharField(max_length=40, choices=DISCOUNT_TYPE_CHOICES)
     discount = models.FloatField(validators=[MinValueValidator(0.0)])
@@ -2990,6 +3125,7 @@ class ProposalStandardRequirement(RevisionedMixin):
     application_type = models.ForeignKey(ApplicationType, null=True, blank=True)
     participant_number_required=models.BooleanField(default=False)
     default=models.BooleanField(default=False)
+    #require_due_date = models.BooleanField(default=False)
 
 
     def __str__(self):
@@ -3570,6 +3706,7 @@ class ProposalRequirement(OrderedModel):
     #To determing requirements related to district Proposal
     district_proposal = models.ForeignKey('DistrictProposal',null=True,blank=True,related_name='district_proposal_requirements')
     district = models.ForeignKey(District, related_name='district_requirements', null=True,blank=True)
+    notification_only = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'commercialoperator'
@@ -3914,7 +4051,7 @@ def delete_documents(sender, instance, *args, **kwargs):
     for document in instance.documents.all():
         document.delete()
 
-def clone_proposal_with_status_reset(proposal):
+def clone_proposal_with_status_reset(proposal, copy_requirement_documents=False):
     """
     To Test:
          from commercialoperator.components.proposals.models import clone_proposal_with_status_reset
@@ -3959,7 +4096,10 @@ def clone_proposal_with_status_reset(proposal):
             proposal.save(no_revision=True)
 
             #clone_documents(proposal, original_proposal, media_prefix='media')
-            _clone_documents(proposal, original_proposal, media_prefix='media')
+            if copy_requirement_documents:
+                _clone_requirement_documents(proposal, original_proposal, media_prefix='media')
+            else:
+                _clone_documents(proposal, original_proposal, media_prefix='media')
             return proposal
         except:
             raise
@@ -4015,6 +4155,18 @@ def _clone_documents(proposal, original_proposal, media_prefix):
         proposal_document.can_delete = True
         proposal_document.save()
 
+    for proposal_required_document in ProposalRequiredDocument.objects.filter(proposal=original_proposal.id):
+        proposal_required_document.proposal = proposal
+        proposal_required_document.id = None
+        proposal_required_document._file.name = u'{}/proposals/{}/required_documents/{}'.format(settings.MEDIA_APP_DIR, proposal.id, proposal_required_document.name)
+        proposal_required_document.can_delete = True
+        proposal_required_document.save()
+
+    # copy documents on file system and reset can_delete flag
+    media_dir = '{}/{}'.format(media_prefix, settings.MEDIA_APP_DIR)
+    subprocess.call('cp -pr {0}/proposals/{1} {0}/proposals/{2}'.format(media_dir, original_proposal.id, proposal.id), shell=True)
+
+def _clone_requirement_documents(proposal, original_proposal, media_prefix):
     for proposal_required_document in ProposalRequiredDocument.objects.filter(proposal=original_proposal.id):
         proposal_required_document.proposal = proposal
         proposal_required_document.id = None
@@ -4653,23 +4805,40 @@ class ProposalFilmingParks(models.Model):
         allowed_status=['with_district_assessor', 'partially_declined', 'partially_approved']
         if self.proposal.processing_status in allowed_status:
             if self.park.district:
-                check_group = DistrictProposalAssessorGroup.objects.filter(
-                        district__name=self.park.district.name
-                    ).distinct()
-                if check_group:
-                    assessor_group = check_group[0]
-                else:
-                    assessor_group = DistrictProposalAssessorGroup.objects.get(default=True)
-
-                district_proposal=self.proposal.district_proposals.filter(district=self.park.district)
-                if district_proposal:
-                    district_proposal=district_proposal[0]
-                    if district_proposal.processing_status=='with_assessor':
+                qs=self.proposal.district_proposals.filter(district__name='Kensington')
+                if qs:
+                    kens_proposal=qs[0]
+                    check_group = DistrictProposalAssessorGroup.objects.filter(
+                            district__name='Kensington'
+                        ).distinct()
+                    if check_group:
+                        assessor_group = check_group[0]
+                    else:
+                        assessor_group = DistrictProposalAssessorGroup.objects.get(default=True)
+                    if kens_proposal.processing_status=='with_assessor':
                         return assessor_group in user.districtproposalassessorgroup_set.all()
                     else:
                         return False
+
                 else:
-                    return False
+
+                    check_group = DistrictProposalAssessorGroup.objects.filter(
+                            district__name=self.park.district.name
+                        ).distinct()
+                    if check_group:
+                        assessor_group = check_group[0]
+                    else:
+                        assessor_group = DistrictProposalAssessorGroup.objects.get(default=True)
+
+                    district_proposal=self.proposal.district_proposals.filter(district=self.park.district)
+                    if district_proposal:
+                        district_proposal=district_proposal[0]
+                        if district_proposal.processing_status=='with_assessor':
+                            return assessor_group in user.districtproposalassessorgroup_set.all()
+                        else:
+                            return False
+                    else:
+                        return False
         elif self.proposal.processing_status == 'with_assessor':
                 return self.proposal.can_assess(user)
         else:
@@ -4820,15 +4989,31 @@ class DistrictProposal(models.Model):
         #return self.region.split(',') if self.region else []
         return [self.district.name] if self.district else []
 
+    # @property
+    # def parks_list(self):
+    #     #return self.region.split(',') if self.region else []
+    #     return ProposalFilmingParks.objects.filter(park__district=self.district, proposal=self.proposal) if self.district else None
+
     @property
     def parks_list(self):
         #return self.region.split(',') if self.region else []
-        return ProposalFilmingParks.objects.filter(park__district=self.district, proposal=self.proposal) if self.district else None
+        if self.district:
+            if self.district.name=='Kensington':
+                return ProposalFilmingParks.objects.filter(proposal=self.proposal)
+            else:
+                return ProposalFilmingParks.objects.filter(park__district=self.district, proposal=self.proposal)
+        return None
+
 
     @property
     def district_name(self):
         #return self.region.split(',') if self.region else []
         return self.district.name if self.district else ''
+
+    @property
+    def is_kensington_proposal(self):
+        #return self.region.split(',') if self.region else []
+        return True if self.district and self.district.name=='Kensington' else False
 
     @property
     def submitter(self):
@@ -5541,7 +5726,7 @@ class ProposalEventsParks(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(Proposal, related_name='events_parks', null=True)
     park= models.ForeignKey(Park, related_name='events_proposal')
-    #activities=models.ManyToManyField(Activity) #not used any more
+    activities_assessor=models.ManyToManyField(Activity, null=True, blank=True) #not used any more
     event_activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):
@@ -5553,6 +5738,10 @@ class ProposalEventsParks(models.Model):
     # @property
     # def activities_names(self):
     #     return [a.name for a in self.activities.all()]
+    @property
+    def activities_assessor_names(self):
+        return [a.name for a in self.activities_assessor.all() ] if self.activities_assessor else None
+
 
     def add_documents(self, request):
         with transaction.atomic():
@@ -5653,7 +5842,7 @@ class ProposalEventsTrails(models.Model):
     proposal = models.ForeignKey(Proposal, related_name='events_trails', null=True)
     trail= models.ForeignKey(Trail, related_name='events_proposal', null=True)
     section= models.ForeignKey(Section, related_name='events_proposal', null=True)
-    #activities=models.ManyToManyField(Activity) #not used any more
+    activities_assessor=models.ManyToManyField(Activity, blank=True, null=True) #not used any more
     event_trail_activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):
@@ -5661,6 +5850,11 @@ class ProposalEventsTrails(models.Model):
 
     class Meta:
         app_label = 'commercialoperator'
+
+    @property
+    def activities_assessor_names(self):
+        return [a.name for a in self.activities_assessor.all() ] if self.activities_assessor else None
+
 
 # --------------------------------------------------------------------------------------
 # Event Models End

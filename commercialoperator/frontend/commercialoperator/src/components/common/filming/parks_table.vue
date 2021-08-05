@@ -14,7 +14,7 @@
                 </div>
             </div>
         </div>
-        <editPark ref="edit_park" :park_id="park_id" @refreshFromResponse="refreshFromResponse" :district_proposal="district_proposal"></editPark>
+        <editPark ref="edit_park" :park_id="park_id" @refreshFromResponse="refreshFromResponse" :district_proposal="district_proposal" :is_external="is_external"></editPark>
     </div>
 </template> 
 <script>
@@ -144,7 +144,7 @@ export default {
                         mRender:function (data,type,full) {
                             let links = '';
                             if(vm.is_external){
-                                if(!vm.proposal.readonly){
+                                if(!vm.proposal.readonly && full.park.visible_to_external){
                                 links +=  `<a href='#${full.id}' data-edit-park='${full.id}'>Edit Park</a><br/>`;
                                 links +=  `<a href='#${full.id}' data-discard-park='${full.id}'>Discard</a><br/>`;
                                 }

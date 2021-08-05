@@ -51,8 +51,16 @@ class District(models.Model):
         return Park.objects.filter(district=self, park_type='land')
 
     @property
+    def land_parks_external(self):
+        return Park.objects.filter(district=self, park_type='land').exclude(visible_to_external=False)
+
+    @property
     def marine_parks(self):
         return Park.objects.filter(district=self, park_type='marine')
+
+    @property
+    def marine_parks_external(self):
+        return Park.objects.filter(district=self, park_type='marine').exclude(visible_to_external=False)
 
 
 
@@ -92,6 +100,7 @@ class ActivityCategory(models.Model):
         ('land', 'Land'),
         ('marine', 'Marine'),
         ('Film', 'Film'),
+        ('event', 'Event'),
     )
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
@@ -144,6 +153,7 @@ class Park(models.Model):
     # editable=False --> related to invoice PDF generation, currently GST is computed assuming GST is payable for ALL parks.
     # Must fix invoice calc. GST per park in pdf line_items, for net GST if editable is to be set to True
     is_gst_exempt = models.BooleanField(default=False, editable=False)
+    visible_to_external= models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name']
