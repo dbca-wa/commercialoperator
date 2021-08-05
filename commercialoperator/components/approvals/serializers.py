@@ -143,6 +143,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
     can_extend = serializers.SerializerMethodField()
     is_assessor = serializers.SerializerMethodField()
     is_approver = serializers.SerializerMethodField()
+    requirement_docs=serializers.SerializerMethodField()
 
     class Meta:
         model = Approval
@@ -191,6 +192,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
             'can_reissue_lawful_authority',
             'is_lawful_authority',
             'is_lawful_authority_finalised',
+            'requirement_docs'
         )
         # the serverSide functionality of datatables is such that only columns that have field 'data' defined are requested from the serializer. We
         # also require the following additional fields for some of the mRender functions
@@ -227,6 +229,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
             'can_reissue_lawful_authority',
             'is_lawful_authority',
             'is_lawful_authority_finalised',
+            'requirement_docs',
         )
 
     def get_linked_applications(self,obj):
@@ -276,6 +279,11 @@ class ApprovalSerializer(serializers.ModelSerializer):
         request = self.context['request']
         user = request.user
         return obj.is_approver(user)
+
+    def get_requirement_docs(self,obj):
+        if  obj.requirement_docs:
+            return [[d.name,d._file.url] for d in obj.requirement_docs]
+        return None
 
 class ApprovalExtendSerializer(serializers.Serializer):
     extend_details = serializers.CharField()

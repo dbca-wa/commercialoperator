@@ -345,7 +345,7 @@
                                 </div>
                               </div>
                               <div class="form-group">
-                                <label for="" class="col-sm-2 control-label" >ABN/ACN <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="bottom" style="color:blue" title="If you are applying as a sole trader please supply your ABN.">&nbsp;</i></label>
+                                <label for="" class="col-sm-2 control-label" >ABN/ACN <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="bottom" style="color:blue" title="If you are applying as a sole trader please supply your ABN. If your businesses is not registered within Australia, please include the business registration number from the country the business is registered.">&nbsp;</i></label>
                                 <div class="col-sm-6">
                                     <input type="text" class="form-control" name="abn" v-model="newOrg.abn" placeholder="" style="width: 40%">
                                 </div>

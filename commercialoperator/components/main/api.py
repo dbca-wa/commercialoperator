@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, B
 from rest_framework.pagination import PageNumberPagination
 from django.urls import reverse
 from commercialoperator.components.main.models import Region, District, Tenure, ApplicationType, ActivityMatrix, AccessType, Park, Trail, ActivityCategory, Activity, RequiredDocument, Question, GlobalSettings
-from commercialoperator.components.main.serializers import RegionSerializer, DistrictSerializer, TenureSerializer, ApplicationTypeSerializer, ActivityMatrixSerializer,  AccessTypeSerializer, ParkSerializer, ParkFilterSerializer, TrailSerializer, ActivitySerializer, ActivityCategorySerializer, RequiredDocumentSerializer, QuestionSerializer, GlobalSettingsSerializer, OracleSerializer, BookingSettlementReportSerializer, LandActivityTabSerializer, MarineActivityTabSerializer, EventsParkSerializer, TrailTabSerializer, FilmingParkSerializer
+from commercialoperator.components.main.serializers import RegionSerializer, DistrictSerializer, TenureSerializer, ApplicationTypeSerializer, ActivityMatrixSerializer,  AccessTypeSerializer, ParkSerializer, ParkFilterSerializer, TrailSerializer, ActivitySerializer, ActivityCategorySerializer, RequiredDocumentSerializer, QuestionSerializer, GlobalSettingsSerializer, OracleSerializer, BookingSettlementReportSerializer, LandActivityTabSerializer, MarineActivityTabSerializer, EventsParkSerializer, TrailTabSerializer, FilmingParkSerializer, EventsTabSerializer
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from commercialoperator.components.proposals.models import Proposal
@@ -123,13 +123,14 @@ class MarineActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     def list(self, request):
         #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-        Container = namedtuple('ActivityMarineTab', ('marine_activities', 'marine_parks', 'required_documents'))
+        Container = namedtuple('ActivityMarineTab', ('marine_activities', 'marine_parks', 'required_documents', 'marine_parks_external'))
         container = Container(
             #marine_activity_types=Activity.objects.filter(activity_category__activity_type='marine').order_by('id'),
             marine_activities=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
             #marine_parks=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
             marine_parks=Park.objects.filter(park_type='marine').order_by('id'),
             required_documents=RequiredDocument.objects.filter().order_by('id'),
+            marine_parks_external=Park.objects.filter(park_type='marine').exclude(visible_to_external=False).order_by('id'),
         )
         serializer = MarineActivityTabSerializer(container)
         return Response(serializer.data)
@@ -152,6 +153,13 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(methods=['GET',])
     def filming_parks_list(self, request, *args, **kwargs):
         serializer = FilmingParkSerializer(self.get_queryset(),context={'request':request}, many=True)
+        return Response(serializer.data)
+
+    @list_route(methods=['GET',])
+    def filming_parks_external_list(self, request, *args, **kwargs):
+        qs=self.get_queryset()
+        new_qs=qs.exclude(visible_to_external=False)
+        serializer = FilmingParkSerializer(new_qs,context={'request':request}, many=True)
         return Response(serializer.data)
 
 
@@ -371,10 +379,27 @@ class TrailTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     def list(self, request):
         #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-        Container = namedtuple('TrailTab', ('land_activity_types', 'trails',))
+        Container = namedtuple('TrailTab', ('land_activity_types', 'trails', 'event_activity_types',))
         container = Container(
             land_activity_types=Activity.objects.filter(activity_category__activity_type='land').order_by('id'),
             trails=Trail.objects.all().order_by('id'),
+            event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
         )
         serializer = TrailTabSerializer(container)
+        return Response(serializer.data)
+
+#To display only trails and activity types on Event activity tab
+class EventsParkTabViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A simple ViewSet for listing the various serialized viewsets in a single container
+    """
+    def list(self, request):
+        #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
+        Container = namedtuple('EventTab', ('parks', 'event_activity_types','parks_external'))
+        container = Container(
+            parks=Park.objects.all().order_by('id'),
+            parks_external=Park.objects.all().exclude(visible_to_external=False).order_by('id'),
+            event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
+        )
+        serializer = EventsTabSerializer(container)
         return Response(serializer.data)
