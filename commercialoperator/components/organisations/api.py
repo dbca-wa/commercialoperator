@@ -994,17 +994,36 @@ class OrganisationAccessGroupMembers(views.APIView):
 
 
 class OrganisationContactViewSet(viewsets.ModelViewSet):
-	serializer_class = OrganisationContactSerializer
-	queryset = OrganisationContact.objects.all()
+        serializer_class = OrganisationContactSerializer
+        queryset = OrganisationContact.objects.all()
 
-	def get_queryset(self):
-		user = self.request.user
-		if is_internal(self.request):
-			return OrganisationContact.objects.all()
-		elif is_customer(self.request):
-			user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
-			return OrganisationContact.objects.filter( Q(organisation_id__in = user_orgs) )
-		return OrganisationContact.objects.none()
+        def get_queryset(self):
+            user = self.request.user
+            if is_internal(self.request):
+                return OrganisationContact.objects.all()
+            elif is_customer(self.request):
+                user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+                return OrganisationContact.objects.filter( Q(organisation_id__in = user_orgs) )
+            return OrganisationContact.objects.none()
+
+        def destroy(self, request, *args, **kwargs):
+            """ delete an Organisation contact """
+            num_admins = self.get_object().organisation.contacts.filter(is_admin=True).count()
+            org_contact =  self.get_object().organisation.contacts.get(id=kwargs['pk'])
+            if num_admins == 1 and org_contact.is_admin:
+                raise serializers.ValidationError('Cannot delete the last Organisation Admin')
+            return super(OrganisationContactViewSet, self).destroy(request, *args, **kwargs)
+
+        def create(self, request, *args, **kwargs):
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            if 'contact_form' in request.data.get('user_status'):
+                serializer.save(user_status='contact_form')
+            else:
+                serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class MyOrganisationsViewSet(viewsets.ModelViewSet):
 	queryset = Organisation.objects.all()
