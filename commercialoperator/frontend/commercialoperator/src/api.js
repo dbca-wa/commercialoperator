@@ -43,6 +43,7 @@ module.exports = {
     assessments:"/api/assessments.json",
     event_trail_container:"/api/event_trail_container",
     event_park_container:"/api/event_park_container",
+    overdue_invoices:"/api/overdue_invoices.json",
     
     //filming
     proposal_filming_parks:"/api/proposal_filming_parks.json",

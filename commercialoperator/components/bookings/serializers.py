@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 from ledger.accounts.models import EmailUser,Address
 from ledger.payments.invoice.models import Invoice
 from commercialoperator.components.proposals.serializers import ProposalSerializer, InternalProposalSerializer, ProposalParkSerializer
@@ -149,6 +150,30 @@ class BookingSerializer(serializers.ModelSerializer):
         else:
             # if no invoice exists, likely this is booking is for monthly_invoicing
             return obj.get_booking_type_display()
+ 
+
+class OverdueBookingInvoiceSerializer(serializers.ModelSerializer):
+    invoice_reference = serializers.SerializerMethodField(read_only=True)
+    overdue = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = BookingInvoice
+        fields = (
+            'id',
+            'invoice_reference',
+            'overdue',
+        )
+
+    def get_invoice_reference(self,obj):
+        if obj and obj.booking.invoices.last():
+            return obj.booking.invoices.last().invoice_reference
+        return None
+
+    def get_overdue(self,obj):
+        if obj and obj.booking.invoices.last():
+            bi = obj.booking.invoices.last()
+            return bi.overdue
+        return None
 
 
 class DTBookingSerializer(serializers.ModelSerializer):

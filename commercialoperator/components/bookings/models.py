@@ -332,7 +332,7 @@ class BookingInvoice(RevisionedMixin):
 
     @property
     def overdue(self):
-        if self.invoice and self.invoice.settlement_date and (self.invoice.payment_status == 'unpaid' or self.invoice.payment_status == 'partially_paid') and self.invoice.settlement_date<timezone.now().date():
+        if self.invoice and self.deferred_payment_date and (self.invoice.payment_status == 'unpaid' or self.invoice.payment_status == 'partially_paid') and self.deferred_payment_date<timezone.now().date():
             return True
         return False
 
