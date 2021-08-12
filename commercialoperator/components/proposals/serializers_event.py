@@ -52,11 +52,30 @@ from reversion.models import Version
 class ProposalEventActivitiesSerializer(serializers.ModelSerializer):
     commencement_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
     completion_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
+    max_num_months_ahead = serializers.SerializerMethodField()
+    last_event_application_fee_date = serializers.SerializerMethodField()
 
     class Meta:
         model = ProposalEventActivities
-        fields = '__all__'
+        #fields = '__all__'
+        fields=(
+                'id',
+                'event_name',
+                'proposal',
+                'commencement_date',
+                'completion_date',
+                'event_date',
+                'pdswa_location',
+                #'can_occur',
+                'max_num_months_ahead',
+                'last_event_application_fee_date',
+        )
 
+    def get_max_num_months_ahead(self, obj):
+        return obj.proposal.org_applicant.max_num_months_ahead
+
+    def get_last_event_application_fee_date(self, obj):
+        return obj.proposal.org_applicant.last_event_application_fee_date
 
 class ProposalEventManagementSerializer(serializers.ModelSerializer):
 

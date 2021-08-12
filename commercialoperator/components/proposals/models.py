@@ -5661,6 +5661,16 @@ class ProposalEventActivities(models.Model):
     class Meta:
         app_label = 'commercialoperator'
 
+    @property
+    def can_occur(self):
+        """ Event can occur if within max_num_months_ahead """
+        try:
+            if self.proposal.org_applicant.max_num_months_ahead==0 or timezone.now().date() + relativedelta(months=self.proposal.org_applicant.max_num_months_ahead) < self.completion_date:
+                return True
+        except:
+            return True
+
+        return False
 
 class ProposalEventManagement(models.Model):
     num_participants = models.SmallIntegerField('Number of participants expected', blank=True, null=True)

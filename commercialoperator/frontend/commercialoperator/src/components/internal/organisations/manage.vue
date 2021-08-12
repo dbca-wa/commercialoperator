@@ -146,6 +146,34 @@
                                             </div>
                                           </div>
 
+                                          <div class="form-group">
+                                            <div class="row">
+                                                <div class="col-sm-4">
+                                                    <label class="control-label pull-right"  for="Name">Charge once per year - start of year</label>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <label>
+                                                        <input id="id_dt_clr" type="date" :value="null" v-model="org.charge_once_per_year" ref="charge_once_per_year"/>
+                                                        <!--<button onclick="javascript:id_dt_clr.value=''">X</button>-->
+                                                    </label>
+                                                </div>
+                                            </div>
+                                          </div>
+
+                                          <div class="form-group">
+                                            <div class="row">
+                                                <div class="col-sm-4">
+                                                    <label class="control-label pull-right"  for="Name">Maximum number of months ahead</label>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <label>
+                                                        <input type="number" :value="null" v-model="org.max_num_months_ahead" ref="max_num_months_ahead" min="0" max="24"/>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                          </div>
+
+
 
 
                                           <div class="form-group">
@@ -443,7 +471,7 @@ export default {
     computed: {
         isLoading: function () {
           return this.loading.length == 0;
-        }
+        },
     },
     beforeRouteEnter: function(to, from, next){
         let initialisers = [
