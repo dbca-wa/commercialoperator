@@ -133,40 +133,6 @@ class ApplicationFeeView(TemplateView):
             raise
 
 
-#class ExistingPaymentView(TemplateView):
-#    #template_name = 'mooring/booking/make_booking.html'
-#    template_name = 'commercialoperator/booking/success.html'
-#
-#    def get_object(self):
-#        #return get_object_or_404(Proposal, fee_invoice_reference='05572566221')
-#        return get_object_or_404(Proposal, fee_invoice_reference=self.kwargs['invoice_ref'])
-#
-#    def get(self, request, *args, **kwargs):
-#
-#        try:
-#            proposal = self.get_object()
-#            invoice = proposal.invoice
-#            application_fee = ApplicationFee.objects.create(proposal=proposal, created_by=request.user, payment_type=ApplicationFee.PAYMENT_TYPE_TEMPORARY)
-#            #invoice_reference = '05572565392'
-#
-#            with transaction.atomic():
-#                set_session_application_invoice(request.session, application_fee)
-#                checkout_response = checkout_existing_invoice(
-#                    request,
-#                    invoice,
-#                    return_url_ns='fee_success',
-#                    return_preload_url_ns='fee_success',
-#                    invoice_text='Payment Invoice',
-#                )
-#
-#                logger.info('built payment line items {} for Existing Invoice'.format(invoice.reference))
-#                return checkout_response
-#
-#        except Exception as e:
-#            logger.error('Existing Invoice Payment: {}'.format(e))
-#            raise
-
-
 class ComplianceFeeView(TemplateView):
     template_name = 'commercialoperator/booking/success.html'
 
@@ -721,6 +687,7 @@ class ApplicationFeeSuccessView(TemplateView):
                         raise
 
                     application_fee.save()
+
                     request.session['cols_last_app_invoice'] = application_fee.id
                     delete_session_application_invoice(request.session)
 

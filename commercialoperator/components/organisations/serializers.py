@@ -124,6 +124,9 @@ class OrganisationSerializer(serializers.ModelSerializer):
             'application_discount',
             'apply_licence_discount',
             'licence_discount',
+            'charge_once_per_year',
+            'max_num_months_ahead',
+            'last_event_application_fee_date',
         )
 
     def get_apply_application_discount(self, obj):
@@ -234,7 +237,6 @@ class DetailsSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        #import ipdb; ipdb.set_trace()
         request = self.context['request']
         #user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
         new_abn=data['abn']
@@ -257,6 +259,8 @@ class SaveDiscountSerializer(serializers.ModelSerializer):
             'application_discount',
             'apply_licence_discount',
             'licence_discount',
+            'charge_once_per_year',
+            'max_num_months_ahead',
         )
 
 

@@ -52,6 +52,11 @@ class Organisation(models.Model):
     event_training_completed = models.BooleanField(default=False)
     event_training_date= models.DateField(blank=True, null=True)
 
+    charge_once_per_year= models.DateField('Charge Application Fee once per year from given start date (Charge always if null)', blank=True, null=True)
+    last_event_application_fee_date= models.DateField('The last date a fee was charged for an Eventi Application', blank=True, null=True)
+    max_num_months_ahead= models.SmallIntegerField('Maximum number of months ahead an Event can be booked (Any if equal to zero)', default=0)
+
+
     class Meta:
         app_label = 'commercialoperator'
 
