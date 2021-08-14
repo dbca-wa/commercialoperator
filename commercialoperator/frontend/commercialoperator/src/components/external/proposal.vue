@@ -578,10 +578,13 @@ export default {
         if(vm.proposal.event_management.approvals_gained_details==null||vm.proposal.event_management.approvals_gained_details==''){
           blank_fields.push(' Necessary approvals gained details are missing')
         }
-        if(vm.$refs.proposal_event.$refs.event_management.$refs.event_risk_management_plan.documents.length==0){
-            blank_fields.push(' Necessary approvals gained document missing')
-          }
+        // if(vm.$refs.proposal_event.$refs.event_management.$refs.event_risk_management_plan.documents.length==0){
+        //     blank_fields.push(' Necessary approvals gained document missing')
+        //   }
       }
+      if(vm.$refs.proposal_event.$refs.event_management.$refs.event_risk_management_plan.documents.length==0){
+            blank_fields.push(' Necessary approvals gained document missing')
+        }
       if(vm.proposal.event_management.traffic_management_plan){
         if(vm.$refs.proposal_event.$refs.event_management.$refs.event_management_traffic_management_plan.documents.length==0){
             blank_fields.push(' Traffic management plan document missing')
