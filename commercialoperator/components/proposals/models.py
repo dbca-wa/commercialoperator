@@ -681,6 +681,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def invoice(self):
+        """ specific to application fee invoices """
         return Invoice.objects.get(reference=self.fee_invoice_reference) if self.fee_invoice_reference else None
 
     @property

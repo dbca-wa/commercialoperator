@@ -153,7 +153,9 @@
                                                 </div>
                                                 <div class="col-sm-1">
                                                     <label>
-                                                        <input id="id_dt_clr" type="date" :value="null" v-model="org.charge_once_per_year" ref="charge_once_per_year"/>
+                                                        <input id="id_dt_clr" type="date" :value="null" v-model="org.charge_once_per_year" ref="charge_once_per_year" 
+                                                               :title="charge_once_title() + '.\n(Current year is assumed - Only Day and Month is used in this field for current year)'"
+                                                        />
                                                         <!--<button onclick="javascript:id_dt_clr.value=''">X</button>-->
                                                     </label>
                                                 </div>
@@ -163,11 +165,12 @@
                                           <div class="form-group">
                                             <div class="row">
                                                 <div class="col-sm-4">
-                                                    <label class="control-label pull-right"  for="Name">Maximum number of months ahead</label>
+                                                    <label class="control-label pull-right"  for="Name">Max months ahead (Event completion date)</label>
                                                 </div>
                                                 <div class="col-sm-1">
                                                     <label>
-                                                        <input type="number" :value="null" v-model="org.max_num_months_ahead" ref="max_num_months_ahead" min="0" max="24"/>
+                                                        <input type="number" :value="null" v-model="org.max_num_months_ahead" ref="max_num_months_ahead" min="0" max="36"
+                                                        title="Max. months ahead for future Event application completion date"/>
                                                     </label>
                                                 </div>
                                             </div>
@@ -507,6 +510,17 @@ export default {
         });
     },
     methods: {
+       charge_once_title: function(){
+           let vm = this;
+           let ret = '';
+           if (vm.org.last_event_application_fee_date) {
+               ret = 'Charge once per year start: ' + vm.org.last_event_application_fee_date + '. ' +
+                     'Next Event application fee to be charged after: ' + moment(vm.org.last_event_application_fee_date, 'DD/MM/YYYY').add(12, 'months').format("DD/MM/YYYY");
+           } else {
+               ret = 'Next Event application will be charged (first in current year). ';
+           }
+           return ret;
+       },
        handleApplicationCurrencyInput(e) {
             // allow max 2dp
             let vm = this;

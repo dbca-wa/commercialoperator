@@ -105,6 +105,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
     application_discount = serializers.SerializerMethodField(read_only=True)
     apply_licence_discount = serializers.SerializerMethodField(read_only=True)
     licence_discount = serializers.SerializerMethodField(read_only=True)
+    last_event_application_fee_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
 
     class Meta:
         model = Organisation

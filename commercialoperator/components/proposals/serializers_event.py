@@ -75,7 +75,10 @@ class ProposalEventActivitiesSerializer(serializers.ModelSerializer):
         return obj.proposal.org_applicant.max_num_months_ahead
 
     def get_last_event_application_fee_date(self, obj):
-        return obj.proposal.org_applicant.last_event_application_fee_date
+        try:
+            return obj.proposal.org_applicant.last_event_application_fee_date.strftime('%d/%m/%Y')
+        except:
+            return None
 
 class ProposalEventManagementSerializer(serializers.ModelSerializer):
 

@@ -305,12 +305,17 @@ class BookingInvoice(RevisionedMixin):
     payment_method = models.SmallIntegerField(choices=PAYMENT_METHOD_CHOICES, default=0) # duplicating from ledger Invoice model to allow easier filtering on payment dashboard
     deferred_payment_date = models.DateField(blank=True, null=True)
     payment_due_notification_sent = models.BooleanField(default=False)
+    property_cache = JSONField(null=True, blank=True, default={})
 
     def __str__(self):
         return 'Booking {} : Invoice #{}'.format(self.id,self.invoice_reference)
 
     class Meta:
         app_label = 'commercialoperator'
+
+    def save(self, *args, **kwargs):
+        self.update_property_cache(False)
+        super(BookingInvoice, self).save(*args,**kwargs)
 
     @property
     def active(self):
@@ -335,6 +340,59 @@ class BookingInvoice(RevisionedMixin):
         if self.invoice and self.deferred_payment_date and (self.invoice.payment_status == 'unpaid' or self.invoice.payment_status == 'partially_paid') and self.deferred_payment_date<timezone.now().date():
             return True
         return False
+
+    def get_property_cache(self):
+        '''
+        Get properties which were previously resolved.
+        '''
+        if len(self.property_cache) == 0:
+            self.update_property_cache()
+
+        #if self.processing_status == self.PROCESSING_STATUS_AWAITING_PAYMENT:
+        #    self.update_property_cache()
+
+        return self.property_cache
+
+    def get_property_cache_key(self, key):
+        '''
+        Get properties which were previously resolved with key.
+        '''
+        try:
+
+            self.property_cache[key]
+
+        except KeyError:
+            self.update_property_cache()
+
+        return self.property_cache[key]
+
+    def update_property_cache(self, save=True):
+        '''
+        Refresh cached properties with updated properties.
+        '''
+        logger.debug('BookingInvoice.update_property_cache()')
+
+        self.property_cache['payment_status'] = self._payment_status
+
+        if save is True:
+            self.save()
+
+        return self.property_cache
+
+    @property
+    def payment_status(self):
+        """ get cached value, if it exists """
+        if 'payment_status' not in self.property_cache:
+            self.update_property_cache()
+
+        return self.get_property_cache_key('payment_status')
+
+    @property
+    def _payment_status(self):
+        if self.invoice:
+            payment_status =  self.invoice.payment_status
+            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
+        return 'Unpaid'
 
 
 class ApplicationFee(Payment):
