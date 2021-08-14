@@ -146,6 +146,37 @@
                                             </div>
                                           </div>
 
+                                          <div class="form-group">
+                                            <div class="row">
+                                                <div class="col-sm-4">
+                                                    <label class="control-label pull-right"  for="Name">Charge once per year - start of year</label>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <label>
+                                                        <input id="id_dt_clr" type="date" :value="null" v-model="org.charge_once_per_year" ref="charge_once_per_year" 
+                                                               :title="charge_once_title() + '.\n(Current year is assumed - Only Day and Month is used in this field for current year)'"
+                                                        />
+                                                        <!--<button onclick="javascript:id_dt_clr.value=''">X</button>-->
+                                                    </label>
+                                                </div>
+                                            </div>
+                                          </div>
+
+                                          <div class="form-group">
+                                            <div class="row">
+                                                <div class="col-sm-4">
+                                                    <label class="control-label pull-right"  for="Name">Max months ahead (Event completion date)</label>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <label>
+                                                        <input type="number" :value="null" v-model="org.max_num_months_ahead" ref="max_num_months_ahead" min="0" max="36"
+                                                        title="Max. months ahead for future Event application completion date"/>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                          </div>
+
+
 
 
                                           <div class="form-group">
@@ -251,8 +282,10 @@
                                                     <h4>Persons linked to this organisation:</h4>
                                                 </div>
                                                 <div v-for="d in org.delegates">
-                                                    <!-- <div v-if="d.is_admin" class="col-sm-6"> -->
-                                                    <div class="col-sm-6">
+                                                    <div v-if="d.is_admin" class="col-sm-6">
+                                                        <h4>{{d.name }} ({{d.email}} - Admin)</h4>
+                                                    </div>
+                                                    <div v-else class="col-sm-6">
                                                         <h4>{{d.name }} ({{d.email}})</h4>
                                                     </div>
                                                 </div>
@@ -399,7 +432,11 @@ export default {
                 columns: [
                     {
                         mRender:function (data,type,full) {
-                            return full.first_name + " " + full.last_name;
+                            if(full.is_admin) {
+                                return full.first_name + " " + full.last_name + " (Admin)";
+                            } else {
+                                return full.first_name + " " + full.last_name;
+                            }
                         }
                     },
                     {data:'phone_number'},
@@ -410,9 +447,14 @@ export default {
                         mRender:function (data,type,full) {
                             let links = '';
                             let name = full.first_name + ' ' + full.last_name;
-                            links +=  `<a data-email='${full.email}' data-name='${name}' data-id='${full.id}' class="remove-contact">Remove</a><br/>`;
+                            if(full.user_status=='ContactForm') {
+                                // can delete contacts that were added via the manage.vue 'Contact Details' form
+                                links +=  `<a data-email='${full.email}' data-name='${name}' data-id='${full.id}' class="remove-contact">Remove</a><br/>`;
+                            }
+                            links +=  `<a data-email-edit='${full.email}' data-name-edit='${name}' data-edit-id='${full.id}' class="edit-contact">Edit</a><br/>`;
                             return links;
                         }
+
                     }
                   ],
                   processing: true
@@ -432,7 +474,7 @@ export default {
     computed: {
         isLoading: function () {
           return this.loading.length == 0;
-        }
+        },
     },
     beforeRouteEnter: function(to, from, next){
         let initialisers = [
@@ -468,6 +510,17 @@ export default {
         });
     },
     methods: {
+       charge_once_title: function(){
+           let vm = this;
+           let ret = '';
+           if (vm.org.last_event_application_fee_date) {
+               ret = 'Charge once per year start: ' + vm.org.last_event_application_fee_date + '. ' +
+                     'Next Event application fee to be charged after: ' + moment(vm.org.last_event_application_fee_date, 'DD/MM/YYYY').add(12, 'months').format("DD/MM/YYYY");
+           } else {
+               ret = 'Next Event application will be charged (first in current year). ';
+           }
+           return ret;
+       },
        handleApplicationCurrencyInput(e) {
             // allow max 2dp
             let vm = this;
@@ -511,6 +564,20 @@ export default {
         addContact: function(){
             this.$refs.add_contact.isModalOpen = true;
         },
+        editContact: function(_id){
+            let vm = this;
+            vm.$http.get(helpers.add_endpoint_json(api_endpoints.organisation_contacts,_id)).then((response) => {
+                this.$refs.add_contact.contact = response.body;
+                this.addContact();
+            }).then((response) => {
+                this.$refs.contacts_datatable.vmDataTable.ajax.reload();
+            },(error) => {
+                console.log(error);
+            })
+        },
+        refreshDatatable: function(){
+            this.$refs.contacts_datatable.vmDataTable.ajax.reload();
+        },
         eventListeners: function(){
             let vm = this;
             vm.$refs.contacts_datatable.vmDataTable.on('click','.remove-contact',(e) => {
@@ -530,6 +597,13 @@ export default {
                 },(error) => {
                 });
             });
+
+            vm.$refs.contacts_datatable.vmDataTable.on('click','.edit-contact',(e) => {
+                e.preventDefault();
+                let id = $(e.target).attr('data-edit-id');
+                vm.editContact(id);
+            });
+
             // Fix the table responsiveness when tab is shown
             $('a[href="#'+vm.oTab+'"]').on('shown.bs.tab', function (e) {
                 vm.$refs.proposals_table.$refs.proposal_datatable.vmDataTable.columns.adjust().responsive.recalc();
@@ -592,7 +666,7 @@ export default {
                 console.log(error);
                 swal(
                     'Contact Deleted', 
-                    'The contact could not be deleted because of the following error '+error,
+                    'The contact could not be deleted because of the following error : [' + error.body + ']',
                     'error'
                 )
             });
@@ -616,12 +690,11 @@ export default {
                 vm.updatingAddress = false;
             });
         },
-
-        mounted: function(){
-            let vm = this;
-            this.personal_form = document.forms.personal_form;
-            this.eventListeners();
-        },
+    },
+    mounted: function(){
+        let vm = this;
+        this.personal_form = document.forms.personal_form;
+        this.eventListeners();
     },
 }
 </script>

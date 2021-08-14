@@ -52,6 +52,11 @@ class Organisation(models.Model):
     event_training_completed = models.BooleanField(default=False)
     event_training_date= models.DateField(blank=True, null=True)
 
+    charge_once_per_year= models.DateField('Charge Application Fee once per year from given start date (Charge always if null)', blank=True, null=True)
+    last_event_application_fee_date= models.DateField('The last date a fee was charged for an Eventi Application', blank=True, null=True)
+    max_num_months_ahead= models.SmallIntegerField('Maximum number of months ahead an Event can be booked (Any if equal to zero)', default=0)
+
+
     class Meta:
         app_label = 'commercialoperator'
 
@@ -477,11 +482,13 @@ class OrganisationContact(models.Model):
         ('active', 'Active'),
         ('declined', 'Declined'),
         ('unlinked', 'Unlinked'),
-        ('suspended', 'Suspended'))
+        ('suspended', 'Suspended'),
+        ('contact_form','ContactForm'), # status 'contact_form' if org contact was added via 'Contact Details' section in manage.vue (allows Org Contact to be distinguished from Org Delegate)
+    )
     USER_ROLE_CHOICES = (('organisation_admin', 'Organisation Admin'),
         ('organisation_user', 'Organisation User'),
-        ('consultant','Consultant')
-        )
+        ('consultant','Consultant'),
+    )
     user_status = models.CharField('Status', max_length=40, choices=USER_STATUS_CHOICES,default=USER_STATUS_CHOICES[0][0])
     user_role = models.CharField('Role', max_length=40, choices=USER_ROLE_CHOICES,default='organisation_user')
     is_admin = models.BooleanField(default= False)
