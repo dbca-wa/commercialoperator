@@ -134,14 +134,10 @@ class BookingSerializer(serializers.ModelSerializer):
         return None
 
     def get_payment_status(self,obj):
-        if obj and obj.invoices.last():
-            inv = obj.invoices.last()
-            payment_status =  Invoice.objects.get(reference=inv.invoice_reference).payment_status
-            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
-        elif obj.unpaid:
-            # if no invoice exists, likely this is booking is for monthly_invoicing
+        try:
+            return obj.invoices.last().payment_status
+        except:
             return 'Unpaid'
-        return None
 
     def get_payment_method(self,obj):
         if obj and obj.invoices.last():
@@ -262,14 +258,10 @@ class DTBookingSerializer(serializers.ModelSerializer):
         return None
 
     def get_payment_status(self,obj):
-        if obj and obj.invoices.last():
-            inv = obj.invoices.last()
-            payment_status =  Invoice.objects.get(reference=inv.invoice_reference).payment_status
-            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
-        elif obj.unpaid:
-            # if no invoice exists, likely this is booking is for monthly_invoicing
+        try:
+            return obj.invoices.last().payment_status
+        except:
             return 'Unpaid'
-        return None
 
     def get_payment_method(self,obj):
         if obj and obj.invoices.last():
@@ -303,8 +295,6 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
             'no_children',
             'no_free_of_charge',
             'cost',
-            #'booking',
-            #Booking fields
             'admission_number',
             'application_fee_invoice',
             'approval_number',
@@ -314,7 +304,7 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
             'proxy_applicant',
             'payment_status',
             'payment_method',
-            'invoice_reference', 
+            'invoice_reference',
 
         )
         datatables_always_serialize = (
@@ -325,8 +315,6 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
             'no_children',
             'no_free_of_charge',
             'cost',
-            #'booking',
-            #Booking fields
             'admission_number',
             'application_fee_invoice',
             'approval_number',
@@ -390,14 +378,10 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
         return None
 
     def get_payment_status(self,obj):
-        if obj.booking and obj.booking.invoices.last():
-            inv = obj.booking.invoices.last()
-            payment_status =  Invoice.objects.get(reference=inv.invoice_reference).payment_status
-            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
-        elif obj.booking.unpaid:
-            # if no invoice exists, likely this is booking is for monthly_invoicing
+        try:
+            return obj.booking.invoices.last().payment_status
+        except:
             return 'Unpaid'
-        return None
 
     def get_payment_method(self,obj):
         if obj.booking and obj.booking.invoices.last():
