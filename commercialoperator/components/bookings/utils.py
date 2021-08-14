@@ -481,8 +481,40 @@ def create_tclass_fee_lines(proposal, invoice_text=None, vouchers=[], internal=F
 def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=False):
         """ EVENT: Create the ledger lines - line item for application fee sent to payment system """
 
+        def get_application_fee():
+            org = proposal.org_applicant
+            application_fee = proposal.application_type.application_fee
+            if org.last_event_application_fee_date and org.last_event_application_fee_date + relativedelta(years=1) > timezone.now().date():
+                # Application Fee - charge_once_per_year
+                application_fee = Decimal('0.0')
+                logger.info('{}: Setting Application Fee to 0.0 (free until {})'.format(org, org.last_event_application_fee_date + relativedelta(years=1)))
+
+            org_updated = False
+            if org.charge_once_per_year and not org.last_event_application_fee_date:
+                # Ignore year, use day and month, and set year to current year
+                org.last_event_application_fee_date = date(timezone.now().year, org.charge_once_per_year.month, org.charge_once_per_year.day)
+                logger.info('{}: Set last_event_application_fee_date to {}'.format(org, org.last_event_application_fee_date))
+                org_updated = True
+            elif not org.charge_once_per_year and org.last_event_application_fee_date:
+                # if officer sets or resets charge_once_per_year to None, reset to always take application fee
+                org.last_event_application_fee_date = None
+                logger.info('{}: Set last_event_application_fee_date to None'.format(org))
+                org_updated = True
+
+            if org.last_event_application_fee_date and org.last_event_application_fee_date + relativedelta(years=1) < timezone.now().date():
+                # if current date is past free application fee period/date, reset 
+                org.last_event_application_fee_date = date(timezone.now().year, org.charge_once_per_year.month, org.charge_once_per_year.day)
+                logger.info('{}: Reset last_event_application_fee_date to {}'.format(org, org.last_event_application_fee_date))
+                org_updated = True
+
+            if org_updated:
+                org.save()
+
+            return application_fee
+
         now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        application_price = proposal.application_type.application_fee
+        application_price = get_application_fee()
+
         if proposal.application_type.name==ApplicationType.EVENT:
                 #There is no Licence fee for Event application.
                 line_items = [
