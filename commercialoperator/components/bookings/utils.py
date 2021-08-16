@@ -533,7 +533,7 @@ def create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_p
 
         def add_line_item(park, price):
             return {
-                    'ledger_description': f'{park.name} ({park.oracle_code(proposal.application_type)}: {licence_text} - {filming_period})',
+                    'ledger_description': f'{park.name} ({licence_text} - {filming_period})',
                     'oracle_code': park.oracle_code(proposal.application_type),
                     'price_incl_tax':  float(price),
                     'price_excl_tax':  float(price), # NO GST
