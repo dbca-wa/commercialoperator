@@ -149,7 +149,7 @@
                                           <div class="form-group">
                                             <div class="row">
                                                 <div class="col-sm-4">
-                                                    <label class="control-label pull-right"  for="Name">Charge once per year - start of year</label>
+                                                    <label class="control-label pull-right"  for="Name">Charge once per year - start of year<br>(Event Licence)</label>
                                                 </div>
                                                 <div class="col-sm-1">
                                                     <label>
@@ -165,7 +165,7 @@
                                           <div class="form-group">
                                             <div class="row">
                                                 <div class="col-sm-4">
-                                                    <label class="control-label pull-right"  for="Name">Max months ahead (Event completion date)</label>
+                                                    <label class="control-label pull-right"  for="Name">Maximum number of months ahead<br>(Event Licence)</label>
                                                 </div>
                                                 <div class="col-sm-1">
                                                     <label>
