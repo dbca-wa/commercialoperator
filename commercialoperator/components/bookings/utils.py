@@ -484,7 +484,13 @@ def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=Fa
         def get_application_fee():
             org = proposal.org_applicant
             application_fee = proposal.application_type.application_fee
-            if org.last_event_application_fee_date and org.last_event_application_fee_date + relativedelta(years=1) > timezone.now().date():
+
+            if org.last_event_application_fee_date and org.last_event_application_fee_date != org.charge_once_per_year:
+                # org.charge_once_per_year has been updated, update the org.last_event_application_fee_date value
+                org.last_event_application_fee_date = org.charge_once_per_year
+                org.save()
+
+            if org.last_event_application_fee_date and proposal.event_activity.completion_date < org.last_event_application_fee_date + relativedelta(years=1):
                 # Application Fee - charge_once_per_year
                 application_fee = Decimal('0.0')
                 logger.info('{}: Setting Application Fee to 0.0 (free until {})'.format(org, org.last_event_application_fee_date + relativedelta(years=1)))

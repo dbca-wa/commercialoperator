@@ -741,13 +741,24 @@ class BookingSuccessView(TemplateView):
             basket = None
             booking = get_session_booking(request.session)
             proposal = booking.proposal
+            recipients = [request.user.email]
 
             try:
-                recipient = proposal.applicant.email
+                recipients.append(proposal.applicant.email)
                 submitter = proposal.applicant
             except:
-                recipient = proposal.submitter.email
+                recipients.append(proposal.submitter.email)
                 submitter = proposal.submitter
+
+            try:
+                # add org_applicant email, if exists
+                recipients.append(proposal.org_applicant.email)
+            except:
+                pass
+
+            # make distinct
+            recipients = list(set(recipients))
+
 
             if self.request.user.is_authenticated():
                 basket = Basket.objects.filter(status='Submitted', owner=request.user).order_by('-id')[:1]
@@ -793,8 +804,8 @@ class BookingSuccessView(TemplateView):
                     request.session['cols_last_booking'] = booking.id
                     delete_session_booking(request.session)
 
-                    send_invoice_tclass_email_notification(request.user, booking, invoice, recipients=[recipient])
-                    send_confirmation_tclass_email_notification(request.user, booking, invoice, recipients=[recipient])
+                    send_invoice_tclass_email_notification(request.user, booking, invoice, recipients=recipients)
+                    send_confirmation_tclass_email_notification(request.user, booking, invoice, recipients=recipients)
 
                     context.update({
                         'booking_id': booking.id,
@@ -808,13 +819,24 @@ class BookingSuccessView(TemplateView):
             if ('cols_last_booking' in request.session) and Booking.objects.filter(id=request.session['cols_last_booking']).exists():
                 booking = Booking.objects.get(id=request.session['cols_last_booking'])
                 proposal = booking.proposal
+                recipients = [request.user.email]
 
                 try:
-                    recipient = proposal.applicant.email
+                    recipients.append(proposal.applicant.email)
                     submitter = proposal.applicant
                 except:
-                    recipient = proposal.submitter.email
+                    recipients.append(proposal.submitter.email)
                     submitter = proposal.submitter
+
+                try:
+                    # add org_applicant email, if exists
+                    recipients.append(proposal.org_applicant.email)
+                except:
+                    pass
+
+                # make distinct
+                recipients = list(set(recipients))
+
 
                 if BookingInvoice.objects.filter(booking=booking).count() > 0:
                     bi = BookingInvoice.objects.filter(booking=booking)

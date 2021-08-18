@@ -557,11 +557,13 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                                 if data['licence_discount']  == 0:
                                         data['apply_licence_discount'] = False
 
-                                if is_internal(request) and 'charge_once_per_year' in request.data:
+                                if is_internal(request) and 'charge_once_per_year' in request.data and request.data.get('charge_once_per_year'):
                                         DD = int(request.data.get('charge_once_per_year').split('/')[0])
                                         MM = int(request.data.get('charge_once_per_year').split('/')[1])
                                         YYYY = timezone.now().year # set to current year
                                         data['charge_once_per_year'] = '{}-{}-{}'.format(YYYY, MM, DD)
+                                else:
+                                        data['charge_once_per_year'] = None
 
                                 serializer = SaveDiscountSerializer(org,data=data)
                                 serializer.is_valid(raise_exception=True)
