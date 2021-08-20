@@ -60,7 +60,7 @@
 
                                     <div class="col-sm-9" v-if="">
                                         
-                                        <input type="text" class="form-control" name="pre_event_name"  v-model="trail.event_trail_activities">
+                                        <input type="text" class="form-control" name="pre_event_name"  v-model="trail.event_trail_activities" :readonly="is_internal">
                                     </div>
 
                                 </div>
