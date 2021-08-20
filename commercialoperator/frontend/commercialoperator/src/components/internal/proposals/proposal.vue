@@ -176,7 +176,7 @@
                                             <!-- <button  v-if="proposal.application_type=='Filming' && proposal.filming_approval_type=='lawful_authority'" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToDistricts()">Send to Districts</button><br/> -->
                                             <button v-if="sendingToDistrict" style="width:80%;" class="btn btn-primary top-buffer-s" disabled>Send to Districts&nbsp;
                                                 <i class="fa fa-circle-o-notch fa-spin fa-fw"></i></button>
-                                            <button  v-if="!sendingToDistrict" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToKensington()">Send to Districts</button><br/>
+                                            <button  v-if="!sendingToDistrict" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToDistricts()">Send to Districts</button><br/>
                                             <button v-if="sendingToKensington" style="width:80%;" class="btn btn-primary top-buffer-s" disabled>Send to Kensington&nbsp;
                                                 <i class="fa fa-circle-o-notch fa-spin fa-fw"></i></button>
                                             <button  v-if="!sendingToKensington" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToKensington()">Send to Kensington</button><br/>

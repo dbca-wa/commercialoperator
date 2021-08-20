@@ -424,7 +424,7 @@ export default {
             vm.initialiseSearch();
         });
         if(vm.is_external){
-            var column = vm.$refs.proposal_datatable.vmDataTable.columns(8); //Hide 'Assigned To column for external'
+            var column = vm.$refs.proposal_datatable.vmDataTable.columns(6); //Hide 'Assigned To column for external'
             column.visible(false);
         }
         
