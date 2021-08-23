@@ -554,31 +554,32 @@ export default {
         },
         eventListeners: function(){
           let vm = this;
-          if (typeof vm.$refs.contacts_datatable !== 'undefined') {
+          //if (typeof vm.$refs.contacts_datatable !== 'undefined') {
+          if (true) {
             
-            vm.$refs.contacts_datatable.vmDataTable.on('click','.remove-contact',(e) => {
-                e.preventDefault();
-
-                let name = $(e.target).data('name');
-                let email = $(e.target).data('email');
-                let id = $(e.target).data('id');
-                swal({
-                    title: "Delete Contact",
-                    text: "Are you sure you want to remove "+ name + "("+ email + ") as a contact  ?",
-                    type: "error",
-                    showCancelButton: true,
-                    confirmButtonText: 'Accept'
-                }).then(() => {
-                    vm.deleteContact(id);
-                },(error) => {
-                });
-            });
-
-            vm.$refs.contacts_datatable.vmDataTable.on('click','.edit-contact',(e) => {
-                e.preventDefault();
-                let id = $(e.target).attr('data-edit-id');
-                vm.editContact(id);
-            });
+//            vm.$refs.contacts_datatable.vmDataTable.on('click','.remove-contact',(e) => {
+//                e.preventDefault();
+//
+//                let name = $(e.target).data('name');
+//                let email = $(e.target).data('email');
+//                let id = $(e.target).data('id');
+//                swal({
+//                    title: "Delete Contact",
+//                    text: "Are you sure you want to remove "+ name + "("+ email + ") as a contact  ?",
+//                    type: "error",
+//                    showCancelButton: true,
+//                    confirmButtonText: 'Accept'
+//                }).then(() => {
+//                    vm.deleteContact(id);
+//                },(error) => {
+//                });
+//            });
+//
+//            vm.$refs.contacts_datatable.vmDataTable.on('click','.edit-contact',(e) => {
+//                e.preventDefault();
+//                let id = $(e.target).attr('data-edit-id');
+//                vm.editContact(id);
+//            });
 
             vm.$refs.contacts_datatable_user.vmDataTable.on('click','.accept_contact',(e) => {
                 e.preventDefault();
@@ -1090,7 +1091,6 @@ export default {
                 vm.myorgperms = data[2];
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
-            
         });
 
     },

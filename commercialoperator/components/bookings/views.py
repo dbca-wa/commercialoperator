@@ -810,6 +810,7 @@ class BookingSuccessView(TemplateView):
                     context.update({
                         'booking_id': booking.id,
                         'submitter': submitter,
+                        'payer': request.user,
                         'invoice_reference': invoice.reference
                     })
                     return render(request, self.template_name, context)
@@ -847,6 +848,7 @@ class BookingSuccessView(TemplateView):
         context.update({
             'booking_id': booking.id,
             'submitter': submitter,
+            'payer': request.user,
             'invoice_reference': invoice.invoice_reference
         })
         return render(request, self.template_name, context)
