@@ -105,6 +105,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
     application_discount = serializers.SerializerMethodField(read_only=True)
     apply_licence_discount = serializers.SerializerMethodField(read_only=True)
     licence_discount = serializers.SerializerMethodField(read_only=True)
+    last_event_application_fee_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
 
     class Meta:
         model = Organisation
@@ -124,6 +125,9 @@ class OrganisationSerializer(serializers.ModelSerializer):
             'application_discount',
             'apply_licence_discount',
             'licence_discount',
+            'charge_once_per_year',
+            'max_num_months_ahead',
+            'last_event_application_fee_date',
         )
 
     def get_apply_application_discount(self, obj):
@@ -234,7 +238,6 @@ class DetailsSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        #import ipdb; ipdb.set_trace()
         request = self.context['request']
         #user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
         new_abn=data['abn']
@@ -257,6 +260,8 @@ class SaveDiscountSerializer(serializers.ModelSerializer):
             'application_discount',
             'apply_licence_discount',
             'licence_discount',
+            'charge_once_per_year',
+            'max_num_months_ahead',
         )
 
 

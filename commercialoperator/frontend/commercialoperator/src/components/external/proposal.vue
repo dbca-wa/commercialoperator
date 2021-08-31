@@ -83,7 +83,6 @@
 </template>
 <script>
 //import Proposal from '../form.vue'
-
 import ProposalTClass from '../form_tclass.vue'
 import ProposalFilming from '../form_filming.vue'
 import ProposalEvent from '../form_event.vue'
@@ -520,11 +519,20 @@ export default {
     can_submit_event: function(){
       let vm=this;
       let blank_fields=[]
+
       if(vm.proposal.event_activity.event_name==''||vm.proposal.event_activity.event_name==null){
         blank_fields.push(' Name of the event is missing')
       }
       if(vm.proposal.event_activity.commencement_date =='' || vm.proposal.event_activity.commencement_date ==null || vm.proposal.event_activity.completion_date =='' || vm.proposal.event_activity.completion_date ==''){
         blank_fields.push(' Period of proposed event is required')
+
+      }
+      if(vm.proposal.event_activity.completion_date != '' && vm.proposal.event_activity.max_num_months_ahead != 0) {
+           let completion_date = moment(vm.proposal.event_activity.completion_date, 'DD/MM/YYYY');
+           let max_future_date = moment().add(vm.proposal.event_activity.max_num_months_ahead, 'months');
+           if(completion_date > max_future_date ) {
+              blank_fields.push(' Event Completion Date cannot be beyond ' + max_future_date.format("DD-MM-YYYY"))
+           }
       }
       if(vm.$refs.proposal_event.$refs.event_activities.$refs.parks_table.$refs.event_park_maps.documents.length==0){
             blank_fields.push(' A detailed itinerary and map of the event route document is missing')

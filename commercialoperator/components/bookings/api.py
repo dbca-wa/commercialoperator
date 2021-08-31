@@ -39,6 +39,7 @@ from commercialoperator.components.bookings.serializers import (
     BookingSerializer,
     ParkBookingSerializer,
     DTParkBookingSerializer,
+    OverdueBookingInvoiceSerializer,
 #    BookingSerializer2,
 #    ParkBookingSerializer2,
 )
@@ -94,6 +95,23 @@ class BookingViewSet(viewsets.ModelViewSet):
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             return  Booking.objects.filter( Q(proposal__org_applicant_id__in = user_orgs) | Q(proposal__submitter = user) ).exclude(booking_type=Booking.BOOKING_TYPE_TEMPORARY)
         return Booking.objects.none()
+
+
+class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
+    queryset = BookingInvoice.objects.none()
+    serializer_class = OverdueBookingInvoiceSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            bi = BookingInvoice.objects.all().exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
+            return [inv for inv in bi if inv.overdue]
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            bi = BookingInvoice.objects.filter( Q(booking__proposal__org_applicant_id__in = user_orgs) | Q(booking__proposal__submitter = user) ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
+            return [inv for inv in bi if inv.overdue]
+        return BookingInvoice.objects.none()
+
 
 
 class ParkBookingViewSet(viewsets.ModelViewSet):

@@ -1546,7 +1546,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             serializer = ProposedApprovalSerializer(data=request.data)
-            #import ipdb; ipdb.set_trace()
             serializer.is_valid(raise_exception=True)
             instance.final_approval(request,serializer.validated_data)
             #serializer = InternalProposalSerializer(instance,context={'request':request})

@@ -31,6 +31,7 @@ class Command(BaseCommand):
         application_type_name= 'E Class'
         expiry_conditions = {
             'expiry_date__lte': expiry_notification_date,
+            'expiry_notice_sent': False,
             'replaced_by__isnull': True,
             'extended': True,
             'current_proposal__application_type__name': application_type_name,
