@@ -488,7 +488,7 @@ def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=Fa
         if org.charge_once_per_year:
             year_start = date(proposal.event_activity.commencement_date.year, org.charge_once_per_year.month, org.charge_once_per_year.day)
             year_end = year_start + relativedelta(years=1)
-            fees_paid = [(p, p.fee_amount) for p in Proposal.objects.filter(application_type__name=ApplicationType.EVENT, event_activity__commencement_date__gte=year_start, event_activity__completion_date__lt=year_end) if p.fee_amount and p.fee_amount != 'null' and float(p.fee_amount)>0.0]
+            fees_paid = [(p, p.fee_amount) for p in Proposal.objects.filter(org_applicant=org, application_type__name=ApplicationType.EVENT, event_activity__commencement_date__gte=year_start, event_activity__completion_date__lt=year_end) if p.fee_amount and p.fee_amount != 'null' and float(p.fee_amount)>0.0]
 
             logger.info('{} - {}: Fees paid between {} - {}\{})'.format(proposal, org, year_start, year_end, fees_paid))
             if fees_paid:
