@@ -107,7 +107,7 @@
                                 <!-- <p style="color:red;"> An event application already exists in the system: </p>
                                 <p style="color:red;"> {{ event_proposals() }}</p> -->
                                 <div>
-                                    <label for="" class="control-label" >Prefill application with details from Licence for Event </label>
+                                    <label for="" class="control-label" >Prefill application with details from previously approved event </label>
                                     <div class="col-sm-12">
                                         <div class="form-group">
                                             <select class="form-control" style="width:40%" v-model="selected_copy_from" >
