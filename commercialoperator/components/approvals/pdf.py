@@ -436,7 +436,7 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
         if p.event_activities:
             #activities_str = p.event_activities.encode('UTF-8')
             #activities_str = p.event_activities
-            activities_str = ",".join(p.activities_assessor_names)
+            activities_str = ", ".join(p.activities_assessor_names)
 
         park_data.append([Paragraph(_format_name(p.park.name), styles['BoldLeft']),
                               Paragraph(activities_str, styles['Left']) # remove last trailing comma
@@ -473,7 +473,7 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
         if tr.event_trail_activities:
             #activities_str = p.event_activities.encode('UTF-8')
             #activities_str = tr.event_trail_activities
-            activities_str = ",".join(tr.activities_assessor_names)
+            activities_str = ", ".join(tr.activities_assessor_names)
 
 
         park_data.append([Paragraph(_format_name(trail_name), styles['BoldLeft']),
