@@ -308,7 +308,7 @@ export default {
                 let vm=this;
                 if(vm.global_settings){
                     for(var i=0; i<vm.global_settings.length; i++){
-                        if(vm.global_settings[i].key=='fees_and_charges'){
+                        if(vm.global_settings[i].key=='event_fees_and_charges'){
                             return vm.global_settings[i].value;
                         }
                     }
