@@ -2673,6 +2673,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 proposal.documents.all().delete()
                 # require  user to pay Application and Licence Fee again
                 proposal.fee_invoice_reference = None
+                proposal.property_cache={}
+                proposal.save()
             req=self.requirements.all().exclude(is_deleted=True)
             from copy import deepcopy
             if req:
