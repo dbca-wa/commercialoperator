@@ -19,7 +19,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of participants expected</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="number" class="form-control" name="num_participants" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_participants">
+                                    <input type="number" class="form-control" name="num_participants" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_participants" step="1" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -28,7 +28,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of spectators expected</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="number" class="form-control" name="num_spectators" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_spectators">
+                                    <input type="number" class="form-control" name="num_spectators" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_spectators" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -37,7 +37,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of officials</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="number" class="form-control" name="num_officials" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_officials">
+                                    <input type="number" class="form-control" name="num_officials" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_officials" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -46,7 +46,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of vehicles/ vessels</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="number" class="form-control" name="num_vehicles" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_vehicles">
+                                    <input type="number" class="form-control" name="num_vehicles" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_vehicles" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
