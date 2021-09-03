@@ -49,7 +49,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="input-group date" ref="participants_number" style="width: 70%;">
-                                        <input type="number" class="form-control" v-model="proposal.event_other_details.participants_number" name="participants_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal">
+                                        <input type="number" class="form-control" v-model="proposal.event_other_details.participants_number" name="participants_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="input-group date" ref="officials_number" style="width: 70%;">
-                                        <input type="number" class="form-control" v-model="proposal.event_other_details.officials_number" name="officials_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal">
+                                        <input type="number" class="form-control" v-model="proposal.event_other_details.officials_number" name="officials_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                     </div>
                                 </div>
                             </div>
@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="input-group date" ref="support_vehicle_number" style="width: 70%;">
-                                        <input type="number" class="form-control" v-model="proposal.event_other_details.support_vehicle_number" name="support_vehicle_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal">
+                                        <input type="number" class="form-control" v-model="proposal.event_other_details.support_vehicle_number" name="support_vehicle_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                     </div>
                                 </div>
                             </div>
