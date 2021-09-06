@@ -2668,9 +2668,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 proposal.event_activity.commencement_date=None
                 proposal.event_activity.completion_date=None
                 proposal.event_activity.save()
-                proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                #Delete all the files for Event application for Prefil functionality
+                # proposal.documents.filter(input_name__in=['deed_poll','currency_certificate']).delete()
+                proposal.documents.all().delete()
                 # require  user to pay Application and Licence Fee again
                 proposal.fee_invoice_reference = None
+                proposal.property_cache={}
+                proposal.save()
             req=self.requirements.all().exclude(is_deleted=True)
             from copy import deepcopy
             if req:
@@ -4519,23 +4523,23 @@ def duplicate_event(p):
         vessel.proposal=p
         vessel.save()
 
-    for trail in original_proposal.trails.all():
+    for trail in original_proposal.events_trails.all():
         original_trail=copy.deepcopy(trail)
         trail.id=None
         trail.proposal=p
         trail.save()
 
-        for section in original_trail.sections.all():
-            original_section=copy.deepcopy(section)
-            section.id=None
-            section.proposal_trail=trail
-            section.save()
-            print('new section', section, trail)
-            for act in original_section.trail_activities.all():
-                act.id=None
-                act.trail_section=section
-                act.save()
-                print('new trail activity', act, section)
+        # for section in original_trail.sections.all():
+        #     original_section=copy.deepcopy(section)
+        #     section.id=None
+        #     section.proposal_trail=trail
+        #     section.save()
+        #     print('new section', section, trail)
+        #     for act in original_section.trail_activities.all():
+        #         act.id=None
+        #         act.trail_section=section
+        #         act.save()
+        #         print('new trail activity', act, section)
 
 
     return p

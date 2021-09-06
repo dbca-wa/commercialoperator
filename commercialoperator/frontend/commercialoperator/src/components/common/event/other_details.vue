@@ -49,7 +49,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="input-group date" ref="participants_number" style="width: 70%;">
-                                        <input type="number" class="form-control" v-model="proposal.event_other_details.participants_number" name="participants_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal">
+                                        <input type="number" class="form-control" v-model="proposal.event_other_details.participants_number" name="participants_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="input-group date" ref="officials_number" style="width: 70%;">
-                                        <input type="number" class="form-control" v-model="proposal.event_other_details.officials_number" name="officials_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal">
+                                        <input type="number" class="form-control" v-model="proposal.event_other_details.officials_number" name="officials_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                     </div>
                                 </div>
                             </div>
@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="input-group date" ref="support_vehicle_number" style="width: 70%;">
-                                        <input type="number" class="form-control" v-model="proposal.event_other_details.support_vehicle_number" name="support_vehicle_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal">
+                                        <input type="number" class="form-control" v-model="proposal.event_other_details.support_vehicle_number" name="support_vehicle_number" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                     </div>
                                 </div>
                             </div>
@@ -114,6 +114,32 @@
                             </div>
                        </div> 
                     </div>
+                </div>
+            </div>                
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Payment of Fees and Charges<small></small>
+                <a class="panelClicker" :href="'#'+mBody" data-toggle="collapse"  data-parent="#userInfo" expanded="true" :aria-controls="mBody">
+                <span class="glyphicon glyphicon-chevron-up pull-right "></span>
+                </a>
+                </h3>
+            </div>
+            <div class="panel-body collapse in" :id="mBody">
+                <div class="" >                        
+                    <div class="form-horizontal col-sm-12">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label>Depending on the filming operation, fees and charges may apply. Please see commercial filming <a :href="fees_and_charges" target="_blank">website</a> for information on fees and charges.</label>
+                                </div>   
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        </div>
+                   </div>
                 </div>
             </div>                
         </div>
@@ -272,6 +298,17 @@ export default {
                 if(vm.global_settings){
                     for(var i=0; i<vm.global_settings.length; i++){
                         if(vm.global_settings[i].key=='credit_facility_link'){
+                            return vm.global_settings[i].value;
+                        }
+                    }
+                }
+                return '';
+            },
+            fees_and_charges: function(){
+                let vm=this;
+                if(vm.global_settings){
+                    for(var i=0; i<vm.global_settings.length; i++){
+                        if(vm.global_settings[i].key=='event_fees_and_charges'){
                             return vm.global_settings[i].value;
                         }
                     }

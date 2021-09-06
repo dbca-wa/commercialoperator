@@ -580,7 +580,7 @@ from '@/utils/hooks'
                         allowed=false;
                       for(var l=0; l<marine_parks_activities[i].activities[k].activities.length; l++){
                               //console.log('here')
-                            if(parks[j].children[v].allowed_activities_ids.indexOf(marine_parks_activities[i].activities[k].activities[l])==-1){
+                            if(parks[j].children[v].allowed_activities_ids.indexOf(marine_parks_activities[i].activities[k].activities[l])!=-1){
                               
                               // var activity_name=''
                               // for(var s=0; s< vm.marine_activity_options[0].children.length; s++)
