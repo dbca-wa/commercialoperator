@@ -216,27 +216,24 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 #queryset = queryset.filter(invoices__payment_method=payment_method)
                 queryset = queryset.filter(Q(invoices__payment_method=payment_method) | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING))
 
-#            if payment_status:
-#                if payment_status.lower() == 'overdue':
-#                    refs = [i.booking.invoices.last().invoice_reference  for i in ParkBooking.objects.all() if i.booking and i.booking.invoices.last() and i.booking.invoices.last().overdue]
-#                    queryset = queryset.filter(invoices__invoice_reference__in=refs)
-#                else:
-#                    refs = [i.booking.invoices.last().invoice_reference  for i in ParkBooking.objects.all() if i.booking and i.booking.invoices.last()]
-#                    filtered_refs = [i.reference for i in Invoice.objects.filter(reference__in=refs) if i.payment_status==payment_status]
-#                    queryset = queryset.filter(invoices__invoice_reference__in=filtered_refs)#.distinct('id')
-
             if payment_status:
+                ids = []
                 if payment_status.lower() == 'overdue':
-                    ids = [i.id for i in ParkBooking.objects.all() if (i.booking.invoices.last() and i.booking.invoices.last().payment_status=='Unpaid') or 
-                              not i.booking.invoices.last() and 
-                              i.booking.invoices.last() and i.booking.deferred_payment_date and i.booking.deferred_payment_date < timezone.now().date()
-                          ]
-                elif payment_status.lower() == 'unpaid':
-                    ids = [i.id for i in ParkBooking.objects.all() if (i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()=='unpaid') or not i.booking.invoices.last()]
+                    for i in ParkBooking.objects.all():
+                        if (i.booking.invoices.last() and i.booking.invoices.last().payment_status=='Unpaid') or \
+                            not i.booking.invoices.last() and \
+                            i.booking.invoices.last() and i.booking.deferred_payment_date and i.booking.deferred_payment_date < timezone.now().date():
+
+                            ids.append(i.id)
+                if payment_status.lower() == 'unpaid':
+                    for i in ParkBooking.objects.all():
+                        if (i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()=='unpaid') or not i.booking.invoices.last():
+                            ids.append(i.id)
                 else:
-                    ids = [i.id for i in ParkBooking.objects.all() if 
-                              i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()==payment_status.lower()
-                          ]
+                    for i in ParkBooking.objects.all():
+                        if i.booking.invoices.last() and i.booking.invoices.last().payment_status and i.booking.invoices.last().payment_status.lower()==payment_status.lower().replace('_',' '):
+                            ids.append(i.id)
+
                 queryset = queryset.filter(park_bookings__in=ids)
 
         #Filtering for ParkBooking dashboard
@@ -255,31 +252,25 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 else:
                     queryset = queryset.filter(Q(booking__invoices__payment_method=payment_method))
 
-#            if payment_status:
-#                if payment_status.lower() == 'overdue':
-#                    refs = [i.booking.invoices.last().invoice_reference  for i in ParkBooking.objects.all() if i.booking and i.booking.invoices.last() and i.booking.invoices.last().overdue]
-#                    queryset = queryset.filter(booking__invoices__invoice_reference__in=refs)
-#                else:
-#                    refs = [i.booking.invoice.reference  for i in ParkBooking.objects.all() if i.booking and hasattr(i.booking, 'invoice') and i.booking.invoice!=None]
-#                    filtered_refs = [i.reference for i in Invoice.objects.filter(reference__in=refs) if i.payment_status==payment_status]
-#                    queryset = queryset.filter(booking__invoices__invoice_reference__in=filtered_refs)#.distinct('id')
-#
-#                    if payment_status.lower() == 'unpaid':
-#                        # for deferred payment where invoice not yet created (monthly invoicing), append the following qs
-#                        queryset = queryset | ParkBooking.objects.filter(booking__invoices__isnull=True)
 
             if payment_status:
+                ids = []
                 if payment_status.lower() == 'overdue':
-                    ids = [i.id for i in ParkBooking.objects.all() if (i.booking.invoices.last() and i.booking.invoices.last().payment_status=='Unpaid') or 
-                              not i.booking.invoices.last() and 
-                              i.booking.invoices.last() and i.booking.deferred_payment_date and i.booking.deferred_payment_date < timezone.now().date()
-                          ]
-                elif payment_status.lower() == 'unpaid':
-                    ids = [i.id for i in ParkBooking.objects.all() if (i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()=='unpaid') or not i.booking.invoices.last()]
+                    for i in ParkBooking.objects.all():
+                        if (i.booking.invoices.last() and i.booking.invoices.last().payment_status=='Unpaid') or \
+                            not i.booking.invoices.last() and \
+                            i.booking.invoices.last() and i.booking.deferred_payment_date and i.booking.deferred_payment_date < timezone.now().date():
+
+                            ids.append(i.id)
+                if payment_status.lower() == 'unpaid':
+                    for i in ParkBooking.objects.all():
+                        if (i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()=='unpaid') or not i.booking.invoices.last():
+                            ids.append(i.id)
                 else:
-                    ids = [i.id for i in ParkBooking.objects.all() if 
-                              i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()==payment_status.lower()
-                          ]
+                    for i in ParkBooking.objects.all():
+                        if i.booking.invoices.last() and i.booking.invoices.last().payment_status and i.booking.invoices.last().payment_status.lower()==payment_status.lower().replace('_',' '):
+                            ids.append(i.id)
+
                 queryset = queryset.filter(id__in=ids)
 
         date_from = request.GET.get('date_from')
