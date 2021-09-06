@@ -105,6 +105,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
     application_discount = serializers.SerializerMethodField(read_only=True)
     apply_licence_discount = serializers.SerializerMethodField(read_only=True)
     licence_discount = serializers.SerializerMethodField(read_only=True)
+    charge_once_per_year = serializers.DateField(format="%d/%m",input_formats=['%d/%m'],required=False,allow_null=True)
     last_event_application_fee_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
 
     class Meta:
@@ -141,6 +142,9 @@ class OrganisationSerializer(serializers.ModelSerializer):
 
     def get_licence_discount(self, obj):
         return obj.licence_discount
+
+    def get_charge_once_per_year(self, obj):
+        return obj.charge_once_per_year
 
     def get_delegates(self, obj):
         """

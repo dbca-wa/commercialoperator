@@ -468,6 +468,7 @@ class GlobalSettings(models.Model):
         ('online_training_document', 'Online Training Document'),
         ('park_finder_link', 'Park Finder Link'),
         ('fees_and_charges', 'Fees and charges link'),
+        ('event_fees_and_charges', 'Event Fees and charges link'),
         ('commercial_filming_handbook', 'Commercial Filming Handbook link'),
         ('park_stay_link', 'Park Stay Link'),
         ('event_traffic_code_of_practice', 'Event traffic code of practice'),

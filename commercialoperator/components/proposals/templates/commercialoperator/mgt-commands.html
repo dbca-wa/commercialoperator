@@ -13,6 +13,7 @@
             <button type="submit" name="script" value="update_approval_status" {% if update_approval_status == 'true' %}style="color:green" {% endif %} title="Change the status of Approvals to Surrender/Cancelled/Suspended">Run Script 'update_approval_status'</button><br><br>
             <button type="submit" name="script" value="update_compliance_status" {% if update_compliance_status == 'true' %}style="color:green" {% endif %} title="Change the status of Compliances from future to due when they are close to due date (eg. within 14 days)">Run Script 'update_compliance_status'</button><br><br>
             <button type="submit" name="script" value="monthly_invoices" {% if monthly_invoices == 'true' %}style="color:green" {% endif %} title="Run the monthly_invoices script">Run Script 'monthly_invoices'</button><br><br>
+            <button type="submit" name="script" value="update_cache" {% if update_cache == 'true' %}style="color:green" {% endif %} title="Run the update_cache script">Run Script 'update_cache'</button><br><br>
         </form>
         <br>
     </div>

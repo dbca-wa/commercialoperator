@@ -103,6 +103,24 @@
                                 </div>
                             </div>
 
+                            <div class="" v-show="has_event_proposals()">
+                                <!-- <p style="color:red;"> An event application already exists in the system: </p>
+                                <p style="color:red;"> {{ event_proposals() }}</p> -->
+                                <div>
+                                    <label for="" class="control-label" >Prefill application with details from previously approved event </label>
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <select class="form-control" style="width:40%" v-model="selected_copy_from" >
+                                                <option value="" selected disabled>Select Event Licence to copy from*</option>
+                                                <option v-for="proposal in event_proposals()" :value="proposal.current_proposal">
+                                                    {{ proposal.current_proposal__event_activity__event_name }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div v-if="display_region_selectbox">
                                 <label for="" class="control-label" >Region * <a :href="region_help_url" target="_blank"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a> </label>
                                 <div class="col-sm-12">
@@ -196,10 +214,10 @@
                         <p style="color:red;"> An active application already exists in the system: </p>
                         <p style="color:red;"> {{ active_proposals() }}</p>
                     </div>
-                    <div class="col-sm-12" v-show="has_event_proposals()">
+                    <!-- <div class="col-sm-12" v-show="has_event_proposals()"> -->
                         <!-- <p style="color:red;"> An event application already exists in the system: </p>
                         <p style="color:red;"> {{ event_proposals() }}</p> -->
-                        <div>
+                        <!-- <div>
                                 <label for="" class="control-label" >Copy from </label>
                                 <div class="col-sm-12">
                                     <div class="form-group">
@@ -212,7 +230,7 @@
                                     </div>
                                 </div>
                             </div>
-                    </div>
+                    </div> -->
                     <div class="col-sm-12">
                         <button v-if="!creatingProposal" :disabled="isDisabled() || has_active_proposals()" @click.prevent="submit()" class="btn btn-primary pull-right">Continue</button>
                         <button v-else disabled class="pull-right btn btn-primary"><i class="fa fa-spin fa-spinner"></i>&nbsp;Creating</button>
