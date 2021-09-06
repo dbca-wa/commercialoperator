@@ -583,7 +583,8 @@ export default {
         //   }
       }
       if(vm.$refs.proposal_event.$refs.event_management.$refs.event_risk_management_plan.documents.length==0){
-            blank_fields.push(' Necessary approvals gained document missing')
+            // blank_fields.push(' Necessary approvals gained document missing')
+            blank_fields.push(' Attached copies of your management plans are missing')
         }
       if(vm.proposal.event_management.traffic_management_plan){
         if(vm.$refs.proposal_event.$refs.event_management.$refs.event_management_traffic_management_plan.documents.length==0){

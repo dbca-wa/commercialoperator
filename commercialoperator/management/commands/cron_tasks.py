@@ -31,6 +31,7 @@ class Command(BaseCommand):
         subprocess.call('python manage_co.py eclass_expiry_notices' + stdout_redirect, shell=True) 
         subprocess.call('python manage_co.py eclass_renewal_notices' + stdout_redirect, shell=True) 
         subprocess.call('python manage_co.py monthly_invoices' + stdout_redirect, shell=True) 
+        subprocess.call('python manage_co.py update_cache' + stdout_redirect, shell=True) 
 
         logger.info('Command {} completed'.format(__name__))
         self.send_email()

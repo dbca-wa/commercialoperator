@@ -1,7 +1,7 @@
 <template id="proposal_dashboard">
     <div class="container" id="paymentDash">
 
-    <div v-if="overdue_invoices.length > 0" class="row error">
+    <div v-if="is_external && overdue_invoices.length > 0" class="row error">
         <div class="col-sm-12">
             <div class="well well-sm">
                 <p>
