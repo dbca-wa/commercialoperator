@@ -4451,6 +4451,10 @@ def duplicate_event(p):
         park.id=None
         park.proposal=p
         park.save()
+        #copy manytomany field activities_assessor values.
+        if original_park.activities_assessor:
+            park.activities_assessor.set(original_park.activities_assessor.all())
+            park.save()
         for park_document in EventsParkDocument.objects.filter(events_park=original_park.id):
             park_document.events_park = park
             park_document.id = None
@@ -4528,6 +4532,9 @@ def duplicate_event(p):
         trail.id=None
         trail.proposal=p
         trail.save()
+        if original_trail.activities_assessor:
+            trail.activities_assessor.set(original_trail.activities_assessor.all())
+            trail.save()
 
         # for section in original_trail.sections.all():
         #     original_section=copy.deepcopy(section)
@@ -5741,7 +5748,7 @@ class ProposalEventsParks(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(Proposal, related_name='events_parks', null=True)
     park= models.ForeignKey(Park, related_name='events_proposal')
-    activities_assessor=models.ManyToManyField(Activity, null=True, blank=True) #not used any more
+    activities_assessor=models.ManyToManyField(Activity, null=True, blank=True)
     event_activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):
@@ -5857,7 +5864,7 @@ class ProposalEventsTrails(models.Model):
     proposal = models.ForeignKey(Proposal, related_name='events_trails', null=True)
     trail= models.ForeignKey(Trail, related_name='events_proposal', null=True)
     section= models.ForeignKey(Section, related_name='events_proposal', null=True)
-    activities_assessor=models.ManyToManyField(Activity, blank=True, null=True) #not used any more
+    activities_assessor=models.ManyToManyField(Activity, blank=True, null=True) 
     event_trail_activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):

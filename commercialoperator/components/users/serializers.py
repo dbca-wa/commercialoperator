@@ -84,10 +84,11 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
 
     def get_current_event_proposals(self, obj):
         today = timezone.localtime(timezone.now()).date()
-        year_date = today + timedelta(days=90)
+        #Only return the Approvals in last 12 months
+        year_date = today - timedelta(days=365)
         _list = []
         #for application_type in ['T Class', 'Filming', 'Event']:
-        qs = Approval.objects.filter(current_proposal__application_type__name=ApplicationType.EVENT, current_proposal__org_applicant=obj).values('id','current_proposal','current_proposal__event_activity__event_name').order_by('id')
+        qs = Approval.objects.filter(expiry_date__lte=today, expiry_date__gte=year_date,current_proposal__application_type__name=ApplicationType.EVENT, current_proposal__org_applicant=obj).values('id','current_proposal','current_proposal__event_activity__event_name').order_by('id')
         _list.append( dict(application_type=ApplicationType.EVENT, proposals=qs) )
         return _list
 

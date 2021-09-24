@@ -122,7 +122,8 @@
                           <div class="form-group">
                             <label for="" class="col-sm-3 control-label" >Document</label>
                             <div v-if="!approval.migrated" class="col-sm-4">
-                                <p><a target="_blank" :href="approval.licence_document" class="control-label pull-left">Licence.pdf</a></p>
+                                <p><a target="_blank" :href="approval.licence_document" class="control-label pull-left">Licence.pdf</a></p><br>
+                                <div v-for="r in approval.requirement_docs"><p><a target="_blank" :href="r[1]" class="control-label pull-left" >{{r[0]}}</a></p><br></div>
                             </div>
                             <div v-else class="col-sm-4">
                                 <label class="control-label pull-left"><a target="_blank" href="">Licence.pdf</a> (This is a migrated Licence.)</label>
