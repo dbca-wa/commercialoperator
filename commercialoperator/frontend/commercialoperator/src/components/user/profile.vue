@@ -963,7 +963,7 @@ export default {
                     //vm.profile = response.body
                     //if (vm.profile.residential_address == null){ vm.profile.residential_address = {}; }
 
-                    this.profile = Object.assign(response.body);
+                    vm.profile = Object.assign(response.body);
                     if (vm.profile.residential_address == null){ vm.profile.residential_address = Object.assign({country:'AU'}); }
 
                     if ( vm.profile.commercialoperator_organisations && vm.profile.commercialoperator_organisations.length > 0 ) { vm.managesOrg = 'Yes' }
