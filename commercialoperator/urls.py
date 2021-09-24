@@ -98,6 +98,7 @@ router.register(r'proposal_events_trails', proposal_api_event.ProposalEventsTrai
 
 api_patterns = [
     url(r'^api/profile$', users_api.GetProfile.as_view(), name='get-profile'),
+    url(r'^api/countries$', users_api.GetCountries.as_view(), name='get-countries'),
     url(r'^api/department_users$', users_api.DepartmentUserList.as_view(), name='department-users-list'),
     url(r'^api/filtered_users$', users_api.UserListFilterView.as_view(), name='filtered_users'),
     url(r'^api/filtered_organisations$', org_api.OrganisationListFilterView.as_view(), name='filtered_organisations'),
