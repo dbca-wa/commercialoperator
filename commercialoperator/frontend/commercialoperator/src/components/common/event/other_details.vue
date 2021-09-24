@@ -134,7 +134,7 @@
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <label>Depending on the filming operation, fees and charges may apply. Please see commercial filming <a :href="fees_and_charges" target="_blank">website</a> for information on fees and charges.</label>
+                                    <label>Please note a per participant licence charge applies to commercial events  which is payable in addition to the application fees. Please see the department <a :href="fees_and_charges" target="_blank">website</a> for further information on applicable fees and charges and how they are paid.</label>
                                 </div>   
                             </div>
                             <div class="row">&nbsp;</div>
