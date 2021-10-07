@@ -54,14 +54,30 @@
                                     </div>
                                     <!-- <div class="col-sm-9" v-if="">
                                         <select style="width:100%" class="form-control input-sm" multiple ref="activities_select" v-model="selected_activities">
-                                            <option v-for="a in allowed_activities" :value="a.id">{{a.name}}</option>
+                                            <option v-for="a in trail_activities" :value="a.id">{{a.name}}</option>
                                         </select>
                                     </div> -->
 
                                     <div class="col-sm-9" v-if="">
                                         
-                                        <input type="text" class="form-control" name="pre_event_name"  v-model="trail.event_trail_activities">
+                                        <input type="text" class="form-control" name="pre_event_name"  v-model="trail.event_trail_activities" :readonly="is_internal">
                                     </div>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group" v-if="is_internal">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        
+                                        <label class="control-label pull-left"  for="Name">Activity Types (internal) </label>
+                                    </div>
+                                    <div class="col-sm-9" v-if="">
+                                        <select style="width:100%" class="form-control input-sm" multiple ref="activities_select" v-model="selected_activities">
+                                            <option v-for="a in trail_activities" :value="a.id">{{a.name}}</option>
+                                        </select>
+                                    </div>
+
 
                                 </div>
                             </div>
@@ -105,13 +121,25 @@ import alert from '@vue-utils/alert.vue'
 import {helpers,api_endpoints} from "@/utils/hooks.js"
 import FileField2 from '@/components/forms/filefield2.vue'
 export default {
-    name:'Edit-Trail-Activity',
+    name:'Edit-Trail-Activity-Event',
     components:{
         modal,
         alert,
         FileField2
     },
     props:{
+        // level:{
+        //     type: String,
+        //     required: true,
+        //     validator:function(val) {
+        //         let options = ['internal','referral','external'];
+        //         return options.indexOf(val) != -1 ? true: false;
+        //     }
+        // },
+        is_internal:{
+              type: Boolean,
+              default: false
+        },
         trail_id: {
             type: Number,
             required: true
@@ -135,6 +163,7 @@ export default {
             issuingPark: false,
             trails_list:[],
             section_list:[],
+            trail_activities:[],
             selected_activities:[],
             validation_form: null,
             errors: false,
@@ -197,7 +226,7 @@ export default {
             this.errors = false;
             $('.has-error').removeClass('has-error');
             //this.$refs.activities_select=[];
-            //$(this.$refs.activities_select).val(null).trigger('change');
+            $(this.$refs.activities_select).val(null).trigger('change');
             //this.events_trail_id=null;
             $(this.$refs.events_trail).val(null).trigger('change');
             $(this.$refs.events_section).val(null).trigger('change');
@@ -216,15 +245,25 @@ export default {
             } );
         },
         
-        fetchAllTrails: function(id){
+        fetchAllTrails_orig: function(id){
             let vm = this;
             vm.$http.get(api_endpoints.trails).then((response) => {
                 vm.trails_list = response.body; 
+
             },(error) => {
                 console.log(error);
             } );
         },
+        fetchAllTrails: function(id){
+            let vm = this;
+            vm.$http.get(api_endpoints.event_trail_container).then((response) => {
+                vm.trails_list = response.body['trails'];
+                vm.trail_activities= response.body['event_activity_types'] 
 
+            },(error) => {
+                console.log(error);
+            } );
+        },
 
         
         fetchTrail: function(vid){
@@ -248,11 +287,11 @@ export default {
                         
                         // vm.fetchSections();
                       }
-                      // if(vm.trail.activities)
-                      // {
-                      //   vm.selected_activities=vm.trail.activities;
-                      //   $(vm.$refs.activities_select).val(vm.trail.activities).trigger('change');
-                      // }
+                      if(vm.trail.activities_assessor)
+                      {
+                        vm.selected_activities=vm.trail.activities_assessor;
+                        $(vm.$refs.activities_select).val(vm.trail.activities_assessor).trigger('change');
+                      }
                       // if(vm.trail.from_date){
                       //   vm.trail.from_date=vm.trail.from_date.format('DD/MM/YYYY')
                       //   }
@@ -274,7 +313,7 @@ export default {
                     vm.section_list = helpers.copyObject(vm.trails_list[i].sections)
                 }
             }
-            console.log(vm.section_list);
+            //console.log(vm.section_list);
             $(vm.$refs.events_section).val(vm.section_list).trigger('change');
         },
         sendData:function(){
@@ -288,7 +327,8 @@ export default {
                 vm.trail.section=vm.section_id
             }
             //console.log('trail.section',vm.trail.section);
-            //vm.trail.activities = vm.selected_activities;
+            vm.trail.activities_assessor = vm.selected_activities;
+            //console.log(vm.trail.activities_assessor);
             // if(vm.trail.from_date){
             //     vm.trail.from_date=vm.trail.from_date.format('YYYY-MM-DD')
             // }
@@ -410,20 +450,20 @@ export default {
                 vm.section_id = selected.val();
                 //vm.fetchAllowedActivities();
             });
-            // Initialise select2 for Activity types
-                // $(vm.$refs.activities_select).select2({
-                //     "theme": "bootstrap",
-                //     allowClear: true,
-                //     placeholder:"Select Activities"
-                // }).
-                // on("select2:select",function (e) {
-                //     var selected = $(e.currentTarget);
-                //     vm.selected_activities = selected.val();
-                // }).
-                // on("select2:unselect",function (e) {
-                //     var selected = $(e.currentTarget);
-                //     vm.selected_activities = selected.val();
-                // });
+            //Initialise select2 for Activity types
+                $(vm.$refs.activities_select).select2({
+                    "theme": "bootstrap",
+                    allowClear: true,
+                    placeholder:"Select Activities"
+                }).
+                on("select2:select",function (e) {
+                    var selected = $(e.currentTarget);
+                    vm.selected_activities = selected.val();
+                }).
+                on("select2:unselect",function (e) {
+                    var selected = $(e.currentTarget);
+                    vm.selected_activities = selected.val();
+                });
             
        }
    },

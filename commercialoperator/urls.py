@@ -46,6 +46,7 @@ router.register(r'referrals',proposal_api.ReferralViewSet)
 router.register(r'approvals',approval_api.ApprovalViewSet)
 router.register(r'bookings',booking_api.BookingViewSet)
 router.register(r'park_bookings',booking_api.ParkBookingViewSet)
+router.register(r'overdue_invoices',booking_api.OverdueBookingInvoiceViewSet)
 router.register(r'compliances',compliances_api.ComplianceViewSet)
 router.register(r'proposal_requirements',proposal_api.ProposalRequirementViewSet)
 router.register(r'proposal_standard_requirements',proposal_api.ProposalStandardRequirementViewSet)
@@ -79,6 +80,7 @@ router.register(r'required_documents', main_api.RequiredDocumentViewSet)
 router.register(r'questions', main_api.QuestionViewSet)
 router.register(r'payment', main_api.PaymentViewSet)
 router.register(r'event_trail_container', main_api.TrailTabViewSet, base_name='event_trail_container')
+router.register(r'event_park_container', main_api.EventsParkTabViewSet, base_name='event_park_container')
 
 
 # Filming
@@ -98,6 +100,7 @@ router.register(r'proposal_events_trails', proposal_api_event.ProposalEventsTrai
 
 api_patterns = [
     url(r'^api/profile$', users_api.GetProfile.as_view(), name='get-profile'),
+    url(r'^api/countries$', users_api.GetCountries.as_view(), name='get-countries'),
     url(r'^api/department_users$', users_api.DepartmentUserList.as_view(), name='department-users-list'),
     url(r'^api/filtered_users$', users_api.UserListFilterView.as_view(), name='filtered_users'),
     url(r'^api/filtered_organisations$', org_api.OrganisationListFilterView.as_view(), name='filtered_organisations'),

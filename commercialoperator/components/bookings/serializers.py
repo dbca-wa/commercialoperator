@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils import timezone
 from ledger.accounts.models import EmailUser,Address
 from ledger.payments.invoice.models import Invoice
 from commercialoperator.components.proposals.serializers import ProposalSerializer, InternalProposalSerializer, ProposalParkSerializer
@@ -133,14 +134,10 @@ class BookingSerializer(serializers.ModelSerializer):
         return None
 
     def get_payment_status(self,obj):
-        if obj and obj.invoices.last():
-            inv = obj.invoices.last()
-            payment_status =  Invoice.objects.get(reference=inv.invoice_reference).payment_status
-            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
-        elif obj.unpaid:
-            # if no invoice exists, likely this is booking is for monthly_invoicing
+        try:
+            return obj.invoices.last().payment_status
+        except:
             return 'Unpaid'
-        return None
 
     def get_payment_method(self,obj):
         if obj and obj.invoices.last():
@@ -149,6 +146,30 @@ class BookingSerializer(serializers.ModelSerializer):
         else:
             # if no invoice exists, likely this is booking is for monthly_invoicing
             return obj.get_booking_type_display()
+ 
+
+class OverdueBookingInvoiceSerializer(serializers.ModelSerializer):
+    invoice_reference = serializers.SerializerMethodField(read_only=True)
+    overdue = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = BookingInvoice
+        fields = (
+            'id',
+            'invoice_reference',
+            'overdue',
+        )
+
+    def get_invoice_reference(self,obj):
+        if obj and obj.booking.invoices.last():
+            return obj.booking.invoices.last().invoice_reference
+        return None
+
+    def get_overdue(self,obj):
+        if obj and obj.booking.invoices.last():
+            bi = obj.booking.invoices.last()
+            return bi.overdue
+        return None
 
 
 class DTBookingSerializer(serializers.ModelSerializer):
@@ -237,14 +258,10 @@ class DTBookingSerializer(serializers.ModelSerializer):
         return None
 
     def get_payment_status(self,obj):
-        if obj and obj.invoices.last():
-            inv = obj.invoices.last()
-            payment_status =  Invoice.objects.get(reference=inv.invoice_reference).payment_status
-            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
-        elif obj.unpaid:
-            # if no invoice exists, likely this is booking is for monthly_invoicing
+        try:
+            return obj.invoices.last().payment_status
+        except:
             return 'Unpaid'
-        return None
 
     def get_payment_method(self,obj):
         if obj and obj.invoices.last():
@@ -278,8 +295,6 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
             'no_children',
             'no_free_of_charge',
             'cost',
-            #'booking',
-            #Booking fields
             'admission_number',
             'application_fee_invoice',
             'approval_number',
@@ -289,7 +304,7 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
             'proxy_applicant',
             'payment_status',
             'payment_method',
-            'invoice_reference', 
+            'invoice_reference',
 
         )
         datatables_always_serialize = (
@@ -300,8 +315,6 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
             'no_children',
             'no_free_of_charge',
             'cost',
-            #'booking',
-            #Booking fields
             'admission_number',
             'application_fee_invoice',
             'approval_number',
@@ -365,14 +378,10 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
         return None
 
     def get_payment_status(self,obj):
-        if obj.booking and obj.booking.invoices.last():
-            inv = obj.booking.invoices.last()
-            payment_status =  Invoice.objects.get(reference=inv.invoice_reference).payment_status
-            return ' '.join([i.capitalize() for i in payment_status.replace('_',' ').split()])
-        elif obj.booking.unpaid:
-            # if no invoice exists, likely this is booking is for monthly_invoicing
+        try:
+            return obj.booking.invoices.last().payment_status
+        except:
             return 'Unpaid'
-        return None
 
     def get_payment_method(self,obj):
         if obj.booking and obj.booking.invoices.last():

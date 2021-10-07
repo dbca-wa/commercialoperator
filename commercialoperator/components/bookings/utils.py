@@ -479,29 +479,47 @@ def create_tclass_fee_lines(proposal, invoice_text=None, vouchers=[], internal=F
         return line_items
 
 def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=False):
-        """ EVENT: Create the ledger lines - line item for application fee sent to payment system """
+    """ EVENT: Create the ledger lines - line item for application fee sent to payment system """
 
-        now = datetime.now().strftime('%Y-%m-%d %H:%M')
-        application_price = proposal.application_type.application_fee
-        if proposal.application_type.name==ApplicationType.EVENT:
-                #There is no Licence fee for Event application.
-                line_items = [
-                        {   'ledger_description': 'Application Fee - {} - {}'.format(now, proposal.lodgement_number),
-                                'oracle_code': proposal.application_type.oracle_code_application,
-                                'price_incl_tax':  application_price,
-                                'price_excl_tax':  application_price if proposal.application_type.is_gst_exempt else calculate_excl_gst(application_price),
-                                'quantity': 1,
-                        },
-                ]
-        logger.info('{}'.format(line_items))
-        return line_items
+    def get_application_fee():
+        application_fee = proposal.application_type.application_fee
+
+        org = proposal.org_applicant
+        if org.charge_once_per_year:
+            year_start = date(proposal.event_activity.commencement_date.year, org.charge_once_per_year.month, org.charge_once_per_year.day)
+            year_end = year_start + relativedelta(years=1)
+            fees_paid = [(p, p.fee_amount) for p in Proposal.objects.filter(org_applicant=org, application_type__name=ApplicationType.EVENT, event_activity__commencement_date__gte=year_start, event_activity__completion_date__lt=year_end) if p.fee_amount and p.fee_amount != 'null' and float(p.fee_amount)>0.0]
+
+            logger.info('{} - {}: Fees paid between {} - {}\{})'.format(proposal, org, year_start, year_end, fees_paid))
+            if fees_paid:
+                # application fee has already been paid at least once for the calendar period
+                application_fee = Decimal('0.0')
+                logger.info('{} - {}: Setting Application Fee to 0.0 (free free for period {} - {})'.format(proposal, org, year_start, year_end))
+
+        return application_fee
+
+    now = datetime.now().strftime('%Y-%m-%d %H:%M')
+    application_price = get_application_fee()
+
+    if proposal.application_type.name==ApplicationType.EVENT:
+        #There is no Licence fee for Event application.
+        line_items = [
+            {'ledger_description': 'Application Fee - {} - {}'.format(now, proposal.lodgement_number),
+             'oracle_code': proposal.application_type.oracle_code_application,
+             'price_incl_tax':  application_price,
+             'price_excl_tax':  application_price if proposal.application_type.is_gst_exempt else calculate_excl_gst(application_price),
+             'quantity': 1,
+            },
+        ]
+    logger.info('{}'.format(line_items))
+    return line_items
 
 def create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_period):
         """ Create the ledger lines, line items for each park - filming licence fee divided evenly and sent to payment system """
 
         def add_line_item(park, price):
             return {
-                    'ledger_description': f'{park.name} ({park.oracle_code(proposal.application_type)}: {licence_text} - {filming_period})',
+                    'ledger_description': f'{park.name} ({licence_text} - {filming_period})',
                     'oracle_code': park.oracle_code(proposal.application_type),
                     'price_incl_tax':  float(price),
                     'price_excl_tax':  float(price), # NO GST

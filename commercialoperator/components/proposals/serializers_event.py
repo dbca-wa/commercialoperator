@@ -52,11 +52,33 @@ from reversion.models import Version
 class ProposalEventActivitiesSerializer(serializers.ModelSerializer):
     commencement_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
     completion_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
+    max_num_months_ahead = serializers.SerializerMethodField()
+    last_event_application_fee_date = serializers.SerializerMethodField()
 
     class Meta:
         model = ProposalEventActivities
-        fields = '__all__'
+        #fields = '__all__'
+        fields=(
+                'id',
+                'event_name',
+                'proposal',
+                'commencement_date',
+                'completion_date',
+                'event_date',
+                'pdswa_location',
+                #'can_occur',
+                'max_num_months_ahead',
+                'last_event_application_fee_date',
+        )
 
+    def get_max_num_months_ahead(self, obj):
+        return obj.proposal.org_applicant.max_num_months_ahead
+
+    def get_last_event_application_fee_date(self, obj):
+        try:
+            return obj.proposal.org_applicant.last_event_application_fee_date.strftime('%d/%m/%Y')
+        except:
+            return None
 
 class ProposalEventManagementSerializer(serializers.ModelSerializer):
 
@@ -98,16 +120,20 @@ class EventsParkDocumentSerializer(serializers.ModelSerializer):
 class ProposalEventsParksSerializer(serializers.ModelSerializer):
     park=ParkFilterSerializer()
     #activities=serializers.CharField(source='activities.name', many=True)
+    activities_assessor_names=serializers.SerializerMethodField()
     events_park_documents = EventsParkDocumentSerializer(many=True, read_only=True)
     class Meta:
         model = ProposalEventsParks
-        fields = ('id', 'park','event_activities',  'proposal', 'events_park_documents')
+        fields = ('id', 'park','event_activities',  'proposal', 'events_park_documents', 'activities_assessor', 'activities_assessor_names')
+
+    def get_activities_assessor_names(self,obj):
+        return [a.name for a in obj.activities_assessor.all() ] if obj.activities_assessor else None
 
 class SaveProposalEventsParksSerializer(serializers.ModelSerializer):
     #park=ParkFilterSerializer()
     class Meta:
         model = ProposalEventsParks
-        fields = ('id', 'park','proposal', 'event_activities')
+        fields = ('id', 'park','proposal', 'event_activities', 'activities_assessor')
 
 class AbseilingClimbingActivitySerializer(serializers.ModelSerializer):
     expiry_date = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
@@ -138,12 +164,16 @@ class SaveProposalPreEventsParksSerializer(serializers.ModelSerializer):
 class ProposalEventsTrailsSerializer(serializers.ModelSerializer):
     trail=TrailSerializer()
     section=SectionSerializer()
+    activities_assessor_names=serializers.SerializerMethodField()
     class Meta:
         model = ProposalEventsTrails
-        fields = ('id', 'trail','section',  'proposal', 'event_trail_activities')
+        fields = ('id', 'trail','section',  'proposal', 'event_trail_activities', 'activities_assessor', 'activities_assessor_names')
+
+    def get_activities_assessor_names(self,obj):
+        return [a.name for a in obj.activities_assessor.all() ] if obj.activities_assessor else None
 
 class SaveProposalEventsTrailsSerializer(serializers.ModelSerializer):
     #park=ParkFilterSerializer()
     class Meta:
         model = ProposalEventsTrails
-        fields = ('id', 'trail','proposal','section', 'event_trail_activities')
+        fields = ('id', 'trail','proposal','section', 'event_trail_activities', 'activities_assessor')

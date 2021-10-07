@@ -30,7 +30,9 @@ from commercialoperator.components.compliances.email import (
                         send_submit_email_notification,
                         send_internal_reminder_email_notification,
                         send_due_email_notification,
-                        send_internal_due_email_notification
+                        send_internal_due_email_notification,
+                        send_notification_only_email,
+                        send_internal_notification_only_email,
                         )
 from ledger.payments.invoice.models import Invoice
 
@@ -225,10 +227,19 @@ class Compliance(RevisionedMixin):
                         logger.info('Post due date reminder sent for Compliance {} '.format(self.lodgement_number))
                     elif self.due_date >= today and today >= self.due_date - datetime.timedelta(days=14) and self.reminder_sent==False:
                         # second part: if today is with 14 days of due_date, and email reminder is not sent (deals with Compliances created with the reminder period)
-                        send_due_email_notification(self)
-                        send_internal_due_email_notification(self)
-                        self.reminder_sent=True
-                        self.save()
+                        print(self.id)
+                        if self.requirement.notification_only:
+                            send_notification_only_email(self)
+                            send_internal_notification_only_email(self)
+                            self.reminder_sent=True
+                            self.processing_status='approved'
+                            self.customer_status='approved'
+                            self.save()
+                        else:
+                            send_due_email_notification(self)
+                            send_internal_due_email_notification(self)
+                            self.reminder_sent=True
+                            self.save()
                         ComplianceUserAction.log_action(self,ComplianceUserAction.ACTION_REMINDER_SENT.format(self.id),user)
                         logger.info('Pre due date reminder sent for Compliance {} '.format(self.lodgement_number))
 

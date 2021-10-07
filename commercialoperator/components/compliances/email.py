@@ -51,6 +51,16 @@ class ComplianceInternalDueNotificationEmail(TemplateEmailBase):
     html_template = 'commercialoperator/emails/send_internal_due_notification.html'
     txt_template = 'commercialoperator/emails/send_internal_due_notification.txt'
 
+class ComplianceNotificationOnlyEmail(TemplateEmailBase):
+    subject = '{} - Commercial Operations Licence requirement notification.'.format(settings.DEP_NAME)
+    html_template = 'commercialoperator/emails/send_notification_only_email.html'
+    txt_template = 'commercialoperator/emails/send_notification_only_email.txt'
+
+class ComplianceInternalNotificationOnlyEmail(TemplateEmailBase):
+    subject = 'A Compliance with requirements is due for submission.'
+    html_template = 'commercialoperator/emails/send_internal_notification_only_email.html'
+    txt_template = 'commercialoperator/emails/send_internal_notification_only_email.txt'
+
 def send_amendment_email_notification(amendment_request, request, compliance, is_test=False):
     email = ComplianceAmendmentRequestSendNotificationEmail()
     #reason = amendment_request.get_reason_display()
@@ -281,6 +291,69 @@ def send_submit_email_notification(request, compliance, is_test=False):
     _log_compliance_email(msg, compliance, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(msg, compliance.proposal.org_applicant, compliance.submitter, sender=sender)
+    else:
+        _log_user_email(msg, compliance.proposal.submitter, compliance.submitter, sender=sender)
+
+def send_notification_only_email(compliance, is_test=False):
+    #email = ComplianceDueNotificationEmail()
+    email = ComplianceNotificationOnlyEmail()
+    #url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
+    url=settings.SITE_URL
+    url+=reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id})
+    context = {
+        'compliance': compliance,
+        'url': url
+    }
+
+    submitter = compliance.submitter.email if compliance.submitter and compliance.submitter.email else compliance.proposal.submitter.email
+    all_ccs = []
+    if compliance.proposal.org_applicant and compliance.proposal.org_applicant.email:
+        cc_list = compliance.proposal.org_applicant.email
+        if cc_list:
+            all_ccs = [cc_list]
+    msg = email.send(submitter,cc=all_ccs, context=context)
+    if is_test:
+        return
+
+    sender = settings.DEFAULT_FROM_EMAIL
+    try:
+        sender_user = EmailUser.objects.get(email__icontains=sender)
+    except:
+        sender_user = EmailUser.objects.create(email=sender, password='', is_staff=True)
+    _log_compliance_email(msg, compliance, sender=sender_user)
+    if compliance.proposal.org_applicant:
+        _log_org_email(msg, compliance.proposal.org_applicant, compliance.submitter, sender=sender_user)
+    else:
+        _log_user_email(msg, compliance.proposal.submitter, compliance.submitter, sender=sender)
+
+
+def send_internal_notification_only_email(compliance, is_test=False):
+    #email = ComplianceInternalDueNotificationEmail()
+    email = ComplianceInternalNotificationOnlyEmail()
+    #url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
+    url=settings.SITE_URL
+    url+=reverse('internal-compliance-detail',kwargs={'compliance_pk': compliance.id})
+    if "-internal" not in url:
+        # add it. This email is for internal staff
+        url = '-internal.{}'.format(settings.SITE_DOMAIN).join(url.split('.' + settings.SITE_DOMAIN))
+
+    context = {
+        'compliance': compliance,
+        'url': url
+    }
+
+    msg = email.send(compliance.proposal.assessor_recipients, context=context)
+    if is_test:
+        return
+
+    sender = settings.DEFAULT_FROM_EMAIL
+    try:
+        sender_user = EmailUser.objects.get(email__icontains=sender)
+    except:
+        sender_user = EmailUser.objects.create(email=sender, password='', is_staff=True)
+    _log_compliance_email(msg, compliance, sender=sender_user)
+    if compliance.proposal.org_applicant:
+        _log_org_email(msg, compliance.proposal.org_applicant, compliance.submitter, sender=sender_user)
     else:
         _log_user_email(msg, compliance.proposal.submitter, compliance.submitter, sender=sender)
 

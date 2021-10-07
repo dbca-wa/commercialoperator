@@ -15,7 +15,8 @@ module.exports = {
     filtered_users: '/api/filtered_users',
     referral_recipient_groups: '/api/referrals/user_group_list',
     //other
-    countries: "https://restcountries.eu/rest/v1/?fullText=true",
+    //countries: "https://restcountries.eu/rest/v1/?fullText=true",
+    countries: '/api/countries',
     proposal_type:"/api/proposal_type",
     proposals:"/api/proposal.json",
     proposal_park:"/api/proposal_park.json",
@@ -42,6 +43,8 @@ module.exports = {
     vessels:"/api/vessels.json",
     assessments:"/api/assessments.json",
     event_trail_container:"/api/event_trail_container",
+    event_park_container:"/api/event_park_container",
+    overdue_invoices:"/api/overdue_invoices.json",
     
     //filming
     proposal_filming_parks:"/api/proposal_filming_parks.json",

@@ -19,7 +19,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of participants expected</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_participants" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_participants">
+                                    <input type="number" class="form-control" name="num_participants" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_participants" step="1" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -28,7 +28,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of spectators expected</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_spectators" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_spectators">
+                                    <input type="number" class="form-control" name="num_spectators" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_spectators" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -37,7 +37,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of officials</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_officials" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_officials">
+                                    <input type="number" class="form-control" name="num_officials" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_officials" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -46,7 +46,7 @@
                                     <label class="control-label pull-left"  for="Name">Number of vehicles/ vessels</label>
                                 </div>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" name="num_vehicles" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_vehicles">
+                                    <input type="number" class="form-control" name="num_vehicles" :disabled="proposal.readonly || proposal.pending_amendment_request || proposal.is_amendment_proposal" v-model="proposal.event_management.num_vehicles" onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189" @paste.prevent>
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -374,7 +374,8 @@
                             <div class="row">&nbsp;</div>
                             <div class="row">    
                                 <div class="col-sm-6">
-                                    <label class="control-label pull-left"  for="Name">Have you developed a Traffic Management Plan that has been prepared and approved by an accredited body in line with Mainroads WA -  <a :href="event_traffic_code_of_practice" target="_blank">Traffic Management for Events Code of Practice</a>? </label>                                   
+                                    <!-- <label class="control-label pull-left"  for="Name">Have you developed a Traffic Management Plan that has been prepared and approved by an accredited body in line with Mainroads WA -  <a :href="event_traffic_code_of_practice" target="_blank">Traffic Management for Events Code of Practice</a>? </label> -->
+                                    <label class="control-label pull-left"  for="Name">Does your event route cross or use sections of public road on Conservation and Land Management Act 1984 Land?</label>                                   
                                 </div>
                                 <div class="col-sm-6">
                                     <ul class="list-inline"  >
@@ -391,7 +392,7 @@
                             </div>
                             <div class="row" v-if="proposal.event_management.traffic_management_plan">
                                 <div class="col-sm-6">
-                                    <label class="control-label pull-left"  for="Name">Please attach </label>                               
+                                    <label class="control-label pull-left"  for="Name">Please attach Traffic Management Plan that has been prepared and approved by an accredited body in line with Mainroads WA -  <a :href="event_traffic_code_of_practice" target="_blank">Traffic Management for Events Code of Practice</a> </label>                               
                                 </div>
                                 <div class="col-sm-6">
                                     <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_management_traffic_management_plan" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="event_management_traffic_management_plan"></FileField>
