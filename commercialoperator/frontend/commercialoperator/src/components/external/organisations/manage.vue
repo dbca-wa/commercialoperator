@@ -90,7 +90,7 @@
                             <label for="" class="col-sm-3 control-label" >Country</label>
                             <div class="col-sm-4">
                                 <select class="form-control" name="country" v-model="org.address.country">
-                                    <option v-for="c in countries" :value="c.alpha2Code">{{ c.name }}</option>
+                                    <option v-for="c in countries" :value="c.code">{{ c.name }}</option>
                                 </select>
                             </div>
                           </div>
@@ -106,6 +106,7 @@
                 </div>
             </div>
         </div>
+        <!-- 
         <div v-if="!isApplication" class="row">
             <div class="col-sm-12">
                 <div class="panel panel-default">
@@ -127,6 +128,7 @@
                 </div>
             </div>
         </div>
+        -->
         <div v-if="!isApplication" class="row">
             <div class="col-sm-12">
 
@@ -411,7 +413,11 @@ export default {
                 columns: [
                     {
                         mRender:function (data,type,full) {
-                            return full.first_name + " " + full.last_name;
+                            if(full.is_admin) {
+                                return full.first_name + " " + full.last_name + " (Admin)";
+                            } else {
+                                return full.first_name + " " + full.last_name;
+                            }
                         }
                     },
                     {data:'phone_number'},
@@ -421,8 +427,11 @@ export default {
                     {
                         mRender:function (data,type,full) {
                             let links = '';
-                            let name = full.first_name + ' ' + full.last_name;
-                            links +=  `<a data-email='${full.email}' data-name='${name}' data-id='${full.id}' class="remove-contact">Remove</a><br/>`;
+                            if(!full.is_admin) {
+                                let name = full.first_name + ' ' + full.last_name;
+                                links +=  `<a data-email='${full.email}' data-name='${name}' data-id='${full.id}' class="remove-contact">Remove</a><br/>`;
+                            }
+                            links +=  `<a data-email-edit='${full.email}' data-name-edit='${name}' data-edit-id='${full.id}' class="edit-contact">Edit</a><br/>`;
                             return links;
                         }
                     }
@@ -486,7 +495,7 @@ export default {
     },
     components: {
         datatable,
-        AddContact
+        AddContact,
     },
     computed: {
         classCompute:function(){
@@ -529,27 +538,48 @@ export default {
         addContact: function(){
             this.$refs.add_contact.isModalOpen = true;
         },
+        editContact: function(_id){
+            let vm = this;
+            vm.$http.get(helpers.add_endpoint_json(api_endpoints.organisation_contacts,_id)).then((response) => {
+                this.$refs.add_contact.contact = response.body;
+                this.addContact();
+            }).then((response) => {
+                this.$refs.contacts_datatable.vmDataTable.ajax.reload();
+            },(error) => {
+                console.log(error);
+            })
+        },
+        refreshDatatable: function(){
+            this.$refs.contacts_datatable.vmDataTable.ajax.reload();
+        },
         eventListeners: function(){
           let vm = this;
-          if (typeof vm.$refs.contacts_datatable !== 'undefined') {
+          //if (typeof vm.$refs.contacts_datatable !== 'undefined') {
+          if (true) {
             
-            vm.$refs.contacts_datatable.vmDataTable.on('click','.remove-contact',(e) => {
-                e.preventDefault();
-
-                let name = $(e.target).data('name');
-                let email = $(e.target).data('email');
-                let id = $(e.target).data('id');
-                swal({
-                    title: "Delete Contact",
-                    text: "Are you sure you want to remove "+ name + "("+ email + ") as a contact  ?",
-                    type: "error",
-                    showCancelButton: true,
-                    confirmButtonText: 'Accept'
-                }).then(() => {
-                    vm.deleteContact(id);
-                },(error) => {
-                });
-            });
+//            vm.$refs.contacts_datatable.vmDataTable.on('click','.remove-contact',(e) => {
+//                e.preventDefault();
+//
+//                let name = $(e.target).data('name');
+//                let email = $(e.target).data('email');
+//                let id = $(e.target).data('id');
+//                swal({
+//                    title: "Delete Contact",
+//                    text: "Are you sure you want to remove "+ name + "("+ email + ") as a contact  ?",
+//                    type: "error",
+//                    showCancelButton: true,
+//                    confirmButtonText: 'Accept'
+//                }).then(() => {
+//                    vm.deleteContact(id);
+//                },(error) => {
+//                });
+//            });
+//
+//            vm.$refs.contacts_datatable.vmDataTable.on('click','.edit-contact',(e) => {
+//                e.preventDefault();
+//                let id = $(e.target).attr('data-edit-id');
+//                vm.editContact(id);
+//            });
 
             vm.$refs.contacts_datatable_user.vmDataTable.on('click','.accept_contact',(e) => {
                 e.preventDefault();
@@ -987,7 +1017,7 @@ export default {
                 console.log(error);
                 swal(
                     'Contact Deleted', 
-                    'The contact could not be deleted because of the following error '+error,
+                    'The contact could not be deleted because of the following error : [' + error.body + ']',
                     'error'
                 )
             });
@@ -1061,7 +1091,6 @@ export default {
                 vm.myorgperms = data[2];
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
-            
         });
 
     },

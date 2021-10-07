@@ -575,6 +575,8 @@ class ListProposalSerializer(BaseProposalSerializer):
                 )
 
     def get_assigned_officer(self,obj):
+        if obj.processing_status==Proposal.PROCESSING_STATUS_WITH_APPROVER and obj.assigned_approver:
+            return obj.assigned_approver.get_full_name()
         if obj.assigned_officer:
             return obj.assigned_officer.get_full_name()
         return None
@@ -1087,6 +1089,7 @@ class ProposalRequirementSerializer(serializers.ModelSerializer):
             'can_district_assessor_edit',
             'require_due_date',
             'copied_for_renewal',
+            'notification_only',
         )
         read_only_fields = ('order','requirement', 'copied_from')
 

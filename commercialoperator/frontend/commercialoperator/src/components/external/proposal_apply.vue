@@ -103,6 +103,24 @@
                                 </div>
                             </div>
 
+                            <div class="" v-show="has_event_proposals()">
+                                <!-- <p style="color:red;"> An event application already exists in the system: </p>
+                                <p style="color:red;"> {{ event_proposals() }}</p> -->
+                                <div>
+                                    <label for="" class="control-label" >Prefill application with details from previously approved event </label>
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <select class="form-control" style="width:40%" v-model="selected_copy_from" >
+                                                <option value="" selected disabled>Select Event Licence to copy from*</option>
+                                                <option v-for="proposal in event_proposals()" :value="proposal.current_proposal">
+                                                    {{ proposal.current_proposal__event_activity__event_name }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div v-if="display_region_selectbox">
                                 <label for="" class="control-label" >Region * <a :href="region_help_url" target="_blank"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a> </label>
                                 <div class="col-sm-12">
@@ -196,6 +214,23 @@
                         <p style="color:red;"> An active application already exists in the system: </p>
                         <p style="color:red;"> {{ active_proposals() }}</p>
                     </div>
+                    <!-- <div class="col-sm-12" v-show="has_event_proposals()"> -->
+                        <!-- <p style="color:red;"> An event application already exists in the system: </p>
+                        <p style="color:red;"> {{ event_proposals() }}</p> -->
+                        <!-- <div>
+                                <label for="" class="control-label" >Copy from </label>
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <select class="form-control" style="width:40%" v-model="selected_copy_from" >
+                                            <option value="" selected disabled>Select Event Licence to copy from*</option>
+                                            <option v-for="proposal in event_proposals()" :value="proposal.current_proposal">
+                                                {{ proposal.current_proposal__event_activity__event_name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                    </div> -->
                     <div class="col-sm-12">
                         <button v-if="!creatingProposal" :disabled="isDisabled() || has_active_proposals()" @click.prevent="submit()" class="btn btn-primary pull-right">Continue</button>
                         <button v-else disabled class="pull-right btn btn-primary"><i class="fa fa-spin fa-spinner"></i>&nbsp;Creating</button>
@@ -249,6 +284,7 @@ export default {
         categories: [],
         approval_level: '',
         creatingProposal: false,
+        selected_copy_from: null,
         display_region_selectbox: false,
         display_activity_matrix_selectbox: false,
         site_url: (api_endpoints.site_url.endsWith("/")) ? (api_endpoints.site_url): (api_endpoints.site_url + "/"),
@@ -322,6 +358,19 @@ export default {
         }
         return proposals;
     },
+    has_event_proposals: function() {
+        return this.event_proposals().length > 0;
+    },
+    event_proposals: function() {
+        // returns active 'T Class' proposals - cannot have more than 1 active 'T Class' application at a time
+        let vm = this;
+        var proposals = [];
+        var org = vm.profile.commercialoperator_organisations.find(el => el.name === vm.org)
+        if (org && vm.selected_application_name == vm.application_type_event) {
+            proposals = org.current_event_proposals.find(el => el.application_type === vm.application_type_event).proposals
+        }
+        return proposals;
+    },
     submit: function() {
         let vm = this;
 		console.log(vm.org_applicant)
@@ -368,7 +417,8 @@ export default {
             sub_activity1: vm.selected_sub_activity1,
             sub_activity2: vm.selected_sub_activity2,
             category: vm.selected_category,
-            approval_level: vm.approval_level
+            approval_level: vm.approval_level,
+            selected_copy_from: vm.selected_copy_from,
 		}).then(res => {
 		    vm.proposal = res.body;
 			vm.$router.push({
@@ -459,6 +509,7 @@ export default {
         vm.selected_activity = '';
         vm.display_region_selectbox = false;
         vm.display_activity_matrix_selectbox = false;
+        vm.selected_copy_from= null;
 
         vm.selected_application_name = this.searchList(application_id, vm.application_types).text
         //this.chainedSelectActivities(application_id);

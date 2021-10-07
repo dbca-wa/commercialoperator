@@ -177,6 +177,9 @@
                                             <button v-if="sendingToDistrict" style="width:80%;" class="btn btn-primary top-buffer-s" disabled>Send to Districts&nbsp;
                                                 <i class="fa fa-circle-o-notch fa-spin fa-fw"></i></button>
                                             <button  v-if="!sendingToDistrict" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToDistricts()">Send to Districts</button><br/>
+                                            <button v-if="sendingToKensington" style="width:80%;" class="btn btn-primary top-buffer-s" disabled>Send to Kensington&nbsp;
+                                                <i class="fa fa-circle-o-notch fa-spin fa-fw"></i></button>
+                                            <button  v-if="!sendingToKensington" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToKensington()">Send to Kensington</button><br/>
                                         </div>
                                     </div>                                    
                                     <div v-else class="row">
@@ -463,6 +466,7 @@ export default {
             sendingReferral: false,
             comparing: false,
             sendingToDistrict: false,
+            sendingToKensington: false,
         }
     },
     components: {
@@ -667,6 +671,41 @@ export default {
                         'error'
                     )
                     vm.sendingToDistrict = false;
+                });
+
+              
+            },err=>{
+            });
+        },
+        sendToKensington: function(){
+            console.log('hello');
+            let vm = this;
+            //vm.save_wo();
+            let formData = new FormData(vm.form);
+            formData.append('selected_parks_activities', JSON.stringify(vm.proposal.selected_parks_activities))
+            formData.append('selected_trails_activities', JSON.stringify(vm.proposal.selected_trails_activities))
+            formData.append('marine_parks_activities', JSON.stringify(vm.proposal.marine_parks_activities))
+            
+            vm.sendingToKensington = true;
+            vm.$http.post(vm.proposal_form_url,formData).then(res=>{
+            
+                vm.$http.post(helpers.add_endpoint_json(api_endpoints.proposals,(vm.proposal.id+'/send_to_kensington'))).then((response) => {
+                    vm.sendingToKensington = false;
+                    vm.original_proposal = helpers.copyObject(response.body);
+                    vm.proposal = response.body;
+                    swal(
+                        'Sent',
+                        'The proposal has been sent to Kensington',
+                        'success'
+                    )
+                }, (error) => {
+                    console.log(error);
+                    swal(
+                        'Error',
+                        helpers.apiVueResourceError(error),
+                        'error'
+                    )
+                    vm.sendingToKensington = false;
                 });
 
               

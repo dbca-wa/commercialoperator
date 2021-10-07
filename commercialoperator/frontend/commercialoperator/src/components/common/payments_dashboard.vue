@@ -1,5 +1,19 @@
 <template id="proposal_dashboard">
     <div class="container" id="paymentDash">
+
+    <div v-if="is_external && overdue_invoices.length > 0" class="row error">
+        <div class="col-sm-12">
+            <div class="well well-sm">
+                <p>
+                    The following invoice(s) are overdue:<br/>
+                    <div v-for="invoice in overdue_invoices">
+                        {{ invoice.invoice_reference }}
+                    </div>
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
@@ -118,6 +132,7 @@ export default {
             //Profile to check if user has access to process Proposal
             profile: {},
             is_payment_admin: false,
+            overdue_invoices: [],
             // Filters for Proposals
             filterProposalPark: 'All',
             filterProposalStatus: 'All',
@@ -373,6 +388,15 @@ export default {
 
             //console.log(vm.regions);
         },
+        fetchOverdueInvoices: function(){
+            let vm = this;
+
+            vm.$http.get(api_endpoints.overdue_invoices).then((response) => {
+                vm.overdue_invoices = response.body;
+            },(error) => {
+                console.log(error);
+            })
+        },
 
         addEventListeners: function(){
             let vm = this;
@@ -526,6 +550,7 @@ export default {
 
     },
     mounted: function(){
+        this.fetchOverdueInvoices();
         this.fetchFilterLists();
         this.fetchProfile();
         let vm = this;
@@ -543,4 +568,7 @@ export default {
 }
 </script>
 <style scoped>
+.error {
+    color: red;
+}
 </style>

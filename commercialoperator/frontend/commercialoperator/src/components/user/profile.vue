@@ -1,4 +1,4 @@
-<template>
+<template> -->
     <div :class="classCompute" id="userInfo">
       <div class="col-sm-12">
         <div v-if="showCompletion" class="row">
@@ -132,7 +132,8 @@
                             <label for="" class="col-sm-3 control-label" >Country</label>
                             <div class="col-sm-4">
                                 <select class="form-control" id="country" name="Country" v-model="profile.residential_address.country">
-                                    <option v-for="c in countries" :value="c.alpha2Code">{{ c.name }}</option>
+                                    <!-- <option v-for="c in countries" :value="c.alpha2Code">{{ c.name }}</option> -->
+                                    <option v-for="c in countries" :value="c.code">{{ c.name }}</option>
                                 </select>
                             </div>
                           </div>
@@ -345,7 +346,7 @@
                                 </div>
                               </div>
                               <div class="form-group">
-                                <label for="" class="col-sm-2 control-label" >ABN/ACN <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="bottom" style="color:blue" title="If you are applying as a sole trader please supply your ABN.">&nbsp;</i></label>
+                                <label for="" class="col-sm-2 control-label" >ABN/ACN <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="bottom" style="color:blue" title="If you are applying as a sole trader please supply your ABN. If your businesses is not registered within Australia, please include the business registration number from the country the business is registered.">&nbsp;</i></label>
                                 <div class="col-sm-6">
                                     <input type="text" class="form-control" name="abn" v-model="newOrg.abn" placeholder="" style="width: 40%">
                                 </div>
@@ -959,8 +960,12 @@ export default {
         fetchProfile: function(){
           let vm=this;
           Vue.http.get(api_endpoints.profile).then((response) => {
-                    vm.profile = response.body
-                    if (vm.profile.residential_address == null){ vm.profile.residential_address = {}; }
+                    //vm.profile = response.body
+                    //if (vm.profile.residential_address == null){ vm.profile.residential_address = {}; }
+
+                    vm.profile = Object.assign(response.body);
+                    if (vm.profile.residential_address == null){ vm.profile.residential_address = Object.assign({country:'AU'}); }
+
                     if ( vm.profile.commercialoperator_organisations && vm.profile.commercialoperator_organisations.length > 0 ) { vm.managesOrg = 'Yes' }
                     vm.phoneNumberReadonly = vm.profile.phone_number === '' || vm.profile.phone_number === null || vm.profile.phone_number === 0 ?  false : true;
                     vm.mobileNumberReadonly = vm.profile.mobile_number === '' || vm.profile.mobile_number === null || vm.profile.mobile_number === 0 ?  false : true;
@@ -977,8 +982,12 @@ export default {
             }
             else{
                 next(vm => {
-                    vm.profile = response.body
-                    if (vm.profile.residential_address == null){ vm.profile.residential_address = {}; }
+                    //vm.profile = response.body
+                    //if (vm.profile.residential_address == null){ vm.profile.residential_address = {}; }
+
+                    vm.profile = Object.assign(response.body);
+                    if (vm.profile.residential_address == null){ vm.profile.residential_address = Object.assign({country: 'AU'}); }
+
                     if ( vm.profile.commercialoperator_organisations && vm.profile.commercialoperator_organisations.length > 0 ) { vm.managesOrg = 'Yes' }
                 });
             }

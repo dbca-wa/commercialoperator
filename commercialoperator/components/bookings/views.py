@@ -133,40 +133,6 @@ class ApplicationFeeView(TemplateView):
             raise
 
 
-#class ExistingPaymentView(TemplateView):
-#    #template_name = 'mooring/booking/make_booking.html'
-#    template_name = 'commercialoperator/booking/success.html'
-#
-#    def get_object(self):
-#        #return get_object_or_404(Proposal, fee_invoice_reference='05572566221')
-#        return get_object_or_404(Proposal, fee_invoice_reference=self.kwargs['invoice_ref'])
-#
-#    def get(self, request, *args, **kwargs):
-#
-#        try:
-#            proposal = self.get_object()
-#            invoice = proposal.invoice
-#            application_fee = ApplicationFee.objects.create(proposal=proposal, created_by=request.user, payment_type=ApplicationFee.PAYMENT_TYPE_TEMPORARY)
-#            #invoice_reference = '05572565392'
-#
-#            with transaction.atomic():
-#                set_session_application_invoice(request.session, application_fee)
-#                checkout_response = checkout_existing_invoice(
-#                    request,
-#                    invoice,
-#                    return_url_ns='fee_success',
-#                    return_preload_url_ns='fee_success',
-#                    invoice_text='Payment Invoice',
-#                )
-#
-#                logger.info('built payment line items {} for Existing Invoice'.format(invoice.reference))
-#                return checkout_response
-#
-#        except Exception as e:
-#            logger.error('Existing Invoice Payment: {}'.format(e))
-#            raise
-
-
 class ComplianceFeeView(TemplateView):
     template_name = 'commercialoperator/booking/success.html'
 
@@ -721,6 +687,7 @@ class ApplicationFeeSuccessView(TemplateView):
                         raise
 
                     application_fee.save()
+
                     request.session['cols_last_app_invoice'] = application_fee.id
                     delete_session_application_invoice(request.session)
 
@@ -774,13 +741,24 @@ class BookingSuccessView(TemplateView):
             basket = None
             booking = get_session_booking(request.session)
             proposal = booking.proposal
+            recipients = [request.user.email]
 
             try:
-                recipient = proposal.applicant.email
+                recipients.append(proposal.applicant.email)
                 submitter = proposal.applicant
             except:
-                recipient = proposal.submitter.email
+                recipients.append(proposal.submitter.email)
                 submitter = proposal.submitter
+
+            try:
+                # add org_applicant email, if exists
+                recipients.append(proposal.org_applicant.email)
+            except:
+                pass
+
+            # make distinct
+            recipients = list(set(recipients))
+
 
             if self.request.user.is_authenticated():
                 basket = Basket.objects.filter(status='Submitted', owner=request.user).order_by('-id')[:1]
@@ -826,12 +804,13 @@ class BookingSuccessView(TemplateView):
                     request.session['cols_last_booking'] = booking.id
                     delete_session_booking(request.session)
 
-                    send_invoice_tclass_email_notification(request.user, booking, invoice, recipients=[recipient])
-                    send_confirmation_tclass_email_notification(request.user, booking, invoice, recipients=[recipient])
+                    send_invoice_tclass_email_notification(request.user, booking, invoice, recipients=recipients)
+                    send_confirmation_tclass_email_notification(request.user, booking, invoice, recipients=recipients)
 
                     context.update({
                         'booking_id': booking.id,
                         'submitter': submitter,
+                        'payer': request.user,
                         'invoice_reference': invoice.reference
                     })
                     return render(request, self.template_name, context)
@@ -841,13 +820,24 @@ class BookingSuccessView(TemplateView):
             if ('cols_last_booking' in request.session) and Booking.objects.filter(id=request.session['cols_last_booking']).exists():
                 booking = Booking.objects.get(id=request.session['cols_last_booking'])
                 proposal = booking.proposal
+                recipients = [request.user.email]
 
                 try:
-                    recipient = proposal.applicant.email
+                    recipients.append(proposal.applicant.email)
                     submitter = proposal.applicant
                 except:
-                    recipient = proposal.submitter.email
+                    recipients.append(proposal.submitter.email)
                     submitter = proposal.submitter
+
+                try:
+                    # add org_applicant email, if exists
+                    recipients.append(proposal.org_applicant.email)
+                except:
+                    pass
+
+                # make distinct
+                recipients = list(set(recipients))
+
 
                 if BookingInvoice.objects.filter(booking=booking).count() > 0:
                     bi = BookingInvoice.objects.filter(booking=booking)
@@ -858,6 +848,7 @@ class BookingSuccessView(TemplateView):
         context.update({
             'booking_id': booking.id,
             'submitter': submitter,
+            'payer': request.user,
             'invoice_reference': invoice.invoice_reference
         })
         return render(request, self.template_name, context)
