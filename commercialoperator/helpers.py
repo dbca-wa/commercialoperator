@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from ledger.accounts.models import EmailUser
 from django.conf import settings
+from rest_framework import serializers
 
 import logging
 logger = logging.getLogger(__name__)
@@ -52,3 +53,18 @@ def is_internal(request):
 def get_all_officers():
     return EmailUser.objects.filter(groups__name='Commercial Operator Admin')
 
+def is_authorised_to_modify(request, instance):
+    authorised = True
+    if is_internal(request):
+        # the status must be 'with_assessor'
+        authorised &= instance.processing_status == 'with_assessor'
+        # the user must be an assessor for this type of application
+        authorised &= instance.can_process()
+    elif is_customer(request):
+        # the status of the application must be DRAFT for customer to modify
+        authorised &= instance.processing_status == 'draft'
+        # the application org and submitter org must be the same
+        authorised &= is_in_organisation_contacts(request, instance.org_applicant)
+
+    if not authorised:
+        raise serializers.ValidationError('You are not authorised to modify this application.')
