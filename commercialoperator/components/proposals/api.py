@@ -15,6 +15,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from commercialoperator.helpers import is_authorised_to_modify
 from rest_framework import viewsets, serializers, status, generics, views
 from rest_framework.decorators import detail_route, list_route, renderer_classes, parser_classes
 from rest_framework.response import Response
@@ -1319,7 +1320,10 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def submit(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            #instance.submit(request,self)
+            
+            # Ensure the current user is a member of the organisation that created the draft application.
+            is_authorised_to_modify(request, instance)
+            
             proposal_submit(instance, request)
             instance.save()
             serializer = self.get_serializer(instance)
@@ -1759,6 +1763,10 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def draft(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
+            # Ensure the current user is a member of the organisation that created the draft application.
+            is_authorised_to_modify(request, instance)
+
             save_proponent_data(instance,request,self)
             return redirect(reverse('external'))
         except serializers.ValidationError:
