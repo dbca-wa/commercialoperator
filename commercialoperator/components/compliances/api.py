@@ -1,10 +1,8 @@
-
 import traceback
 import os
 import datetime
 import base64
 import geojson
-from six.moves.urllib.parse import urlparse
 from wsgiref.util import FileWrapper
 from django.db.models import Q, Min
 from django.db import transaction
@@ -13,8 +11,6 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.contrib import messages
-from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from rest_framework import viewsets, serializers, status, generics, views
 from rest_framework.decorators import detail_route, list_route, renderer_classes
@@ -28,8 +24,6 @@ from django.core.cache import cache
 from ledger.accounts.models import EmailUser, Address
 from ledger.address.models import Country
 from datetime import datetime, timedelta, date
-from django.urls import reverse
-from django.shortcuts import render, redirect, get_object_or_404
 from commercialoperator.components.compliances.models import (
    Compliance,
    ComplianceAmendmentRequest,
@@ -187,12 +181,27 @@ class ComplianceViewSet(viewsets.ModelViewSet):
 #        serializer = self.get_serializer(result_page, context={'request':request}, many=True)
 #        return paginator.get_paginated_response(serializer.data)
 
+
+
+
     @detail_route(methods=['POST',])
     @renderer_classes((JSONRenderer,))
     def submit(self, request, *args, **kwargs):
         try:
             with transaction.atomic():
                 instance = self.get_object()
+
+                # Can only modify if Due or Future.
+                if instance.processing_status not in ['due', 'future']:
+                    raise serializers.ValidationError('The status of this application means it cannot be modified: {}'
+                                                      .format(instance.processing_status))
+
+                # If the submitter is not the holder of the application
+                submitter_organisations = [org.id for org in self.request.user.commercialoperator_organisations.all()]
+                # ensure submitter is in the Organisation that made the original application.
+                if (request.user.email != instance.submitter) and (instance.proposal.org_applicant.id not in submitter_organisations):
+                    raise serializers.ValidationError('You are not authorised to modify this application.')
+
                 data = {
                     'text': request.data.get('detail'),
                     'num_participants': request.data.get('num_participants')
