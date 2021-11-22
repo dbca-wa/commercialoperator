@@ -61,9 +61,9 @@ def is_authorised_to_modify(request, instance):
         # the user must be an assessor for this type of application
         authorised &= instance.can_process()
     elif is_customer(request):
-        # the status of the application must be DRAFT for customer to modify
+        # the status of the application must be DRAFT for customer to modify.
         authorised &= instance.processing_status == 'draft'
-        # the application org and submitter org must be the same
+        # the application organisation and submitter organisation must be the same.
         authorised &= is_in_organisation_contacts(request, instance.org_applicant)
 
     if not authorised:

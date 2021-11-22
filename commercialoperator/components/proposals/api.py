@@ -1320,7 +1320,10 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def submit(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            #instance.submit(request,self)
+            
+            # Ensure the current user is a member of the organisation that created the draft application.
+            is_authorised_to_modify(request, instance)
+            
             proposal_submit(instance, request)
             instance.save()
             serializer = self.get_serializer(instance)

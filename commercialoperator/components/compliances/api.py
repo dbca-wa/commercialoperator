@@ -199,7 +199,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
                 # If the submitter is not the holder of the application
                 submitter_organisations = [org.id for org in self.request.user.commercialoperator_organisations.all()]
                 # ensure submitter is in the Organisation that made the original application.
-                if (request.user.email != instance.submitter) and (instance.proposal.org_applicant.id not in submitter_organisations):
+                if (request.user.email != instance.submitter) or (instance.proposal.org_applicant.id not in submitter_organisations):
                     raise serializers.ValidationError('You are not authorised to modify this application.')
 
                 data = {
