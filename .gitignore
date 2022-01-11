@@ -101,6 +101,7 @@ uwsgi*.ini
 # npm locks
 #*-lock.json
 
+commercialoperator/static/commercialoperator_vue/static/*
 #commercialoperator/static/commercialoperator_vue/static/css/app.css
 #commercialoperator/static/commercialoperator_vue/static/js/app.js
 #commercialoperator/static/commercialoperator_vue/static/js/manifest.js
