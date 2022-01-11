@@ -755,8 +755,8 @@ def _create_approval_lawful_authority(approval_buffer, approval, proposal, copie
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
 
     elements.append(Paragraph('{} {}'.format(user.first_name, user.last_name), styles['Left']))
-    if user.position_title:
-        elements.append(Paragraph('{}'.format(user.position_title), styles['Left']))
+    #if user.position_title:
+    #    elements.append(Paragraph('{}'.format(user.position_title), styles['Left']))
     elements.append(Paragraph('As Delegate of CEO', styles['Left']))
     elements.append(Paragraph('Under Section 133(2) of the CALM Act 1984', styles['Left']))
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
