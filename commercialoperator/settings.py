@@ -17,6 +17,9 @@ SHOW_TESTS_URL = env('SHOW_TESTS_URL', False)
 SHOW_DEBUG_TOOLBAR = env('SHOW_DEBUG_TOOLBAR', False)
 BUILD_TAG = env('BUILD_TAG', hashlib.md5(os.urandom(32)).hexdigest())  # URL of the Dev app.js served by webpack & express
 
+if env('CONSOLE_EMAIL_BACKEND', False):
+   EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 if SHOW_DEBUG_TOOLBAR:
 #    def get_ip():
 #        import subprocess
