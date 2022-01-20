@@ -433,7 +433,8 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
     park_data=[]
     for p in approval.current_proposal.events_parks.all():
         activities_str=''
-        if p.event_activities:
+        #if p.event_activities:
+        if p.activities_assessor:
             #activities_str = p.event_activities.encode('UTF-8')
             #activities_str = p.event_activities
             activities_str = ", ".join(p.activities_assessor_names)
@@ -470,7 +471,8 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
             trail_name='{} - {}'.format(tr.trail.name, tr.section.name)
         else:
             trail_name='{}'.format(tr.trail.name)
-        if tr.event_trail_activities:
+        #if tr.event_trail_activities:
+        if tr.activities_assessor:
             #activities_str = p.event_activities.encode('UTF-8')
             #activities_str = tr.event_trail_activities
             activities_str = ", ".join(tr.activities_assessor_names)
