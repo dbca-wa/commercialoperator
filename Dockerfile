@@ -26,7 +26,7 @@ RUN apt-get install --no-install-recommends -y python3-gevent software-propertie
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
-RUN apt-get install --no-install-recommends -y python3.7 python3.7-dev
+RUN apt-get install --no-install-recommends -y python3.7 python3.7-dev python3.7-distutils
 
 RUN ln -s /usr/bin/python3.7 /usr/bin/python 
 RUN python3.7 -m pip install --upgrade pip
