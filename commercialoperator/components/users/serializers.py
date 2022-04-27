@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Q
 from ledger.accounts.models import EmailUser,Address, Profile,EmailIdentity, EmailUserAction, EmailUserLogEntry, CommunicationsLogEntry
 from commercialoperator.components.organisations.models import (
                                     Organisation,
@@ -7,12 +8,12 @@ from commercialoperator.components.main.models import UserSystemSettings, Docume
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.organisations.utils import can_admin_org, is_consultant
 from commercialoperator.helpers import is_commercialoperator_admin 
+from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers
 from ledger.accounts.utils import in_dbca_domain
 from ledger.payments.helpers import is_payment_admin
 from django.utils import timezone
 from datetime import date, timedelta
-from commercialoperator.components.approvals.models import Approval
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -75,11 +76,34 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
         return email
 
     def get_active_proposals(self, obj):
+        """
+        TClass Rules as per email: WGenuit 23/03/2022 12:51pm
+
+        User can apply for the licence type if there is no application for that licence type in status other than (approved, declined, discarded) and
+        there is no licence of that licence type in status current or suspended.
+
+        Situations where user cannot apply for the licence type (new, amendment or renewal):
+            1. If there is another application from that user for that licence type that is in status Draft, With Assessor, With Referral or With Approver
+            2. If there is a licence of that licence type for that user with status Current or Suspended
+        """
         _list = []
-        #for application_type in ['T Class', 'Filming', 'Event']:
-        for application_type in [ApplicationType.TCLASS, ApplicationType.FILMING, ApplicationType.EVENT ]:
-            qs = Proposal.objects.filter(application_type__name=application_type, org_applicant=obj).exclude(processing_status__in=['approved', 'declined', 'discarded']).values_list('lodgement_number', flat=True)
+
+        today = timezone.localtime(timezone.now()).date()
+        for application_type in [ApplicationType.TCLASS]:
+            # NOTE: approval__expiry_date__gt=today --> needed in qs because expired (expired and replace_by_id) Migrated licences are showing as 'current'
+            qs = Proposal.objects.filter(application_type__name=application_type, org_applicant=obj).exclude(
+                    Q(processing_status__in=['approved', 'declined', 'discarded']) & 
+                    ~Q(approval__status__in=['current', 'suspended'], approval__expiry_date__gt=today) 
+                ).values_list('lodgement_number', flat=True)
+
             _list.append( dict(application_type=application_type, proposals=qs) )
+
+        for application_type in [ApplicationType.FILMING, ApplicationType.EVENT ]:
+            qs = Proposal.objects.filter(application_type__name=application_type, org_applicant=obj).exclude(
+                    processing_status__in=['approved', 'declined', 'discarded']
+                ).values_list('lodgement_number', flat=True)
+            _list.append( dict(application_type=application_type, proposals=qs) )
+
         return _list
 
     def get_current_event_proposals(self, obj):

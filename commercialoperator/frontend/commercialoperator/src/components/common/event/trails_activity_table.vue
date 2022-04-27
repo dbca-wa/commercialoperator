@@ -104,7 +104,7 @@ export default {
                         data: "trail",
                         mRender:function (data,type,full) {
                             //return `C${data}`;
-                            return data.name;
+                            return data ? data.name : '';
                         },
                         
                     },
