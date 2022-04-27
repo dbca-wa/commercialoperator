@@ -31,6 +31,10 @@
 </template> 
 <script>
 import datatable from '@/utils/vue/datatable.vue'
+import Vue from 'vue'
+require("select2/dist/css/select2.min.css");
+require("select2-bootstrap-theme/dist/select2-bootstrap.min.css");
+
 //import editPark from './edit_trail_activity.vue'
 import editTrail from './edit_trail_activity.vue'
 import FileField from '@/components/forms/filefield.vue'
@@ -86,6 +90,7 @@ export default {
             //park_headers:["Park or Reserve","Activities","Itinerary/ Maps","Action"],
             park_headers:["Trail","Section","Activities (application)","Activities (assessor)","Action"],
             park_options:{
+                autoWidth: false,
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
                 },
