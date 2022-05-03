@@ -222,6 +222,11 @@
         },
         mounted: function() {
             let vm = this;
+            $('#pills-activities-tab').on('shown.bs.tab', function (e) {
+                // fixes column width collapse on datatables within the tabs
+                vm.$refs.event_activities.$refs.trails_table.$refs.park_datatable.vmDataTable.columns.adjust().responsive.recalc();
+                vm.$refs.event_activities.$refs.parks_table.$refs.park_datatable.vmDataTable.columns.adjust().responsive.recalc();
+            });
             $('#pills-tab a[href="#pills-applicant"]').tab('show');
             vm.set_tabs();
             vm.form = document.forms.new_proposal;
