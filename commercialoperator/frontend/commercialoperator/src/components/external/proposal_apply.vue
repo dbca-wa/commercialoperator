@@ -211,7 +211,7 @@
                     </div>
 
                     <div class="col-sm-12" v-show="has_active_proposals()">
-                        <p style="color:red;"> An active application already exists in the system: </p>
+                        <p style="color:red;"> This organisation already holds a current commercial operations licence: You can apply to amend the licence from the licences table on the home dashboard. </p>
                         <p style="color:red;"> {{ active_proposals() }}</p>
                     </div>
                     <!-- <div class="col-sm-12" v-show="has_event_proposals()"> -->
