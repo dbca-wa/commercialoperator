@@ -110,3 +110,5 @@ commercialoperator/static/commercialoperator_vue/static/*
 #commercialoperator/static/commercialoperator_vue/static/fonts/*
 #commercialoperator/static/commercialoperator_vue/static/img/*
 
+*.csv
+*.xls*
