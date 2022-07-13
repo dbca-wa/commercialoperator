@@ -106,3 +106,14 @@ def has_atleast_one_admin(organisation):
     except OrganisationContact.DoesNotExist:
         _atleast_one_admin = False
     return _atleast_one_admin
+
+def is_org_access_member(user):
+    from commercialoperator.components.organisations.models import OrganisationAccessGroup
+    try:
+        group = OrganisationAccessGroup.objects.first()
+        if group and group.filtered_members:
+            return user in group.filtered_members
+        return False
+    except OrganisationContact.DoesNotExist:
+        pass
+    return False
