@@ -30,6 +30,7 @@ from commercialoperator.components.proposals import api_event as proposal_api_ev
 #from commercialoperator.components.compliances import api_event as compliances_api_event
 
 from ledger.urls import urlpatterns as ledger_patterns
+from django_media_serv.urls import urlpatterns as media_serv_patterns
 
 # API patterns
 router = routers.DefaultRouter()
@@ -195,10 +196,12 @@ urlpatterns = [
     url(r'^history/organisation/(?P<pk>\d+)/$', organisation_views.OrganisationHistoryCompareView.as_view(), name='organisation_history'),
 
 
-] + ledger_patterns
+] + ledger_patterns + media_serv_patterns
 
-if settings.DEBUG:  # Serve media locally in development.
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG:  # Serve media locally in development.
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.SHOW_DEBUG_TOOLBAR:
     import debug_toolbar

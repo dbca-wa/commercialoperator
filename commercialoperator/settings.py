@@ -36,6 +36,7 @@ if SHOW_DEBUG_TOOLBAR:
 
     MIDDLEWARE_CLASSES += [
         'debug_toolbar.middleware.DebugToolbarMiddleware',
+        'whitenoise.middleware.WhiteNoiseMiddleware',
     ]
     INSTALLED_APPS += (
         'debug_toolbar',

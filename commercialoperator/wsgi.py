@@ -13,4 +13,5 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "commercialoperator.settings")
 #application = get_wsgi_application()
-application = Cling(MediaCling(get_wsgi_application()))
+#application = Cling(MediaCling(get_wsgi_application()))
+application = get_wsgi_application()
