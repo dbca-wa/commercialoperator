@@ -7,6 +7,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse
 from django.template import loader, Template
 from django.utils.html import strip_tags
+from confy import env
 
 from ledger.accounts.models import Document
 
@@ -51,6 +52,7 @@ class TemplateEmailBase(object):
         html_template = loader.get_template(self.html_template)
         # render html
         html_body = _render(html_template, context)
+        email_instance = env('EMAIL_INSTANCE','DEV')
         if self.txt_template is not None:
             txt_template = loader.get_template(self.txt_template)
             txt_body = _render(txt_template, context)
@@ -79,7 +81,7 @@ class TemplateEmailBase(object):
             else:
                 _attachments.append(attachment)
         msg = EmailMultiAlternatives(self.subject, txt_body, from_email=from_address, to=to_addresses,
-                                     attachments=_attachments, cc=cc, bcc=bcc)
+                                     attachments=_attachments, cc=cc, bcc=bcc, headers={'System-Environment': email_instance})
         msg.attach_alternative(html_body, 'text/html')
         try:
             if not settings.DISABLE_EMAIL:
