@@ -11,7 +11,8 @@ module.exports = {
     organisation_access_group_members: '/api/organisation_access_group_members',
     users: '/api/users.json',
     profile: '/api/profile',
-    department_users: '/api/department_users',
+    //department_users: '/api/department_users',
+    users_api: '/api/users',
     filtered_users: '/api/filtered_users',
     referral_recipient_groups: '/api/referrals/user_group_list',
     //other
