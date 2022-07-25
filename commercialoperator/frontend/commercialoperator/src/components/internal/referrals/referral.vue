@@ -318,7 +318,7 @@ export default {
             showingProposal:false,
             form: null,
             members: [],
-            department_users : [],
+            //department_users : [],
             referral_recipient_groups : [],
             contacts_table_initialised: false,
             initialisedSelects: false,
@@ -554,7 +554,7 @@ export default {
                 vm.loading.splice('Loading Application Group Members',1);
             })
         },
-        fetchDeparmentUsers: function(){
+        /*fetchDeparmentUsers: function(){
             let vm = this;
             vm.loading.push('Loading Department Users');
             vm.$http.get(api_endpoints.department_users).then((response) => {
@@ -564,7 +564,7 @@ export default {
                 console.log(error);
                 vm.loading.splice('Loading Department Users',1);
             })
-        },
+        },*/
         fetchReferralRecipientGroups: function(){
             let vm = this;
             vm.loading.push('Loading Referral Recipient Groups');
@@ -903,7 +903,7 @@ export default {
     mounted: function() {
         let vm = this;
         vm.fetchProposalGroupMembers();
-        vm.fetchDeparmentUsers();
+        //vm.fetchDeparmentUsers();
         vm.fetchReferralRecipientGroups();
         //vm.fetchreferrallist()
         

@@ -36,6 +36,7 @@ if SHOW_DEBUG_TOOLBAR:
 
     MIDDLEWARE_CLASSES += [
         'debug_toolbar.middleware.DebugToolbarMiddleware',
+        #'whitenoise.middleware.WhiteNoiseMiddleware',
     ]
     INSTALLED_APPS += (
         'debug_toolbar',
@@ -107,6 +108,7 @@ MIDDLEWARE_CLASSES += [
     'commercialoperator.middleware.BookingTimerMiddleware',
     'commercialoperator.middleware.FirstTimeNagScreenMiddleware',
     'commercialoperator.middleware.RevisionOverrideMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 TEMPLATES[0]['DIRS'].append(os.path.join(BASE_DIR, 'commercialoperator', 'templates'))
