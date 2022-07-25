@@ -937,7 +937,8 @@ def proposal_submit(proposal,request):
                     proposal.processing_status = 'with_assessor'
                     proposal.customer_status = 'with_assessor'
                     proposal.documents.all().update(can_delete=False)
-                    proposal.required_documents.all().update(can_delete=False)
+                    #proposal.required_documents.all().update(can_delete=False)
+                    proposal.required_documents.all().update(can_delete=False, can_hide=True)
                     proposal.save()
                 else:
                     raise ValidationError('An error occurred while submitting proposal (Submit email notifications failed)')

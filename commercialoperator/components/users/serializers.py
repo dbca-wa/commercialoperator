@@ -6,7 +6,7 @@ from commercialoperator.components.organisations.models import (
                                 )
 from commercialoperator.components.main.models import UserSystemSettings, Document, ApplicationType
 from commercialoperator.components.proposals.models import Proposal
-from commercialoperator.components.organisations.utils import can_admin_org, is_consultant
+from commercialoperator.components.organisations.utils import can_admin_org, is_consultant, is_org_access_member
 from commercialoperator.helpers import is_commercialoperator_admin 
 from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers
@@ -148,7 +148,8 @@ class UserSerializer(serializers.ModelSerializer):
     is_payment_admin = serializers.SerializerMethodField()
     system_settings= serializers.SerializerMethodField()
     is_payment_admin = serializers.SerializerMethodField()
-    is_commercialoperator_admin = serializers.SerializerMethodField()    
+    is_commercialoperator_admin = serializers.SerializerMethodField()
+    is_org_access_member = serializers.SerializerMethodField()    
 
     class Meta:
         model = EmailUser
@@ -171,6 +172,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff',
             'system_settings',
             'is_commercialoperator_admin',
+            'is_org_access_member',
         )
 
     def get_personal_details(self,obj):
@@ -221,6 +223,12 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context['request'] if self.context else None
         if request:
             return is_commercialoperator_admin(request)
+        return False
+
+    def get_is_org_access_member(self, obj):
+        request = self.context['request'] if self.context else None
+        if request:
+            return is_org_access_member(request.user)
         return False
 
 
