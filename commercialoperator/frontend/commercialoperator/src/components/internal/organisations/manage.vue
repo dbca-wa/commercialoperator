@@ -507,7 +507,7 @@ export default {
                     {
                         mRender:function (data,type,full) {
                             let links = '';
-                            if (vm.is_org_access_member){
+                            if (vm.is_commercialoperator_admin){
                                 if(full.user_status == 'Pending'){
                                     links +=  `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="accept_contact">Accept</a><br/>`;
                                     links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="decline_contact">Decline</a><br/>`;
