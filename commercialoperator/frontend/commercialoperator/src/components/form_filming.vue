@@ -77,10 +77,10 @@
                 <Access :proposal="proposal" id="proposalStartAccess" :hasDistrictAssessorMode="hasDistrictAssessorMode" :district_proposal= "district_proposal" :canEditActivities="canEditActivities" :canEditPeriod="canEditPeriod" :is_external= "is_external" ref="filming_access"></Access>
               </div>
               <div class="tab-pane fade" id="pills-equipment" role="tabpanel" aria-labelledby="pills-equipment-tab">
-                <Equipment :proposal="proposal" id="proposalStartEquipment" ref="filming_equipment"></Equipment>
+                <Equipment :proposal="proposal" id="proposalStartEquipment" ref="filming_equipment" :canEditActivities="canEditActivities"></Equipment>
               </div>
               <div class="tab-pane fade" id="pills-other-details" role="tabpanel" aria-labelledby="pills-other-details-tab">
-                <OtherDetails :proposal="proposal" id="proposalStartOtherDetails" ref="filming_other_details"></OtherDetails>
+                <OtherDetails :proposal="proposal" id="proposalStartOtherDetails" ref="filming_other_details" :canEditActivities="canEditActivities"></OtherDetails>
               </div>
               <div class="tab-pane fade" id="pills-confirm" role="tabpanel" aria-labelledby="pills-confirm-tab">
                 <Confirmation :proposal="proposal" id="proposalStartConfirmation"></Confirmation>
@@ -154,6 +154,10 @@
             district_proposal:{
                 type:Object,
                 default:null
+            },
+            canEditActivities:{
+              type: Boolean,
+              default: true
             },
         },
         data:function () {

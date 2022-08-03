@@ -98,7 +98,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="col-sm-6" style="margin-bottom: 5px">
-                                        <FileField :proposal_id="proposal.id" isRepeatable="true" name="rps_certificate" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="rps_certificate"></FileField>
+                                        <FileField :proposal_id="proposal.id" isRepeatable="true" name="rps_certificate" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="rps_certificate"></FileField>
                                     </div>
                                 </div>                                
                         </div>
@@ -109,7 +109,7 @@
                             </div>
                             <div class="col-sm-6" style="margin-bottom: 5px">
                                 <div class="col-sm-6" style="margin-bottom: 5px">
-                                      <FileField :proposal_id="proposal.id" isRepeatable="false" name="rps_certificate" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="rps_cert"></FileField>  
+                                      <FileField :proposal_id="proposal.id" isRepeatable="false" name="rps_certificate" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="rps_cert"></FileField>  
                                 </div>
                             </div>
                         </div> -->
@@ -170,7 +170,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="col-sm-6" style="margin-bottom: 5px">
-                                        <FileField :proposal_id="proposal.id" isRepeatable="true" name="alteration_required" :id="'proposal'+proposal.id" :readonly="proposal.readonly"></FileField>
+                                        <FileField :proposal_id="proposal.id" isRepeatable="true" name="alteration_required" :id="'proposal'+proposal.id" :readonly="!canEditActivities"></FileField>
                                     </div>
                                 </div>                                
                         </div>
@@ -207,7 +207,11 @@ import FileField from '@/components/forms/filefield.vue'
             proposal:{
                 type: Object,
                 required:true
-            }
+            },
+            canEditActivities:{
+              type: Boolean,
+              default: true
+            },
         },
         data:function () {
             let vm = this;
