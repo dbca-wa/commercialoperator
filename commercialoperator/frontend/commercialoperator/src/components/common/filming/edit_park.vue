@@ -124,6 +124,10 @@ export default {
               type: Boolean,
               default: false
         },
+        canEditActivities:{
+              type: Boolean,
+              default: true
+        },
     },
     data:function () {
         let vm = this;
