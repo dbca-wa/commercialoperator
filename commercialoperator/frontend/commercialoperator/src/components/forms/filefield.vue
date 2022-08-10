@@ -15,7 +15,7 @@
                             <a @click="delete_document(v)" class="fa fa-trash-o" title="Remove file" :filename="v.name" style="cursor: pointer; color:red;"></a>
                         </span>
                         <span v-else-if="!readonly && !v.can_delete && v.can_hide">
-                            <a @click="hide_document(v)" class="fa fa-trash-o" title="Remove file" :filename="v.name" style="cursor: pointer; color:red;"></a>
+                            <a @click="hide_document(v)" class="fa fa-trash-o" title="Remove file" :filename="v.name" style="cursor: pointer; color:blue;"></a>
                         </span>
                         <span v-else>
                             <span v-if="!assessorMode">

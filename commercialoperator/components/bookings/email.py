@@ -272,7 +272,7 @@ def send_proposal_approval_email_notification(proposal,request):
     else:
         attachment = []
 
-    msg = email.send(proposal.submitter.email, bcc= all_ccs, attachments=attachment, context=context)
+    msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, attachments=attachment, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
     #_log_org_email(msg, proposal.applicant, proposal.submitter, sender=sender)
@@ -352,7 +352,7 @@ def send_invoice_payment_due_tclass_email_notification(sender, bookings, recipie
         'bookings': bookings,
     }
 
-    msg = email.send(booking.proposal.submitter.email, context=context)
+    msg = email.send(booking.proposal.proposal_submitter_email, context=context)
     #sender = sender if sender else settings.DEFAULT_FROM_EMAIL
     #_log_proposal_email(msg, booking.proposal, sender=sender)
     #if booking.proposal.org_applicant:
@@ -367,7 +367,7 @@ def send_invoice_payment_due_tclass_external_email_notification(sender, booking,
         'booking': booking,
     }
 
-    msg = email.send(booking.proposal.submitter.email, context=context)
+    msg = email.send(booking.proposal.proposal_submitter_email, context=context)
     sender = sender if sender else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, booking.proposal, sender=sender)
     if booking.proposal.org_applicant:

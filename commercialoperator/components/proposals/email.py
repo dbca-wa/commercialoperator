@@ -265,7 +265,7 @@ def send_amendment_email_notification(amendment_request, request, proposal):
         if cc_list:
             all_ccs = [cc_list]
 
-    msg = email.send(proposal.submitter.email,cc=all_ccs, context=context)
+    msg = email.send(proposal.proposal_submitter_email,cc=all_ccs, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
@@ -313,7 +313,7 @@ def send_external_submit_email_notification(request, proposal):
         if cc_list:
             all_ccs = [cc_list]
 
-    msg = email.send(proposal.submitter.email,cc=all_ccs, context=context)
+    msg = email.send(proposal.proposal_submitter_email,cc=all_ccs, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
@@ -375,7 +375,7 @@ def send_proposal_decline_email_notification(proposal,request,proposal_decline):
     if proposal.org_applicant and proposal.org_applicant.email:
         all_ccs.append(proposal.org_applicant.email)
 
-    msg = email.send(proposal.submitter.email, bcc= all_ccs, context=context)
+    msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
@@ -452,7 +452,7 @@ def send_proposal_approval_email_notification(proposal,request):
         'handbook_url': handbook_url
     }
 
-    msg = email.send(proposal.submitter.email, bcc= all_ccs, attachments=attachments, context=context)
+    msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, attachments=attachments, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
 
     email_entry =_log_proposal_email(msg, proposal, sender=sender)
@@ -488,7 +488,7 @@ def send_proposal_awaiting_payment_approval_email_notification(proposal, request
         'url': url,
     }
 
-    msg = email.send(proposal.submitter.email, bcc=all_ccs, attachments=[attachment], context=context)
+    msg = email.send(proposal.proposal_submitter_email, bcc=all_ccs, attachments=[attachment], context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     
     filename_appended = '{}_{}.{}'.format('confirmation', datetime.now().strftime('%d%b%Y'), 'pdf')
@@ -609,7 +609,7 @@ def send_district_proposal_decline_email_notification(district_proposal,request,
     if proposal.org_applicant and proposal.org_applicant.email:
         all_ccs.append(proposal.org_applicant.email)
 
-    msg = email.send(proposal.submitter.email, bcc= all_ccs, context=context)
+    msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
@@ -658,7 +658,7 @@ def send_district_proposal_approval_email_notification(district_proposal,approva
         'approval': approval,
     }
     
-    msg = email.send(proposal.submitter.email, bcc= all_ccs, context=context, attachments=attachments)
+    msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, context=context, attachments=attachments)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
 
@@ -707,7 +707,7 @@ def send_district_proposal_approval_email_notification_orig(district_proposal,ap
 
     }
 
-    msg = email.send(proposal.submitter.email, bcc= all_ccs, attachments=attachments, context=context)
+    msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, attachments=attachments, context=context)
     print(msg)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)

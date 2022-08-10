@@ -118,7 +118,7 @@
                 <ActivitiesMarine :proposal="proposal" id="proposalStartActivitiesMarine" :canEditActivities="canEditActivities" ref="activities_marine" :proposal_parks="proposal_parks" :is_external="is_external"></ActivitiesMarine>
               </div>
               <div class="tab-pane fade" id="pills-other-details" role="tabpanel" aria-labelledby="pills-other-details-tab">
-                <OtherDetails :proposal="proposal" id="proposalStartOtherDetails" ref="other_details"></OtherDetails>
+                <OtherDetails :proposal="proposal" id="proposalStartOtherDetails" :canEditActivities="canEditActivities" ref="other_details"></OtherDetails>
               </div>
               <div class="tab-pane fade" id="pills-online-training" role="tabpanel" aria-labelledby="pills-online-training-tab">
                 <OnlineTraining :proposal="proposal" id="proposalStartOnlineTraining"></OnlineTraining>

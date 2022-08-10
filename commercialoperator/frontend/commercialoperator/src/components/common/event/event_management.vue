@@ -367,7 +367,7 @@
                             </div> 
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_risk_management_plan" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="event_risk_management_plan"></FileField>    
+                                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_risk_management_plan" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="event_risk_management_plan"></FileField>    
                                 </div>
                             </div>
 
@@ -432,7 +432,11 @@ import FileField from '@/components/forms/filefield.vue'
             proposal:{
                 type: Object,
                 required:true
-            }
+            },
+            canEditActivities:{
+              type: Boolean,
+              default: true
+            },
         },
         data:function () {
             let vm = this;
