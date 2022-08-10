@@ -140,6 +140,23 @@ class Compliance(RevisionedMixin):
     def fee_amount(self):
         return Invoice.objects.get(reference=self.fee_invoice_reference).amount if self.fee_paid else None
 
+    @property
+    def compliance_submitter_email(self):
+        if self.proposal.org_applicant:
+            try:
+                contact=self.proposal.org_applicant.contacts.filter(email=self.submitter)
+                if contact:
+                    contact=contact[0]
+                    if contact.user_status=='active':
+                        return self.submitter.email
+                    else:
+                        return self.proposal.org_applicant.all_admin_emails
+                return self.proposal.org_applicant.all_admin_emails
+            except:
+                return self.proposal.org_applicant.all_admin_emails
+        else:
+            return self.submitter.email
+
     def save(self, *args, **kwargs):
         super(Compliance, self).save(*args,**kwargs)
         if self.lodgement_number == '':

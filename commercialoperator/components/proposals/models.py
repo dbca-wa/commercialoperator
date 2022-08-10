@@ -929,6 +929,23 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 #        return l
 
     @property
+    def proposal_submitter_email(self):
+        if self.org_applicant:
+            try:
+                contact=self.org_applicant.contacts.filter(email=self.submitter)
+                if contact:
+                    contact=contact[0]
+                    if contact.user_status=='active':
+                        return self.submitter.email
+                    else:
+                        return self.org_applicant.all_admin_emails
+                return self.org_applicant.all_admin_emails
+            except:
+                return self.org_applicant.all_admin_emails
+        else:
+            return self.submitter.email
+
+    @property
     def is_assigned(self):
         return self.assigned_officer is not None
 
