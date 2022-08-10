@@ -22,7 +22,7 @@
                                 <label class="control-label pull-right"  for="Name">Accreditation certificates</label>
                             </div>
                             <div class="col-sm-9">
-                                <FileField :proposal_id="proposal_id" isRepeatable="false" :name="'accreditation'+accreditation.accreditation_type" :id="'accreditation'+accreditation_type+proposal_id" :readonly="readonly" ref="accreditation_file"></FileField>
+                                <FileField :proposal_id="proposal_id" isRepeatable="false" :name="'accreditation'+accreditation.accreditation_type" :id="'accreditation'+accreditation_type+proposal_id" :readonly="!canEditActivities" ref="accreditation_file"></FileField>
                             </div>
                         </div>
                         <div  v-if="typeOther"class="row">
@@ -70,6 +70,10 @@ export default {
             }
         },
         readonly:Boolean,
+        canEditActivities:{
+              type: Boolean,
+              default: true
+            }
     },
     components: {
         FileField,

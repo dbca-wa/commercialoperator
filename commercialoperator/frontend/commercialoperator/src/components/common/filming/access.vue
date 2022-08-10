@@ -259,7 +259,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="cultural_significance" :id="'proposal'+proposal.id" :readonly="proposal.readonly"></FileField>
+                                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="cultural_significance" :id="'proposal'+proposal.id" :readonly="!canEditActivities"></FileField>
                                 </div>                                
                             </div>
                             

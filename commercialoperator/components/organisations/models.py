@@ -475,6 +475,11 @@ class Organisation(models.Model):
     def first_five(self):
         return ','.join([user.get_full_name() for user in self.delegates.all()[:5] if can_admin_org(self, user)])
 
+    @property
+    def all_admin_emails(self):
+        return [user.email for user in self.delegates.all() if can_admin_org(self, user)]
+
+
 @python_2_unicode_compatible
 class OrganisationContact(models.Model):
     USER_STATUS_CHOICES = (('draft', 'Draft'),

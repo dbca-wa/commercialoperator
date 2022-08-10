@@ -15,7 +15,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-12">
-                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_park_maps" :id="'proposal'+proposal.id" :readonly="proposal.readonly" ref="event_park_maps"></FileField>    
+                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="event_park_maps" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="event_park_maps"></FileField>    
                 </div>
             </div>
 
