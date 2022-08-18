@@ -140,7 +140,7 @@ export default {
             status: [],
             application_types: [],
             proposal_submitters: [],
-            proposal_headers:["Number","Licence","Licence Type", "Holder","Status","Due Date","Assigned To", "Action"],
+            proposal_headers:["Number","Licence","Licence Type", "Holder","Status","Due Date","Assigned To", "Licence Name","Action"],
             proposal_options:{
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
@@ -204,6 +204,11 @@ export default {
                     {
                         data: "assigned_to",
                         name: "assigned_to__first_name, assigned_to__last_name, assigned_to__email"
+                        // visible: false
+                    },
+                    {
+                        data: "compliance_licence_name",
+                        name: "compliance_licence_name"
                         // visible: false
                     },
                     {

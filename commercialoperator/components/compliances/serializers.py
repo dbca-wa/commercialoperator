@@ -61,6 +61,7 @@ class ComplianceSerializer(serializers.ModelSerializer):
             'fee_invoice_reference',
             'fee_paid',
             'application_type',
+            'compliance_licence_name',
 
         )
 
