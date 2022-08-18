@@ -157,6 +157,10 @@ class Compliance(RevisionedMixin):
         else:
             return self.submitter.email
 
+    @property
+    def compliance_licence_name(self):
+        return self.approval.licence_name
+
     def save(self, *args, **kwargs):
         super(Compliance, self).save(*args,**kwargs)
         if self.lodgement_number == '':
