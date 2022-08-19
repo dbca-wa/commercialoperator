@@ -208,8 +208,9 @@ export default {
                     },
                     {
                         data: "compliance_licence_name",
-                        name: "compliance_licence_name"
-                        // visible: false
+                        searchable: false,
+                        orderable: false,
+                        name: ''
                     },
                     {
                         data: '',

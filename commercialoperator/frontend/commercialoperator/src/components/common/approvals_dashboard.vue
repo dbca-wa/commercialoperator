@@ -329,7 +329,9 @@ export default {
                     },
                     {
                         data: "licence_name",
-                        name: "licence_name"
+                        searchable: false,
+                        orderable: false,
+                        name: ''
                     },
                     {
                         data: '',
