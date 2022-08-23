@@ -140,7 +140,7 @@ export default {
             status: [],
             application_types: [],
             proposal_submitters: [],
-            proposal_headers:["Number","Licence","Licence Type", "Holder","Status","Due Date","Assigned To", "Licence Name","Action"],
+            proposal_headers:["Number","Licence","Licence Type", "Holder","Status","Due Date","Assigned To", "Event Name","Action"],
             proposal_options:{
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
