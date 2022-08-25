@@ -126,7 +126,7 @@ export default {
             },
             proposal_status:[],
             proposal_submitters: [],
-            proposal_headers:["Number","Licence Type","Submitter","Applicant","Status","Lodged on", "Assigned Officer","Action"],
+            proposal_headers:["Number","Licence Type","Submitter","Applicant","Status","Lodged on", "Assigned Officer", "Event Name","Action"],
             proposal_options:{
                 customProposalSearch: true,
                 tableID: 'proposal-datatable-'+vm._uid,
@@ -198,6 +198,12 @@ export default {
                     {
                         data: "assigned_officer",
                         name: "assigned_officer__first_name, assigned_officer__last_name",
+                    },
+                    {
+                        data: "proposal_event_name",
+                        name: "",
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: '',

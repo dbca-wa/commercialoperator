@@ -751,6 +751,16 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         if self.application_type.name==ApplicationType.EVENT:
             return self.application_type.licence_fee_1yr
 
+    @property
+    def event_name(self):
+        try:
+            if self.application_type.name == ApplicationType.EVENT:
+                if self.event_activity.event_name:
+                    return self.event_activity.event_name
+            return ''
+        except:
+            return ''
+
     def reset_licence_discount(self, user):
         """ reset when licence is issued"""
         org = self.org_applicant
