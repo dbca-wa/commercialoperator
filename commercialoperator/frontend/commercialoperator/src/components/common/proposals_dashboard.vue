@@ -179,7 +179,7 @@ export default {
             proposal_submitters: [],
             proposal_status: [],
             proposal_ex_headers:[
-                "Number","Licence Type","Submitter","Applicant","Status","Lodged on","Action"
+                "Number","Licence Type","Submitter","Applicant","Status","Lodged on","Event Name", "Action"
             ],
             proposal_ex_options:{
                 autoWidth: false,
@@ -244,6 +244,12 @@ export default {
                             return data != '' && data != null ? moment(data).format(vm.dateFormat): '';
                         },
                         searchable: false, // handles by filter_queryset override method - class ProposalFilterBackend
+                    },
+                    {
+                        data: "event_name",
+                        searchable: false,
+                        orderable: false,
+                        name: ''
                     },
                     {
                         data: "",
@@ -316,7 +322,7 @@ export default {
                 */
             },
             proposal_headers:[
-                "Number","Licence Type","Submitter","Applicant","Status","Lodged on","Assigned Officer","Action",
+                "Number","Licence Type","Submitter","Applicant","Status","Lodged on","Assigned Officer","Event Name", "Action",
             ],
             proposal_options:{
                 autoWidth: false,
@@ -385,6 +391,12 @@ export default {
                     {
                         data: "assigned_officer",
                         name: "assigned_officer__first_name, assigned_officer__last_name",
+                    },
+                    {
+                        data: "event_name",
+                        searchable: false,
+                        orderable: false,
+                        name: ''
                     },
                     {
                         data: '',
