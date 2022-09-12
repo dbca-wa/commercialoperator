@@ -160,6 +160,7 @@ class SaveComplianceSerializer(serializers.ModelSerializer):
             'title',
             'text',
             'num_participants',
+            'num_child_participants',
         )
 
 class ComplianceActionSerializer(serializers.ModelSerializer):
