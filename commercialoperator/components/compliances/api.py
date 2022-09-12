@@ -195,7 +195,8 @@ class ComplianceViewSet(viewsets.ModelViewSet):
                 instance = self.get_object()
                 data = {
                     'text': request.data.get('detail'),
-                    'num_participants': request.data.get('num_participants')
+                    'num_participants': request.data.get('num_participants'),
+                    'num_child_participants': request.data.get('num_child_participants')
                 }
 
                 serializer = SaveComplianceSerializer(instance, data=data)
