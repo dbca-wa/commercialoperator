@@ -115,9 +115,17 @@
                                 <div v-if="compliance.participant_number_required && !isFinalised && !compliance.fee_paid">
                                     <div class="row">
                                         <div class="form-group">
-                                            <label class="col-sm-3 control-label pull-left"  for="Name">Number of participants:</label>
+                                            <label class="col-sm-3 control-label pull-left"  for="Name">Number of participants (aged 17 years or over):</label>
                                             <div class="col-sm-6">
                                                 <input type="text" :disabled="isFinalised" class="form-control" name="num_participants" placeholder="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label pull-left"  for="Name">Number of Children (aged 16 years or over):</label>
+                                            <div class="col-sm-6">
+                                                <input type="text" :disabled="isFinalised" class="form-control" name="num_child_participants" placeholder="">
                                             </div>
                                         </div>
                                     </div>
