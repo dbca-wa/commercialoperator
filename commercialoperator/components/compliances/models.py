@@ -64,6 +64,7 @@ class Compliance(RevisionedMixin):
     text = models.TextField(blank=True)
     #meta = JSONField(null=True, blank=True)
     num_participants = models.SmallIntegerField('Number of participants', blank=True, null=True)
+    num_child_participants = models.SmallIntegerField('Number of child participants', blank=True, null=True)
     processing_status = models.CharField(choices=PROCESSING_STATUS_CHOICES,max_length=20)
     customer_status = models.CharField(choices=CUSTOMER_STATUS_CHOICES,max_length=20, default=CUSTOMER_STATUS_CHOICES[1][0])
     assigned_to = models.ForeignKey(EmailUser,related_name='commercialoperator_compliance_assignments',null=True,blank=True)
