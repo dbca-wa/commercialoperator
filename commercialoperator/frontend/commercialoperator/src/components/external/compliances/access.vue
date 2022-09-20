@@ -410,33 +410,39 @@ export default {
         let vm = this;
         if($(vm.form).valid()){
             vm.errors = false;
+            vm.errorString='';
             let data = new FormData(vm.form);
-            vm.addingComms = true;            
+            vm.addingComms = true;
+            if(vm.compliance && !vm.compliance.documents.length>0 && vm.files.length>0 && vm.files[0].file==null){
+                vm.errors= true;
+                vm.errorString='Please upload atleast once document prior to submitting.'
+            }            
+            else{
+                swal({
+                    title: vm.submit_text() + " Compliance",
+                    text: "Are you sure you want to " + vm.submit_text().toLowerCase()+ " this requirement?",
+                    type: "question",
+                    showCancelButton: true,
+                    confirmButtonText: vm.submit_text()
+                }).then(() => {
+     
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.compliances,vm.compliance.id+'/submit'),data,{
+                        emulateJSON:true
+                        }).then((response)=>{
+                            vm.addingCompliance = false;
+                            vm.refreshFromResponse(response);                   
+                            vm.compliance = response.body;
 
-            swal({
-                title: vm.submit_text() + " Compliance",
-                text: "Are you sure you want to " + vm.submit_text().toLowerCase()+ " this requirement?",
-                type: "question",
-                showCancelButton: true,
-                confirmButtonText: vm.submit_text()
-            }).then(() => {
- 
-                vm.$http.post(helpers.add_endpoint_json(api_endpoints.compliances,vm.compliance.id+'/submit'),data,{
-                    emulateJSON:true
-                    }).then((response)=>{
-                        vm.addingCompliance = false;
-                        vm.refreshFromResponse(response);                   
-                        vm.compliance = response.body;
-
-                        /* after the above save, redirect to the Django post() method in ApplicationFeeView */
-                        vm.post_and_redirect(vm.compliance_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});
-                            
-                    },(error)=>{
-                        vm.errors = true;
-                        vm.addingCompliance = false;
-                        vm.errorString = helpers.apiVueResourceError(error);
-                    });     
-            })
+                            /* after the above save, redirect to the Django post() method in ApplicationFeeView */
+                            vm.post_and_redirect(vm.compliance_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});
+                                
+                        },(error)=>{
+                            vm.errors = true;
+                            vm.addingCompliance = false;
+                            vm.errorString = helpers.apiVueResourceError(error);
+                        });     
+                })
+            }
         }
     },
 
