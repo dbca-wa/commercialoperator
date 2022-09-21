@@ -415,7 +415,7 @@ export default {
             vm.addingComms = true;
             if(vm.compliance && !vm.compliance.documents.length>0 && vm.files.length>0 && vm.files[0].file==null){
                 vm.errors= true;
-                vm.errorString='Please upload atleast once document prior to submitting.'
+                vm.errorString='Please upload at least one document prior to submitting.'
             }            
             else{
                 swal({
