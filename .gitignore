@@ -112,3 +112,4 @@ commercialoperator/static/commercialoperator_vue/static/*
 
 *.csv
 *.xls*
+.DAV
