@@ -61,6 +61,7 @@ class ComplianceSerializer(serializers.ModelSerializer):
             'fee_invoice_reference',
             'fee_paid',
             'application_type',
+            'compliance_licence_name',
 
         )
 
@@ -159,6 +160,7 @@ class SaveComplianceSerializer(serializers.ModelSerializer):
             'title',
             'text',
             'num_participants',
+            'num_child_participants',
         )
 
 class ComplianceActionSerializer(serializers.ModelSerializer):

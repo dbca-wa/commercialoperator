@@ -5,7 +5,7 @@
         <div class="row">
             <h3>{{ org.name }} - {{org.abn}}</h3>
             <div class="col-md-3">
-                <CommsLogs :comms_url="comms_url" :logs_url="logs_url" :comms_add_url="comms_add_url" :disable_add_entry="false"/>
+                <CommsLogs :comms_url="comms_url" :logs_url="logs_url" :comms_add_url="comms_add_url" :disable_add_entry="false"/> 
             </div>
             <div class="col-md-1">
             </div>
@@ -348,6 +348,12 @@
                                 </div>
                             </div>
                         </form>
+                        <div>
+                            <!-- <div class="col-sm-12">
+                                                <button @click.prevent="addComm()" style="margin-bottom:10px;" class="btn btn-primary pull-right">Add Contact</button>
+                            </div> -->
+                            <datatable ref="contacts_datatable_user" id="organisation_contacts_datatable_ref" :dtOptions="contacts_options_ref" :dtHeaders="contacts_headers_ref" v-model="filterOrgContactStatus"/>
+                        </div>
 
 
                                   </div>
@@ -366,6 +372,8 @@
         </div>
         </div>
         <AddContact ref="add_contact" :org_id="org.id" />
+        <AddCommLog ref="add_comm_org" :url="comms_add_url" :action="user_action" @refreshActionFromResponse="refreshActionFromResponse" id='org_comms1'/>
+        <!-- <AddCommLog ref="add_comm_org" :url="comms_add_url" @refreshActionFromResponse="refreshActionFromResponse"/> -->
     </div>
 </template>
 
@@ -381,6 +389,7 @@ import ComplianceDashTable from '@common-utils/compliances_dashboard.vue'
 import CommsLogs from '@common-utils/comms_logs.vue'
 import utils from '../utils'
 import api from '../api'
+import AddCommLog from '@common-utils/add_comm_log_org.vue'
 export default {
     name: 'Organisation',
     data () {
@@ -408,7 +417,16 @@ export default {
             prev_licence_discount: null,
             prev_application_discount: null,
             is_commercialoperator_admin:false,
+            is_org_access_member: false,
+            contact_user: {
+                first_name: null,
+                last_name: null,
+                email: null,
+                mobile_number: null,
+                phone_number: null
+            },
             profile:{},
+            user_action:'unlink',
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
             activate_tables: false,
             comms_url: helpers.add_endpoint_json(api_endpoints.organisations,vm.$route.params.org_id+'/comms_log'),
@@ -463,7 +481,60 @@ export default {
                     }
                   ],
                   processing: true
+            },
+
+            contacts_headers_ref:["Name","Role","Email","Status","Action"],
+            contacts_options_ref:{
+               language: {
+                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
+                },
+                responsive: true,
+                ajax: {
+                    "url": helpers.add_endpoint_json(api_endpoints.organisations,vm.$route.params.org_id+'/contacts_exclude'),
+                    //"url": helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/contacts_exclude'),
+
+                    "dataSrc": ''
+                },
+                columns: [
+                    {
+                        mRender:function (data,type,full) {
+                            return full.first_name + " " + full.last_name;
+                        }
+                    },
+                    {data:'user_role'},
+                    {data:'email'},
+                    {data:'user_status'},
+                    {
+                        mRender:function (data,type,full) {
+                            let links = '';
+                            if (vm.is_commercialoperator_admin){
+                                if(full.user_status == 'Pending'){
+                                    links +=  `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="accept_contact">Accept</a><br/>`;
+                                    links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="decline_contact">Decline</a><br/>`;
+                                } else if(full.user_status == 'Suspended'){
+                                    links +=  `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="reinstate_contact">Reinstate</a><br/>`;
+                                } else if(full.user_status == 'Active'){
+                                    links +=  `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="unlink_contact">Unlink</a><br/>`;
+                                    links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="suspend_contact">Suspend</a><br/>`;
+                                    if(full.user_role == 'Organisation User'){
+                                        links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="make_admin_contact">Make Organisation Admin</a><br/>`;
+                                    } else {
+                                        links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="make_user_contact">Make Organisation User</a><br/>`;
+                                    }
+                                } else if(full.user_status == 'Unlinked'){
+                                    links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="relink_contact">Reinstate</a><br/>`;
+                                } else if(full.user_status == 'Declined'){
+                                    links +=  `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="accept_declined_contact">Accept (Previously Declined)</a><br/>`;
+                                }
+                            }        
+                            return links;
+                        }
+                    }
+                  ],
+                  processing: true,
+                                  
             }
+
         }
     },
     components: {
@@ -472,7 +543,8 @@ export default {
         ApprovalDashTable,
         ComplianceDashTable,
         AddContact,
-        CommsLogs
+        CommsLogs,
+        AddCommLog
     },
 	watch: {
 	},
@@ -496,6 +568,7 @@ export default {
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
                 //vm.profile=data[2];
                 vm.is_commercialoperator_admin=vm.profile.is_commercialoperator_admin;
+                vm.is_org_access_member=vm.profile.is_org_access_member;
             });
         });
     },
@@ -509,6 +582,7 @@ export default {
                 vm.org = data[0];
                 vm.profile=data[1];
                 vm.is_commercialoperator_admin=vm.profile.is_commercialoperator_admin;
+                vm.is_org_access_member=vm.profile.is_org_access_member;
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
             });
@@ -583,6 +657,178 @@ export default {
         refreshDatatable: function(){
             this.$refs.contacts_datatable.vmDataTable.ajax.reload();
         },
+        refreshActionFromResponse: function(action){
+            let vm=this;
+            if(action && this.action===action){
+
+                if(action=='unlink'){
+
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/unlink_user'),JSON.stringify(vm.contact_user),{
+                                emulateJSON:true
+                            }).then((response) => {
+                                swal({
+                                    title: 'Unlink',
+                                    text: 'You have successfully unlinked ' + name + '.',
+                                    type: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                        vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                },(error) => {
+                                });
+                            }, (error) => {
+                                if (error.status ==500){
+                                    swal('Unlink','Last Organisation Admin can not be unlinked.','error');
+                                }
+                                else{
+                                    swal('Unlink','There was an error unlinking this user '+ error,'error');
+                                }
+                            });
+                }
+                else if(action=='relink'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/relink_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Relink User',
+                                text: 'You have successfully relinked ' + name + '.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Relink User','There was an error relink ' + name + '.','error')
+                        });
+                }
+                else if(action=='suspend'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/suspend_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Suspend User',
+                                text: 'You have successfully suspended ' + name + ' as a User.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Suspend User','There was an error suspending ' + name + ' as a User.','error')
+                        });
+                }
+                else if(action=='reinstate'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/reinstate_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Reinstate User',
+                                text: 'You have successfully reinstated ' + name + '.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Reinstate User','There was an error reinstating ' + name + '.','error')
+                        });
+                }
+                else if(action=='make_admin_contact'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/make_admin_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Organisation Admin',
+                                text: 'You have successfully made ' + name + ' an Organisation Admin.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Organisation Admin','There was an error making ' + name + ' an Organisation Admin.','error')
+                        });
+                }
+                else if(action=='make_user_contact'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/make_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Organisation User',
+                                text: 'You have successfully made ' + name + ' an Organisation User.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            console.log(error);
+                            var text= helpers.apiVueResourceError(error);
+                            swal('Company Admin','There was an error making ' + name + ' an Organisation User. ' +text,'error')
+                        });
+                }
+                else if(action=='accept'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/accept_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Contact Accept',
+                                text: 'You have successfully accepted ' + name + '.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Contact Accept','There was an error accepting ' + name + '.','error')
+                        });
+
+                }
+                else if(action=='decline'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/decline_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Contact Decline',
+                                text: 'You have successfully declined ' + name + '.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Contact Decline','There was an error declining ' + name + '.','error')
+                        });
+                }
+                else if(action=='accept_declined'){
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.organisations,vm.org.id+'/accept_declined_user'),JSON.stringify(vm.contact_user),{
+                            emulateJSON:true
+                        }).then((response) => {
+                            swal({
+                                title: 'Contact Accept (Previously Declined)',
+                                text: 'You have successfully accepted ' + name + '.',
+                                type: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                            },(error) => {
+                            });
+                        }, (error) => {
+                            swal('Contact Accept (Previously Declined)','There was an error accepting ' + name + '.','error')
+                        });
+                }
+
+
+
+            }
+
+        },
         eventListeners: function(){
             let vm = this;
             vm.$refs.contacts_datatable.vmDataTable.on('click','.remove-contact',(e) => {
@@ -609,12 +855,278 @@ export default {
                 vm.editContact(id);
             });
 
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.unlink_contact',(e) =>  {
+                //this.addComm();
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                swal({
+                    title: "Unlink",
+                    text: "Are you sure you want to unlink " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then( async (result) => {
+                    if (result){
+                        this.action='unlink';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.reinstate_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                swal({
+                    title: "Reinstate User",
+                    text: "Are you sure you want to Reinstate  " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result) {
+                        this.action='reinstate';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.relink_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email
+                vm.contact_user.mobile_number= mobile
+                vm.contact_user.phone_number= phone
+                swal({
+                    title: "Relink User",
+                    text: "Are you sure you want to Relink  " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result) {
+                        this.action='relink';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.suspend_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                swal({
+                    title: "Suspend User",
+                    text: "Are you sure you want to Suspend  " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result) {
+                        this.action='suspend';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.make_admin_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                swal({
+                    title: "Organisation Admin",
+                    text: "Are you sure you want to make " + name + " (" + email + ") an Organisation Admin?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result) {
+                        this.action='make_admin_contact';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.make_user_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                swal({
+                    title: "Organisation User",
+                    text: "Are you sure you want to make " + name + " (" + email + ") an Organisation User?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result) {
+                        this.action='make_user_contact';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.accept_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                swal({
+                    title: "Contact Accept",
+                    text: "Are you sure you want to accept contact request " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result){
+                        this.action='accept';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.decline_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname 
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email 
+                vm.contact_user.mobile_number= mobile 
+                vm.contact_user.phone_number= phone 
+                // console.log(vm.contact_user)
+                swal({
+                    title: "Contact Decline",
+                    text: "Are you sure you want to decline the contact request for " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result){
+                        this.action='decline';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                    }
+                },(error) => {
+                });
+            });
+
+            vm.$refs.contacts_datatable_user.vmDataTable.on('click','.accept_declined_contact',(e) => {
+                e.preventDefault();
+                let firstname = $(e.target).data('firstname');
+                let lastname = $(e.target).data('lastname');
+                let name = firstname + ' ' + lastname;
+                let email = $(e.target).data('email');
+                let id = $(e.target).data('id');
+                let mobile = $(e.target).data('mobile');
+                let phone = $(e.target).data('phone');
+                vm.contact_user.first_name= firstname
+                vm.contact_user.last_name= lastname
+                vm.contact_user.email= email
+                vm.contact_user.mobile_number= mobile
+                vm.contact_user.phone_number= phone
+                swal({
+                    title: "Contact Accept (Previously Declined)",
+                    text: "Are you sure you want to accept the previously declined contact request for " + name + " (" + email + ")?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+                }).then((result) => {
+                    if (result){
+                        this.action='accept_declined';
+                        this.$refs.add_comm_org.action=this.action;
+                        this.addComm();
+                        
+                    }
+                },(error) => {
+                });
+            });
             // Fix the table responsiveness when tab is shown
             $('a[href="#'+vm.oTab+'"]').on('shown.bs.tab', function (e) {
                 vm.$refs.proposals_table.$refs.proposal_datatable.vmDataTable.columns.adjust().responsive.recalc();
                 vm.$refs.approvals_table.$refs.proposal_datatable.vmDataTable.columns.adjust().responsive.recalc();
                 vm.$refs.compliances_table.$refs.proposal_datatable.vmDataTable.columns.adjust().responsive.recalc();
             });
+        },
+        addComm(){
+            this.$refs.add_comm_org.isModalOpen = true;
         },
         updateDetails: function() {
             let vm = this;

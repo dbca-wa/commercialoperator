@@ -213,6 +213,16 @@ class Approval(RevisionedMixin):
         ids = map(int,[i.split('L')[1] for i in Approval.objects.all().values_list('lodgement_number', flat=True) if i])
         return max(ids) + 1 if ids else 1
 
+    @property
+    def licence_name(self):
+        try:
+            if self.current_proposal.application_type.name == ApplicationType.EVENT:
+                if self.current_proposal.event_activity.event_name:
+                    return self.current_proposal.event_activity.event_name
+            return ''
+        except:
+            return ''
+
     def save(self, *args, **kwargs):
         if self.lodgement_number in ['', None]:
             self.lodgement_number = 'L{0:06d}'.format(self.next_id)

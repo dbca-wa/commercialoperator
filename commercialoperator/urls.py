@@ -30,6 +30,7 @@ from commercialoperator.components.proposals import api_event as proposal_api_ev
 #from commercialoperator.components.compliances import api_event as compliances_api_event
 
 from ledger.urls import urlpatterns as ledger_patterns
+from django_media_serv.urls import urlpatterns as media_serv_patterns
 
 # API patterns
 router = routers.DefaultRouter()
@@ -101,7 +102,7 @@ router.register(r'proposal_events_trails', proposal_api_event.ProposalEventsTrai
 api_patterns = [
     url(r'^api/profile$', users_api.GetProfile.as_view(), name='get-profile'),
     url(r'^api/countries$', users_api.GetCountries.as_view(), name='get-countries'),
-    url(r'^api/department_users$', users_api.DepartmentUserList.as_view(), name='department-users-list'),
+    #url(r'^api/department_users$', users_api.DepartmentUserList.as_view(), name='department-users-list'),
     url(r'^api/filtered_users$', users_api.UserListFilterView.as_view(), name='filtered_users'),
     url(r'^api/filtered_organisations$', org_api.OrganisationListFilterView.as_view(), name='filtered_organisations'),
     url(r'^api/filtered_payments$', approval_api.ApprovalPaymentFilterViewSet.as_view(), name='filtered_payments'),
@@ -195,10 +196,12 @@ urlpatterns = [
     url(r'^history/organisation/(?P<pk>\d+)/$', organisation_views.OrganisationHistoryCompareView.as_view(), name='organisation_history'),
 
 
-] + ledger_patterns
+] + ledger_patterns + media_serv_patterns
 
-if settings.DEBUG:  # Serve media locally in development.
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG:  # Serve media locally in development.
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.SHOW_DEBUG_TOOLBAR:
     import debug_toolbar

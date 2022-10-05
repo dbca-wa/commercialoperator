@@ -76,7 +76,7 @@ def send_amendment_email_notification(amendment_request, request, compliance, is
         'url': url
     }
 
-    submitter = compliance.submitter.email if compliance.submitter and compliance.submitter.email else compliance.proposal.submitter.email
+    submitter = compliance.compliance_submitter_email if compliance.submitter and compliance.submitter.email else compliance.proposal.proposal_submitter_email
     all_ccs = []
     if compliance.proposal.org_applicant and compliance.proposal.org_applicant.email:
         cc_list = compliance.proposal.org_applicant.email
@@ -109,7 +109,7 @@ def send_reminder_email_notification(compliance, is_test=False):
         'login_url': login_url
     }
 
-    submitter = compliance.submitter.email if compliance.submitter and compliance.submitter.email else compliance.proposal.submitter.email
+    submitter = compliance.compliance_submitter_email if compliance.submitter and compliance.submitter.email else compliance.proposal.proposal_submitter_email
     all_ccs = []
     if compliance.proposal.org_applicant and compliance.proposal.org_applicant.email:
         cc_list = compliance.proposal.org_applicant.email
@@ -170,7 +170,7 @@ def send_due_email_notification(compliance, is_test=False):
         'url': url
     }
 
-    submitter = compliance.submitter.email if compliance.submitter and compliance.submitter.email else compliance.proposal.submitter.email
+    submitter = compliance.compliance_submitter_email if compliance.submitter and compliance.submitter.email else compliance.proposal.proposal_submitter_email
     all_ccs = []
     if compliance.proposal.org_applicant and compliance.proposal.org_applicant.email:
         cc_list = compliance.proposal.org_applicant.email
@@ -228,7 +228,7 @@ def send_compliance_accept_email_notification(compliance,request, is_test=False)
     context = {
         'compliance': compliance
     }
-    submitter = compliance.submitter.email if compliance.submitter and compliance.submitter.email else compliance.proposal.submitter.email
+    submitter = compliance.compliance_submitter_email if compliance.submitter and compliance.submitter.email else compliance.proposal.proposal_submitter_email
     all_ccs = []
     if compliance.proposal.org_applicant and compliance.proposal.org_applicant.email:
         cc_list = compliance.proposal.org_applicant.email
@@ -305,7 +305,7 @@ def send_notification_only_email(compliance, is_test=False):
         'url': url
     }
 
-    submitter = compliance.submitter.email if compliance.submitter and compliance.submitter.email else compliance.proposal.submitter.email
+    submitter = compliance.compliance_submitter_email if compliance.submitter and compliance.submitter.email else compliance.proposal.proposal_submitter_email
     all_ccs = []
     if compliance.proposal.org_applicant and compliance.proposal.org_applicant.email:
         cc_list = compliance.proposal.org_applicant.email

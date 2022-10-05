@@ -50,8 +50,10 @@
                         <div class="borderDecoration col-sm-12">
                           <div  v-for="rd in required_documents_list">
                             <div v-if="rd.can_view">
-                              <label>{{rd.question}}</label>
-                              <FileField :proposal_id="proposal.id" isRepeatable="true" :name="'req_doc'+rd.id" :required_doc_id="rd.id" label="Add Document" :id="'proposal'+proposal.id+'req_doc'+rd.id" :readonly="proposal.readonly"></FileField>
+                              <!-- <label>{{rd.question}}</label> -->
+                              <label for="label" v-html="rd.question"></label>
+                              <!-- <FileField :proposal_id="proposal.id" isRepeatable="true" :name="'req_doc'+rd.id" :required_doc_id="rd.id" label="Add Document" :id="'proposal'+proposal.id+'req_doc'+rd.id" :readonly="proposal.readonly"></FileField> -->
+                              <FileField :proposal_id="proposal.id" isRepeatable="true" :name="'req_doc'+rd.id" :required_doc_id="rd.id" label="Add Document" :id="'proposal'+proposal.id+'req_doc'+rd.id" :readonly="!canEditActivities"></FileField>
                             </div>
                           </div>
                         </div>
@@ -60,7 +62,7 @@
                             <VesselTable :url="vessels_url" :proposal="proposal" ref="vessel_table"></VesselTable>
                         </div>
                         <div class="form-horizontal col-sm-12">
-
+ 
                         </div>
                     </div>
                 </div>

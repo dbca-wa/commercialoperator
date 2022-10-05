@@ -64,6 +64,7 @@ class Compliance(RevisionedMixin):
     text = models.TextField(blank=True)
     #meta = JSONField(null=True, blank=True)
     num_participants = models.SmallIntegerField('Number of participants', blank=True, null=True)
+    num_child_participants = models.SmallIntegerField('Number of child participants', blank=True, null=True)
     processing_status = models.CharField(choices=PROCESSING_STATUS_CHOICES,max_length=20)
     customer_status = models.CharField(choices=CUSTOMER_STATUS_CHOICES,max_length=20, default=CUSTOMER_STATUS_CHOICES[1][0])
     assigned_to = models.ForeignKey(EmailUser,related_name='commercialoperator_compliance_assignments',null=True,blank=True)
@@ -139,6 +140,27 @@ class Compliance(RevisionedMixin):
     @property
     def fee_amount(self):
         return Invoice.objects.get(reference=self.fee_invoice_reference).amount if self.fee_paid else None
+
+    @property
+    def compliance_submitter_email(self):
+        if self.proposal.org_applicant:
+            try:
+                contact=self.proposal.org_applicant.contacts.filter(email=self.submitter)
+                if contact:
+                    contact=contact[0]
+                    if contact.user_status=='active':
+                        return self.submitter.email
+                    else:
+                        return self.proposal.org_applicant.all_admin_emails
+                return self.proposal.org_applicant.all_admin_emails
+            except:
+                return self.proposal.org_applicant.all_admin_emails
+        else:
+            return self.submitter.email
+
+    @property
+    def compliance_licence_name(self):
+        return self.approval.licence_name
 
     def save(self, *args, **kwargs):
         super(Compliance, self).save(*args,**kwargs)

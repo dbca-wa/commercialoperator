@@ -547,6 +547,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'fee_invoice_url',
                 'fee_invoice_reference',
                 'fee_paid',
+                'event_name',
                 )
         # the serverSide functionality of datatables is such that only columns that have field 'data' defined are requested from the serializer. We
         # also require the following additional fields for some of the mRender functions
@@ -572,6 +573,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'fee_invoice_url',
                 'fee_invoice_reference',
                 'fee_paid',
+                'event_name',
                 )
 
     def get_assigned_officer(self,obj):
@@ -1001,6 +1003,7 @@ class DTReferralSerializer(serializers.ModelSerializer):
     referral_status = serializers.CharField(source='get_processing_status_display')
     proposal_lodgement_date = serializers.CharField(source='proposal.lodgement_date')
     proposal_lodgement_number = serializers.CharField(source='proposal.lodgement_number')
+    proposal_event_name= serializers.CharField(source='proposal.event_name')
     submitter = serializers.SerializerMethodField()
     region = serializers.CharField(source='region.name', read_only=True)
     #referral = EmailUserSerializer()
@@ -1030,6 +1033,7 @@ class DTReferralSerializer(serializers.ModelSerializer):
             'document',
             'assigned_officer',
             'can_user_process',
+            'proposal_event_name',
         )
 
     def get_submitter(self,obj):
