@@ -115,9 +115,17 @@
                                 <div v-if="compliance.participant_number_required && !isFinalised && !compliance.fee_paid">
                                     <div class="row">
                                         <div class="form-group">
-                                            <label class="col-sm-3 control-label pull-left"  for="Name">Number of participants:</label>
+                                            <label class="col-sm-3 control-label pull-left"  for="Name">Number of event participants (aged 17 years or over):</label>
                                             <div class="col-sm-6">
                                                 <input type="text" :disabled="isFinalised" class="form-control" name="num_participants" placeholder="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label pull-left"  for="Name">Number of child participants (aged 16 years or below):</label>
+                                            <div class="col-sm-6">
+                                                <input type="text" :disabled="isFinalised" class="form-control" name="num_child_participants" placeholder="">
                                             </div>
                                         </div>
                                     </div>
@@ -402,33 +410,39 @@ export default {
         let vm = this;
         if($(vm.form).valid()){
             vm.errors = false;
+            vm.errorString='';
             let data = new FormData(vm.form);
-            vm.addingComms = true;            
+            vm.addingComms = true;
+            if(vm.compliance && !vm.compliance.documents.length>0 && vm.files.length>0 && vm.files[0].file==null){
+                vm.errors= true;
+                vm.errorString='Please upload at least one document prior to submitting.'
+            }            
+            else{
+                swal({
+                    title: vm.submit_text() + " Compliance",
+                    text: "Are you sure you want to " + vm.submit_text().toLowerCase()+ " this requirement?",
+                    type: "question",
+                    showCancelButton: true,
+                    confirmButtonText: vm.submit_text()
+                }).then(() => {
+     
+                    vm.$http.post(helpers.add_endpoint_json(api_endpoints.compliances,vm.compliance.id+'/submit'),data,{
+                        emulateJSON:true
+                        }).then((response)=>{
+                            vm.addingCompliance = false;
+                            vm.refreshFromResponse(response);                   
+                            vm.compliance = response.body;
 
-            swal({
-                title: vm.submit_text() + " Compliance",
-                text: "Are you sure you want to " + vm.submit_text().toLowerCase()+ " this requirement?",
-                type: "question",
-                showCancelButton: true,
-                confirmButtonText: vm.submit_text()
-            }).then(() => {
- 
-                vm.$http.post(helpers.add_endpoint_json(api_endpoints.compliances,vm.compliance.id+'/submit'),data,{
-                    emulateJSON:true
-                    }).then((response)=>{
-                        vm.addingCompliance = false;
-                        vm.refreshFromResponse(response);                   
-                        vm.compliance = response.body;
-
-                        /* after the above save, redirect to the Django post() method in ApplicationFeeView */
-                        vm.post_and_redirect(vm.compliance_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});
-                            
-                    },(error)=>{
-                        vm.errors = true;
-                        vm.addingCompliance = false;
-                        vm.errorString = helpers.apiVueResourceError(error);
-                    });     
-            })
+                            /* after the above save, redirect to the Django post() method in ApplicationFeeView */
+                            vm.post_and_redirect(vm.compliance_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});
+                                
+                        },(error)=>{
+                            vm.errors = true;
+                            vm.addingCompliance = false;
+                            vm.errorString = helpers.apiVueResourceError(error);
+                        });     
+                })
+            }
         }
     },
 

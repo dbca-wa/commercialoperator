@@ -184,7 +184,7 @@ export default {
             approval_status:[],
             proposal_submitters: [],
             proposal_headers:[
-                "Number","Application","Licence Type","Holder","Status","Start Date","Expiry Date","Licence","Action",
+                "Number","Application","Licence Type","Holder","Status","Start Date","Expiry Date","Licence","Event Name", "Action",
             ],
             proposal_options:{
                 language: {
@@ -326,6 +326,12 @@ export default {
                         },
                         'createdCell': helpers.dtPopoverCellFn,
                         name: 'licence_document__name'
+                    },
+                    {
+                        data: "licence_name",
+                        searchable: false,
+                        orderable: false,
+                        name: ''
                     },
                     {
                         data: '',

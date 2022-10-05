@@ -751,6 +751,16 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         if self.application_type.name==ApplicationType.EVENT:
             return self.application_type.licence_fee_1yr
 
+    @property
+    def event_name(self):
+        try:
+            if self.application_type.name == ApplicationType.EVENT:
+                if self.event_activity.event_name:
+                    return self.event_activity.event_name
+            return ''
+        except:
+            return ''
+
     def reset_licence_discount(self, user):
         """ reset when licence is issued"""
         org = self.org_applicant
@@ -927,6 +937,23 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 #            l.append( [p.id, p.previous_application.id] )
 #            p = p.previous_application
 #        return l
+
+    @property
+    def proposal_submitter_email(self):
+        if self.org_applicant:
+            try:
+                contact=self.org_applicant.contacts.filter(email=self.submitter)
+                if contact:
+                    contact=contact[0]
+                    if contact.user_status=='active':
+                        return self.submitter.email
+                    else:
+                        return self.org_applicant.all_admin_emails
+                return self.org_applicant.all_admin_emails
+            except:
+                return self.org_applicant.all_admin_emails
+        else:
+            return self.submitter.email
 
     @property
     def is_assigned(self):

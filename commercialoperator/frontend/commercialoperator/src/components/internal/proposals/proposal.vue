@@ -410,7 +410,7 @@ export default {
             form: null,
             members: [],
             proposal_parks:null,
-            department_users : [],
+            //department_users : [],
             referral_recipient_groups : [],
             contacts_table_initialised: false,
             initialisedSelects: false,
@@ -988,17 +988,17 @@ export default {
                 });
 
         },
-        fetchDeparmentUsers: function(){
-            let vm = this;
-            vm.loading.push('Loading Department Users');
-            vm.$http.get(api_endpoints.department_users).then((response) => {
-                vm.department_users = response.body
-                vm.loading.splice('Loading Department Users',1);
-            },(error) => {
-                console.log(error);
-                vm.loading.splice('Loading Department Users',1);
-            })
-        },
+        //fetchDeparmentUsers: function(){
+        //    let vm = this;
+        //    vm.loading.push('Loading Department Users');
+        //    vm.$http.get(api_endpoints.department_users).then((response) => {
+        //        vm.department_users = response.body
+        //        vm.loading.splice('Loading Department Users',1);
+        //    },(error) => {
+        //        console.log(error);
+        //        vm.loading.splice('Loading Department Users',1);
+        //    })
+        //},
         fetchReferralRecipientGroups: function(){
             let vm = this;
             vm.loading.push('Loading Referral Recipient Groups');
@@ -1185,7 +1185,7 @@ export default {
     },
     mounted: function() {
         let vm = this;
-        vm.fetchDeparmentUsers();
+        //vm.fetchDeparmentUsers();
         vm.fetchReferralRecipientGroups();
         
     },
