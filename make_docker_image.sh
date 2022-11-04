@@ -2,15 +2,15 @@
 ## sole parameter is an integer indicating incremental daily version
 ## git branch --set-upstream-to=origin/das_dev das_dev	
 
-if [ $# -lt 1 ]; then
-    echo "ERROR: Must specify <github branch> and <integer indicating incremental daily version> e.g."
-    echo "$0 das_dev <optional: --no-cache>"
+if [[ ( $@ == "--help") ||  $@ == "-h" ]]; then
+    echo "$0 <optional: --no-cache>"
     exit 1
 fi
 
-if [ $# -eq 2 ]; then
-    NO_CACHE=$2
+if [ $# -eq 1 ]; then
+    NO_CACHE=$1
 fi
+
 
 GIT_BRANCH=$1
 date_var=$(date +%Y.%m.%d.%H.%M%S)
