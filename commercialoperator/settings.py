@@ -178,6 +178,8 @@ PAYMENT_SYSTEM_PREFIX = env('PAYMENT_SYSTEM_PREFIX', PAYMENT_SYSTEM_ID.replace('
 os.environ['LEDGER_PRODUCT_CUSTOM_FIELDS'] = "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
 CRON_NOTIFICATION_EMAIL = env('CRON_NOTIFICATION_EMAIL', NOTIFICATION_EMAIL).lower()
 
+TIME_ZONE='Australia/Perth'
+
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
 
