@@ -1,5 +1,5 @@
 # Prepare the base environment.
-FROM dbcawa/commercialoperator:v2022.09.21.15.5627 as builder_base_commercialoperatordev
+FROM dbcawa/commercialoperator:latest as builder_base_commercialoperatordev
 
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y npm patch
