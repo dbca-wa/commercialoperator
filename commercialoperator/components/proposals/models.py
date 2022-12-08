@@ -9,7 +9,7 @@ from django.db import models,transaction
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.utils.encoding import python_2_unicode_compatible
-from django.core.exceptions import ValidationError, MultipleObjectsReturned
+from django.core.exceptions import ValidationError, MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.postgres.fields.jsonb import JSONField
 from django.utils import timezone
@@ -764,12 +764,16 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def reset_licence_discount(self, user):
         """ reset when licence is issued"""
         org = self.org_applicant
-        # if self.application_type.name=='T Class' and org and org.licence_discount > 0:
         if self.application_type.name==ApplicationType.TCLASS and org and org.licence_discount > 0:
             if org.licence_discount > 0:
-                lic_disc = self.fee_discounts.get(discount_type=ApplicationFeeDiscount.DISCOUNT_TYPE_LICENCE)
-                lic_disc.reset_date = timezone.now()
-                lic_disc.save()
+                try:
+                    lic_disc = self.fee_discounts.get(discount_type=ApplicationFeeDiscount.DISCOUNT_TYPE_LICENCE)
+                    lic_disc.reset_date = timezone.now()
+                    lic_disc.save()
+                except ObjectDoesNotExist as e:
+                    lic_disc = ApplicationFeeDiscount.objects.create(
+                        proposal=self, discount_type=ApplicationFeeDiscount.DISCOUNT_TYPE_LICENCE, discount=org.licence_discount, user=user, reset_date=timezone.now()
+                    )
             org.apply_licence_discount = False
             org.licence_discount = 0.0
             org.save()
@@ -777,7 +781,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def reset_application_discount(self, user):
         """ reset when application is submitted"""
         org = self.org_applicant
-        #if self.application_type.name=='T Class' and org:
         if self.application_type.name==ApplicationType.TCLASS and org:
             if org.application_discount > 0 or org.licence_discount > 0:
                 app_disc = ApplicationFeeDiscount.objects.create(proposal=self, discount_type=ApplicationFeeDiscount.DISCOUNT_TYPE_APPLICATION, discount=org.application_discount, reset_date=timezone.now(), user=user)
