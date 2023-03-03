@@ -1,8 +1,8 @@
 {
 	"name": "Boranga Development",
-	"image": "dbcawa/docker_app_dev:boranga_dev_latest",
+	"image": "dbcawa/docker_app_dev:commercialoperator_dev_latest",
 	"remoteUser": "container",
-	"workspaceFolder": "/data/data/projects/boranga",
+	"workspaceFolder": "/data/data/projects/commercialoperator",
 	"mounts": ["type=bind,source=/data/,target=/data/",
 	           "type=bind,source=/data/data/containerhome/,target=/home/container/"
 	          ],	
