@@ -22,7 +22,7 @@ RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y wget git libmagic-dev gcc binutils libproj-dev gdal-bin python3-setuptools python3-pip tzdata cron rsyslog gunicorn libreoffice
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr htop vim ssh 
-RUN apt-get install --no-install-recommends -y python3-gevent software-properties-common imagemagick
+RUN apt-get install --no-install-recommends -y python3-gevent software-properties-common imagemagick npm
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
@@ -56,6 +56,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN touch /app/.env
 COPY .git ./.git
 COPY commercialoperator ./commercialoperator
+RUN cd /app/commercialoperator/frontend/commercialoperator; npm install
+RUN cd /app/commercialoperator/frontend/commercialoperator; npm run build
 RUN python manage_co.py collectstatic --noinput
 
 RUN mkdir /app/tmp/
