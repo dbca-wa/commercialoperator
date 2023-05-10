@@ -52,12 +52,12 @@ class ComplianceInternalDueNotificationEmail(TemplateEmailBase):
     txt_template = 'commercialoperator/emails/send_internal_due_notification.txt'
 
 class ComplianceNotificationOnlyEmail(TemplateEmailBase):
-    subject = '{} - Commercial Operations Licence requirement notification.'.format(settings.DEP_NAME)
+    subject = '{} - Notification of compliance requirement.'.format(settings.DEP_NAME)
     html_template = 'commercialoperator/emails/send_notification_only_email.html'
     txt_template = 'commercialoperator/emails/send_notification_only_email.txt'
 
 class ComplianceInternalNotificationOnlyEmail(TemplateEmailBase):
-    subject = 'A Compliance with requirements is due for submission.'
+    subject = 'Notification of compliance requirement.'
     html_template = 'commercialoperator/emails/send_internal_notification_only_email.html'
     txt_template = 'commercialoperator/emails/send_internal_notification_only_email.txt'
 
