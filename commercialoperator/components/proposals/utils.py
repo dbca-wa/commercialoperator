@@ -1009,6 +1009,17 @@ def save_assessor_data_filming(instance,request,viewset):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
+            
+            # To allow update following 'Back to assessor', to start_date and expiry date for activity
+            for district_proposal in instance.district_proposals.all():
+                if district_proposal.proposed_issuance_approval:
+                    if instance.filming_activity.commencement_date:
+                        district_proposal.proposed_issuance_approval['start_date'] = instance.filming_activity.commencement_date.strftime('%d/%m/%Y')
+                        district_proposal.save()
+                    if instance.filming_activity.completion_date:
+                        district_proposal.proposed_issuance_approval['expiry_date'] = instance.filming_activity.completion_date.strftime('%d/%m/%Y')
+                        district_proposal.save()
+
             serializer = SaveInternalFilmingProposalSerializer(instance, sc, partial=True)
             serializer.is_valid(raise_exception=True)
             viewset.perform_update(serializer)
@@ -1074,6 +1085,13 @@ def save_assessor_data_event(instance,request,viewset):
 
                 except:
                     raise
+
+            # To allow update following 'Back to assessor', to start_date and expiry date for activity
+            if instance.proposed_issuance_approval:
+                if instance.event_activity.commencement_date:
+                    instance.proposed_issuance_approval['start_date'] = instance.event_activity.commencement_date.strftime('%d/%m/%Y')
+                if instance.event_activity.completion_date:
+                    instance.proposed_issuance_approval['expiry_date'] = instance.event_activity.completion_date.strftime('%d/%m/%Y')
 
             serializer = SaveInternalEventProposalSerializer(instance, sc, partial=True)
             serializer.is_valid(raise_exception=True)
