@@ -60,10 +60,12 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             #return Compliance.objects.all()
-            return Compliance.objects.all().exclude(processing_status='discarded')
+            return Compliance.objects.all().exclude(Q(processing_status='discarded') | Q(requirement__notification_only=True))
         elif is_customer(self.request):
             user_orgs = [org.id for org in self.request.user.commercialoperator_organisations.all()]
-            queryset =  Compliance.objects.filter( Q(proposal__org_applicant_id__in = user_orgs) | Q(proposal__submitter = self.request.user) ).exclude(processing_status='discarded')
+            queryset =  Compliance.objects.filter( Q(proposal__org_applicant_id__in = user_orgs) | Q(proposal__submitter = self.request.user) ).exclude(
+                Q(processing_status='discarded') | Q(requirement__notification_only=True)
+            )
             return queryset
         return Compliance.objects.none()
 
