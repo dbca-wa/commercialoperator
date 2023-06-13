@@ -86,7 +86,8 @@ from collections import OrderedDict
 from ledger.payments.models import Invoice
 from ledger.basket.models import Basket
 from ledger.payments.mixins import InvoiceOwnerMixin
-from oscar.apps.order.models import Order
+#from oscar.apps.order.models import Order
+from ledger.order.models import Order
 from commercialoperator.helpers import is_internal, is_commercialoperator_admin, is_in_organisation_contacts
 from ledger.payments.helpers import is_payment_admin
 
