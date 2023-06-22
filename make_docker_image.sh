@@ -14,7 +14,7 @@ fi
 
 GIT_BRANCH=$1
 date_var=$(date +%Y.%m.%d.%H.%M%S)
-BUILD_TAG=dbcawa/commercialoperator:v$date_var
+BUILD_TAG=dbcawa/commercialoperator:$date_var
 #git checkout $GIT_BRANCH &&
 #git pull &&
 #cd commercialoperator/frontend/commercialoperator/ &&
