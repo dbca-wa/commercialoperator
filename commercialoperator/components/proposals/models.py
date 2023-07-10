@@ -943,6 +943,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def proposal_submitter_email(self):
+        fallback_recipient = self.org_applicant.all_admin_emails if len(self.org_applicant.all_admin_emails)>0 else self.submitter.email
         if self.org_applicant:
             try:
                 contact=self.org_applicant.contacts.filter(email=self.submitter)
@@ -951,10 +952,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     if contact.user_status=='active':
                         return self.submitter.email
                     else:
-                        return self.org_applicant.all_admin_emails
-                return self.org_applicant.all_admin_emails
+                        return fallback_recipient
+                return fallback_recipient
             except:
-                return self.org_applicant.all_admin_emails
+                return fallback_recipient
         else:
             return self.submitter.email
 
