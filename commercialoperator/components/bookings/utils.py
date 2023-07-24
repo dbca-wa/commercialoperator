@@ -383,9 +383,9 @@ def create_compliance_fee_lines(compliance, invoice_text=None, vouchers=[], inte
                                 'ledger_description': '{}, participants: {}'.format(park.name, no_persons),
                                 'oracle_code': park.oracle_code(compliance.proposal.application_type),
                                 #'oracle_code': 'NNP415 GST',
-                                'price_incl_tax':  price,
+                                'price_incl_tax':  float(price),
                                 #'price_excl_tax':  price, # NO GST
-                                'price_excl_tax':  price if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
+                                'price_excl_tax':  float(price) if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
                                 'quantity': 1 # no_persons,
                         }
                 return None
@@ -522,8 +522,7 @@ def create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_p
                     'ledger_description': f'{park.name} ({licence_text} - {filming_period})',
                     'oracle_code': park.oracle_code(proposal.application_type),
                     'price_incl_tax':  float(price),
-                    #'price_excl_tax':  float(price), # NO GST
-                    'price_excl_tax':  price if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
+                    'price_excl_tax':  float(price), # There NO GST for Licences fees (the below licence charge is divided evenly by number of parks)
                     'quantity': 1 # no_persons,
             }
 
@@ -631,8 +630,8 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
                                 'ledger_description': '{} - {} - {}'.format(park.name, arrival, age_group),
                                 #'oracle_code': park.oracle_code(ApplicationType.TCLASS).encode('utf-8'),
                                 'oracle_code': park.oracle_code(ApplicationType.TCLASS),
-                                'price_incl_tax':  price,
-                                'price_excl_tax':  price if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
+                                'price_incl_tax':  float(price),
+                                'price_excl_tax':  float(price) if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
                                 'quantity': no_persons,
                         }
                 return None

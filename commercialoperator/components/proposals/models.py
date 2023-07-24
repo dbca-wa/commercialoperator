@@ -2132,6 +2132,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         not self.proposal_type=='amendment' and \
                         not self.fee_paid:
 
+                    import ipdb; ipdb.set_trace()
                     self.processing_status = self.PROCESSING_STATUS_AWAITING_PAYMENT
                     self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
                     self.approved_by = request.user
@@ -2150,8 +2151,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         self.save(version_comment='Final Approval - Awaiting Payment, Proposal: {}'.format(self.lodgement_number))
 
                     else:
-                        logger.info('Cannot create Filming awaiting payment confirmation: {}'.format(self.name))
-                        raise
+                        logger.info('Cannot create Filming awaiting payment confirmation')
+                        raise Exception('Cannot create Filming awaiting payment confirmation')
 
                 else:
                     self.processing_status = 'approved'
