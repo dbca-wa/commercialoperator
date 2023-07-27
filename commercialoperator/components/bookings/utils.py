@@ -384,8 +384,8 @@ def create_compliance_fee_lines(compliance, invoice_text=None, vouchers=[], inte
                                 'oracle_code': park.oracle_code(compliance.proposal.application_type),
                                 #'oracle_code': 'NNP415 GST',
                                 'price_incl_tax':  float(price),
-                                #'price_excl_tax':  price, # NO GST
-                                'price_excl_tax':  float(price) if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
+                                'price_excl_tax':  price, # Compliance 'park' participants - this is GST Emempt
+                                #'price_excl_tax':  float(price) if park.is_gst_exempt else round(float(calculate_excl_gst(price)), 2),
                                 'quantity': 1 # no_persons,
                         }
                 return None
