@@ -152,7 +152,7 @@ class Park(models.Model):
 
     # editable=False --> related to invoice PDF generation, currently GST is computed assuming GST is payable for ALL parks.
     # Must fix invoice calc. GST per park in pdf line_items, for net GST if editable is to be set to True
-    is_gst_exempt = models.BooleanField(default=False, editable=False)
+    is_gst_exempt = models.BooleanField(default=False, editable=True)
     visible_to_external= models.BooleanField(default=True)
 
     class Meta:
