@@ -2132,7 +2132,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         not self.proposal_type=='amendment' and \
                         not self.fee_paid:
 
-                    import ipdb; ipdb.set_trace()
                     self.processing_status = self.PROCESSING_STATUS_AWAITING_PAYMENT
                     self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
                     self.approved_by = request.user
