@@ -2258,6 +2258,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     self.save(version_comment='Final Approval: {}'.format(self.approval.lodgement_number))
                     self.approval.documents.all().update(can_delete=False)
 
+                    if approval.current_proposal.application_type.name == ApplicationType.TCLASS:
+                        approval.create_renewals_periods()
+
             except:
                 raise
 
@@ -2803,13 +2806,19 @@ class ProposalLogEntry(CommunicationsLogEntry):
         super(ProposalLogEntry, self).save(**kwargs)
 
 class ProposalOtherDetails(models.Model):
+    LICENCE_PERIOD_2_MONTHS = '2_months'
+    LICENCE_PERIOD_1_YEAR  = '1_year'
+    LICENCE_PERIOD_3_YEAR  = '3_year'
+    LICENCE_PERIOD_5_YEAR  = '5_year'
+    LICENCE_PERIOD_7_YEAR  = '7_year'
+    LICENCE_PERIOD_10_YEAR  = '10_year'
     LICENCE_PERIOD_CHOICES=(
-        ('2_months','2 months'),
-        ('1_year','1 Year'),
-        ('3_year', '3 Years'),
-        ('5_year', '5 Years'),
-        ('7_year', '7 Years'),
-        ('10_year', '10 Years'),
+        (LICENCE_PERIOD_2_MONTHS,'2 months'),
+        (LICENCE_PERIOD_1_YEAR,'1 Year'),
+        (LICENCE_PERIOD_3_YEAR, '3 Years'),
+        (LICENCE_PERIOD_5_YEAR, '5 Years'),
+        (LICENCE_PERIOD_7_YEAR, '7 Years'),
+        (LICENCE_PERIOD_10_YEAR, '10 Years'),
     )
     preferred_licence_period=models.CharField('Preferred licence period', max_length=40, choices=LICENCE_PERIOD_CHOICES, null=True, blank=True)
     nominated_start_date= models.DateField(blank=True, null=True)
@@ -2830,17 +2839,17 @@ class ProposalOtherDetails(models.Model):
     def proposed_end_date(self):
         end_date=None
         if self.preferred_licence_period and self.nominated_start_date:
-            if self.preferred_licence_period=='2_months':
+            if self.preferred_licence_period == self.LICENCE_PERIOD_2_MONTHS:
                 end_date=self.nominated_start_date + relativedelta(months=+2) - relativedelta(days=1)
-            if self.preferred_licence_period=='1_year':
+            if self.preferred_licence_period == self.LICENCE_PERIOD_1_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+12)- relativedelta(days=1)
-            if self.preferred_licence_period=='3_year':
+            if self.preferred_licence_period == self.LICENCE_PERIOD_3_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+36)- relativedelta(days=1)
-            if self.preferred_licence_period=='5_year':
+            if self.preferred_licence_period == self.LICENCE_PERIOD_5_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+60)- relativedelta(days=1)
-            if self.preferred_licence_period=='7_year':
+            if self.preferred_licence_period == self.LICENCE_PERIOD_7_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+84)- relativedelta(days=1)
-            if self.preferred_licence_period=='10_year':
+            if self.preferred_licence_period == self.LICENCE_PERIOD_10_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+120)- relativedelta(days=1)
         return end_date
 

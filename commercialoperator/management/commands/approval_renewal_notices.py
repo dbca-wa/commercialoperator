@@ -9,13 +9,15 @@ from commercialoperator.components.approvals.email import (
     send_approval_renewal_email_notification,)
 
 import itertools
+from dateutil.relativedelta import relativedelta
+from datetime import date
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Send Approval renewal notice when approval is due to expire in 90 days (Excludes E Class licences)'
+    help = 'Send Approval renewal notice when approval is due to expire in 90 days (Excludes E Class, Filming, Event licences)'
 
     def handle(self, *args, **options):
         try:
@@ -26,26 +28,27 @@ class Command(BaseCommand):
         errors = []
         updates = []
         today = timezone.localtime(timezone.now()).date()
-        expiry_notification_date = today + timedelta(days=90)
         renewal_conditions = {
-            'expiry_date__lte': expiry_notification_date,
-            'renewal_sent': False,
+            'renewals__renewal_date__lte': today,
+            'renewals__renewal_sent': False,
             'replaced_by__isnull': True,
         }
         logger.info('Running command {}'.format(__name__))
 
         # 2 month licences cannot be renewed
         exclude_application_types=[ApplicationType.FILMING, ApplicationType.EVENT,ApplicationType.ECLASS ]
-        #qs=Approval.objects.filter(**renewal_conditions).exclude(current_proposal__other_details__preferred_licence_period='2_months').exclude(current_proposal__application_type__name='E Class')
         qs=Approval.objects.filter(**renewal_conditions).exclude(current_proposal__other_details__preferred_licence_period='2_months').exclude(current_proposal__application_type__name__in=exclude_application_types)
         logger.info('{}'.format(qs))
         for a in qs:
             if a.status == 'current' or a.status == 'suspended':
                 try:
-                    a.generate_renewal_doc()
+                    if a.renewal_sent is False or a.licence_document is None:
+                        # notification has not been previously sent, so can generate approval doc
+                        a.generate_renewal_doc()
                     send_approval_renewal_email_notification(a)
-                    a.renewal_sent = True
-                    a.save()
+                    renewal = a.renewals.filter(renewal_date__lte=today, renewal_sent=False).order_by('renewal_date').first()
+                    renewal.renewal_sent = True
+                    renewal.save()
                     logger.info('Renewal notice sent for Approval {}'.format(a.id))
                     updates.append(a.lodgement_number)
                 except Exception as e:

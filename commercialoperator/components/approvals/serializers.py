@@ -128,6 +128,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
     licence_document = serializers.CharField(source='licence_document._file.url')
     #renewal_document = serializers.CharField(source='renewal_document._file.url')
     renewal_document = serializers.SerializerMethodField(read_only=True)
+    renewal_sent = serializers.SerializerMethodField(read_only=True)
     status = serializers.CharField(source='get_status_display')
     allowed_assessors = EmailUserSerializer(many=True)
     region = serializers.CharField(source='current_proposal.region.name')
@@ -233,6 +234,9 @@ class ApprovalSerializer(serializers.ModelSerializer):
             'requirement_docs',
             'licence_name',
         )
+
+    def get_renewal_sent(self,obj):
+        return obj.renewal_sent
 
     def get_linked_applications(self,obj):
         return obj.linked_applications
