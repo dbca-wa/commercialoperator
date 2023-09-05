@@ -21,7 +21,7 @@ from ledger.licence.models import  Licence
 from commercialoperator import exceptions
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.proposals.models import Proposal, ProposalUserAction, DistrictProposal, RequirementDocument, ProposalOtherDetails
-from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, ApplicationType
+from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, ApplicationType, LicencePeriod
 from commercialoperator.components.approvals.email import (
     send_approval_expire_email_notification,
     send_approval_cancel_email_notification,
@@ -55,18 +55,18 @@ class ApprovalDocument(Document):
     class Meta:
         app_label = 'commercialoperator'
 
-class RenewalPeriod(RevisionedMixin):
-    approval = models.ForeignKey('Approval', related_name='renewals')
-    renewal_date = models.DateField()
-    renewal_sent = models.BooleanField(default=False)
+class NotificationPeriod(RevisionedMixin):
+    approval = models.ForeignKey('Approval', related_name='notifications')
+    notification_date = models.DateField()
+    notification_sent = models.BooleanField(default=False)
     #inactive_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.renewal_date.strftime("%Y-%m-%d")}, Notif`n sent: {self.renewal_sent}'
+        return f'Notif`n date: {self.notification_date.strftime("%Y-%m-%d")}, Notif`n sent: {self.notification_sent}'
 
     class Meta:
         app_label = 'commercialoperator'
-        unique_together= ('approval', 'renewal_date')
+        unique_together = ('approval', 'notification_date')
 
 #class Approval(models.Model):
 class Approval(RevisionedMixin):
@@ -100,7 +100,7 @@ class Approval(RevisionedMixin):
 #    tenure = models.CharField(max_length=255,null=True)
 #    title = models.CharField(max_length=255)
     renewal_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='renewal_document')
-#    renewal_sent = models.BooleanField(default=False)
+    renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()
     original_issue_date = models.DateField(auto_now_add=True)
     start_date = models.DateField()
@@ -129,43 +129,45 @@ class Approval(RevisionedMixin):
         app_label = 'commercialoperator'
         unique_together= ('lodgement_number', 'issue_date')
 
-    def _renewal_notification_dates(self):
-        rewewal_dates = []
-        today = datetime.datetime.now().date()
+    def _notification_dates(self, _date):
+        notification_dates = []
+        #_date = datetime.datetime.now().date()
         preferred_licence_period = self.current_proposal.other_details.preferred_licence_period
+        notification_months = self.current_proposal.other_details.notification_months_tolist
         if self.expiry_date:
-            r = relativedelta(self.expiry_date, datetime.datetime.now().date())
+            r = relativedelta(self.expiry_date, _date)
             num_expiry_months = r.months + (r.years * 12)
-            if preferred_licence_period == ProposalOtherDetails.LICENCE_PERIOD_2_MONTHS:
+            if preferred_licence_period == LicencePeriod.LICENCE_PERIOD_2_MONTHS:
                 # these cannot be renewed
                 pass
-            elif preferred_licence_period == ProposalOtherDetails.LICENCE_PERIOD_1_YEAR:
-                renewal_dates = [self.expiry_date - relativedelta(months=num_months) for num_months in [3, 6, 12] if num_months < num_expiry_months]
-                if num_expiry_months < 12:
-                    # allow notification to be sent and enable 'Renew' button in dashboard immediately
-                    renewal_dates.append(today)
             else:
-                renewal_dates = [self.expiry_date - relativedelta(months=num_months) for num_months in [3, 6, 12, 24] if num_months < num_expiry_months]
-                if num_expiry_months < 24:
-                    # allow notification to be sent and enable 'Renew' button in dashboard immediately
-                    renewal_dates.append(today)
+                notification_dates = [self.expiry_date - relativedelta(months=num_months) for num_months in notification_months if num_months <= num_expiry_months]
         else:
-            logger.warn(f'Expiry not set: Cannot create Renewal Notification Dates for Approval {self.lodgement_number}')
+            logger.warn(f'Expiry not set: Cannot create Notification Dates for Approval {self.lodgement_number}')
 
-        return renewal_dates
-
-    def create_renewals_periods(self):
-        ''' for existing approval, when approval is amended, renewed or extended
-        '''
-        renewal_dates = self._renewal_notification_dates()
-        for renewal_date in renewal_dates:
-            rp, created = RenewalPeriod.objects.get_or_create(approval=self, renewal_date=renewal_date)
+        return notification_dates
 
     @property
-    def renewal_sent(self):
-        ''' check if any have been sent '''
-        return self.renewals.filter(renewal_sent=True).exists()
-
+    def is_renewable(self):
+        ''' checks if licence is of type where renewal is permitted '''
+        return self.current_proposal.application_type.name == ApplicationType.TCLASS \
+            and self.current_proposal.other_details.preferred_licence_period != LicencePeriod.LICENCE_PERIOD_2_MONTHS
+    @property
+    def renew_months(self):
+        ''' num_months before expiry, when 'Renew' button can be enabled
+        '''
+        if self.is_renewable:
+            preferred_licence_period = self.current_proposal.other_details.preferred_licence_period
+            return  LicencePeriod.objects.get(licence_period=preferred_licence_period).renewal_month
+        return None
+ 
+    @property
+    def renew_enable_date(self):
+        ''' Used to determine when field 'Renew' action in Licence dashboard can be enabled - used by the
+            management command script 'approval_renewal_notices.py' 
+        '''
+        return self.expiry_date - relativedelta(months=self.renew_months) if self.renew_months else None
+ 
     @property
     def bpay_allowed(self):
         if self.org_applicant:
@@ -735,11 +737,12 @@ class DistrictApproval(RevisionedMixin):
 #reversion.register(ApprovalUserAction)
 
 import reversion
-reversion.register(Approval, follow=['compliances', 'documents', 'comms_logs', 'action_logs'])
+reversion.register(Approval, follow=['compliances', 'documents', 'comms_logs', 'action_logs', 'notifications'])
 reversion.register(ApprovalDocument, follow=['licence_document', 'cover_letter_document', 'renewal_document'])
 reversion.register(ApprovalLogEntry, follow=['documents'])
 reversion.register(ApprovalLogDocument)
 reversion.register(ApprovalUserAction)
 reversion.register(DistrictApproval)
+reversion.register(NotificationPeriod)
 
 

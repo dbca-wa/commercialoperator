@@ -26,7 +26,7 @@ from ledger.licence.models import  Licence
 from ledger.address.models import Country
 from commercialoperator import exceptions
 from commercialoperator.components.organisations.models import Organisation, OrganisationContact, UserDelegation
-from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, Region, District, Tenure, ApplicationType, Park, Activity, ActivityCategory, AccessType, Trail, Section, Zone, RequiredDocument#, RevisionedMixin
+from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, Region, District, Tenure, ApplicationType, Park, Activity, ActivityCategory, AccessType, Trail, Section, Zone, RequiredDocument, LicencePeriod
 from commercialoperator.components.main.utils import get_department_user
 from commercialoperator.components.proposals.email import (
     send_referral_email_notification,
@@ -2258,9 +2258,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     self.save(version_comment='Final Approval: {}'.format(self.approval.lodgement_number))
                     self.approval.documents.all().update(can_delete=False)
 
-                    if approval.current_proposal.application_type.name == ApplicationType.TCLASS:
-                        approval.create_renewals_periods()
-
             except:
                 raise
 
@@ -2806,21 +2803,7 @@ class ProposalLogEntry(CommunicationsLogEntry):
         super(ProposalLogEntry, self).save(**kwargs)
 
 class ProposalOtherDetails(models.Model):
-    LICENCE_PERIOD_2_MONTHS = '2_months'
-    LICENCE_PERIOD_1_YEAR  = '1_year'
-    LICENCE_PERIOD_3_YEAR  = '3_year'
-    LICENCE_PERIOD_5_YEAR  = '5_year'
-    LICENCE_PERIOD_7_YEAR  = '7_year'
-    LICENCE_PERIOD_10_YEAR  = '10_year'
-    LICENCE_PERIOD_CHOICES=(
-        (LICENCE_PERIOD_2_MONTHS,'2 months'),
-        (LICENCE_PERIOD_1_YEAR,'1 Year'),
-        (LICENCE_PERIOD_3_YEAR, '3 Years'),
-        (LICENCE_PERIOD_5_YEAR, '5 Years'),
-        (LICENCE_PERIOD_7_YEAR, '7 Years'),
-        (LICENCE_PERIOD_10_YEAR, '10 Years'),
-    )
-    preferred_licence_period=models.CharField('Preferred licence period', max_length=40, choices=LICENCE_PERIOD_CHOICES, null=True, blank=True)
+    preferred_licence_period=models.CharField('Preferred licence period', max_length=40, choices=LicencePeriod.LICENCE_PERIOD_CHOICES, null=True, blank=True)
     nominated_start_date= models.DateField(blank=True, null=True)
     insurance_expiry= models.DateField(blank=True, null=True)
     other_comments=models.TextField(blank=True)
@@ -2839,20 +2822,23 @@ class ProposalOtherDetails(models.Model):
     def proposed_end_date(self):
         end_date=None
         if self.preferred_licence_period and self.nominated_start_date:
-            if self.preferred_licence_period == self.LICENCE_PERIOD_2_MONTHS:
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_2_MONTHS:
                 end_date=self.nominated_start_date + relativedelta(months=+2) - relativedelta(days=1)
-            if self.preferred_licence_period == self.LICENCE_PERIOD_1_YEAR:
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_1_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+12)- relativedelta(days=1)
-            if self.preferred_licence_period == self.LICENCE_PERIOD_3_YEAR:
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_3_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+36)- relativedelta(days=1)
-            if self.preferred_licence_period == self.LICENCE_PERIOD_5_YEAR:
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_5_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+60)- relativedelta(days=1)
-            if self.preferred_licence_period == self.LICENCE_PERIOD_7_YEAR:
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_7_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+84)- relativedelta(days=1)
-            if self.preferred_licence_period == self.LICENCE_PERIOD_10_YEAR:
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_10_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+120)- relativedelta(days=1)
         return end_date
 
+    @property
+    def notification_months_tolist(self):
+        return LicencePeriod.objects.get(licence_period=self.preferred_licence_period).notification_months_tolist
 
 class ProposalAccreditation(models.Model):
     #activities_land = models.CharField(max_length=24, blank=True, default='')

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Send Approval renewal notice when approval is due to expire, date specified in <notification_period_list> ([3,6,12] etc) (Excludes E Class, Filming, Event licences)'
+    help = 'Enable Approval \'Renew\' button in Licence Dashboard <renewal_months> prior to when approval is due to expire (Excludes E Class, Filming, Event licences)'
 
     def handle(self, *args, **options):
         try:
@@ -28,6 +28,7 @@ class Command(BaseCommand):
         today = timezone.localtime(timezone.now()).date()
         #today = date(2023,9,30)
         last_week = today - relativedelta(weeks=1)
+        #last_week = today - relativedelta(months=6)
 
         # Only TClass Licences can be renewed
         # also checking expiry since last week to catch renewals/notifications missed by previous recent script runs 
@@ -50,28 +51,15 @@ class Command(BaseCommand):
         for idx, a in enumerate(qs):
             if a.status == 'current' or a.status == 'suspended':
                 try:
-                    # Send periodic renewal notification, if notification_date has arrived
-                    notification_date = self.get_notification_date(a, last_week, today)
-                    if notification_date:
-                        np, created = NotificationPeriod.objects.get_or_create(approval=a, notification_date=notification_date)
-
-                        if created:
-                            # notification has not been previously sent for this notification_date
-                            send_approval_renewal_email_notification(a)
-                            np.notification_sent = True
-                            np.save()
-                            logger.info('Renewal notification reminder notice sent for Approval {}'.format(a.id))
-                            updates.append(a.lodgement_number)
-                            #print(idx, a, a.current_proposal.other_details.preferred_licence_period, notification_date, a.expiry_date)
-
-                        # double check that renewal_sent and renewal_document also exists - if notif'n is sent, then renewal_doc should also exist
-                        if a.renewal_document is None:
-                            a.generate_renewal_doc()
-
-                        if not a.renewal_sent:
-                            a.renewal_sent=True
-                            a.save()
-                            #print(idx, a, a.current_proposal.other_details.preferred_licence_period, a.renew_months, a.renew_enable_date, a.expiry_date, a.renewal_document, a.renewal_sent)
+                    # Enable 'Renew' action button in Licence Dashboard - Renew button can be enable many months before notil f'n is sent
+                    if self.can_renew(a, last_week, today):
+                        # notification has not been previously sent, so can generate approval doc
+                        a.generate_renewal_doc()
+                        a.renewal_sent=True
+                        a.save()
+                        logger.info('Renewal notification reminder notice sent for Approval {}'.format(a.id))
+                        updates.append(a.lodgement_number)
+                        #print(idx, a, a.current_proposal.other_details.preferred_licence_period, a.renew_months, a.renew_enable_date, a.expiry_date, a.renewal_document, a.renewal_sent)
 
                 except Exception as e:
                     err_msg = 'Error sending renewal notification notice for Approval {}'.format(a.lodgement_number)
@@ -84,7 +72,8 @@ class Command(BaseCommand):
         logger.info(msg)
         print(msg) # will redirect to cron_tasks.log file, by the parent script
 
-    def get_notification_date(self, approval, start_date, end_date):
-        # check if notification_date is near ('near' will catch failed cron jobs and run in the next day(s)
-        current_notifications_dates = [dt for dt in approval._notification_dates(end_date) if start_date <= dt <= end_date]
-        return current_notifications_dates[0] if len(current_notifications_dates) > 0 else None
+    def can_renew(self, approval, start_date, end_date):
+        # check if renew_enable_date is near ('near' will catch failed cron jobs and run in the next day(s)
+        renew_enable_date = approval.renew_enable_date if start_date <= approval.renew_enable_date <= end_date else None
+        return renew_enable_date and (not approval.renewal_sent or approval.renewal_document is None)
+
