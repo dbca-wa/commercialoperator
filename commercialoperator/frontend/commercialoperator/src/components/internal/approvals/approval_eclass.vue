@@ -46,7 +46,7 @@
                                                             <div class="col-sm-4">
                                                                 <button @click="removeFile(i)" class="btn btn-danger">Remove</button>
                                                             </div>
-                                                        </div>
+                                                        G</div>
                                                     </template>
                                                     <!--
                                                     <a href="" @click.prevent="attachAnother"><i class="fa fa-lg fa-plus top-buffer-2x"></i></a>
@@ -315,4 +315,5 @@ export default {
 </script>
 
 <style lang="css">
+#id_reserved_licence{ font-weight: normal; }
 </style>

@@ -889,6 +889,54 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         else:
             return 'submitter'
 
+    def reset_training_completed(self, request):
+        import ipdb; ipdb.set_trace()
+        today = timezone.now().date()
+        timedelta = datetime.timedelta
+        if self.application_type.name == ApplicationType.EVENT:
+            if self.org_applicant: 
+                if self.org_applicant.event_training_completed:
+                    future_date =self.org_applicant.event_training_date+timedelta(days=365)
+                    #if future_date < today:
+                    if True:
+                        org_applicant = self.org_applicant
+                        org_applicant.event_training_completed = False
+                        org_applicant.event_training_date = None
+                        org_applicant.save()
+
+                        self.training_completed = False
+                        self.save()
+
+                        self.log_user_action(ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(self.id),request)
+
+            elif self.proxy_applicant:
+                if self.proxy_applicant.system_settings.event_training_completed:
+                    future_date =self.proxy_applicant.system_settings.event_training_date+timedelta(days=365)
+                    if future_date < today:
+                        system_settings = self.proxy_applicant.system_settings
+                        system_settings.event_training_completed = False
+                        system_settings.event_training_date = None
+                        system_settings.save()
+
+                        self.training_completed = False
+                        self.save()
+
+                        self.log_user_action(ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(self.id),request)
+
+            else:
+                if self.submitter.system_settings.event_training_completed:
+                    future_date =self.submitter.system_settings.event_training_date+timedelta(days=365)
+                    if future_date < today:
+                        system_settings = self.submitter.system_settings
+                        system_settings.event_training_completed = False
+                        system_settings.event_training_date = None
+                        system_settings.save()
+
+                        self.training_completed = False
+                        self.save()
+
+                        self.log_user_action(ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(self.id),request)
+
     @property
     def applicant_training_completed(self):
         today = timezone.now().date()
@@ -2447,6 +2495,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                     # require  user to pay Application and Licence Fee again
                     proposal.fee_invoice_reference = None
+                    
+                    proposal.reset_training_completed(request)
 
                 req=self.requirements.all().exclude(is_deleted=True)
                 from copy import deepcopy
@@ -2498,7 +2548,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = 'amendment'
+                #proposal.training_completed = proposal.applicant_training_completed if proposal.application_type.name==ApplicationType.EVENT else True 
                 proposal.training_completed = True
+                proposal.reset_training_completed(request)
+
                 #proposal.schema = ProposalType.objects.first().schema
                 ptype = ProposalType.objects.filter(name=proposal.application_type).latest('version')
                 proposal.schema = ptype.schema
@@ -2706,6 +2759,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 proposal.fee_invoice_reference = None
                 proposal.property_cache={}
                 proposal.save()
+
+                proposal.reset_training_completed(request)
             req=self.requirements.all().exclude(is_deleted=True)
             from copy import deepcopy
             if req:
@@ -3207,6 +3262,7 @@ class ProposalUserAction(UserAction):
     ACTION_EXPIRED_APPROVAL_ = "Expire Approval for proposal {}"
     ACTION_DISCARD_PROPOSAL = "Discard application {}"
     ACTION_APPROVAL_LEVEL_DOCUMENT = "Assign Approval level document {}"
+    ACTION_RESET_TRAINING_COMPLETED = "Reset Training Completed {}"
     #T-Class licence
     ACTION_LINK_PARK = "Link park {} to application {}"
     ACTION_UNLINK_PARK = "Unlink park {} from application {}"
