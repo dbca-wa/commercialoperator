@@ -26,7 +26,7 @@ from ledger.licence.models import  Licence
 from ledger.address.models import Country
 from commercialoperator import exceptions
 from commercialoperator.components.organisations.models import Organisation, OrganisationContact, UserDelegation
-from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, Region, District, Tenure, ApplicationType, Park, Activity, ActivityCategory, AccessType, Trail, Section, Zone, RequiredDocument#, RevisionedMixin
+from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction, Document, Region, District, Tenure, ApplicationType, Park, Activity, ActivityCategory, AccessType, Trail, Section, Zone, RequiredDocument, LicencePeriod
 from commercialoperator.components.main.utils import get_department_user
 from commercialoperator.components.proposals.email import (
     send_referral_email_notification,
@@ -888,6 +888,54 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             return 'proxy_applicant'
         else:
             return 'submitter'
+
+    def reset_training_completed(self, request):
+        import ipdb; ipdb.set_trace()
+        today = timezone.now().date()
+        timedelta = datetime.timedelta
+        if self.application_type.name == ApplicationType.EVENT:
+            if self.org_applicant: 
+                if self.org_applicant.event_training_completed:
+                    future_date =self.org_applicant.event_training_date+timedelta(days=365)
+                    #if future_date < today:
+                    if True:
+                        org_applicant = self.org_applicant
+                        org_applicant.event_training_completed = False
+                        org_applicant.event_training_date = None
+                        org_applicant.save()
+
+                        self.training_completed = False
+                        self.save()
+
+                        self.log_user_action(ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(self.id),request)
+
+            elif self.proxy_applicant:
+                if self.proxy_applicant.system_settings.event_training_completed:
+                    future_date =self.proxy_applicant.system_settings.event_training_date+timedelta(days=365)
+                    if future_date < today:
+                        system_settings = self.proxy_applicant.system_settings
+                        system_settings.event_training_completed = False
+                        system_settings.event_training_date = None
+                        system_settings.save()
+
+                        self.training_completed = False
+                        self.save()
+
+                        self.log_user_action(ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(self.id),request)
+
+            else:
+                if self.submitter.system_settings.event_training_completed:
+                    future_date =self.submitter.system_settings.event_training_date+timedelta(days=365)
+                    if future_date < today:
+                        system_settings = self.submitter.system_settings
+                        system_settings.event_training_completed = False
+                        system_settings.event_training_date = None
+                        system_settings.save()
+
+                        self.training_completed = False
+                        self.save()
+
+                        self.log_user_action(ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(self.id),request)
 
     @property
     def applicant_training_completed(self):
@@ -2447,6 +2495,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                     # require  user to pay Application and Licence Fee again
                     proposal.fee_invoice_reference = None
+                    
+                    proposal.reset_training_completed(request)
 
                 req=self.requirements.all().exclude(is_deleted=True)
                 from copy import deepcopy
@@ -2498,7 +2548,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = 'amendment'
+                #proposal.training_completed = proposal.applicant_training_completed if proposal.application_type.name==ApplicationType.EVENT else True 
                 proposal.training_completed = True
+                proposal.reset_training_completed(request)
+
                 #proposal.schema = ProposalType.objects.first().schema
                 ptype = ProposalType.objects.filter(name=proposal.application_type).latest('version')
                 proposal.schema = ptype.schema
@@ -2706,6 +2759,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 proposal.fee_invoice_reference = None
                 proposal.property_cache={}
                 proposal.save()
+
+                proposal.reset_training_completed(request)
             req=self.requirements.all().exclude(is_deleted=True)
             from copy import deepcopy
             if req:
@@ -2803,15 +2858,7 @@ class ProposalLogEntry(CommunicationsLogEntry):
         super(ProposalLogEntry, self).save(**kwargs)
 
 class ProposalOtherDetails(models.Model):
-    LICENCE_PERIOD_CHOICES=(
-        ('2_months','2 months'),
-        ('1_year','1 Year'),
-        ('3_year', '3 Years'),
-        ('5_year', '5 Years'),
-        ('7_year', '7 Years'),
-        ('10_year', '10 Years'),
-    )
-    preferred_licence_period=models.CharField('Preferred licence period', max_length=40, choices=LICENCE_PERIOD_CHOICES, null=True, blank=True)
+    preferred_licence_period=models.CharField('Preferred licence period', max_length=40, choices=LicencePeriod.LICENCE_PERIOD_CHOICES, null=True, blank=True)
     nominated_start_date= models.DateField(blank=True, null=True)
     insurance_expiry= models.DateField(blank=True, null=True)
     other_comments=models.TextField(blank=True)
@@ -2830,20 +2877,23 @@ class ProposalOtherDetails(models.Model):
     def proposed_end_date(self):
         end_date=None
         if self.preferred_licence_period and self.nominated_start_date:
-            if self.preferred_licence_period=='2_months':
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_2_MONTHS:
                 end_date=self.nominated_start_date + relativedelta(months=+2) - relativedelta(days=1)
-            if self.preferred_licence_period=='1_year':
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_1_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+12)- relativedelta(days=1)
-            if self.preferred_licence_period=='3_year':
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_3_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+36)- relativedelta(days=1)
-            if self.preferred_licence_period=='5_year':
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_5_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+60)- relativedelta(days=1)
-            if self.preferred_licence_period=='7_year':
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_7_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+84)- relativedelta(days=1)
-            if self.preferred_licence_period=='10_year':
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_10_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+120)- relativedelta(days=1)
         return end_date
 
+    @property
+    def notification_months_tolist(self):
+        return LicencePeriod.objects.get(licence_period=self.preferred_licence_period).notification_months_tolist
 
 class ProposalAccreditation(models.Model):
     #activities_land = models.CharField(max_length=24, blank=True, default='')
@@ -3212,6 +3262,7 @@ class ProposalUserAction(UserAction):
     ACTION_EXPIRED_APPROVAL_ = "Expire Approval for proposal {}"
     ACTION_DISCARD_PROPOSAL = "Discard application {}"
     ACTION_APPROVAL_LEVEL_DOCUMENT = "Assign Approval level document {}"
+    ACTION_RESET_TRAINING_COMPLETED = "Reset Training Completed {}"
     #T-Class licence
     ACTION_LINK_PARK = "Link park {} to application {}"
     ACTION_UNLINK_PARK = "Unlink park {} from application {}"

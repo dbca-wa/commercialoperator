@@ -220,7 +220,7 @@ export default {
                             var message = '';
                             let tick = '';
                             tick = "<i class='fa fa-exclamation-triangle' style='color:red'></i>"
-                            result = '<span>' + full.lodgement_number + '</span>';
+                            result = full.reserved_licence ? '<span>' + full.lodgement_number + ' (R) </span>' : '<span>' + full.lodgement_number + '</span>'
                             if(full.can_reissue){
                                 if(!full.can_action){
                                     if(full.set_to_cancel){
@@ -249,7 +249,9 @@ export default {
                             }
                             return result;
                         }
-                        else { return full.lodgement_number }
+                        else { 
+			    return full.lodgement_number
+                            }
                         },
                         'createdCell': helpers.dtPopoverCellFn,
                         //name: "id, lodgement_number",

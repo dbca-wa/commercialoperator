@@ -1,0 +1,154 @@
+[
+{
+    "model": "commercialoperator.licenceperiod",
+    "pk": 1,
+    "fields": {
+        "licence_period": "1_year",
+        "renewal_month": 12
+    }
+},
+{
+    "model": "commercialoperator.licenceperiod",
+    "pk": 2,
+    "fields": {
+        "licence_period": "3_year",
+        "renewal_month": 24
+    }
+},
+{
+    "model": "commercialoperator.licenceperiod",
+    "pk": 3,
+    "fields": {
+        "licence_period": "5_year",
+        "renewal_month": 24
+    }
+},
+{
+    "model": "commercialoperator.licenceperiod",
+    "pk": 4,
+    "fields": {
+        "licence_period": "7_year",
+        "renewal_month": 24
+    }
+},
+{
+    "model": "commercialoperator.licenceperiod",
+    "pk": 5,
+    "fields": {
+        "licence_period": "10_year",
+        "renewal_month": 24
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 1,
+    "fields": {
+        "licence_period": 1,
+        "month": 3
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 2,
+    "fields": {
+        "licence_period": 1,
+        "month": 6
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 3,
+    "fields": {
+        "licence_period": 2,
+        "month": 3
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 4,
+    "fields": {
+        "licence_period": 2,
+        "month": 6
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 5,
+    "fields": {
+        "licence_period": 2,
+        "month": 12
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 6,
+    "fields": {
+        "licence_period": 3,
+        "month": 3
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 7,
+    "fields": {
+        "licence_period": 3,
+        "month": 6
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 8,
+    "fields": {
+        "licence_period": 3,
+        "month": 12
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 9,
+    "fields": {
+        "licence_period": 4,
+        "month": 3
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 10,
+    "fields": {
+        "licence_period": 4,
+        "month": 6
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 11,
+    "fields": {
+        "licence_period": 4,
+        "month": 12
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 12,
+    "fields": {
+        "licence_period": 5,
+        "month": 3
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 13,
+    "fields": {
+        "licence_period": 5,
+        "month": 6
+    }
+},
+{
+    "model": "commercialoperator.notificationmonth",
+    "pk": 14,
+    "fields": {
+        "licence_period": 5,
+        "month": 12
+    }
+}
+]

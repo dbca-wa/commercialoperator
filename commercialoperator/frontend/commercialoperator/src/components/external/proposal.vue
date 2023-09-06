@@ -62,7 +62,7 @@
                                         <button v-if="paySubmitting" type="button" class="btn btn-primary" disabled>{{ submit_text() }}&nbsp;
                                                 <i class="fa fa-circle-o-notch fa-spin fa-fw"></i></button>
                                         <!-- <input v-else type="button" @click.prevent="submit" class="btn btn-primary" :value="submit_text()" :disabled="!proposal.training_completed || saveExitProposal || savingProposal"/> -->
-                                        <input v-else type="button" @click.prevent="submit" class="btn btn-primary" :value="submit_text()" :disabled="!trainingCompleted || saveExitProposal || savingProposal"/>
+                                        <input v-else type="button" @click.prevent="submit" class="btn btn-primary" :value="submit_text()" :disabled="!trainingCompleted || saveExitProposal || savingProposal" :title="completed_online_training"/>
                                         <input id="save_and_continue_btn" type="hidden" @click.prevent="save_wo_confirm" class="btn btn-primary" value="Save Without Confirmation"/>
                                       </p>
                                     </div>
@@ -157,6 +157,9 @@ export default {
           return this.proposal.applicant_training_completed;
         }
       return this.proposal.training_completed;
+    },
+    completed_online_training: function(){
+      return !this.trainingCompleted ? "Please complete 'Online Training\'" : ""
     }
 
   },

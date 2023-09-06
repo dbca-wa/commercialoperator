@@ -20,6 +20,7 @@
                                         <DateField :proposal_id="proposal_id" :readonly="readonly" name="issue_date" label="Issue Date" id="id_issue_date" :isRequired="isRequired"/>
                                         <DateField :proposal_id="proposal_id" :readonly="readonly" name="start_date" label="Start Date" id="id_start_date" :isRequired="isRequired"/>
                                         <DateField :proposal_id="proposal_id" :readonly="readonly" name="expiry_date" label="Expiry Date" id="id_expiry_date" :isRequired="isRequired"/>
+                                        <TextField :proposal_id="proposal_id" name="reserved_licence" label="Reserved Licence Lodgement Number" id="id_reserved_licence" :isRequired="false"/>
                                         <!-- <FileField :document_url="document_url" :proposal_id="proposal_id" isRepeatable="true" name="eclass_file" label="Licence" id="id_file" @refreshFromResponse="refreshFromResponse"/> -->
                                         <!-- <RadioField :proposal_id="proposal_id" :readonly="readonly" name="applicant_type2" label="Applicant Type" id="id_applicant_type2" :options="radio_options" :conditions="radio_conditions"/> -->
 
@@ -45,7 +46,7 @@
                                                             <div class="col-sm-4">
                                                                 <button @click="removeFile(i)" class="btn btn-danger">Remove</button>
                                                             </div>
-                                                        </div>
+                                                        G</div>
                                                     </template>
                                                     <!--
                                                     <a href="" @click.prevent="attachAnother"><i class="fa fa-lg fa-plus top-buffer-2x"></i></a>
@@ -314,4 +315,5 @@ export default {
 </script>
 
 <style lang="css">
+#id_reserved_licence{ font-weight: normal; }
 </style>

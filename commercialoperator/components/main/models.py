@@ -63,6 +63,49 @@ class District(models.Model):
         return Park.objects.filter(district=self, park_type='marine').exclude(visible_to_external=False)
 
 
+class LicencePeriod(models.Model):
+    LICENCE_PERIOD_2_MONTHS = '2_months'
+    LICENCE_PERIOD_1_YEAR  = '1_year'
+    LICENCE_PERIOD_3_YEAR  = '3_year'
+    LICENCE_PERIOD_5_YEAR  = '5_year'
+    LICENCE_PERIOD_7_YEAR  = '7_year'
+    LICENCE_PERIOD_10_YEAR  = '10_year'
+    LICENCE_PERIOD_CHOICES=(
+        (LICENCE_PERIOD_2_MONTHS,'2 months'),
+        (LICENCE_PERIOD_1_YEAR,'1 Year'),
+        (LICENCE_PERIOD_3_YEAR, '3 Years'),
+        (LICENCE_PERIOD_5_YEAR, '5 Years'),
+        (LICENCE_PERIOD_7_YEAR, '7 Years'),
+        (LICENCE_PERIOD_10_YEAR, '10 Years'),
+    )
+
+    licence_period = models.CharField(max_length=40, choices=LICENCE_PERIOD_CHOICES, default=LICENCE_PERIOD_CHOICES[1][0], unique=True)
+    renewal_month = models.PositiveSmallIntegerField(default=0) # months prior to expiry when 'Renew' button can be enabled
+
+    class Meta:
+        ordering = ['licence_period']
+        app_label = 'commercialoperator'
+        #unique_together = ('licence_period', 'renewal_month')
+
+    def __str__(self):
+        return f'{self.licence_period} - {self.renewal_month}'
+
+    @property
+    def notification_months_tolist(self):
+        return list(self.notification_months.values_list('month', flat=True))
+
+
+class NotificationMonth(models.Model):
+    licence_period = models.ForeignKey(LicencePeriod, related_name='notification_months')
+    month = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        app_label = 'commercialoperator'
+        #unique_together = ('licence_period', 'month')
+
+    def __str__(self):
+        return str(self.month)
+
 
 @python_2_unicode_compatible
 class AccessType(models.Model):

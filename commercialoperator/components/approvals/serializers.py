@@ -128,6 +128,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
     licence_document = serializers.CharField(source='licence_document._file.url')
     #renewal_document = serializers.CharField(source='renewal_document._file.url')
     renewal_document = serializers.SerializerMethodField(read_only=True)
+    renewal_sent = serializers.SerializerMethodField(read_only=True)
     status = serializers.CharField(source='get_status_display')
     allowed_assessors = EmailUserSerializer(many=True)
     region = serializers.CharField(source='current_proposal.region.name')
@@ -194,6 +195,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
             'is_lawful_authority_finalised',
             'requirement_docs',
             'licence_name',
+            'reserved_licence',
         )
         # the serverSide functionality of datatables is such that only columns that have field 'data' defined are requested from the serializer. We
         # also require the following additional fields for some of the mRender functions
@@ -232,7 +234,11 @@ class ApprovalSerializer(serializers.ModelSerializer):
             'is_lawful_authority_finalised',
             'requirement_docs',
             'licence_name',
+            'reserved_licence',
         )
+
+    def get_renewal_sent(self,obj):
+        return obj.renewal_sent
 
     def get_linked_applications(self,obj):
         return obj.linked_applications

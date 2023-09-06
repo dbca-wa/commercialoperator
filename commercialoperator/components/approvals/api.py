@@ -3,6 +3,7 @@ import os
 import datetime
 import base64
 import geojson
+import re
 from six.moves.urllib.parse import urlparse
 from wsgiref.util import FileWrapper
 from django.db.models import Q, Min
@@ -284,6 +285,17 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                 except:
                     raise serializers.ValidationError('Licence holder is required')
 
+                reserved_licence = request.data.get('reserved_licence', None)
+                if reserved_licence:
+                    # check format is correct 'L001234'
+                    pattern = re.compile("L[^0-9]*[0-9]{6}$")
+                    if not bool(re.search(pattern, reserved_licence)):
+                        raise serializers.ValidationError('Reserved Licence format must be \'L001234\'')
+
+                    if Approval.objects.filter(lodgement_number=reserved_licence).exists():
+                        raise serializers.ValidationError(f'Reserved Licence (Lodgement Number) already exists: {reserved_licence}')
+
+
                 start_date = datetime.strptime(request.data.get('start_date'), '%d/%m/%Y') if request.data.get('start_date') else raiser('Start Date is required')
                 issue_date = datetime.strptime(request.data.get('issue_date'), '%d/%m/%Y') if request.data.get('issue_date') else raiser('Issue Date is required')
                 expiry_date = datetime.strptime(request.data.get('expiry_date'), '%d/%m/%Y') if request.data.get('expiry_date') else raiser('Expiry Date is required')
@@ -299,6 +311,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                 )
 
                 approval = Approval.objects.create(
+                    lodgement_number=reserved_licence,
+                    reserved_licence=True if reserved_licence else False,
                     issue_date=issue_date,
                     expiry_date=expiry_date,
                     start_date=start_date,

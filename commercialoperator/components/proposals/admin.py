@@ -20,6 +20,8 @@ from commercialoperator.components.main.models import (
     RequiredDocument,
     Question,
     GlobalSettings,
+    NotificationMonth,
+    LicencePeriod,
 )
 #from commercialoperator.components.main.models import Activity, SubActivityLevel1, SubActivityLevel2, SubCategory
 from reversion.admin import VersionAdmin
@@ -186,12 +188,32 @@ class ApplicationTypeAdmin(admin.ModelAdmin):
 #        if float(obj.application_fee)==117.0:
 #            return ['visible']
 
+
+class NotificationMonthInline(admin.TabularInline):
+    model = NotificationMonth
+    extra = 0
+    max_num = 12
+    can_delete = True
+
+
+@admin.register(LicencePeriod)
+class LicencePeriodAdmin(admin.ModelAdmin):
+    inlines = [
+        NotificationMonthInline,
+    ]
+    list_display = ['licence_period', 'renewal_month', 'notification_months']
+
+    def notification_months(self, obj):
+        return list(obj.notification_months_tolist)
+
+
 class OracleCodeInline(admin.TabularInline):
     model = OracleCode
     exclude = ['archive_date']
     extra = 3
     max_num = 3
     can_delete = False
+
 
 @admin.register(Park)
 class ParkAdmin(admin.ModelAdmin):
@@ -203,16 +225,19 @@ class ParkAdmin(admin.ModelAdmin):
     filter_horizontal = ('allowed_activities', 'allowed_access')
     ordering = ('name',)
 
+
 @admin.register(Trail)
 class TrailAdmin(admin.ModelAdmin):
     list_display = ['name', 'code']
     filter_horizontal = ('allowed_activities',)
     ordering = ('name',)
 
+
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
     list_display = ['name', 'visible', 'trail', 'doc_url']
     ordering = ('name',)
+
 
 @admin.register(Zone)
 class ZoneAdmin(admin.ModelAdmin):
@@ -220,15 +245,18 @@ class ZoneAdmin(admin.ModelAdmin):
     filter_horizontal = ('allowed_activities',)
     ordering = ('name',)
 
+
 @admin.register(models.Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = ['access_type','capacity', 'rego', 'license', 'rego_expiry']
     ordering = ('access_type',)
 
+
 @admin.register(models.Vessel)
 class VesselAdmin(admin.ModelAdmin):
     list_display = ['nominated_vessel','spv_no', 'hire_rego', 'craft_no', 'size', 'proposal']
     ordering = ('nominated_vessel',)
+
 
 @admin.register(RequiredDocument)
 class RequiredDocumentAdmin(admin.ModelAdmin):
@@ -236,25 +264,30 @@ class RequiredDocumentAdmin(admin.ModelAdmin):
     #filter_horizontal = ('allowed_activities',)
     #ordering = ('name',)
 
+
 @admin.register(ActivityCategory)
 class ActivityCategory(admin.ModelAdmin):
     list_display = ['name', 'visible', 'activity_type']
     ordering = ('name',)
+
 
 @admin.register(Activity)
 class Activity(admin.ModelAdmin):
     list_display = ['name', 'visible', 'activity_category']
     ordering = ('name',)
 
+
 @admin.register(AccessType)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = ['id','name','visible']
     ordering = ('id',)
 
+
 @admin.register(GlobalSettings)
 class GlobalSettingsAdmin(admin.ModelAdmin):
     list_display = ['key', 'value']
     ordering = ('key',)
+
 
 @admin.register(models.ReferralRecipientGroup)
 class ReferralRecipientGroupAdmin(admin.ModelAdmin):
