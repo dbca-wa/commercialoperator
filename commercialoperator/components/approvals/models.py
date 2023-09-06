@@ -124,6 +124,7 @@ class Approval(RevisionedMixin):
     #for eclass licence as it can be extended/ renewed once
     extended = models.BooleanField(default=False)
     expiry_notice_sent = models.BooleanField(default=False)
+    reserved_licence = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'commercialoperator'
@@ -262,9 +263,16 @@ class Approval(RevisionedMixin):
 
     @property
     def next_id(self):
-        #ids = map(int,[(i.lodgement_number.split('A')[1]) for i in Approval.objects.all()])
-        ids = map(int,[i.split('L')[1] for i in Approval.objects.all().values_list('lodgement_number', flat=True) if i])
-        return max(ids) + 1 if ids else 1
+        # reserved IDs for EClass Licences
+        future_ids =  [int(i.split('L')[1]) for i in Approval.objects.filter(reserved_licence=True).values_list('lodgement_number', flat=True) if i]
+
+        ids = map(int,[i.split('L')[1] for i in Approval.objects.filter(reserved_licence=False).values_list('lodgement_number', flat=True) if i])
+        _next_id =  max(ids) + 1 if ids else 1
+        while _next_id in future_ids:
+            # fill gaps in lodgement numbers (resulting from Future EClass reserved lodgement_numbers), if they exist
+            _next_id += 1
+
+        return _next_id
 
     @property
     def licence_name(self):
