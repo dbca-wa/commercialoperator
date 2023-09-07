@@ -33,7 +33,7 @@ from commercialoperator.components.main.utils import check_db_connection
 
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
-from commercialoperator.components.main.models import Document, Region, District, Tenure, ApplicationType, RequiredDocument
+from commercialoperator.components.main.models import Document, Region, District, Tenure, ApplicationType, RequiredDocument, LicencePeriod
 from commercialoperator.components.proposals.models import (
     ProposalType,
     Proposal,
@@ -2436,7 +2436,7 @@ class LicencePeriodChoicesView(views.APIView):
     renderer_classes = [JSONRenderer,]
     def get(self,request, format=None):
         choices_list = []
-        choices = ProposalOtherDetails.LICENCE_PERIOD_CHOICES
+        choices = LicencePeriod.LICENCE_PERIOD_CHOICES
         if choices:
             for c in choices:
                 choices_list.append({'key': c[0],'value': c[1]})
