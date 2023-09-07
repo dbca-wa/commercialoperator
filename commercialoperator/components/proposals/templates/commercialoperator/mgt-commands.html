@@ -5,7 +5,8 @@
         <H4>Hover over button to see help text.</H4>
         <form action="" method="POST">
             {% csrf_token %}
-            <button type="submit" name="script" value="approval_renewal_notices" {% if approval_renewal_notices == 'true' %}style="color:green" {% endif %} title="Send Approval renewal notice when approval is due to expire in 30 days">Run Script 'approval_renewal_notices'</button><br><br>
+	    <button type="submit" name="script" value="approval_renewal_enable_action" {% if approval_renewal_enable_action == 'true' %}style="color:green" {% endif %} title="Update Approval renew action when approval is due to expire in <admin defined days> days">Run Script 'approval_renewal_enable_action'</button><br><br>
+	    <button type="submit" name="script" value="approval_renewal_notices" {% if approval_renewal_notices == 'true' %}style="color:green" {% endif %} title="Send Approval renewal notice when approval is due to expire in <admin defined days> days">Run Script 'approval_renewal_notices'</button><br><br>
             <button type="submit" name="script" value="expire_approvals" {% if expire_approvals == 'true' %}style="color:green" {% endif %} title="Change the status of Approvals to Expired when past expiry date">Run Script 'expire_approvals'</button><br><br>
             <button type="submit" name="script" value="eclass_renewal_notices" {% if eclass_renewal_notices == 'true' %}style="color:green" {% endif %} title="Run the EClass Renewal Notices script">Run Script 'eclass_renewal_notices'</button><br><br>
             <button type="submit" name="script" value="eclass_expiry_notices" {% if eclass_expiry_notices == 'true' %}style="color:green" {% endif %} title="Run the EClass Expiry Notices script">Run Script 'eclass_expiry_notices'</button><br><br>
