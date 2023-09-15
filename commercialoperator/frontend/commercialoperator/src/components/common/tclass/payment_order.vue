@@ -218,6 +218,17 @@ from '@/utils/hooks'
                         errors.push({id: parseInt(row_idx), name: "Arrival Date", label: "Cannot be beyond Licence expiry (Expiry:" +vm.selected_licence.expiry_date+ ")"})
                     }
                 }
+
+                // check for duplicate rows in each row of tbody
+                // check (park.id, arrival_date, same_tour_group)
+                var unique = tbody.filter((o, i) =>
+  		    i === tbody.findIndex(oo => o.value === oo.value && o[1]==oo[1] && o[2]==oo[2])
+		);
+
+                if ( tbody.length != unique.length) {
+                    errors.push({name: "Duplicate rows", label: "Form cannot contain duplicate records (park, arrival_date, tour_group)"})
+                }
+ 
                 return errors;
             },
 

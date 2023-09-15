@@ -252,8 +252,8 @@ class ParkBooking(RevisionedMixin):
                 return {
                     'ledger_description': '{} - {} - {}'.format(self.park.name, self.arrival, age_group),
                     'oracle_code': self.park.oracle_code(self.booking.proposal.application_type),
-                    'price_incl_tax':  D(price),
-                    'price_excl_tax':  D(price) if self.park.is_gst_exempt else calculate_excl_gst(D(price)),
+                    'price_incl_tax':  round(D(price), 2),
+                    'price_excl_tax':  round(D(price) if self.park.is_gst_exempt else calculate_excl_gst(D(price)), 2),
                     'quantity': no_persons,
                 }
             return None
