@@ -21,6 +21,16 @@
                             </ul>
                         </div>
 
+                        <div id="warning" v-if="warnings.length > 0" style="margin: 10px; padding: 5px; color: blue; border:1px solid blue;">
+                            <b>Duplicate row(s) entered:</b>
+                            <ul>
+                                <li v-for="warning in warnings">
+                                    {{warning.name}}: {{ warning.label }}
+                                </li>
+                            </ul>
+                        </div>
+
+
                         <label>Licence</label><v-select :options="licences" @change="proposal_parks()" v-model="selected_licence" :clearable="false"/>
                         <OrderTable ref="order_table" :expiry_date="selected_licence.expiry_date" :disabled="!parks_available" :headers="headers" :options="parks" name="payment" label="" id="id_payment" />
 
@@ -87,6 +97,7 @@ from '@/utils/hooks'
                 parks_available: false,
                 licences: [],
                 errors: [],
+                warnings: [],
                 table_values: null,
                 payment_method: null,
                 selected_licence:{
@@ -219,19 +230,30 @@ from '@/utils/hooks'
                     }
                 }
 
-                // check for duplicate rows in each row of tbody
-                // check (park.id, arrival_date, same_tour_group)
-                var unique = tbody.filter((o, i) =>
-  		    i === tbody.findIndex(oo => o.value === oo.value && o[1]==oo[1] && o[2]==oo[2])
-		);
-
-                if ( tbody.length != unique.length) {
-                    errors.push({name: "Duplicate rows", label: "Form cannot contain duplicate records (park, arrival_date, tour_group)"})
-                }
- 
                 return errors;
             },
 
+            check_duplicate_parks: function () {
+                // check for duplicate rows in each row of tbody
+                // check (park.id, arrival_date)
+
+                var warnings = [];
+                var tbody = this.$refs.order_table.table.tbody;
+                var unique = tbody.filter((o, i) =>
+  		    i === tbody.findIndex(oo => o.value === oo.value && o[1]==oo[1])
+		);
+
+                if ( tbody.length != unique.length) {
+                    var difference = tbody.filter(x => !unique.includes(x));
+                    for (var row_idx in difference) {
+                        var row = tbody[row_idx];
+                        warnings.push({id: parseInt(row_idx), name: row[0]['label'], label: row[1]})
+                    }
+                }
+
+                return warnings;
+            },
+ 
             submit: function (e) {
                 let vm = this;
                 var form = document.forms.new_payment;
@@ -241,18 +263,33 @@ from '@/utils/hooks'
                 }
 
                 vm.errors = vm.check_form_valid();
+                vm.warnings = vm.check_duplicate_parks()
 
-                if (vm.payment_method == 'monthly_invoicing' || vm.payment_method == 'bpay' || vm.payment_method == 'other') {
-                    //form.action = '/payment_monthly/' + vm.selected_licence.value  + '/';
-                    form.action = '/preview_deferred/' + vm.selected_licence.value  + '/?method=' + vm.payment_method;
-                } else {
-                    form.action = '/payment/' + vm.selected_licence.value  + '/';
-                }
-                if (vm.errors.length == 0) {
-                        form.submit();
-                } else {
-                    return;
-                }
+                swal({
+                    title: "Duplicate rows",
+                    text: "Duplicate rows exists. Are you sure you want to continue?",
+                    type: "question",
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept'
+
+                }).then(async (result) => {
+                    if (result) {
+			if (vm.payment_method == 'monthly_invoicing' || vm.payment_method == 'bpay' || vm.payment_method == 'other') {
+			    //form.action = '/payment_monthly/' + vm.selected_licence.value  + '/';
+			    form.action = '/preview_deferred/' + vm.selected_licence.value  + '/?method=' + vm.payment_method;
+			} else {
+			    form.action = '/payment/' + vm.selected_licence.value  + '/';
+			}
+			if (vm.errors.length == 0) {
+				form.submit();
+			} else {
+			    return;
+			}
+                    }
+
+                },(error) => {
+                    //
+                });
             },
 
             get_user_approvals: function(e) {
