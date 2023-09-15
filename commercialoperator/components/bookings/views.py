@@ -335,6 +335,15 @@ class MakePaymentView(TemplateView):
 
         try:
             booking = create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORARY)
+
+            # check for duplicate bookings/lines
+            unique_lines = [dict(s) for s in set(frozenset(d.items()) for d in booking.as_line_items)]
+            if len(booking.as_line_items) != len(unique_lines):
+                logger.error('Error Creating booking: {}'.format(e))
+                raise ValidationError('Booking contains dupicate rows. Please remove duplicate rows')
+                #template_name='commercialoperator/booking/error.html'
+                #return render(request, template_name, {})
+
             with transaction.atomic():
                 set_session_booking(request.session,booking)
                 #lines = create_lines(request)
