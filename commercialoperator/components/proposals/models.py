@@ -890,7 +890,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             return 'submitter'
 
     def reset_training_completed(self, request):
-        import ipdb; ipdb.set_trace()
         today = timezone.now().date()
         timedelta = datetime.timedelta
         if self.application_type.name == ApplicationType.EVENT:

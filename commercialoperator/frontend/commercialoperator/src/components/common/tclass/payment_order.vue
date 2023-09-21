@@ -21,13 +21,15 @@
                             </ul>
                         </div>
 
-                        <div id="warning" v-if="warnings.length > 0" style="margin: 10px; padding: 5px; color: blue; border:1px solid blue;">
-                            <b>Duplicate row(s) entered:</b>
-                            <ul>
-                                <li v-for="warning in warnings">
-                                    {{warning.name}}: {{ warning.label }}
-                                </li>
-                            </ul>
+                        <div id="id_warning" v-if="warnings.length > 0" style="margin: 10px; padding: 5px; color: blue; border:1px solid blue; display: none">
+                            <div ref="warning" style="text-align:left;" :key="JSON.stringify(tbody)" :data="tbody">
+                                <b>Multiple payment(s) selected:</b>
+                                <ul>
+                                    <li v-for="warning in warnings">
+                                        {{warning.name}}: {{ warning.label }}
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
 
 
@@ -137,7 +139,7 @@ from '@/utils/hooks'
                     this.$refs.order_table.options.length = 0;
                     this.$refs.order_table.table_values.length = 0;
                 }
-            }
+            },
         },
         methods:{
             today: function() {
@@ -232,28 +234,32 @@ from '@/utils/hooks'
 
                 return errors;
             },
-
             check_duplicate_parks: function () {
-                // check for duplicate rows in each row of tbody
-                // check (park.id, arrival_date)
-
-                var warnings = [];
+                /* https://stackoverflow.com/questions/53452875/find-if-two-arrays-are-repeated-in-array-and-then-select-them/53453045#53453045 */
+                var t = {}
+                var data = []
                 var tbody = this.$refs.order_table.table.tbody;
-                var unique = tbody.filter((o, i) =>
-  		    i === tbody.findIndex(oo => o.value === oo.value && o[1]==oo[1])
-		);
-
-                if ( tbody.length != unique.length) {
-                    var difference = tbody.filter(x => !unique.includes(x));
-                    for (var row_idx in difference) {
-                        var row = tbody[row_idx];
-                        warnings.push({id: parseInt(row_idx), name: row[0]['label'], label: row[1]})
-                    }
+                for (var i in tbody) {
+                    // keep first 3 elements
+                    var row = tbody[i];
+                    //data.push(row.slice(0, 3))
+                    data.push([row[0], row[1], row[2]=='' ? false:true])
                 }
-
-                return warnings;
+                //unique     = data.filter(( t={}, a=> !(t[a]=a in t) ));
+                duplicates = data.filter(( t={}, a=> (t[a]=a in t) ));
+                return duplicates
             },
- 
+            duplicate_parks_str: function() {
+                // <div ref="warning" style="text-align:left;"> <b>Multiple payment(s) selected:</b> <ul> <li v-for="warning in warnings"> {{warning.name}}: {{ warning.label }} </li> </ul> </div>
+                var msg = '<div style=\"text-align:left;\"> <b>Multiple payment(s) selected:</b> <ul>'
+                for (var i in this.warnings) {
+                    console.log(this.warnings[i])
+                    msg += '<li>' + this.warnings[i][0].label +': '+ this.warnings[i][1] + '</li>'
+                }
+                msg += '</ul> </div>'
+
+                return msg
+            },
             submit: function (e) {
                 let vm = this;
                 var form = document.forms.new_payment;
@@ -265,31 +271,48 @@ from '@/utils/hooks'
                 vm.errors = vm.check_form_valid();
                 vm.warnings = vm.check_duplicate_parks()
 
-                swal({
-                    title: "Duplicate rows",
-                    text: "Duplicate rows exists. Are you sure you want to continue?",
-                    type: "question",
-                    showCancelButton: true,
-                    confirmButtonText: 'Accept'
+                if (vm.warnings.length > 0) {
+                    swal({
+                        title: "Multiple park entry fee payments exist for the same date. Are you sure you want to continue?",
+                        //html: vm.$refs.warning,
+                        html: vm.duplicate_parks_str(),
+                        type: "question",
+                        showCancelButton: true,
+                        confirmButtonText: 'Accept'
 
-                }).then(async (result) => {
-                    if (result) {
-			if (vm.payment_method == 'monthly_invoicing' || vm.payment_method == 'bpay' || vm.payment_method == 'other') {
-			    //form.action = '/payment_monthly/' + vm.selected_licence.value  + '/';
-			    form.action = '/preview_deferred/' + vm.selected_licence.value  + '/?method=' + vm.payment_method;
-			} else {
-			    form.action = '/payment/' + vm.selected_licence.value  + '/';
-			}
-			if (vm.errors.length == 0) {
-				form.submit();
-			} else {
-			    return;
-			}
+                    }).then(async (result) => {
+                        if (result) {
+                            if (vm.payment_method == 'monthly_invoicing' || vm.payment_method == 'bpay' || vm.payment_method == 'other') {
+                                //form.action = '/payment_monthly/' + vm.selected_licence.value  + '/';
+                                form.action = '/preview_deferred/' + vm.selected_licence.value  + '/?method=' + vm.payment_method;
+                            } else {
+                                form.action = '/payment/' + vm.selected_licence.value  + '/';
+                            }
+                            if (vm.errors.length == 0) {
+                                form.submit();
+                            } else {
+                                return;
+                            }
+                        }
+                    },(error) => {
+                        //
+                    });
+                } else {
+                    if (vm.payment_method == 'monthly_invoicing' || vm.payment_method == 'bpay' || vm.payment_method == 'other') {
+                        //form.action = '/payment_monthly/' + vm.selected_licence.value  + '/';
+                        form.action = '/preview_deferred/' + vm.selected_licence.value  + '/?method=' + vm.payment_method;
+                    } else {
+                        form.action = '/payment/' + vm.selected_licence.value  + '/';
                     }
+                    if (vm.errors.length == 0) {
+                        form.submit();
+                    } else {
+                        return;
+                    }
+                }
+                
+                this.warnings = [];
 
-                },(error) => {
-                    //
-                });
             },
 
             get_user_approvals: function(e) {
