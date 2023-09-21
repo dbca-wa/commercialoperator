@@ -246,7 +246,7 @@ from '@/utils/hooks'
                     data.push([row[0], row[1], row[2]=='' ? false:true])
                 }
                 //unique     = data.filter(( t={}, a=> !(t[a]=a in t) ));
-                duplicates = data.filter(( t={}, a=> (t[a]=a in t) ));
+                let duplicates = data.filter(( t={}, a=> (t[a]=a in t) ));
                 return duplicates
             },
             duplicate_parks_str: function() {
