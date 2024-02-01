@@ -922,7 +922,9 @@ class InternalProposalSerializer(BaseProposalSerializer):
         return obj.assessor_data
 
     def get_reversion_ids(self,obj):
-        return obj.reversion_ids[:5]
+        if hasattr(obj,"reversion_ids"):
+            return obj.reversion_ids[:5]
+        return #TODO: make sure this is fine
 
     def get_fee_invoice_url(self,obj):
         return '/cols/payments/invoice-pdf/{}'.format(obj.fee_invoice_reference) if obj.fee_paid else None
@@ -1395,7 +1397,9 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
         return obj.assessor_data
 
     def get_reversion_ids(self,obj):
-        return obj.reversion_ids[:5]
+        if hasattr(obj,"reversion_ids"):
+            return obj.reversion_ids[:5]
+        return #TODO: make sure this is fine
 
     def get_fee_invoice_url(self,obj):
         return '/cols/payments/invoice-pdf/{}'.format(obj.fee_invoice_reference) if obj.fee_paid else None

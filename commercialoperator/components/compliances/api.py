@@ -418,8 +418,18 @@ class ComplianceViewSet(viewsets.ModelViewSet):
 
 
 class ComplianceAmendmentRequestViewSet(viewsets.ModelViewSet):
-    queryset = ComplianceAmendmentRequest.objects.all()
+    queryset = ComplianceAmendmentRequest.objects.none()
     serializer_class = ComplianceAmendmentRequestSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ComplianceAmendmentRequest.objects.all()
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = ComplianceAmendmentRequest.objects.filter(Q(compliance_id__proposal_id__org_applicant_id__in=user_orgs)|Q(compliance_id__proposal_id__submitter_id=user.id))
+            return qs
+        return ComplianceAmendmentRequest.objects.none()
 
     def create(self, request, *args, **kwargs):
         try:

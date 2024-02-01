@@ -80,15 +80,18 @@ from commercialoperator.components.organisations.emails import (
 
 
 class OrganisationViewSet(viewsets.ModelViewSet):
-        queryset = Organisation.objects.all()
+        queryset = Organisation.objects.none()
         serializer_class = OrganisationSerializer
+        allow_external = False #TODO: review this - workaround for allowing organisations to be accessed when validating pins
 
-        def _get_queryset(self):
+        def get_queryset(self):
                 user = self.request.user
-                if is_internal(self.request):
+                if is_internal(self.request) or self.allow_external:
                         return Organisation.objects.all()
                 elif is_customer(self.request):
-                        return user.commercialoperator_organisations.all()
+                        org_contacts = OrganisationContact.objects.filter(is_admin=True).filter(email=user.email) #TODO: is there a better way than email?
+                        user_admin_orgs = [org.organisation.id for org in org_contacts]
+                        return Organisation.objects.filter(id__in=user_admin_orgs)
                 return Organisation.objects.none()
 
         @detail_route(methods=['GET',])
@@ -96,7 +99,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                 try:
                         instance = self.get_object()
                         serializer = OrganisationContactSerializer(instance.contacts.exclude(user_status='pending'),many=True)
-                        return Response(serializer.data);
+                        return Response(serializer.data)
                 except serializers.ValidationError:
                         print(traceback.print_exc())
                         raise
@@ -144,6 +147,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         @detail_route(methods=['POST',])
         def validate_pins(self, request, *args, **kwargs):
                 try:
+                        self.allow_external = True
                         instance = self.get_object()
                         serializer = OrganisationPinCheckSerializer(data=request.data)
                         serializer.is_valid(raise_exception=True)
@@ -244,6 +248,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         @detail_route(methods=['POST',])
         def unlink_user(self, request, *args, **kwargs):
                 try:
+                        self.allow_external = True
                         instance = self.get_object()
                         serializer = OrgUserAcceptSerializer(data=request.data)
                         serializer.is_valid(raise_exception=True)
