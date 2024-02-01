@@ -535,7 +535,7 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
             queryset =  Proposal.objects.filter( Q(org_applicant_id__in = user_orgs) | Q(submitter = user) )
             #queryset =  Proposal.objects.filter(region__isnull=False).filter( Q(applicant_id__in = user_orgs) | Q(submitter = user) )
             return queryset.exclude(application_type=self.excluded_type)
-        logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+        #logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
 #    def perform_create(self, serializer):

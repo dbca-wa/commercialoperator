@@ -683,7 +683,7 @@ class OrganisationListFilterView(generics.ListAPIView):
                 return ledger_organisation.objects.filter(id__in=org_list)
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):
-        queryset = OrganisationRequest.objects.all()
+        queryset = OrganisationRequest.objects.none()
         serializer_class = OrganisationRequestSerializer
 
         def get_queryset(self):
@@ -1008,7 +1008,7 @@ class OrganisationAccessGroupMembers(views.APIView):
 
 class OrganisationContactViewSet(viewsets.ModelViewSet):
         serializer_class = OrganisationContactSerializer
-        queryset = OrganisationContact.objects.all()
+        queryset = OrganisationContact.objects.none()
 
         def get_queryset(self):
             user = self.request.user
@@ -1039,7 +1039,7 @@ class OrganisationContactViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class MyOrganisationsViewSet(viewsets.ModelViewSet):
-        queryset = Organisation.objects.all()
+        queryset = Organisation.objects.none()
         serializer_class = MyOrganisationsSerializer
 
         def get_queryset(self):
