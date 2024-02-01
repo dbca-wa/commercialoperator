@@ -116,7 +116,6 @@ from commercialoperator.components.proposals.serializers_event import (
 )
 
 
-
 from commercialoperator.components.bookings.models import Booking, ParkBooking, BookingInvoice
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.approvals.serializers import ApprovalSerializer
@@ -2714,6 +2713,24 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             queryset =  DistrictProposal.objects.all()
             return queryset
         return DistrictProposal.objects.none()
+    
+    #TODO: review this - seems like a workaround at the moment
+    def get_serializer_class(self):
+        try:
+            districtProposal = self.get_object()
+            return DistrictProposalSerializer
+        except serializers.ValidationError:
+            print(traceback.print_exc())
+            raise
+        except ValidationError as e:
+            if hasattr(e,'error_dict'):
+                raise serializers.ValidationError(repr(e.error_dict))
+            else:
+                if hasattr(e,'message'):
+                    raise serializers.ValidationError(e.message)
+        except Exception as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(str(e))
 
     @detail_route(methods=['GET',])
     def assign_request_user(self, request, *args, **kwargs):
