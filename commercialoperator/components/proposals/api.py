@@ -331,13 +331,13 @@ class ProposalFilterBackend(DatatablesFilterBackend):
         setattr(view, '_datatables_total_count', total_count)
         return queryset
 
-class ProposalRenderer(DatatablesRenderer):
-    def render(self, data, accepted_media_type=None, renderer_context=None):
-        if 'view' in renderer_context and hasattr(renderer_context['view'], '_datatables_total_count'):
-            data['recordsTotal'] = renderer_context['view']._datatables_total_count
-            #data.pop('recordsTotal')
-            #data.pop('recordsFiltered')
-        return super(ProposalRenderer, self).render(data, accepted_media_type, renderer_context)
+#class ProposalRenderer(DatatablesRenderer):
+#    def render(self, data, accepted_media_type=None, renderer_context=None):
+#        if 'view' in renderer_context and hasattr(renderer_context['view'], '_datatables_total_count'):
+#            data['recordsTotal'] = renderer_context['view']._datatables_total_count
+#            #data.pop('recordsTotal')
+#            #data.pop('recordsFiltered')
+#        return super(ProposalRenderer, self).render(data, accepted_media_type, renderer_context)
 
 
 
@@ -348,7 +348,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     #filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     queryset = Proposal.objects.none()
     serializer_class = ListProposalSerializer
     page_size = 10
@@ -2877,7 +2877,7 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     #filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     queryset = DistrictProposal.objects.none()
     serializer_class = ListDistrictProposalSerializer
     page_size = 10

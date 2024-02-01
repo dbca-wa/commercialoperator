@@ -49,7 +49,7 @@ from commercialoperator.components.approvals.serializers import (
 from commercialoperator.components.organisations.models import Organisation, OrganisationContact
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from commercialoperator.components.proposals.api import ProposalFilterBackend, ProposalRenderer
+from commercialoperator.components.proposals.api import ProposalFilterBackend#, ProposalRenderer
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
 class ApprovalFilterBackend(DatatablesFilterBackend):
@@ -100,7 +100,7 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     #filter_backends = (ProposalFilterBackend,)
     filter_backends = (ApprovalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Approval.objects.none()
     serializer_class = ApprovalSerializer
