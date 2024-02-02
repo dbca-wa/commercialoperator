@@ -2953,15 +2953,13 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     serializer_class = ListDistrictProposalSerializer
     page_size = 10
 
-    #TODO: review - this was a case where it was arguably too secure, ensure that all internal users should be allowed to access this and then determine if specific customers should be as well
-    #currently all internal users can access this
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request): #user.is_authenticated():
-            #user_assessor_groups= user.districtproposalassessorgroup_set.all()
-            #user_approver_groups= user.districtproposalapprovergroup_set.all()
-            #qs= [d.id for d in DistrictProposal.objects.all() if d.assessor_group in user_assessor_groups or d.approver_group in user_approver_groups]
-            queryset= DistrictProposal.objects.all() #filter(id__in=qs)
+            user_assessor_groups= user.districtproposalassessorgroup_set.all()
+            user_approver_groups= user.districtproposalapprovergroup_set.all()
+            qs= [d.id for d in DistrictProposal.objects.all() if d.assessor_group in user_assessor_groups or d.approver_group in user_approver_groups]
+            queryset= DistrictProposal.objects.filter(id__in=qs)
             return queryset
         return DistrictProposal.objects.none()
 
