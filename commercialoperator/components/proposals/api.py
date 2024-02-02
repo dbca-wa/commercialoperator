@@ -116,7 +116,6 @@ from commercialoperator.components.proposals.serializers_event import (
 )
 
 
-
 from commercialoperator.components.bookings.models import Booking, ParkBooking, BookingInvoice
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.approvals.serializers import ApprovalSerializer
@@ -331,13 +330,13 @@ class ProposalFilterBackend(DatatablesFilterBackend):
         setattr(view, '_datatables_total_count', total_count)
         return queryset
 
-class ProposalRenderer(DatatablesRenderer):
-    def render(self, data, accepted_media_type=None, renderer_context=None):
-        if 'view' in renderer_context and hasattr(renderer_context['view'], '_datatables_total_count'):
-            data['recordsTotal'] = renderer_context['view']._datatables_total_count
-            #data.pop('recordsTotal')
-            #data.pop('recordsFiltered')
-        return super(ProposalRenderer, self).render(data, accepted_media_type, renderer_context)
+#class ProposalRenderer(DatatablesRenderer):
+#    def render(self, data, accepted_media_type=None, renderer_context=None):
+#        if 'view' in renderer_context and hasattr(renderer_context['view'], '_datatables_total_count'):
+#            data['recordsTotal'] = renderer_context['view']._datatables_total_count
+#            #data.pop('recordsTotal')
+#            #data.pop('recordsFiltered')
+#        return super(ProposalRenderer, self).render(data, accepted_media_type, renderer_context)
 
 
 
@@ -348,7 +347,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     #filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     queryset = Proposal.objects.none()
     serializer_class = ListProposalSerializer
     page_size = 10
@@ -536,7 +535,7 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
             queryset =  Proposal.objects.filter( Q(org_applicant_id__in = user_orgs) | Q(submitter = user) )
             #queryset =  Proposal.objects.filter(region__isnull=False).filter( Q(applicant_id__in = user_orgs) | Q(submitter = user) )
             return queryset.exclude(application_type=self.excluded_type)
-        logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+        #logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
 #    def perform_create(self, serializer):
@@ -593,7 +592,7 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             queryset =  Proposal.objects.filter( Q(org_applicant_id__in = user_orgs) | Q(submitter = user) ) #.exclude(migrated=True)
             return queryset.exclude(application_type=self.excluded_type)
-        logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+        #logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
     @detail_route(methods=['GET',])
@@ -630,7 +629,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             queryset =  Proposal.objects.filter( Q(org_applicant_id__in = user_orgs) | Q(submitter = user) ).exclude(migrated=True)
             #queryset =  Proposal.objects.filter(region__isnull=False).filter( Q(applicant_id__in = user_orgs) | Q(submitter = user) )
             return queryset.exclude(application_type=self.excluded_type)
-        logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+        #logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
     def get_object(self):
@@ -641,6 +640,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # because current queryset excludes migrated licences
             obj = get_object_or_404(Proposal, id=self.kwargs['id'])
+            if self.request.user != obj.submitter:
+                raise
         return obj
 
     def get_serializer_class(self):
@@ -2253,8 +2254,14 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     serializer_class = ProposalRequirementSerializer
 
     def get_queryset(self):
-        qs = ProposalRequirement.objects.all().exclude(is_deleted=True)
-        return qs
+        user = self.request.user
+        if is_internal(self.request):
+            return ProposalRequirement.objects.exclude(is_deleted=True)
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = ProposalRequirement.objects.exclude(is_deleted=True).filter(Q(proposal_id__org_applicant_id__in=user_orgs)|Q(proposal_id__submitter_id=user.id))
+            return qs
+        return ProposalRequirement.objects.none()
 
     @detail_route(methods=['GET',])
     def move_up(self, request, *args, **kwargs):
@@ -2374,8 +2381,14 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
 
 
 class ProposalStandardRequirementViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ProposalStandardRequirement.objects.all()
+    queryset = ProposalStandardRequirement.objects.none()
     serializer_class = ProposalStandardRequirementSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated():
+            return ProposalStandardRequirement.objects.all()
+        return ProposalStandardRequirement.objects.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -2386,8 +2399,18 @@ class ProposalStandardRequirementViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 class AmendmentRequestViewSet(viewsets.ModelViewSet):
-    queryset = AmendmentRequest.objects.all()
+    queryset = AmendmentRequest.objects.none()
     serializer_class = AmendmentRequestSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return AmendmentRequest.objects.all()
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = AmendmentRequest.objects.filter(Q(proposal_id__org_applicant_id__in=user_orgs)|Q(proposal_id__submitter_id=user.id))
+            return qs
+        return AmendmentRequest.objects.none()
 
     def create(self, request, *args, **kwargs):
         try:
@@ -2509,8 +2532,18 @@ class SearchReferenceView(views.APIView):
             raise serializers.ValidationError(str(e))
 
 class VehicleViewSet(viewsets.ModelViewSet):
-    queryset = Vehicle.objects.all().order_by('id')
+    queryset = Vehicle.objects.none()
     serializer_class = VehicleSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return Vehicle.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = Vehicle.objects.filter(Q(proposal_id__org_applicant_id__in=user_orgs)|Q(proposal_id__submitter_id=user.id)).order_by('id')
+            return qs
+        return Vehicle.objects.none()
 
     @detail_route(methods=['post'])
     def edit_vehicle(self, request, *args, **kwargs):
@@ -2556,8 +2589,18 @@ class VehicleViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 class VesselViewSet(viewsets.ModelViewSet):
-    queryset = Vessel.objects.all().order_by('id')
+    queryset = Vessel.objects.none()
     serializer_class = VesselSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return Vessel.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = Vessel.objects.filter(Q(proposal_id__org_applicant_id__in=user_orgs)|Q(proposal_id__submitter_id=user.id)).order_by('id')
+            return qs
+        return Vessel.objects.none()
 
     @detail_route(methods=['post'])
     def edit_vessel(self, request, *args, **kwargs):
@@ -2612,8 +2655,18 @@ class AssessorChecklistViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ProposalAssessmentViewSet(viewsets.ModelViewSet):
     #queryset = ProposalRequirement.objects.all()
-    queryset = ProposalAssessment.objects.all()
+    queryset = ProposalAssessment.objects.none()
     serializer_class = ProposalAssessmentSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ProposalAssessment.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = ProposalAssessment.objects.filter(Q(proposal_id__org_applicant_id__in=user_orgs)|Q(proposal_id__submitter_id=user.id)).order_by('id')
+            return qs
+        return ProposalAssessment.objects.none()
 
     @detail_route(methods=['post'])
     def update_assessment(self, request, *args, **kwargs):
@@ -2660,6 +2713,24 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             queryset =  DistrictProposal.objects.all()
             return queryset
         return DistrictProposal.objects.none()
+    
+    #TODO: review this - seems like a workaround at the moment
+    def get_serializer_class(self):
+        try:
+            districtProposal = self.get_object()
+            return DistrictProposalSerializer
+        except serializers.ValidationError:
+            print(traceback.print_exc())
+            raise
+        except ValidationError as e:
+            if hasattr(e,'error_dict'):
+                raise serializers.ValidationError(repr(e.error_dict))
+            else:
+                if hasattr(e,'message'):
+                    raise serializers.ValidationError(e.message)
+        except Exception as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(str(e))
 
     @detail_route(methods=['GET',])
     def assign_request_user(self, request, *args, **kwargs):
@@ -2877,12 +2948,10 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     #filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     queryset = DistrictProposal.objects.none()
     serializer_class = ListDistrictProposalSerializer
     page_size = 10
-
-
 
     def get_queryset(self):
         user = self.request.user

@@ -45,13 +45,13 @@ from commercialoperator.components.bookings.serializers import (
 )
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from commercialoperator.components.proposals.api import ProposalFilterBackend, ProposalRenderer
+from commercialoperator.components.proposals.api import ProposalFilterBackend#, ProposalRenderer
 
 
 class BookingPaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Booking.objects.none()
     serializer_class = BookingSerializer
@@ -130,7 +130,7 @@ class ParkBookingViewSet(viewsets.ModelViewSet):
 class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = ParkBooking.objects.none()
     serializer_class = DTParkBookingSerializer

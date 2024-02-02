@@ -108,8 +108,17 @@ class ProposalFilmingViewSet(viewsets.ModelViewSet):
 
 
 class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
-    queryset = ProposalFilmingParks.objects.all().order_by('id')
+    queryset = ProposalFilmingParks.objects.none()
     serializer_class = ProposalFilmingParksSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ProposalFilmingParks.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            return ProposalFilmingParks.objects.filter( Q(proposal_id__org_applicant_id__in = user_orgs) | Q(proposal_id__submitter = user) ).order_by('id')
+        return ProposalFilmingParks.objects.none()
 
     @detail_route(methods=['post'])
     def edit_park(self, request, *args, **kwargs):

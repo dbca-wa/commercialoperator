@@ -49,7 +49,7 @@ from commercialoperator.components.approvals.serializers import (
 from commercialoperator.components.organisations.models import Organisation, OrganisationContact
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from commercialoperator.components.proposals.api import ProposalFilterBackend, ProposalRenderer
+from commercialoperator.components.proposals.api import ProposalFilterBackend#, ProposalRenderer
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
 class ApprovalFilterBackend(DatatablesFilterBackend):
@@ -100,7 +100,7 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     #filter_backends = (ProposalFilterBackend,)
     filter_backends = (ApprovalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Approval.objects.none()
     serializer_class = ApprovalSerializer
@@ -200,6 +200,24 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             queryset =  Approval.objects.filter(Q(org_applicant_id__in = user_orgs) | Q(submitter = self.request.user))
             return queryset
         return Approval.objects.none()
+
+    #TODO: review this - seems like a workaround at the moment
+    def get_serializer_class(self):
+        try:
+            approval = self.get_object()
+            return ApprovalSerializer
+        except serializers.ValidationError:
+            print(traceback.print_exc())
+            raise
+        except ValidationError as e:
+            if hasattr(e,'error_dict'):
+                raise serializers.ValidationError(repr(e.error_dict))
+            else:
+                if hasattr(e,'message'):
+                    raise serializers.ValidationError(e.message)
+        except Exception as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(str(e))
 
     def list(self, request, *args, **kwargs):
         #queryset = self.get_queryset()

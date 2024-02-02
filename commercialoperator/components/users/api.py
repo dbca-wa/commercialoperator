@@ -46,7 +46,7 @@ from commercialoperator.components.organisations.serializers import (
 )
 #from commercialoperator.components.main.utils import retrieve_department_users
 from commercialoperator.components.main.models import UserSystemSettings
-
+from commercialoperator.helpers import is_customer, is_internal
 # class DepartmentUserList(views.APIView):
 #     renderer_classes = [JSONRenderer,]
 #     def get(self, request, format=None):
@@ -73,17 +73,37 @@ class GetProfile(views.APIView):
         return Response(serializer.data)
 
 from rest_framework import filters
+
 class UserListFilterView(generics.ListAPIView):
     """ https://cop-internal.dbca.wa.gov.au/api/filtered_users?search=russell
     """
-    queryset = EmailUser.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return EmailUser.objects.all()
+        elif is_customer(self.request):
+            qs = EmailUser.objects.filter(Q(id=user.id))
+            return qs
+        return EmailUser.objects.none()
+
+    queryset = get_queryset
     serializer_class = UserFilterSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('email', 'first_name', 'last_name')
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = EmailUser.objects.all()
+    queryset = EmailUser.objects.none()
     serializer_class = UserSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return EmailUser.objects.all()
+        elif is_customer(self.request):
+            qs = EmailUser.objects.filter(Q(id=user.id))
+            return qs
+        return EmailUser.objects.none()
+
 
     @detail_route(methods=['POST',])
     def update_personal(self, request, *args, **kwargs):
@@ -340,7 +360,7 @@ class UserViewSet(viewsets.ModelViewSet):
             #        many=True
             #        )
             #return Response(serializer.data)
-            data = EmailUser.objects.filter(is_staff=True). \
+            data = self.get_queryset().filter(is_staff=True). \
                 filter(Q(first_name__icontains=search_term) | Q(last_name__icontains=search_term)). \
                 values('email', 'first_name', 'last_name')[:10]
             data_transform = [{'id': person['email'], 'text': person['first_name'] + ' ' + person['last_name']} for person in data]

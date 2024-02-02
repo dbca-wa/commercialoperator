@@ -47,12 +47,12 @@ from commercialoperator.components.compliances.serializers import (
 )
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from commercialoperator.components.proposals.api import ProposalFilterBackend, ProposalRenderer
+from commercialoperator.components.proposals.api import ProposalFilterBackend#, ProposalRenderer
 
 class CompliancePaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    renderer_classes = (ProposalRenderer,)
+    #renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Compliance.objects.none()
     serializer_class = ComplianceSerializer
@@ -116,6 +116,24 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             queryset =  Compliance.objects.filter( Q(proposal__org_applicant_id__in = user_orgs) | Q(proposal__submitter = self.request.user) ).exclude(processing_status='discarded')
             return queryset
         return Compliance.objects.none()
+    
+    #TODO: review this - seems like a workaround at the moment
+    def get_serializer_class(self):
+        try:
+            compliance = self.get_object()
+            return ComplianceSerializer
+        except serializers.ValidationError:
+            print(traceback.print_exc())
+            raise
+        except ValidationError as e:
+            if hasattr(e,'error_dict'):
+                raise serializers.ValidationError(repr(e.error_dict))
+            else:
+                if hasattr(e,'message'):
+                    raise serializers.ValidationError(e.message)
+        except Exception as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(str(e))
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -418,8 +436,18 @@ class ComplianceViewSet(viewsets.ModelViewSet):
 
 
 class ComplianceAmendmentRequestViewSet(viewsets.ModelViewSet):
-    queryset = ComplianceAmendmentRequest.objects.all()
+    queryset = ComplianceAmendmentRequest.objects.none()
     serializer_class = ComplianceAmendmentRequestSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ComplianceAmendmentRequest.objects.all()
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            qs = ComplianceAmendmentRequest.objects.filter(Q(compliance_id__proposal_id__org_applicant_id__in=user_orgs)|Q(compliance_id__proposal_id__submitter_id=user.id))
+            return qs
+        return ComplianceAmendmentRequest.objects.none()
 
     def create(self, request, *args, **kwargs):
         try:

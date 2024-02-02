@@ -72,8 +72,17 @@ logger = logging.getLogger(__name__)
 
 
 class ProposalEventsParksViewSet(viewsets.ModelViewSet):
-    queryset = ProposalEventsParks.objects.all().order_by('id')
+    queryset = ProposalEventsParks.objects.none()
     serializer_class = ProposalEventsParksSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ProposalEventsParks.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            return ProposalEventsParks.objects.filter( Q(proposal_id__org_applicant_id__in = user_orgs) | Q(proposal_id__submitter = user) ).order_by('id')
+        return ProposalEventsParks.objects.none()
 
     @detail_route(methods=['post'])
     def edit_park(self, request, *args, **kwargs):
@@ -138,8 +147,17 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
-    queryset = AbseilingClimbingActivity.objects.all().order_by('id')
+    queryset = AbseilingClimbingActivity.objects.none()
     serializer_class = AbseilingClimbingActivitySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return AbseilingClimbingActivity.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            return AbseilingClimbingActivity.objects.filter( Q(proposal_id__org_applicant_id__in = user_orgs) | Q(proposal_id__submitter = user) ).order_by('id')
+        return AbseilingClimbingActivity.objects.none()
 
     @detail_route(methods=['post'])
     def edit_abseiling_climbing(self, request, *args, **kwargs):
@@ -164,8 +182,17 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
-    queryset = ProposalPreEventsParks.objects.all().order_by('id')
+    queryset = ProposalPreEventsParks.objects.none()
     serializer_class = ProposalPreEventsParksSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ProposalPreEventsParks.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            return ProposalPreEventsParks.objects.filter( Q(proposal_id__org_applicant_id__in = user_orgs) | Q(proposal_id__submitter = user) ).order_by('id')
+        return ProposalPreEventsParks.objects.none()
 
     @detail_route(methods=['post'])
     def edit_park(self, request, *args, **kwargs):
@@ -230,8 +257,17 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
-    queryset = ProposalEventsTrails.objects.all().order_by('id')
+    queryset = ProposalEventsTrails.objects.none()
     serializer_class = ProposalEventsTrailsSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if is_internal(self.request):
+            return ProposalEventsTrails.objects.all().order_by('id')
+        elif is_customer(self.request):
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            return ProposalEventsTrails.objects.filter( Q(proposal_id__org_applicant_id__in = user_orgs) | Q(proposal_id__submitter = user) ).order_by('id')
+        return ProposalEventsTrails.objects.none()
 
     @detail_route(methods=['post'])
     def edit_trail(self, request, *args, **kwargs):

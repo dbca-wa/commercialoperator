@@ -21,6 +21,8 @@ VERSION_NO = '1.0.1'
 if env('CONSOLE_EMAIL_BACKEND', False):
    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+SHOW_ROOT_API = env('SHOW_ROOT_API', False)
+
 if SHOW_DEBUG_TOOLBAR:
 #    def get_ip():
 #        import subprocess
