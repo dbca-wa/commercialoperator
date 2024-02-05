@@ -537,6 +537,9 @@ export default {
               blank_fields.push(' Event Completion Date cannot be beyond ' + max_future_date.format("DD-MM-YYYY"))
            }
       }
+      if(vm.$refs.proposal_event.$refs.event_activities.$refs.parks_table.$refs.park_datatable.vmDataTable.rows().data().length < 1){
+            blank_fields.push(' List of parks where the event is proposed to occur is missing')
+      }
       if(vm.$refs.proposal_event.$refs.event_activities.$refs.parks_table.$refs.event_park_maps.documents.length==0){
             blank_fields.push(' A detailed itinerary and map of the event route document is missing')
       }
