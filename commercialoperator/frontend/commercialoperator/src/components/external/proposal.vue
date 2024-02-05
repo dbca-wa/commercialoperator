@@ -545,14 +545,17 @@ export default {
             blank_fields.push(' Department of Water and Environmental Regulation application form document is missing')
           }
       }
-      if(vm.proposal.event_management.num_spectators==null||vm.proposal.event_management.num_spectators==''){
-        blank_fields.push(' Number of spectators expected is missing')
+      if(vm.proposal.event_management.num_participants==null||vm.proposal.event_management.num_participants===''||vm.proposal.event_management.num_participants<0){
+        blank_fields.push(' Valid number of participants expected is missing')
       }
-      if(vm.proposal.event_management.num_officials==null||vm.proposal.event_management.num_officials==''){
-        blank_fields.push(' Number of officials expected is missing')
+      if(vm.proposal.event_management.num_spectators==null||vm.proposal.event_management.num_spectators===''||vm.proposal.event_management.num_spectators<0){
+        blank_fields.push(' Valid number of spectators expected is missing')
       }
-      if(vm.proposal.event_management.num_vehicles==null||vm.proposal.event_management.num_vehicles==''){
-        blank_fields.push(' Number of vehicles/ vessels is missing')
+      if(vm.proposal.event_management.num_officials==null||vm.proposal.event_management.num_officials===''||vm.proposal.event_management.num_officials<0){
+        blank_fields.push(' Valid number of officials expected is missing')
+      }
+      if(vm.proposal.event_management.num_vehicles==null||vm.proposal.event_management.num_vehicles===''||vm.proposal.event_management.num_vehicles<0){
+        blank_fields.push(' Valid number of vehicles/ vessels is missing')
       }
       if(vm.proposal.event_management.media_involved){
         if(vm.proposal.event_management.media_details==null||vm.proposal.event_management.media_details==''){
