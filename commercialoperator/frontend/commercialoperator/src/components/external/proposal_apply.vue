@@ -6,7 +6,7 @@
 
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <h3 class="panel-title">Applicant <small>The applicant will be the licensee.<small><i class="fa fa-question-circle" data-toggle="tooltip" data-placement="bottom" style="color:blue" title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate.">&nbsp;</i>
+                            <h3 class="panel-title">Applicant <small>The applicant will be the licensee.</small><i class="fa fa-question-circle" data-toggle="tooltip" data-placement="bottom" style="color:blue" title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate.">&nbsp;</i>
                                 <a :href="'#'+pBody" data-toggle="collapse"  data-parent="#userInfo" expanded="true" :aria-controls="pBody">
                                     <span class="glyphicon glyphicon-chevron-up pull-right "></span>
                                 </a>
@@ -23,7 +23,8 @@
                                         </label>
                                     </div> -->
                                     <div v-if="profile.commercialoperator_organisations.length > 0">
-                                        <label>Do you apply </label> </br>
+                                        <label>Do you apply </label> 
+                                        <br/>
                                         <div v-for="org in profile.commercialoperator_organisations" class="radio">
                                             <label v-if ="!org.is_consultant">
                                               <input type="radio" name="behalf_of_org" v-model="org_applicant"  :value="org.id"> On behalf of {{org.name}}
@@ -235,11 +236,12 @@
                         <button v-if="!creatingProposal" :disabled="isDisabled() || has_active_proposals()" @click.prevent="submit()" class="btn btn-primary pull-right">Continue</button>
                         <button v-else disabled class="pull-right btn btn-primary"><i class="fa fa-spin fa-spinner"></i>&nbsp;Creating</button>
                     </div>
-                  </div>
+                  
                 </form>
             </div>
         </div>
     </div>
+
 </template>
 <script>
 import Vue from 'vue'

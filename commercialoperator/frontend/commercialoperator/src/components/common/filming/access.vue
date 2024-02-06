@@ -54,7 +54,8 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                      <textarea :disabled="readonly" class="form-control" name="track_use_details" placeholder="" v-model="proposal.filming_access.track_use_details" :disabled="proposal.readonly"></textarea>    
+                                    <!--removed :disabled="readonly"-->
+                                      <textarea class="form-control" name="track_use_details" placeholder="" v-model="proposal.filming_access.track_use_details" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -85,7 +86,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                      <textarea :disabled="readonly" class="form-control" name="off_road_details" placeholder="" v-model="proposal.filming_access.off_road_details" :disabled="proposal.readonly"></textarea>    
+                                      <textarea  class="form-control" name="off_road_details" placeholder="" v-model="proposal.filming_access.off_road_details" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -116,7 +117,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6" style="margin-bottom: 5px !important">
-                                      <textarea :disabled="readonly" class="form-control" name="road_closure_details" placeholder="" v-model="proposal.filming_access.road_closure_details" :disabled="proposal.readonly"></textarea>    
+                                      <textarea  class="form-control" name="road_closure_details" placeholder="" v-model="proposal.filming_access.road_closure_details" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -158,7 +159,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                      <textarea :disabled="readonly" class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.camp_location" :disabled="proposal.readonly"></textarea>    
+                                      <textarea  class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.camp_location" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -188,7 +189,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                      <textarea :disabled="readonly" class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.assistance_staff_capacity" :disabled="proposal.readonly"></textarea>    
+                                      <textarea  class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.assistance_staff_capacity" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -218,7 +219,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                      <textarea :disabled="readonly" class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.film_staff_capacity" :disabled="proposal.readonly"></textarea>    
+                                      <textarea  class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.film_staff_capacity" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row">&nbsp;</div>
@@ -248,7 +249,7 @@
                                     
                                 </div>
                                 <div class="col-sm-6">
-                                      <textarea :disabled="readonly" class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.cultural_significance_details" :disabled="proposal.readonly"></textarea>    
+                                      <textarea  class="form-control" name="camp_location" placeholder="" v-model="proposal.filming_access.cultural_significance_details" :disabled="proposal.readonly"></textarea>    
                                 </div>
                             </div>
                             <div class="row" v-if="proposal.filming_access.cultural_significance">
@@ -266,8 +267,6 @@
                             <div class="row">&nbsp;</div>
                         </div>
                     </div> 
-                </div>
-
                 </div>
             </div>                
 

@@ -32,7 +32,7 @@
                                         </select>
                                     </div> -->
 
-                                    <div class="col-sm-9" v-if="">
+                                    <div class="col-sm-9" > <!--removed v-if=""-->
                                         
                                         <input type="text" class="form-control" name="pre_event_name"  v-model="park.event_activities" :readonly="is_internal">
                                     </div>
@@ -45,7 +45,7 @@
                                         
                                         <label class="control-label pull-left"  for="Name">Activity Types (assessor)</label>
                                     </div>
-                                    <div class="col-sm-9" v-if="">
+                                    <div class="col-sm-9">
                                         <select style="width:100%" class="form-control input-sm" multiple ref="activities_select" v-model="selected_activities">
                                             <option v-for="a in park_activities" :value="a.id">{{a.name}}</option>
                                         </select>
