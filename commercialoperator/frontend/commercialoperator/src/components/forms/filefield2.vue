@@ -58,7 +58,7 @@
         </div>
 
         <span v-if="show_spinner"><i class='fa fa-2x fa-spinner fa-spin'></i></span>
-
+        </div>
     </div>
 </template>
 

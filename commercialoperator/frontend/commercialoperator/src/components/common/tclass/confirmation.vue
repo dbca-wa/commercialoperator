@@ -10,16 +10,16 @@
             </div>
             <div v-else class="row">
                 <div class="col-sm-12">
-                <h2>Application Fee: Unpaid</h2>
+                    <h2>Application Fee: Unpaid</h2>
+                </div>
             </div>
-        </div>
-        <div v-if="proposal.fee_paid" class="row">
-            <div class="col-sm-12" style="margin-top: 1em">
-                <a :href="proposal.fee_invoice_url" class="btn btn-info btn-lg"  target="_blank">Invoice</a>
+            <div v-if="proposal.fee_paid" class="row">
+                <div class="col-sm-12" style="margin-top: 1em">
+                    <a :href="proposal.fee_invoice_url" class="btn btn-info btn-lg"  target="_blank">Invoice</a>
+                </div>
             </div>
         </div>
     </div>
-
 </template>
 
 <script>

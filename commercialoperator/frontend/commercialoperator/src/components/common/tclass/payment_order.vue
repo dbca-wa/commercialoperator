@@ -41,27 +41,28 @@
                             <button :disabled="!parks_available" class="btn btn-primary pull-right" type="submit" style="margin-top:5px;">Proceed to Payment</button>
                         </div>
                         <div v-else class="dropdown" style="float: right;">
-                          <button :disabled="!parks_available" class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="payment_method" value="credit_card">
-                            Proceed
-                          </button>
-                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <button class="dropdown-item" type="submit">Pay by Credit Card</button><br>
-                            <span v-if="selected_licence.bpay_allowed">
-                                <button class="dropdown-item" @click="payment_method='bpay'" type="submit">Pay by BPAY</button><br>
-                            </span>
-                            <span v-if="selected_licence.monthly_invoicing_allowed">
-                                <!--<button  class="dropdown-item" @click="submit_monthly_invoicing">Monthly Invoicing</button>-->
-                                <button type="submit" class="dropdown-item" @click="payment_method='monthly_invoicing'">Monthly Invoicing</button>
-                            </span>
-                            <span v-if="selected_licence.other_allowed">
-                                <button type="submit" class="dropdown-item" @click="payment_method='other'">Record Payment</button>
-                            </span>
-                          </div>
+                            <button :disabled="!parks_available" class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" name="payment_method" value="credit_card">
+                                Proceed
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <button class="dropdown-item" type="submit">Pay by Credit Card</button><br>
+                                <span v-if="selected_licence.bpay_allowed">
+                                    <button class="dropdown-item" @click="payment_method='bpay'" type="submit">Pay by BPAY</button><br>
+                                </span>
+                                <span v-if="selected_licence.monthly_invoicing_allowed">
+                                    <!--<button  class="dropdown-item" @click="submit_monthly_invoicing">Monthly Invoicing</button>-->
+                                    <button type="submit" class="dropdown-item" @click="payment_method='monthly_invoicing'">Monthly Invoicing</button>
+                                </span>
+                                <span v-if="selected_licence.other_allowed">
+                                   <button type="submit" class="dropdown-item" @click="payment_method='other'">Record Payment</button>
+                                </span>
+                            </div>
                         </div>
 
                         <button type="submit" class="dropdown-item" @click="payment_method='existing_invoice'">Existing invoice</button>
 
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

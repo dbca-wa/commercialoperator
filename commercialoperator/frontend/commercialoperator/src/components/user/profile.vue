@@ -1,4 +1,4 @@
-<template> -->
+<template>
     <div :class="classCompute" id="userInfo">
       <div class="col-sm-12">
         <div v-if="showCompletion" class="row">
@@ -55,7 +55,7 @@
                 </div>
             </div>
         </div>
-<!-- 
+        <!-- 
         <div class="row">
             <div class="col-sm-12">
                 <div class="panel panel-default">
@@ -323,7 +323,7 @@
                                         </span>
                                         <span  style="margin-left:10px;margin-top:10px;">{{uploadedFileName}}</span>
                                     </label>
-                                    </br>
+                                    <br/>
 
                                     <label for="" class="col-sm-10 control-label" style="text-align:left;">You will be notified by email once the Department has checked the organisation details.
                                     </label>

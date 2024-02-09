@@ -24,14 +24,13 @@
                                     <div class="col-sm-3">                                        
                                         <label class="control-label pull-left"  for="Name">Activity Types</label>
                                     </div>
-                                    <div class="col-sm-9" v-if="">
+                                    <div class="col-sm-9"> <!--removed v-if=""-->
                                         <!-- <select style="width:100%" class="form-control input-sm" multiple ref="activities_select" v-model="selected_activities">
                                             <option v-for="a in allowed_activities" :value="a.id">{{a.name}}</option>
                                         </select> -->
                                         <input type="text" class="form-control" name="pre_event_name"  v-model="park.activities">
                                     </div>
                                 </div>
-                               </div> 
                             </div>
 
                            
