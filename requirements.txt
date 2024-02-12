@@ -54,3 +54,8 @@ django-treebeard==4.3.1
 psycopg2==2.8.6
 whitenoise==5.3.0
 git+https://github.com/dbca-wa/django-media-serv.git#egg=django_media_serv
+certifi>=2023.7.22 # not directly required, pinned by Snyk to avoid a vulnerability
+cryptography>=42.0.2 # not directly required, pinned by Snyk to avoid a vulnerability
+pillow>=9.2.0 # not directly required, pinned by Snyk to avoid a vulnerability
+requests>=2.31.0 # not directly required, pinned by Snyk to avoid a vulnerability
+sqlparse>=0.4.4 # not directly required, pinned by Snyk to avoid a vulnerability
