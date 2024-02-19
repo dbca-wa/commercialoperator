@@ -13,13 +13,17 @@ from django.db import transaction
 
 from datetime import datetime, timedelta
 
-from commercialoperator.helpers import is_internal
+from commercialoperator.helpers import is_internal, is_customer
 from commercialoperator.forms import *
 from commercialoperator.components.proposals.models import Referral, Proposal, HelpPage, DistrictProposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.mixins import ReferralOwnerMixin
 from commercialoperator.components.main.models import Park
 from commercialoperator.components.bookings.email import send_invoice_tclass_email_notification, send_confirmation_tclass_email_notification
+
+import os
+import mimetypes
+from django.db.models import Q
 
 from ledger.checkout.utils import create_basket_session, create_checkout_session, place_order_submission, get_cookie_basket
 from django.core.management import call_command
@@ -166,4 +170,56 @@ class ManagementCommandsView(LoginRequiredMixin, TemplateView):
 
         return render(request, self.template_name, data)
 
+def is_authorised_to_access_proposal_document(request,document_id):
+    if is_internal(request):
+        return True
+    elif is_customer(request):
+        user = request.user
+        user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+        return Proposal.objects.filter(id=document_id).filter(
+                Q(org_applicant_id__in=user_orgs) |
+                Q(submitter=user)).exists()
 
+def get_file_path_id(check_str,file_path):
+    file_name_path_split = file_path.split("/")
+    #if the check_str is in the file path, the next value should be the id
+    if check_str in file_name_path_split:
+        id_index = file_name_path_split.index(check_str)+1
+        if len(file_name_path_split) > id_index and file_name_path_split[id_index].isnumeric():
+            return int(file_name_path_split[id_index])
+        else:
+            return False
+    else:
+        return False
+
+def is_authorised_to_access_document(request):
+
+    if is_internal(request):
+        return True
+    elif is_customer(request):
+        p_document_id = get_file_path_id("proposals",request.path)
+        if p_document_id:
+            return is_authorised_to_access_proposal_document(request,p_document_id)
+    else:
+        return False
+
+def getPrivateFile(request):
+
+    if is_authorised_to_access_document(request):
+        file_name_path =  request.path
+        #norm path will convert any traversal or repeat / in to its normalised form
+        full_file_path= os.path.normpath(settings.BASE_DIR+file_name_path) 
+        #we then ensure the normalised path is within the BASE_DIR (and the file exists)
+        if full_file_path.startswith(settings.BASE_DIR) and os.path.isfile(full_file_path):
+            extension = file_name_path.split(".")[-1]
+            the_file = open(full_file_path, 'rb')
+            the_data = the_file.read()
+            the_file.close()
+            if extension == 'msg':
+                return HttpResponse(the_data, content_type="application/vnd.ms-outlook")
+            if extension == 'eml':
+                return HttpResponse(the_data, content_type="application/vnd.ms-outlook")
+
+            return HttpResponse(the_data, content_type=mimetypes.types_map['.'+str(extension)])
+
+    return HttpResponse()

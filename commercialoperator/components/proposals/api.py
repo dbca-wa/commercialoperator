@@ -30,6 +30,7 @@ from commercialoperator.components.proposals.utils import save_proponent_data,sa
 from commercialoperator.components.proposals.models import searchKeyWords, search_reference, ProposalUserAction
 from commercialoperator.utils import missing_required_fields
 from commercialoperator.components.main.utils import check_db_connection
+from commercialoperator.components.proposals import models
 
 from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -125,7 +126,7 @@ from ledger.payments.invoice.models import Invoice
 
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
+#from django.core.files.storage import default_storage
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
@@ -137,6 +138,7 @@ from reversion.models import Version
 import logging
 logger = logging.getLogger(__name__)
 
+private_storage = models.private_storage
 
 class GetProposalType(views.APIView):
     renderer_classes = [JSONRenderer, ]
@@ -758,7 +760,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
                     _file = request.FILES.get('_file')
 
                 document = instance.documents.get_or_create(input_name=section, name=filename)[0]
-                path = default_storage.save('{}/proposals/{}/documents/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
+                path = private_storage.save('{}/proposals/{}/documents/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
 
                 document._file = path
                 document.save()
@@ -818,7 +820,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
                     _file = request.FILES.get('_file')
 
                 document = instance.onhold_documents.get_or_create(input_name=section, name=filename)[0]
-                path = default_storage.save('{}/proposals/{}/onhold/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
+                path = private_storage.save('{}/proposals/{}/onhold/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
 
                 document._file = path
                 document.save()
@@ -866,7 +868,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
                     _file = request.FILES.get('_file')
 
                 document = instance.qaofficer_documents.get_or_create(input_name=section, name=filename)[0]
-                path = default_storage.save('{}/proposals/{}/qaofficer/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
+                path = private_storage.save('{}/proposals/{}/qaofficer/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
 
                 document._file = path
                 document.save()
@@ -1237,7 +1239,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
                 required_doc_instance=RequiredDocument.objects.get(id=required_doc_id)
                 document = instance.required_documents.get_or_create(input_name=section, name=filename, required_doc=required_doc_instance)[0]
-                path = default_storage.save('{}/proposals/{}/required_documents/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
+                path = private_storage.save('{}/proposals/{}/required_documents/{}'.format(settings.MEDIA_APP_DIR, proposal_id, filename), ContentFile(_file.read()))
 
                 document._file = path
                 document.save()
