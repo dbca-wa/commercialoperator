@@ -282,7 +282,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(lodgement_date__lte=date_to)
         elif queryset.model is Approval:
             if date_from:
-                queryset = queryset.filter(start_date__gte=date_from)
+                queryset = queryset.filter(expiry_date__gte=date_from)
 
             if date_to:
                 queryset = queryset.filter(expiry_date__lte=date_to)
