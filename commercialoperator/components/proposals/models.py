@@ -4633,7 +4633,7 @@ def duplicate_event(p):
     return p
 
 def searchKeyWords(searchWords, searchProposal, searchApproval, searchCompliance, is_internal= True):
-    from commercialoperator.utils import search, search_approval, search_compliance
+    from commercialoperator.utils import search, search_approval, search_compliance, getChoiceFieldRegex
     from commercialoperator.components.approvals.models import Approval
     from commercialoperator.components.compliances.models import Compliance
     qs = []
@@ -4644,7 +4644,58 @@ def searchKeyWords(searchWords, searchProposal, searchApproval, searchCompliance
         approval_list = Approval.objects.all().order_by('lodgement_number', '-issue_date').distinct('lodgement_number')
         compliance_list = Compliance.objects.all()
     if searchWords:
+        #convert the search words in to two regex values - one for text one for json values
+        search_words_regex = "(?:"+'|'.join(searchWords)+")"
+        filter_regex = ".*\".*\":\s\"(\\\\\"|[^\"])*"+search_words_regex+"(\\\\\"|[^\"])*\".*"
+
+        #three searchable fields use choices: accreditation, film_type, and film_purpose
+        #so we must convert the search phrase in to the search short word where applicable
+        #accreditation
+        accreditation_words = getChoiceFieldRegex(searchWords,ProposalAccreditation.ACCREDITATION_TYPE_CHOICES)
+        #film type 
+        film_type_words = getChoiceFieldRegex(searchWords,ProposalFilmingActivity.FILM_TYPE_CHOICES)
+        #film purpose
+        film_purpose_words = getChoiceFieldRegex(searchWords,ProposalFilmingActivity.PURPOSE_CHOICES)
+
+        #one particular search value is quite nested - it is faster to run these queries instead of the reverse
+        activities = Activity.objects.filter(name__iregex=search_words_regex)
+        pts_activities = ProposalTrailSectionActivity.objects.filter(activity__in=activities)
+        sections = ProposalTrailSection.objects.filter(trail_activities__in=pts_activities)
+        trails = ProposalTrail.objects.filter(sections__in=sections)
+
         if searchProposal:
+            #proposal_list = proposal_list.filter(data__iregex=filter_regex)
+            #this below query run is equivalent to the search_words property, except that it retrieves the pertaining proposal records
+            #there is a lot here but a lot of time is saved not having to iterate every record every time
+            proposal_list = proposal_list.filter(
+            (Q(application_type__name=ApplicationType.TCLASS) & 
+                (Q(parks__park__name__iregex=search_words_regex))|
+                (Q(parks__activities__activity__in=activities))|
+                (Q(parks__zones__park_activities__activity__in=activities))|
+                (Q(trails__trail__name__iregex=search_words_regex))|
+                (Q(vehicles__rego__iregex=search_words_regex))|
+                (Q(vessels__spv_no__iregex=search_words_regex))|
+                (Q(other_details__other_comments__iregex=search_words_regex))|
+                (Q(other_details__mooring__iregex=search_words_regex))|
+                (Q(other_details__accreditations__accreditation_type__in=accreditation_words))|
+                (Q(trails__in=trails)))| 
+            (Q(application_type__name=ApplicationType.EVENT) & 
+                (Q(events_parks__park__name__iregex=search_words_regex))|
+                (Q(events_parks__event_activities__iregex=search_words_regex))|
+                (Q(trails__trail__name__iregex=search_words_regex))|
+                (Q(vehicles__rego__iregex=search_words_regex))|
+                (Q(vessels__spv_no__iregex=search_words_regex))|
+                (Q(trails__in=trails)))| 
+            (Q(application_type__name=ApplicationType.FILMING) & 
+                (Q(filming_parks__park__name__iregex=search_words_regex))|
+                (Q(vehicles__rego__iregex=search_words_regex))|
+                (Q(vessels__spv_no__iregex=search_words_regex))|
+                (Q(filming_activity__film_type__in=film_type_words))|
+                (Q(filming_activity__film_purpose__in=film_purpose_words)))
+            ).distinct("id").order_by("-id")
+
+            #this loop now effectively formats the result
+            #TODO if pagination can be applied prior, it can save time for all querysets regardless of size
             for p in proposal_list:
                 #if p.data:
                 if p.search_data:
@@ -4667,6 +4718,7 @@ def searchKeyWords(searchWords, searchProposal, searchApproval, searchCompliance
                     except:
                         raise
         if searchApproval:
+            approval_list = approval_list.filter(Q(surrender_details__iregex=filter_regex) | Q(suspension_details__iregex=filter_regex) | Q(cancellation_details__iregex=search_words_regex))
             for a in approval_list:
                 try:
                     results = search_approval(a, searchWords)
@@ -4674,6 +4726,7 @@ def searchKeyWords(searchWords, searchProposal, searchApproval, searchCompliance
                 except:
                     raise
         if searchCompliance:
+            compliance_list = compliance_list.filter(Q(text__iregex=search_words_regex) | Q(requirement__free_requirement__iregex=search_words_regex) | Q(requirement__standard_requirement__text__iregex=search_words_regex))
             for c in compliance_list:
                 try:
                     results = search_compliance(c, searchWords)
