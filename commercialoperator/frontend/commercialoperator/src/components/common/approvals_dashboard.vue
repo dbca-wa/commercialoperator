@@ -71,12 +71,33 @@
                             </div>
                         </div> -->
 
-
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="">Start From</label>
+                                <div class="input-group date" ref="startDateFromPicker">
+                                    <input type="text" class="form-control" placeholder="DD/MM/YYYY" v-model="filterStartFrom">
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="">Start To</label>
+                                <div class="input-group date" ref="startDateToPicker">
+                                    <input type="text" class="form-control" placeholder="DD/MM/YYYY" v-model="filterStartTo">
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="">Expiry From</label>
-                                <div class="input-group date" ref="proposalDateFromPicker">
-                                    <input type="text" class="form-control" placeholder="DD/MM/YYYY" v-model="filterProposalLodgedFrom">
+                                <div class="input-group date" ref="expiryDateFromPicker">
+                                    <input type="text" class="form-control" placeholder="DD/MM/YYYY" v-model="filterExpiryFrom">
                                     <span class="input-group-addon">
                                         <span class="glyphicon glyphicon-calendar"></span>
                                     </span>
@@ -86,8 +107,8 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="">Expiry To</label>
-                                <div class="input-group date" ref="proposalDateToPicker">
-                                    <input type="text" class="form-control" placeholder="DD/MM/YYYY" v-model="filterProposalLodgedTo">
+                                <div class="input-group date" ref="expiryDateToPicker">
+                                    <input type="text" class="form-control" placeholder="DD/MM/YYYY" v-model="filterExpiryTo">
                                     <span class="input-group-addon">
                                         <span class="glyphicon glyphicon-calendar"></span>
                                     </span>
@@ -170,8 +191,10 @@ export default {
             // Filters for Proposals
             filterApplicationType: 'All',
             filterProposalStatus: 'All',
-            filterProposalLodgedFrom: '',
-            filterProposalLodgedTo: '',
+            filterStartFrom: '',
+            filterStartTo: '',
+            filterExpiryFrom: '',
+            filterExpiryTo: '',
             filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
             datepickerOptions:{
@@ -202,8 +225,10 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     "data": function ( d ) {
-                        d.date_from = vm.filterProposalLodgedFrom != '' && vm.filterProposalLodgedFrom != null ? moment(vm.filterProposalLodgedFrom, 'DD/MM/YYYY').format('YYYY-MM-DD'): '';
-                        d.date_to = vm.filterProposalLodgedTo != '' && vm.filterProposalLodgedTo != null ? moment(vm.filterProposalLodgedTo, 'DD/MM/YYYY').format('YYYY-MM-DD'): '';
+                        d.start_date_from = vm.filterStartFrom != '' && vm.filterStartFrom != null ? moment(vm.filterStartFrom, 'DD/MM/YYYY').format('YYYY-MM-DD'): '';
+                        d.start_date_to = vm.filterStartTo != '' && vm.filterStartTo != null ? moment(vm.filterStartTo, 'DD/MM/YYYY').format('YYYY-MM-DD'): '';
+                        d.expiry_date_from = vm.filterExpiryFrom != '' && vm.filterExpiryFrom != null ? moment(vm.filterExpiryFrom, 'DD/MM/YYYY').format('YYYY-MM-DD'): '';
+                        d.expiry_date_to = vm.filterExpiryTo != '' && vm.filterExpiryTo != null ? moment(vm.filterExpiryTo, 'DD/MM/YYYY').format('YYYY-MM-DD'): '';
                     }
 
                 },
@@ -483,10 +508,16 @@ export default {
                 vm.$refs.proposal_datatable.vmDataTable.columns(4).search('').draw();
             }
         },
-        filterProposalLodgedFrom: function(){
+        filterStartFrom: function(){
             this.$refs.proposal_datatable.vmDataTable.draw();
         },
-        filterProposalLodgedTo: function(){
+        filterStartTo: function(){
+            this.$refs.proposal_datatable.vmDataTable.draw();
+        },
+        filterExpiryFrom: function(){
+            this.$refs.proposal_datatable.vmDataTable.draw();
+        },
+        filterExpiryTo: function(){
             this.$refs.proposal_datatable.vmDataTable.draw();
         },
         filterApplicationType: function() {
@@ -534,24 +565,44 @@ export default {
 
         addEventListeners: function(){
             let vm = this;
-            // Initialise Proposal Date Filters
-            $(vm.$refs.proposalDateToPicker).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.proposalDateToPicker).on('dp.change', function(e){
-                if ($(vm.$refs.proposalDateToPicker).data('DateTimePicker').date()) {
-                    vm.filterProposalLodgedTo =  e.date.format('DD/MM/YYYY');
+            // Initialise Date Filters
+            $(vm.$refs.startDateToPicker).datetimepicker(vm.datepickerOptions);
+            $(vm.$refs.startDateToPicker).on('dp.change', function(e){
+                if ($(vm.$refs.startDateToPicker).data('DateTimePicker').date()) {
+                    vm.filterStartTo =  e.date.format('DD/MM/YYYY');
                 }
-                else if ($(vm.$refs.proposalDateToPicker).data('date') === "") {
-                    vm.filterProposaLodgedTo = "";
+                else if ($(vm.$refs.startDateToPicker).data('date') === "") {
+                    vm.filterStartTo = "";
                 }
              });
-            $(vm.$refs.proposalDateFromPicker).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.proposalDateFromPicker).on('dp.change',function (e) {
-                if ($(vm.$refs.proposalDateFromPicker).data('DateTimePicker').date()) {
-                    vm.filterProposalLodgedFrom = e.date.format('DD/MM/YYYY');
-                    //$(vm.$refs.proposalDateToPicker).data("DateTimePicker").minDate(e.date);
+            $(vm.$refs.startDateFromPicker).datetimepicker(vm.datepickerOptions);
+            $(vm.$refs.startDateFromPicker).on('dp.change',function (e) {
+                if ($(vm.$refs.startDateFromPicker).data('DateTimePicker').date()) {
+                    vm.filterStartFrom = e.date.format('DD/MM/YYYY');
+                    //$(vm.$refs.expiryDateToPicker).data("DateTimePicker").minDate(e.date);
                 }
-                else if ($(vm.$refs.proposalDateFromPicker).data('date') === "") {
-                    vm.filterProposalLodgedFrom = "";
+                else if ($(vm.$refs.startDateFromPicker).data('date') === "") {
+                    vm.filterStartFrom = "";
+                }
+            });
+
+            $(vm.$refs.expiryDateToPicker).datetimepicker(vm.datepickerOptions);
+            $(vm.$refs.expiryDateToPicker).on('dp.change', function(e){
+                if ($(vm.$refs.expiryDateToPicker).data('DateTimePicker').date()) {
+                    vm.filterExpiryTo =  e.date.format('DD/MM/YYYY');
+                }
+                else if ($(vm.$refs.expiryDateToPicker).data('date') === "") {
+                    vm.filterExpiryTo = "";
+                }
+             });
+            $(vm.$refs.expiryDateFromPicker).datetimepicker(vm.datepickerOptions);
+            $(vm.$refs.expiryDateFromPicker).on('dp.change',function (e) {
+                if ($(vm.$refs.expiryDateFromPicker).data('DateTimePicker').date()) {
+                    vm.filterExpiryFrom = e.date.format('DD/MM/YYYY');
+                    //$(vm.$refs.expiryDateToPicker).data("DateTimePicker").minDate(e.date);
+                }
+                else if ($(vm.$refs.expiryDateFromPicker).data('date') === "") {
+                    vm.filterExpiryFrom = "";
                 }
             });
 
@@ -631,8 +682,8 @@ export default {
             let vm = this;
             vm.$refs.proposal_datatable.table.dataTableExt.afnFiltering.push(
                 function(settings,data,dataIndex,original){
-                    let from = vm.filterProposalLodgedFrom;
-                    let to = vm.filterProposalLodgedTo;
+                    let from = vm.filterExpiryFrom;
+                    let to = vm.filterExpiryTo;
                     let val = original.expiry_date;
 
                     if ( from == '' && to == ''){
