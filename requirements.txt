@@ -54,3 +54,5 @@ django-treebeard==4.3.1
 psycopg2==2.8.6
 whitenoise==5.3.0
 git+https://github.com/dbca-wa/django-media-serv.git#egg=django_media_serv
+python-decouple==3.8
+git+https://github.com/dbca-wa/appmonitor_client.git#egg=appmonitor_client

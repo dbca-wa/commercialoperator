@@ -74,6 +74,7 @@ INSTALLED_APPS += [
     'reset_migrations',
     'ckeditor',
     'multiselectfield',
+    'appmonitor_client',
 ]
 
 ADD_REVERSION_ADMIN=True
@@ -190,6 +191,7 @@ if not VALID_SYSTEMS:
 
 CRON_CLASSES = [
     'commercialoperator.cron.OracleIntegrationCronJob',
+    'appmonitor_client.cron.CronJobAppMonitorClient',
 ]
 
 
