@@ -159,7 +159,8 @@
                                                         />
                                                         -->
                                                         <!--<button onclick="javascript:id_dt_clr.value=''">X</button>-->
-                                                        <input id="id_dt_clr" type="text" class="form-control" placeholder="DD/MM" :value="null" v-model="org.charge_once_per_year" ref="charge_once_per_year" 
+                                                        <!--removed: :value="null"-->
+                                                        <input id="id_dt_clr" type="text" class="form-control" placeholder="DD/MM" v-model="org.charge_once_per_year" ref="charge_once_per_year" 
                                                                :title="charge_once_title()"
                                                         />
                                                     </label>
@@ -174,7 +175,7 @@
                                                 </div>
                                                 <div class="col-sm-1">
                                                     <label>
-                                                        <input type="number" :value="null" v-model="org.max_num_months_ahead" ref="max_num_months_ahead" min="0" max="36"
+                                                        <input type="number" v-model="org.max_num_months_ahead" ref="max_num_months_ahead" min="0" max="36"
                                                         title="Max. months ahead for future Event application completion date"/>
                                                     </label>
                                                 </div>

@@ -36,6 +36,18 @@ def search(dictionary, search_list):
 
 	return result
 
+def getChoiceFieldRegex(searchWords,choices):
+	try:
+		choices_dict = {}
+		choices_list = []
+		for i in choices:
+			choices_dict[i[1]] = i[0]
+			choices_list.append(i[1])
+		words = []
+		return words
+	except:
+		return []
+
 def search_approval(approval, searchWords):
 	qs=[]
 	a = approval
