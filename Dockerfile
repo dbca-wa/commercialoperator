@@ -1,14 +1,14 @@
 # Prepare the base environment.
-FROM ubuntu:20.04 as builder_base_cols
+FROM ubuntu:22.04 as builder_base_cols
 MAINTAINER asi@dbca.wa.gov.au
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBUG=True
 ENV TZ=Australia/Perth
 ENV EMAIL_HOST="smtp.corporateict.domain"
 ENV DEFAULT_FROM_EMAIL='no-reply@dbca.wa.gov.au'
-ENV NOTIFICATION_EMAIL='jawaid.mushtaq@dbca.wa.gov.au'
-ENV NON_PROD_EMAIL='brendan.blackford@dbca.wa.gov.au, walter.genuit@dbca.wa.gov.au, katsufumi.shibata@dbca.wa.gov.au, mohammed.ahmed@dbca.wa.gov.au, test_licensing@dpaw.wa.gov.au, jawaid.mushtaq@dbca.wa.gov.au'
-ENV PRODUCTION_EMAIL=False
+ENV NOTIFICATION_EMAIL=''
+ENV NON_PROD_EMAIL=''
+ENV PRODUCTION_EMAIL=True
 ENV EMAIL_INSTANCE='DEV'
 ENV SECRET_KEY="ThisisNotRealKey"
 ENV SITE_PREFIX='cols'
@@ -22,7 +22,17 @@ RUN apt-get upgrade -y
 RUN apt-get install --no-install-recommends -y wget git libmagic-dev gcc binutils libproj-dev gdal-bin python3-setuptools python3-pip tzdata cron rsyslog gunicorn libreoffice
 RUN apt-get install --no-install-recommends -y libpq-dev patch
 RUN apt-get install --no-install-recommends -y postgresql-client mtr htop vim ssh 
-RUN apt-get install --no-install-recommends -y python3-gevent software-properties-common imagemagick npm
+RUN apt-get install --no-install-recommends -y python3-gevent software-properties-common imagemagick curl bzip2 npm
+
+
+# nvm env vars
+RUN mkdir -p /usr/local/nvm
+ENV NVM_DIR /usr/local/nvm
+ENV NODE_VERSION v10.19.0
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+RUN /bin/bash -c ". $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
+ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/bin
+ENV PATH $NODE_PATH:$PATH
 
 RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt-get update
@@ -66,7 +76,7 @@ RUN chmod 777 /app/tmp/
 COPY cron /etc/cron.d/dockercron
 COPY startup.sh /
 # Cron start
-RUN service rsyslog start
+#RUN service rsyslog start
 RUN chmod 0644 /etc/cron.d/dockercron
 RUN crontab /etc/cron.d/dockercron
 RUN touch /var/log/cron.log
@@ -80,6 +90,10 @@ RUN chmod 755 /startup.sh
 RUN mkdir /app/logs/.ipython
 RUN export IPYTHONDIR=/app/logs/.ipython/
 #RUN python profile create 
+
+# Health checks for kubernetes 
+RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin/health_check.sh -O /bin/health_check.sh
+RUN chmod 755 /bin/health_check.sh
 
 EXPOSE 8080
 HEALTHCHECK --interval=1m --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-q", "-O", "-", "http://localhost:8080/"]
