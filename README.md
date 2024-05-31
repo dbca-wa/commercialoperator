@@ -46,4 +46,5 @@ required environment variables at run time. Example content:
     LEDGER_GST=10
     DISABLE_EMAIL=True
     PS_PAYMENT_SYSTEM_ID='S123'
+    DEV_APP_BUILD_URL="http://localhost:9072/app.js"
 
