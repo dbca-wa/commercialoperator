@@ -164,6 +164,7 @@ BRANCH_NAME = env('BRANCH_NAME','Tourism and Concessions Branch')
 DEP_ADDRESS = env('DEP_ADDRESS','17 Dick Perry Avenue, Kensington WA 6151')
 SITE_URL = env('SITE_URL', 'https://' + SITE_PREFIX + '.' + SITE_DOMAIN)
 PUBLIC_URL=env('PUBLIC_URL', SITE_URL)
+PUBLIC_URL=PUBLIC_URL if PUBLIC_URL.endswith(os.sep) else PUBLIC_URL + os.sep
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', 'no-reply@' + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env('MEDIA_APP_DIR', 'cols')
 ADMIN_GROUP = env('ADMIN_GROUP', 'COLS Admin')
@@ -186,6 +187,7 @@ VERSION_NO="1.0.1"
 DEV_APP_BUILD_URL=env('DEV_APP_BUILD_URL')
 
 TIME_ZONE='Australia/Perth'
+
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
