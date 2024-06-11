@@ -432,7 +432,8 @@ def send_proposal_approval_email_notification(proposal,request):
         # add requirement documents
         for requirement in proposal.requirements.exclude(is_deleted=True):
             for doc in requirement.requirement_documents.all():
-                file_name = doc._file.name
+                #file_name = doc._file.name
+                file_name = doc.name if doc.name else doc._file.name
                 #attachment = (file_name, doc._file.file.read(), 'image/*')
                 attachment = (file_name, doc._file.file.read())
                 attachments.append(attachment)
@@ -630,7 +631,7 @@ def send_district_proposal_approval_email_notification(district_proposal,approva
     if "-internal" in url:
         # remove '-internal'. This email is for external submitters
         url = ''.join(url.split('-internal'))
-    print(url)
+    #print(url)
     attachments = []
     licence_document= approval.licence_document._file
     approved_district_proposals= approval.current_proposal.district_proposals.filter(processing_status='approved')
@@ -647,7 +648,8 @@ def send_district_proposal_approval_email_notification(district_proposal,approva
         for dp in approved_district_proposals:
             for requirement in dp.district_proposal_requirements.all():
                 for doc in requirement.requirement_documents.all():
-                    file_name = doc._file.name
+                    #file_name = doc._file.name
+                    file_name = doc.name if doc.name else doc._file.name
                     attachment = (file_name, doc._file.file.read())
                     attachments.append(attachment)
     context = {
@@ -681,7 +683,7 @@ def send_district_proposal_approval_email_notification_orig(district_proposal,ap
     if "-internal" in url:
         # remove '-internal'. This email is for external submitters
         url = ''.join(url.split('-internal'))
-    print(url)
+    #print(url)
     attachments = []
     licence_document= approval.licence_document._file
     if licence_document is not None:
@@ -708,7 +710,7 @@ def send_district_proposal_approval_email_notification_orig(district_proposal,ap
     }
 
     msg = email.send(proposal.proposal_submitter_email, bcc= all_ccs, attachments=attachments, context=context)
-    print(msg)
+    #print(msg)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
