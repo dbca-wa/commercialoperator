@@ -8,6 +8,7 @@ if os.path.exists(BASE_DIR + "/.env"):
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
 from ledger.settings_base import *
+# from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = 'commercialoperator.urls'
 SITE_ID = 1
@@ -76,6 +77,7 @@ INSTALLED_APPS += [
     'ckeditor',
     'multiselectfield',
     'appmonitor_client',
+    # "ledger_api_client",
 ]
 
 ADD_REVERSION_ADMIN=True
