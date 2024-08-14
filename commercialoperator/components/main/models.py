@@ -4,10 +4,10 @@ import os
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
-from django.utils.encoding import python_2_unicode_compatible
+from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
-#from ledger.accounts.models import EmailUser, Document, RevisionedMixin
-from ledger.accounts.models import EmailUser, RevisionedMixin
+
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from django.contrib.postgres.fields.jsonb import JSONField
 
 
