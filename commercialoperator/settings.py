@@ -2,6 +2,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 import os, hashlib
 import confy
+from confy import env
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.exists(BASE_DIR + "/.env"):
     confy.read_environment_file(BASE_DIR + "/.env")
@@ -59,7 +61,7 @@ STATIC_URL = '/static/'
 
 INSTALLED_APPS += [
     'reversion_compare',
-    'bootstrap3',
+    # 'bootstrap3',
     'commercialoperator',
     'commercialoperator.components.main',
     'commercialoperator.components.organisations',
@@ -76,7 +78,7 @@ INSTALLED_APPS += [
     'ckeditor',
     'multiselectfield',
     'appmonitor_client',
-    # "ledger_api_client",
+    "ledger_api_client",
 ]
 
 ADD_REVERSION_ADMIN=True
@@ -190,6 +192,7 @@ DEV_APP_BUILD_URL=env('DEV_APP_BUILD_URL')
 
 TIME_ZONE='Australia/Perth'
 
+LEDGER_TEMPLATE = "bootstrap5"
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
