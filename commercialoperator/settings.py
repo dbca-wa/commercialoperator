@@ -7,8 +7,7 @@ if os.path.exists(BASE_DIR + "/.env"):
     confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
-from ledger.settings_base import *
-# from ledger_api_client.settings_base import *  # noqa: F403
+from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = 'commercialoperator.urls'
 SITE_ID = 1
