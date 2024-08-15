@@ -2,7 +2,8 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 from django.contrib.postgres.fields.jsonb import JSONField
-from ledger.accounts.models import EmailUser, RevisionedMixin
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.components.main.mixins import RevisionedMixin
 from ledger.payments.models import Invoice
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance

@@ -3,7 +3,8 @@ from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.conf import settings
-from ledger.accounts.models import EmailUser, RevisionedMixin
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.components.main.mixins import RevisionedMixin
 from commercialoperator.components.main.models import (
     CommunicationsLogEntry,
     UserAction,

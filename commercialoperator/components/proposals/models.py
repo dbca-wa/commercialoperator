@@ -10,7 +10,8 @@ from django.contrib.postgres.fields.jsonb import JSONField
 from django.utils import timezone
 from django.conf import settings
 from taggit.models import TaggedItemBase
-from ledger.accounts.models import EmailUser, RevisionedMixin
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.components.main.mixins import RevisionedMixin
 from ledger.payments.models import Invoice
 
 # from ledger.accounts.models import EmailUser

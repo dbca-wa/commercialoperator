@@ -8,7 +8,8 @@ from django.contrib.postgres.fields.jsonb import JSONField
 from django.utils import timezone
 from django.conf import settings
 from django.db.models import Q
-from ledger.accounts.models import EmailUser, RevisionedMixin
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.components.main.mixins import RevisionedMixin
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.proposals.models import (
     Proposal,
