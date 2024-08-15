@@ -3,7 +3,7 @@ from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.conf import settings
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
 from commercialoperator.components.main.mixins import RevisionedMixin
 from commercialoperator.components.main.models import (
     CommunicationsLogEntry,
@@ -27,7 +27,6 @@ from commercialoperator.components.compliances.email import (
     send_notification_only_email,
     send_internal_notification_only_email,
 )
-from ledger.payments.invoice.models import Invoice
 
 import logging
 
