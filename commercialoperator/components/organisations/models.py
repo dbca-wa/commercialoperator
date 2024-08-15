@@ -8,8 +8,8 @@ from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields.jsonb import JSONField
 from django.core.validators import MaxValueValidator, MinValueValidator
-from ledger.accounts.models import Organisation as ledger_organisation
-from ledger.accounts.models import EmailUser,RevisionedMixin #,Document
+from commercialoperator.components.stubs.classes import Ersatz as ledger_organisation # ledger.accounts.models.Organisation
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.main.models import UserAction,CommunicationsLogEntry, Document
 from commercialoperator.components.organisations.utils import random_generator, can_admin_org, has_atleast_one_admin
 from commercialoperator.components.organisations.emails import (
