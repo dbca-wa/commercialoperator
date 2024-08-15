@@ -67,3 +67,21 @@ def is_internal(request):
 
 def get_all_officers():
     return EmailUser.objects.filter(groups__name="Commercial Operator Admin")
+
+
+def email_in_dbca_domain(email: str) -> bool:
+    return email.split("@")[1] in settings.DEPT_DOMAINS
+
+
+def in_dbca_domain(request):
+    user = request.user
+    if not email_in_dbca_domain(user.email):
+        return False
+
+    if not user.is_staff:
+        # hack to reset department user to is_staff==True, if the user logged in externally
+        # (external departmentUser login defaults to is_staff=False)
+        user.is_staff = True
+        user.save()
+
+    return True
