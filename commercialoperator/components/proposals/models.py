@@ -863,10 +863,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     # T Class
     activities_land = models.OneToOneField(
-        ProposalActivitiesLand, blank=True, null=True
+        ProposalActivitiesLand, blank=True, null=True, on_delete=models.PROTECT
     )  # , related_name='activities_land')
     activities_marine = models.OneToOneField(
-        ProposalActivitiesMarine, blank=True, null=True
+        ProposalActivitiesMarine, blank=True, null=True, on_delete=models.PROTECT
     )  # , related_name='activities_marine')
     # other_details = models.OneToOneField(ProposalOtherDetails, blank=True, null=True, related_name='proposal')
     # online_training = models.OneToOneField(ProposalOnlineTraining, blank=True, null=True)
@@ -3948,7 +3948,9 @@ class ProposalOtherDetails(models.Model):
     docket_books_number = models.CharField(
         "Docket books number", max_length=20, blank=True
     )
-    proposal = models.OneToOneField(Proposal, related_name="other_details", null=True)
+    proposal = models.OneToOneField(
+        Proposal, related_name="other_details", null=True, on_delete=models.PROTECT
+    )
 
     class Meta:
         app_label = "commercialoperator"
@@ -4402,7 +4404,7 @@ class Assessment(ProposalRequest):
 
 class ProposalDeclinedDetails(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='declined_details')
-    proposal = models.OneToOneField(Proposal)
+    proposal = models.OneToOneField(Proposal, on_delete=models.PROTECT)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
     reason = models.TextField(blank=True)
     cc_email = models.TextField(null=True)
@@ -4413,7 +4415,7 @@ class ProposalDeclinedDetails(models.Model):
 
 class ProposalOnHold(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='onhold')
-    proposal = models.OneToOneField(Proposal)
+    proposal = models.OneToOneField(Proposal, on_delete=models.PROTECT)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
     comment = models.TextField(blank=True)
     documents = models.ForeignKey(
@@ -6546,7 +6548,7 @@ class ProposalFilmingActivity(models.Model):
         null=True,
     )
     proposal = models.OneToOneField(
-        Proposal, related_name="filming_activity", null=True
+        Proposal, related_name="filming_activity", null=True, on_delete=models.PROTECT
     )
     # pdswa_location=models.BooleanField('Event location within PDSWA',default=False)
 
@@ -6562,7 +6564,9 @@ class ProposalFilmingActivity(models.Model):
 
 
 class ProposalFilmingAccess(models.Model):
-    proposal = models.OneToOneField(Proposal, related_name="filming_access", null=True)
+    proposal = models.OneToOneField(
+        Proposal, related_name="filming_access", null=True, on_delete=models.PROTECT
+    )
     track_use = models.BooleanField("Use of Tracks or trails", default=False)
     track_use_details = models.TextField(blank=True)
     off_road = models.BooleanField("Conduct any off-road activity", default=False)
@@ -6614,7 +6618,7 @@ class ProposalFilmingEquipment(models.Model):
     )
     other_equipments = models.TextField("Other equipment", blank=True, null=True)
     proposal = models.OneToOneField(
-        Proposal, related_name="filming_equipment", null=True
+        Proposal, related_name="filming_equipment", null=True, on_delete=models.PROTECT
     )
 
     def __str__(self):
@@ -6635,7 +6639,10 @@ class ProposalFilmingOtherDetails(models.Model):
     insurance_expiry = models.DateField(blank=True, null=True)
     other_comments = models.TextField("Other comments", blank=True, null=True)
     proposal = models.OneToOneField(
-        Proposal, related_name="filming_other_details", null=True
+        Proposal,
+        related_name="filming_other_details",
+        null=True,
+        on_delete=models.PROTECT,
     )
 
     def __str__(self):
@@ -7810,7 +7817,7 @@ class DistrictProposal(models.Model):
 
 class DistrictProposalDeclinedDetails(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='declined_details')
-    district_proposal = models.OneToOneField(DistrictProposal)
+    district_proposal = models.OneToOneField(DistrictProposal, on_delete=models.PROTECT)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
     reason = models.TextField(blank=True)
     cc_email = models.TextField(null=True)
@@ -7831,7 +7838,9 @@ class DistrictProposalDeclinedDetails(models.Model):
 
 class ProposalEventActivities(models.Model):
     event_name = models.CharField("Event name", max_length=100, blank=True, null=True)
-    proposal = models.OneToOneField(Proposal, related_name="event_activity", null=True)
+    proposal = models.OneToOneField(
+        Proposal, related_name="event_activity", null=True, on_delete=models.PROTECT
+    )
     commencement_date = models.DateField(blank=True, null=True)
     completion_date = models.DateField(blank=True, null=True)
     event_date = models.CharField("Event date", max_length=100, blank=True, null=True)
@@ -7865,7 +7874,7 @@ class ProposalEventManagement(models.Model):
         "Number of participants expected", blank=True, null=True
     )
     proposal = models.OneToOneField(
-        Proposal, related_name="event_management", null=True
+        Proposal, related_name="event_management", null=True, on_delete=models.PROTECT
     )
     num_spectators = models.SmallIntegerField(
         "Number of spectators expected", blank=True, null=True
@@ -7906,7 +7915,10 @@ class ProposalEventManagement(models.Model):
 class ProposalEventVehiclesVessels(models.Model):
     hired_or_owned = models.NullBooleanField(null=True)
     proposal = models.OneToOneField(
-        Proposal, related_name="event_vehicles_vessels", null=True
+        Proposal,
+        related_name="event_vehicles_vessels",
+        null=True,
+        on_delete=models.PROTECT,
     )
 
     def __str__(self):
@@ -7920,7 +7932,10 @@ class ProposalEventOtherDetails(models.Model):
     training_date = models.DateField(blank=True, null=True)
     insurance_expiry = models.DateField(blank=True, null=True)
     proposal = models.OneToOneField(
-        Proposal, related_name="event_other_details", null=True
+        Proposal,
+        related_name="event_other_details",
+        null=True,
+        on_delete=models.PROTECT,
     )
     participants_number = models.CharField(max_length=24, null=True, blank=True)
     officials_number = models.CharField(max_length=24, null=True, blank=True)

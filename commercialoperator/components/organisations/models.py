@@ -700,7 +700,9 @@ class OrganisationContact(models.Model):
         "Role", max_length=40, choices=USER_ROLE_CHOICES, default="organisation_user"
     )
     is_admin = models.BooleanField(default=False)
-    organisation = models.ForeignKey(Organisation, related_name="contacts", on_delete=models.PROTECT)
+    organisation = models.ForeignKey(
+        Organisation, related_name="contacts", on_delete=models.PROTECT
+    )
     email = models.EmailField(blank=False)
     first_name = models.CharField(
         max_length=128, blank=False, verbose_name="Given name(s)"
@@ -807,7 +809,9 @@ class OrganisationAction(UserAction):
     def log_action(cls, organisation, action, user):
         return cls.objects.create(organisation=organisation, who=user, what=str(action))
 
-    organisation = models.ForeignKey(Organisation, related_name="action_logs", on_delete=models.PROTECT)
+    organisation = models.ForeignKey(
+        Organisation, related_name="action_logs", on_delete=models.PROTECT
+    )
 
     class Meta:
         app_label = "commercialoperator"
@@ -820,7 +824,9 @@ def update_organisation_comms_log_filename(instance, filename):
 
 
 class OrganisationLogDocument(Document):
-    log_entry = models.ForeignKey("OrganisationLogEntry", related_name="documents", on_delete=models.PROTECT)
+    log_entry = models.ForeignKey(
+        "OrganisationLogEntry", related_name="documents", on_delete=models.PROTECT
+    )
     _file = models.FileField(
         upload_to=update_organisation_comms_log_filename, max_length=512
     )
@@ -830,7 +836,9 @@ class OrganisationLogDocument(Document):
 
 
 class OrganisationLogEntry(CommunicationsLogEntry):
-    organisation = models.ForeignKey(Organisation, related_name="comms_logs", on_delete=models.PROTECT)
+    organisation = models.ForeignKey(
+        Organisation, related_name="comms_logs", on_delete=models.PROTECT
+    )
 
     def save(self, **kwargs):
         # save the request id if the reference not provided
@@ -853,7 +861,11 @@ class OrganisationRequest(models.Model):
     abn = models.CharField(max_length=50, null=True, blank=True, verbose_name="ABN")
     requester = models.ForeignKey(EmailUser, on_delete=models.PROTECT)
     assigned_officer = models.ForeignKey(
-        EmailUser, blank=True, null=True, related_name="org_request_assignee", on_delete=models.PROTECT
+        EmailUser,
+        blank=True,
+        null=True,
+        related_name="org_request_assignee",
+        on_delete=models.PROTECT,
     )
     identification = models.FileField(
         upload_to="organisation/requests/%Y/%m/%d",
@@ -992,7 +1004,7 @@ class OrganisationRequest(models.Model):
 
 
 class OrganisationAccessGroup(models.Model):
-    site = models.OneToOneField(Site, default="1")
+    site = models.OneToOneField(Site, default="1", on_delete=models.PROTECT)
     members = models.ManyToManyField(EmailUser)
 
     def __str__(self):
@@ -1028,7 +1040,9 @@ class OrganisationRequestUserAction(UserAction):
     def log_action(cls, request, action, user):
         return cls.objects.create(request=request, who=user, what=str(action))
 
-    request = models.ForeignKey(OrganisationRequest, related_name="action_logs", on_delete=models.PROTECT)
+    request = models.ForeignKey(
+        OrganisationRequest, related_name="action_logs", on_delete=models.PROTECT
+    )
 
     class Meta:
         app_label = "commercialoperator"
@@ -1051,7 +1065,9 @@ def update_organisation_request_comms_log_filename(instance, filename):
 
 class OrganisationRequestLogDocument(Document):
     log_entry = models.ForeignKey(
-        "OrganisationRequestLogEntry", related_name="documents", on_delete=models.PROTECT
+        "OrganisationRequestLogEntry",
+        related_name="documents",
+        on_delete=models.PROTECT,
     )
     _file = models.FileField(
         upload_to=update_organisation_request_comms_log_filename, max_length=512
@@ -1062,7 +1078,9 @@ class OrganisationRequestLogDocument(Document):
 
 
 class OrganisationRequestLogEntry(CommunicationsLogEntry):
-    request = models.ForeignKey(OrganisationRequest, related_name="comms_logs", on_delete=models.PROTECT)
+    request = models.ForeignKey(
+        OrganisationRequest, related_name="comms_logs", on_delete=models.PROTECT
+    )
 
     def save(self, **kwargs):
         # save the request id if the reference not provided
