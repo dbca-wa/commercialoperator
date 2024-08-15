@@ -1,0 +1,2 @@
+class Ersatz(object):
+    pass

@@ -2,11 +2,14 @@ from django.core.exceptions import ImproperlyConfigured
 
 import os, hashlib
 import confy
+from confy import env
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-confy.read_environment_file(BASE_DIR+"/.env")
+if os.path.exists(BASE_DIR + "/.env"):
+    confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
-from ledger.settings_base import *
+from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = 'commercialoperator.urls'
 SITE_ID = 1
@@ -58,7 +61,7 @@ STATIC_URL = '/static/'
 
 INSTALLED_APPS += [
     'reversion_compare',
-    'bootstrap3',
+    # 'bootstrap3',
     'commercialoperator',
     'commercialoperator.components.main',
     'commercialoperator.components.organisations',
@@ -75,6 +78,7 @@ INSTALLED_APPS += [
     'ckeditor',
     'multiselectfield',
     'appmonitor_client',
+    "ledger_api_client",
 ]
 
 ADD_REVERSION_ADMIN=True
@@ -188,6 +192,7 @@ DEV_APP_BUILD_URL=env('DEV_APP_BUILD_URL')
 
 TIME_ZONE='Australia/Perth'
 
+LEDGER_TEMPLATE = "bootstrap5"
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
