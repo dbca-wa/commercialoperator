@@ -21,7 +21,7 @@ from reportlab.lib import colors
 
 from django.conf import settings
 
-from ledger.checkout.utils import calculate_excl_gst
+from ledger_api_client.utils import calculate_excl_gst
 from commercialoperator.components.main.utils import to_local_tz
 
 DPAW_HEADER_LOGO = os.path.join(

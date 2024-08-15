@@ -27,16 +27,16 @@ from commercialoperator.components.bookings.email import (
     send_monthly_invoice_tclass_email_notification,
 )
 
-# from ledger.checkout.utils import create_basket_session, create_checkout_session, calculate_excl_gst, createCustomBasket
 from ledger.checkout.utils import (
     create_basket_session,
     use_existing_basket_from_invoice,
     create_checkout_session,
-    calculate_excl_gst,
     get_cookie_basket,
     createCustomBasket,
 )
 from ledger.payments.utils import oracle_parser
+from ledger_api_client.utils import calculate_excl_gst
+
 import json
 
 from decimal import Decimal

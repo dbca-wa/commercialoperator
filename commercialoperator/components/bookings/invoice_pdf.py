@@ -273,7 +273,7 @@ class Remittance(Flowable):
         canvas.drawString(
             PAGE_WIDTH / 4, current_y, self.invoice.created.strftime(DATE_FORMAT)
         )
-        # canvas.drawString((PAGE_WIDTH/4) * 2, current_y, currency(self.invoice.amount - calculate_excl_gst(self.invoice.amount) if not _is_gst_exempt(self.proposal, self.invoice) else 0.0))
+
         canvas.drawString(
             (PAGE_WIDTH / 4) * 2,
             current_y,

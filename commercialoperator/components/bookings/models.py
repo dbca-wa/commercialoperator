@@ -8,7 +8,7 @@ from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import Park
 from decimal import Decimal as D
-from ledger.checkout.utils import calculate_excl_gst
+from ledger_api_client.utils import calculate_excl_gst
 
 import logging
 
