@@ -1825,7 +1825,7 @@ from commercialoperator.components.proposals.models import (
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.bookings.models import ApplicationFee, Booking
-from ledger.payments.models import Invoice
+
 from commercialoperator.components.proposals import email as proposal_email
 from commercialoperator.components.approvals import email as approval_email
 from commercialoperator.components.compliances import email as compliance_email
@@ -1834,6 +1834,8 @@ from commercialoperator.components.bookings import email as booking_email
 
 def test_proposal_emails(request):
     """Script to test all emails (listed below) from the models"""
+    from ledger_api_client.ledger_models import Invoice
+
     # setup
     if not (settings.PRODUCTION_EMAIL):
         recipients = [request.user.email]

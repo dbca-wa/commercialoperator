@@ -75,7 +75,7 @@ from ledger.payments.utils import update_payments
 from ledger.payments.invoice.utils import CreateInvoiceBasket
 
 
-from ledger.payments.models import Invoice
+from ledger_api_client.ledger_models import Invoice
 from ledger.basket.models import Basket
 
 from ledger.order.models import Order

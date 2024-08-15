@@ -1,4 +1,4 @@
-from ledger.payments.invoice.models import Invoice
+from ledger_api_client.ledger_models import Invoice
 from commercialoperator.components.bookings.models import (
     Booking,
     ParkBooking,
