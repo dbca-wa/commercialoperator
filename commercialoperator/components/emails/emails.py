@@ -9,7 +9,7 @@ from django.template import loader, Template
 from django.utils.html import strip_tags
 from confy import env
 
-from ledger.accounts.models import Document
+from commercialoperator.components.main.models import Document
 
 logger = logging.getLogger("log")
 
