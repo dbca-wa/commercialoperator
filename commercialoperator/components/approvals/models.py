@@ -39,7 +39,7 @@ def update_approval_comms_log_filename(instance, filename):
 
 
 class ApprovalDocument(Document):
-    approval = models.ForeignKey('Approval',related_name='documents')
+    approval = models.ForeignKey('Approval',related_name='documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
 
@@ -53,7 +53,7 @@ class ApprovalDocument(Document):
         app_label = 'commercialoperator'
 
 class NotificationPeriod(RevisionedMixin):
-    approval = models.ForeignKey('Approval', related_name='notifications')
+    approval = models.ForeignKey('Approval', related_name='notifications', on_delete=models.PROTECT)
     notification_date = models.DateField()
     notification_sent = models.BooleanField(default=False)
     #inactive_date = models.DateField(blank=True, null=True)
@@ -87,16 +87,16 @@ class Approval(RevisionedMixin):
     lodgement_number = models.CharField(max_length=9, blank=True, default='')
     status = models.CharField(max_length=40, choices=STATUS_CHOICES,
                                        default=STATUS_CHOICES[0][0])
-    licence_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='licence_document')
-    cover_letter_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='cover_letter_document')
-    replaced_by = models.ForeignKey('self', blank=True, null=True)
+    licence_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='licence_document', on_delete=models.PROTECT)
+    cover_letter_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='cover_letter_document', on_delete=models.PROTECT)
+    replaced_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.PROTECT)
     #current_proposal = models.ForeignKey(Proposal,related_name = '+')
-    current_proposal = models.ForeignKey(Proposal,related_name='approvals', null=True)
+    current_proposal = models.ForeignKey(Proposal,related_name='approvals', null=True, on_delete=models.PROTECT)
 #    activity = models.CharField(max_length=255)
 #    region = models.CharField(max_length=255)
 #    tenure = models.CharField(max_length=255,null=True)
 #    title = models.CharField(max_length=255)
-    renewal_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='renewal_document')
+    renewal_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='renewal_document', on_delete=models.PROTECT)
     renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()
     original_issue_date = models.DateField(auto_now_add=True)
@@ -639,7 +639,7 @@ class PreviewTempApproval(Approval):
 
 
 class ApprovalLogEntry(CommunicationsLogEntry):
-    approval = models.ForeignKey(Approval, related_name='comms_logs')
+    approval = models.ForeignKey(Approval, related_name='comms_logs', on_delete=models.PROTECT)
 
     class Meta:
         app_label = 'commercialoperator'
@@ -651,7 +651,7 @@ class ApprovalLogEntry(CommunicationsLogEntry):
         super(ApprovalLogEntry, self).save(**kwargs)
 
 class ApprovalLogDocument(Document):
-    log_entry = models.ForeignKey('ApprovalLogEntry',related_name='documents', null=True,)
+    log_entry = models.ForeignKey('ApprovalLogEntry',related_name='documents', null=True, on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_approval_comms_log_filename, null=True, max_length=512)
 
     class Meta:
@@ -682,7 +682,7 @@ class ApprovalUserAction(UserAction):
             what=str(action)
         )
 
-    approval= models.ForeignKey(Approval, related_name='action_logs')
+    approval= models.ForeignKey(Approval, related_name='action_logs', on_delete=models.PROTECT)
 
 @receiver(pre_delete, sender=Approval)
 def delete_documents(sender, instance, *args, **kwargs):
@@ -705,11 +705,11 @@ class DistrictApproval(RevisionedMixin):
     lodgement_number = models.CharField(max_length=9, blank=True, default='')
     status = models.CharField(max_length=40, choices=STATUS_CHOICES,
                                        default=STATUS_CHOICES[0][0])
-    licence_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='district_licence_document')
+    licence_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='district_licence_document', on_delete=models.PROTECT)
     #cover_letter_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='cover_letter_document')
-    replaced_by = models.ForeignKey('self', blank=True, null=True)
-    current_district_proposal = models.ForeignKey(DistrictProposal,related_name='district_approvals', null=True)
-    renewal_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='district_renewal_document')
+    replaced_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.PROTECT)
+    current_district_proposal = models.ForeignKey(DistrictProposal,related_name='district_approvals', null=True, on_delete=models.PROTECT)
+    renewal_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='district_renewal_document', on_delete=models.PROTECT)
     renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()
     original_issue_date = models.DateField(auto_now_add=True)

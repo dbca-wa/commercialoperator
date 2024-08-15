@@ -109,13 +109,13 @@ class ProposalType(models.Model):
         unique_together = ('name', 'version')
 
 class TaggedProposalAssessorGroupRegions(TaggedItemBase):
-    content_object = models.ForeignKey("ProposalAssessorGroup")
+    content_object = models.ForeignKey("ProposalAssessorGroup", on_delete=models.PROTECT)
 
     class Meta:
         app_label = 'commercialoperator'
 
 class TaggedProposalAssessorGroupActivities(TaggedItemBase):
-    content_object = models.ForeignKey("ProposalAssessorGroup")
+    content_object = models.ForeignKey("ProposalAssessorGroup", on_delete=models.PROTECT)
 
     class Meta:
         app_label = 'commercialoperator'
@@ -123,7 +123,7 @@ class TaggedProposalAssessorGroupActivities(TaggedItemBase):
 class ProposalAssessorGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
-    region = models.ForeignKey(Region, null=True, blank=True)
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.PROTECT)
     default = models.BooleanField(default=False)
 
     class Meta:
@@ -165,13 +165,13 @@ class ProposalAssessorGroup(models.Model):
         return [i.email for i in self.members.all()]
 
 class TaggedProposalApproverGroupRegions(TaggedItemBase):
-    content_object = models.ForeignKey("ProposalApproverGroup")
+    content_object = models.ForeignKey("ProposalApproverGroup", on_delete=models.PROTECT)
 
     class Meta:
         app_label = 'commercialoperator'
 
 class TaggedProposalApproverGroupActivities(TaggedItemBase):
-    content_object = models.ForeignKey("ProposalApproverGroup")
+    content_object = models.ForeignKey("ProposalApproverGroup", on_delete=models.PROTECT)
 
     class Meta:
         app_label = 'commercialoperator'
@@ -182,7 +182,7 @@ class ProposalApproverGroup(models.Model):
     #regions = TaggableManager(verbose_name="Regions",help_text="A comma-separated list of regions.",through=TaggedProposalApproverGroupRegions,related_name = "+",blank=True)
     #activities = TaggableManager(verbose_name="Activities",help_text="A comma-separated list of activities.",through=TaggedProposalApproverGroupActivities,related_name = "+",blank=True)
     members = models.ManyToManyField(EmailUser)
-    region = models.ForeignKey(Region, null=True, blank=True)
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.PROTECT)
     default = models.BooleanField(default=False)
 
     class Meta:
@@ -243,7 +243,7 @@ class DefaultDocument(Document):
 
 
 class ProposalDocument(Document):
-    proposal = models.ForeignKey('Proposal',related_name='documents')
+    proposal = models.ForeignKey('Proposal',related_name='documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -255,7 +255,7 @@ class ProposalDocument(Document):
         verbose_name = "Application Document"
 
 class OnHoldDocument(Document):
-    proposal = models.ForeignKey('Proposal',related_name='onhold_documents')
+    proposal = models.ForeignKey('Proposal',related_name='onhold_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -267,11 +267,11 @@ class OnHoldDocument(Document):
 
 #Documents on Activities(land)and Activities(Marine) tab for T-Class related to required document questions
 class ProposalRequiredDocument(Document):
-    proposal = models.ForeignKey('Proposal',related_name='required_documents')
+    proposal = models.ForeignKey('Proposal',related_name='required_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_proposal_required_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
-    required_doc = models.ForeignKey('RequiredDocument',related_name='proposals')
+    required_doc = models.ForeignKey('RequiredDocument',related_name='proposals', on_delete=models.PROTECT)
     can_hide= models.BooleanField(default=False) # after initial submit, document cannot be deleted but can be hidden
     hidden=models.BooleanField(default=False) # after initial submit prevent document from being deleted
 
@@ -284,7 +284,7 @@ class ProposalRequiredDocument(Document):
         app_label = 'commercialoperator'
 
 class QAOfficerDocument(Document):
-    proposal = models.ForeignKey('Proposal',related_name='qaofficer_documents')
+    proposal = models.ForeignKey('Proposal',related_name='qaofficer_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -300,7 +300,7 @@ class QAOfficerDocument(Document):
 
 
 class ReferralDocument(Document):
-    referral = models.ForeignKey('Referral',related_name='referral_documents')
+    referral = models.ForeignKey('Referral',related_name='referral_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -314,7 +314,7 @@ class ReferralDocument(Document):
         app_label = 'commercialoperator'
 
 class RequirementDocument(Document):
-    requirement = models.ForeignKey('ProposalRequirement',related_name='requirement_documents')
+    requirement = models.ForeignKey('ProposalRequirement',related_name='requirement_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -352,8 +352,8 @@ class ProposalActivitiesMarine(models.Model):
 
 
 class ParkEntry(models.Model):
-    park = models.ForeignKey('Park', related_name='park_entries')
-    proposal = models.ForeignKey('Proposal', related_name='park_entries')
+    park = models.ForeignKey('Park', related_name='park_entries', on_delete=models.PROTECT)
+    proposal = models.ForeignKey('Proposal', related_name='park_entries', on_delete=models.PROTECT)
     arrival_date = models.DateField()
     number_adults = models.PositiveSmallIntegerField('No. of Adults', null=True, blank=True)
     number_children = models.PositiveSmallIntegerField('No. of Children', null=True, blank=True)
@@ -541,18 +541,18 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         Organisation,
         blank=True,
         null=True,
-        related_name='org_applications')
+        related_name='org_applications', on_delete=models.PROTECT)
     lodgement_number = models.CharField(max_length=9, blank=True, default='')
     lodgement_sequence = models.IntegerField(blank=True, default=0)
     #lodgement_date = models.DateField(blank=True, null=True)
     lodgement_date = models.DateTimeField(blank=True, null=True)
 
-    proxy_applicant = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proxy')
-    submitter = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proposals')
+    proxy_applicant = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proxy', on_delete=models.PROTECT)
+    submitter = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proposals', on_delete=models.PROTECT)
 
     assigned_officer = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proposals_assigned', on_delete=models.SET_NULL)
     assigned_approver = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_proposals_approvals', on_delete=models.SET_NULL)
-    approved_by = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_approved_by')
+    approved_by = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_approved_by', on_delete=models.PROTECT)
     processing_status = models.CharField('Processing Status', max_length=30, choices=PROCESSING_STATUS_CHOICES,
                                          default=PROCESSING_STATUS_CHOICES[1][0])
     prev_processing_status = models.CharField(max_length=30, blank=True, null=True)
@@ -566,10 +566,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     review_status = models.CharField('Review Status', max_length=30, choices=REVIEW_STATUS_CHOICES,
                                      default=REVIEW_STATUS_CHOICES[0][0])
 
-    approval = models.ForeignKey('commercialoperator.Approval',null=True,blank=True)
+    approval = models.ForeignKey('commercialoperator.Approval',null=True,blank=True, on_delete=models.PROTECT)
 
     #previous_application = models.ForeignKey('self', on_delete=models.PROTECT, blank=True, null=True)
-    previous_application = models.ForeignKey('self', blank=True, null=True)
+    previous_application = models.ForeignKey('self', blank=True, null=True, on_delete=models.PROTECT)
     proposed_decline_status = models.BooleanField(default=False)
     #qaofficer_referral = models.BooleanField(default=False)
     #qaofficer_referral = models.OneToOneField('QAOfficerReferral', blank=True, null=True)
@@ -579,12 +579,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     #region = models.CharField(max_length=255,null=True,blank=True)
     tenure = models.CharField(max_length=255,null=True,blank=True)
     #activity = models.ForeignKey(Activity, null=True, blank=True)
-    region = models.ForeignKey(Region, null=True, blank=True)
-    district = models.ForeignKey(District, null=True, blank=True)
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.PROTECT)
+    district = models.ForeignKey(District, null=True, blank=True, on_delete=models.PROTECT)
     #tenure = models.ForeignKey(Tenure, null=True, blank=True)
-    application_type = models.ForeignKey(ApplicationType)
+    application_type = models.ForeignKey(ApplicationType, on_delete=models.PROTECT)
     approval_level = models.CharField('Activity matrix approval level', max_length=255,null=True,blank=True)
-    approval_level_document = models.ForeignKey(ProposalDocument, blank=True, null=True, related_name='approval_level_document')
+    approval_level_document = models.ForeignKey(ProposalDocument, blank=True, null=True, related_name='approval_level_document', on_delete=models.PROTECT)
     approval_comment = models.TextField(blank=True)
     #If the proposal is created as part of migration of approvals
     migrated=models.BooleanField(default=False)
@@ -2800,7 +2800,7 @@ class ApplicationFeeDiscount(RevisionedMixin):
                 (DISCOUNT_TYPE_APPLICATION, 'Discount application'),
                 (DISCOUNT_TYPE_LICENCE, 'Discount licence'),
     )
-    proposal = models.ForeignKey(Proposal, related_name='fee_discounts', null=True)
+    proposal = models.ForeignKey(Proposal, related_name='fee_discounts', null=True, on_delete=models.PROTECT)
     discount_type = models.CharField(max_length=40, choices=DISCOUNT_TYPE_CHOICES)
     discount = models.FloatField(validators=[MinValueValidator(0.0)])
     created = models.DateTimeField(auto_now_add=True)
@@ -2831,7 +2831,7 @@ class ApplicationFeeDiscount(RevisionedMixin):
 
 
 class ProposalLogDocument(Document):
-    log_entry = models.ForeignKey('ProposalLogEntry',related_name='documents')
+    log_entry = models.ForeignKey('ProposalLogEntry',related_name='documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_proposal_comms_log_filename, max_length=512)
 
     class Meta:
@@ -2839,7 +2839,7 @@ class ProposalLogDocument(Document):
 
 
 class ProposalLogEntry(CommunicationsLogEntry):
-    proposal = models.ForeignKey(Proposal, related_name='comms_logs')
+    proposal = models.ForeignKey(Proposal, related_name='comms_logs', on_delete=models.PROTECT)
 
     def __str__(self):
         return '{} - {}'.format(self.reference, self.subject)
@@ -2905,7 +2905,7 @@ class ProposalAccreditation(models.Model):
                                        default=ACCREDITATION_TYPE_CHOICES[0][0])
     accreditation_expiry= models.DateField(blank=True, null=True)
     comments=models.TextField(blank=True)
-    proposal_other_details = models.ForeignKey(ProposalOtherDetails, related_name='accreditations', null=True)
+    proposal_other_details = models.ForeignKey(ProposalOtherDetails, related_name='accreditations', null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return '{} - {}'.format(self.accreditation_type, self.comments)
@@ -2915,8 +2915,8 @@ class ProposalAccreditation(models.Model):
 
 
 class ProposalPark(models.Model):
-    park = models.ForeignKey(Park, blank=True, null=True, related_name='proposals')
-    proposal = models.ForeignKey(Proposal, blank=True, null=True, related_name='parks')
+    park = models.ForeignKey(Park, blank=True, null=True, related_name='proposals', on_delete=models.PROTECT)
+    proposal = models.ForeignKey(Proposal, blank=True, null=True, related_name='parks', on_delete=models.PROTECT)
 
     def __str__(self):
         return self.park.name
@@ -2941,8 +2941,8 @@ class ProposalPark(models.Model):
 
 #To store Park activities related to Proposal T class land parks
 class ProposalParkActivity(models.Model):
-    proposal_park = models.ForeignKey(ProposalPark, blank=True, null=True, related_name='activities')
-    activity = models.ForeignKey(Activity, blank=True, null=True)
+    proposal_park = models.ForeignKey(ProposalPark, blank=True, null=True, related_name='activities', on_delete=models.PROTECT)
+    activity = models.ForeignKey(Activity, blank=True, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.activity.name
@@ -2958,8 +2958,8 @@ class ProposalParkActivity(models.Model):
 
 #To store Park access_types related to Proposal T class land parks
 class ProposalParkAccess(models.Model):
-    proposal_park = models.ForeignKey(ProposalPark, blank=True, null=True, related_name='access_types')
-    access_type = models.ForeignKey(AccessType, blank=True, null=True)
+    proposal_park = models.ForeignKey(ProposalPark, blank=True, null=True, related_name='access_types', on_delete=models.PROTECT)
+    access_type = models.ForeignKey(AccessType, blank=True, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.access_type.name
@@ -2970,9 +2970,9 @@ class ProposalParkAccess(models.Model):
 
 #To store Park zones related to Proposal T class marine parks
 class ProposalParkZone(models.Model):
-    proposal_park = models.ForeignKey(ProposalPark, blank=True, null=True, related_name='zones')
-    zone = models.ForeignKey(Zone, blank=True, null=True, related_name='proposal_zones')
-    access_point = models.CharField(max_length=200, blank=True)
+    proposal_park = models.ForeignKey(ProposalPark, blank=True, null=True, related_name='zones', on_delete=models.PROTECT)
+    zone = models.ForeignKey(Zone, blank=True, null=True, related_name='proposal_zones', on_delete=models.PROTECT)
+    access_point = models.CharField(max_length=200, blank=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.zone.name
@@ -2982,8 +2982,8 @@ class ProposalParkZone(models.Model):
         unique_together = ('zone', 'proposal_park')
 
 class ProposalParkZoneActivity(models.Model):
-    park_zone = models.ForeignKey(ProposalParkZone, blank=True, null=True, related_name='park_activities')
-    activity = models.ForeignKey(Activity, blank=True, null=True)
+    park_zone = models.ForeignKey(ProposalParkZone, blank=True, null=True, related_name='park_activities', on_delete=models.PROTECT)
+    activity = models.ForeignKey(Activity, blank=True, null=True, on_delete=models.PROTECT)
     #section=models.ForeignKey(Section, blank=True, null= True)
 
     def __str__(self):
@@ -2999,8 +2999,8 @@ class ProposalParkZoneActivity(models.Model):
 
 
 class ProposalTrail(models.Model):
-    trail = models.ForeignKey(Trail, blank=True, null=True, related_name='proposals')
-    proposal = models.ForeignKey(Proposal, blank=True, null=True, related_name='trails')
+    trail = models.ForeignKey(Trail, blank=True, null=True, related_name='proposals', on_delete=models.PROTECT)
+    proposal = models.ForeignKey(Proposal, blank=True, null=True, related_name='trails', on_delete=models.PROTECT)
 
     def __str__(self):
         return self.trail.name
@@ -3011,8 +3011,8 @@ class ProposalTrail(models.Model):
 
 
 class ProposalTrailSection(models.Model):
-    proposal_trail = models.ForeignKey(ProposalTrail, blank=True, null=True, related_name='sections')
-    section = models.ForeignKey(Section, blank=True, null=True, related_name='proposal_trails')
+    proposal_trail = models.ForeignKey(ProposalTrail, blank=True, null=True, related_name='sections', on_delete=models.PROTECT)
+    section = models.ForeignKey(Section, blank=True, null=True, related_name='proposal_trails', on_delete=models.PROTECT)
 
     def __str__(self):
         return '{} - {}'.format(self.proposal_trail, self.section.name)
@@ -3023,8 +3023,8 @@ class ProposalTrailSection(models.Model):
 
 
 class ProposalTrailSectionActivity(models.Model):
-    trail_section = models.ForeignKey(ProposalTrailSection, blank=True, null=True, related_name='trail_activities')
-    activity = models.ForeignKey(Activity, blank=True, null=True)
+    trail_section = models.ForeignKey(ProposalTrailSection, blank=True, null=True, related_name='trail_activities', on_delete=models.PROTECT)
+    activity = models.ForeignKey(Activity, blank=True, null=True, on_delete=models.PROTECT)
     #section=models.ForeignKey(Section, blank=True, null= True)
 
     def __str__(self):
@@ -3043,9 +3043,9 @@ class Vehicle(models.Model):
     capacity = models.CharField(max_length=200, blank=True)
     rego = models.CharField(max_length=200, blank=True)
     license = models.CharField(max_length=200, blank=True)
-    access_type= models.ForeignKey(AccessType,null=True, related_name='vehicles')
+    access_type= models.ForeignKey(AccessType,null=True, related_name='vehicles', on_delete=models.PROTECT)
     rego_expiry= models.DateField(blank=True, null=True)
-    proposal = models.ForeignKey(Proposal, related_name='vehicles')
+    proposal = models.ForeignKey(Proposal, related_name='vehicles', on_delete=models.PROTECT)
 
     def __str__(self):
         return '{} - {}'.format(self.rego, self.access_type)
@@ -3065,7 +3065,7 @@ class Vessel(models.Model):
     craft_no = models.CharField(max_length=200, blank=True)
     size = models.CharField(max_length=200, blank=True)
     #rego_expiry= models.DateField(blank=True, null=True)
-    proposal = models.ForeignKey(Proposal, related_name='vessels')
+    proposal = models.ForeignKey(Proposal, related_name='vessels', on_delete=models.PROTECT)
 
     def __str__(self):
         return '{} - {}'.format(self.spv_no, self.nominated_vessel)
@@ -3078,10 +3078,10 @@ class Vessel(models.Model):
 
 
 class ProposalRequest(models.Model):
-    proposal = models.ForeignKey(Proposal, related_name='proposalrequest_set')
+    proposal = models.ForeignKey(Proposal, related_name='proposalrequest_set', on_delete=models.PROTECT)
     subject = models.CharField(max_length=200, blank=True)
     text = models.TextField(blank=True)
-    officer = models.ForeignKey(EmailUser, null=True)
+    officer = models.ForeignKey(EmailUser, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return '{} - {}'.format(self.subject, self.text)
@@ -3130,7 +3130,7 @@ class AmendmentRequest(ProposalRequest):
 
     status = models.CharField('Status', max_length=30, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
     #reason = models.CharField('Reason', max_length=30, choices=REASON_CHOICES, default=REASON_CHOICES[0][0])
-    reason = models.ForeignKey(AmendmentReason, blank=True, null=True)
+    reason = models.ForeignKey(AmendmentReason, blank=True, null=True, on_delete=models.PROTECT)
     #reason = models.ForeignKey(AmendmentReason)
 
     class Meta:
@@ -3167,7 +3167,7 @@ class AmendmentRequest(ProposalRequest):
 class Assessment(ProposalRequest):
     STATUS_CHOICES = (('awaiting_assessment', 'Awaiting Assessment'), ('assessed', 'Assessed'),
                       ('assessment_expired', 'Assessment Period Expired'))
-    assigned_assessor = models.ForeignKey(EmailUser, blank=True, null=True)
+    assigned_assessor = models.ForeignKey(EmailUser, blank=True, null=True, on_delete=models.PROTECT)
     status = models.CharField('Status', max_length=20, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
     date_last_reminded = models.DateField(null=True, blank=True)
     #requirements = models.ManyToManyField('Requirement', through='AssessmentRequirement')
@@ -3180,7 +3180,7 @@ class Assessment(ProposalRequest):
 class ProposalDeclinedDetails(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='declined_details')
     proposal = models.OneToOneField(Proposal)
-    officer = models.ForeignKey(EmailUser, null=False)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
     reason = models.TextField(blank=True)
     cc_email = models.TextField(null=True)
 
@@ -3190,9 +3190,9 @@ class ProposalDeclinedDetails(models.Model):
 class ProposalOnHold(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='onhold')
     proposal = models.OneToOneField(Proposal)
-    officer = models.ForeignKey(EmailUser, null=False)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
     comment = models.TextField(blank=True)
-    documents = models.ForeignKey(ProposalDocument, blank=True, null=True, related_name='onhold_documents')
+    documents = models.ForeignKey(ProposalDocument, blank=True, null=True, related_name='onhold_documents', on_delete=models.PROTECT)
 
     class Meta:
         app_label = 'commercialoperator'
@@ -3204,7 +3204,7 @@ class ProposalStandardRequirement(RevisionedMixin):
     text = models.TextField()
     code = models.CharField(max_length=10, unique=True)
     obsolete = models.BooleanField(default=False)
-    application_type = models.ForeignKey(ApplicationType, null=True, blank=True)
+    application_type = models.ForeignKey(ApplicationType, null=True, blank=True, on_delete=models.PROTECT)
     participant_number_required=models.BooleanField(default=False)
     default=models.BooleanField(default=False)
     #require_due_date = models.BooleanField(default=False)
@@ -3357,7 +3357,7 @@ class ProposalUserAction(UserAction):
             what=str(action)
         )
 
-    proposal = models.ForeignKey(Proposal, related_name='action_logs')
+    proposal = models.ForeignKey(Proposal, related_name='action_logs', on_delete=models.PROTECT)
 
 
 class ReferralRecipientGroup(models.Model):
@@ -3471,17 +3471,17 @@ class Referral(RevisionedMixin):
                                  ('completed', 'Completed'),
                                  )
     lodged_on = models.DateTimeField(auto_now_add=True)
-    proposal = models.ForeignKey(Proposal,related_name='referrals')
-    sent_by = models.ForeignKey(EmailUser,related_name='commercialoperator_assessor_referrals')
-    referral = models.ForeignKey(EmailUser,null=True,blank=True,related_name='commercialoperator_referalls')
-    referral_group = models.ForeignKey(ReferralRecipientGroup,null=True,blank=True,related_name='commercialoperator_referral_groups')
+    proposal = models.ForeignKey(Proposal,related_name='referrals', on_delete=models.PROTECT)
+    sent_by = models.ForeignKey(EmailUser,related_name='commercialoperator_assessor_referrals', on_delete=models.PROTECT)
+    referral = models.ForeignKey(EmailUser,null=True,blank=True,related_name='commercialoperator_referalls', on_delete=models.PROTECT)
+    referral_group = models.ForeignKey(ReferralRecipientGroup,null=True,blank=True,related_name='commercialoperator_referral_groups', on_delete=models.PROTECT)
     linked = models.BooleanField(default=False)
     sent_from = models.SmallIntegerField(choices=SENT_CHOICES,default=SENT_CHOICES[0][0])
     processing_status = models.CharField('Processing Status', max_length=30, choices=PROCESSING_STATUS_CHOICES,
                                          default=PROCESSING_STATUS_CHOICES[0][0])
     text = models.TextField(blank=True) #Assessor text
     referral_text = models.TextField(blank=True)
-    document = models.ForeignKey(ReferralDocument, blank=True, null=True, related_name='referral_document')
+    document = models.ForeignKey(ReferralDocument, blank=True, null=True, related_name='referral_document', on_delete=models.PROTECT)
     assigned_officer = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_referrals_assigned', on_delete=models.SET_NULL)
 
 
@@ -3768,10 +3768,10 @@ class Referral(RevisionedMixin):
 
 class ProposalRequirement(OrderedModel):
     RECURRENCE_PATTERNS = [(1, 'Weekly'), (2, 'Monthly'), (3, 'Yearly')]
-    standard_requirement = models.ForeignKey(ProposalStandardRequirement,null=True,blank=True)
+    standard_requirement = models.ForeignKey(ProposalStandardRequirement,null=True,blank=True, on_delete=models.PROTECT)
     free_requirement = models.TextField(null=True,blank=True)
     standard = models.BooleanField(default=True)
-    proposal = models.ForeignKey(Proposal,related_name='requirements')
+    proposal = models.ForeignKey(Proposal,related_name='requirements', on_delete=models.PROTECT)
     due_date = models.DateField(null=True,blank=True)
     recurrence = models.BooleanField(default=False)
     recurrence_pattern = models.SmallIntegerField(choices=RECURRENCE_PATTERNS,default=1)
@@ -3782,13 +3782,13 @@ class ProposalRequirement(OrderedModel):
     require_due_date = models.BooleanField(default=False)
     #To determine if requirement has been added by referral and the group of referral who added it
     #Null if added by an assessor
-    referral_group = models.ForeignKey(ReferralRecipientGroup,null=True,blank=True,related_name='requirement_referral_groups')
+    referral_group = models.ForeignKey(ReferralRecipientGroup,null=True,blank=True,related_name='requirement_referral_groups', on_delete=models.PROTECT)
     #order = models.IntegerField(default=1)
     #application_type = models.ForeignKey(ApplicationType, null=True, blank=True)
     #fee_invoice_reference = models.CharField(max_length=50, null=True, blank=True, default='')
     #To determing requirements related to district Proposal
-    district_proposal = models.ForeignKey('DistrictProposal',null=True,blank=True,related_name='district_proposal_requirements')
-    district = models.ForeignKey(District, related_name='district_requirements', null=True,blank=True)
+    district_proposal = models.ForeignKey('DistrictProposal',null=True,blank=True,related_name='district_proposal_requirements', on_delete=models.PROTECT)
+    district = models.ForeignKey(District, related_name='district_requirements', null=True,blank=True, on_delete=models.PROTECT)
     notification_only = models.BooleanField(default=False)
 
     class Meta:
@@ -3857,7 +3857,7 @@ class ChecklistQuestion(RevisionedMixin):
                                          default=ANSWER_TYPE_CHOICES[0][0])
 
     #correct_answer= models.BooleanField(default=False)
-    application_type = models.ForeignKey(ApplicationType,blank=True, null=True)
+    application_type = models.ForeignKey(ApplicationType,blank=True, null=True, on_delete=models.PROTECT)
     obsolete = models.BooleanField(default=False)
     order = models.PositiveSmallIntegerField(default=1)
 
@@ -3869,12 +3869,12 @@ class ChecklistQuestion(RevisionedMixin):
 
 
 class ProposalAssessment(RevisionedMixin):
-    proposal=models.ForeignKey(Proposal, related_name='assessment')
+    proposal=models.ForeignKey(Proposal, related_name='assessment', on_delete=models.PROTECT)
     completed = models.BooleanField(default=False)
-    submitter = models.ForeignKey(EmailUser, blank=True, null=True, related_name='proposal_assessment')
+    submitter = models.ForeignKey(EmailUser, blank=True, null=True, related_name='proposal_assessment', on_delete=models.PROTECT)
     referral_assessment=models.BooleanField(default=False)
-    referral_group = models.ForeignKey(ReferralRecipientGroup,null=True,blank=True,related_name='referral_assessment')
-    referral=models.ForeignKey(Referral, related_name='assessment',blank=True, null=True )
+    referral_group = models.ForeignKey(ReferralRecipientGroup,null=True,blank=True,related_name='referral_assessment', on_delete=models.PROTECT)
+    referral=models.ForeignKey(Referral, related_name='assessment',blank=True, null=True, on_delete=models.PROTECT)
     # def __str__(self):
     #     return self.proposal
 
@@ -3895,9 +3895,9 @@ class ProposalAssessment(RevisionedMixin):
 
 
 class ProposalAssessmentAnswer(RevisionedMixin):
-    question=models.ForeignKey(ChecklistQuestion, related_name='answers')
+    question=models.ForeignKey(ChecklistQuestion, related_name='answers', on_delete=models.PROTECT)
     answer = models.NullBooleanField()
-    assessment=models.ForeignKey(ProposalAssessment, related_name='answers', null=True, blank=True)
+    assessment=models.ForeignKey(ProposalAssessment, related_name='answers', null=True, blank=True, on_delete=models.PROTECT)
     text_answer= models.CharField(max_length=256, blank=True, null=True)
 
     def __str__(self):
@@ -3920,17 +3920,17 @@ class QAOfficerReferral(RevisionedMixin):
                                  ('completed', 'Completed'),
                                  )
     lodged_on = models.DateTimeField(auto_now_add=True)
-    proposal = models.ForeignKey(Proposal,related_name='qaofficer_referrals')
-    sent_by = models.ForeignKey(EmailUser,related_name='assessor_qaofficer_referrals')
-    qaofficer = models.ForeignKey(EmailUser, null=True, blank=True, related_name='qaofficers')
-    qaofficer_group = models.ForeignKey(QAOfficerGroup,null=True,blank=True,related_name='qaofficer_groups')
+    proposal = models.ForeignKey(Proposal,related_name='qaofficer_referrals', on_delete=models.PROTECT)
+    sent_by = models.ForeignKey(EmailUser,related_name='assessor_qaofficer_referrals', on_delete=models.PROTECT)
+    qaofficer = models.ForeignKey(EmailUser, null=True, blank=True, related_name='qaofficers', on_delete=models.PROTECT)
+    qaofficer_group = models.ForeignKey(QAOfficerGroup,null=True,blank=True,related_name='qaofficer_groups', on_delete=models.PROTECT)
     linked = models.BooleanField(default=False)
     sent_from = models.SmallIntegerField(choices=SENT_CHOICES,default=SENT_CHOICES[0][0])
     processing_status = models.CharField('Processing Status', max_length=30, choices=PROCESSING_STATUS_CHOICES,
                                          default=PROCESSING_STATUS_CHOICES[0][0])
     text = models.TextField(blank=True) #Assessor text
     qaofficer_text = models.TextField(blank=True)
-    document = models.ForeignKey(QAOfficerDocument, blank=True, null=True, related_name='qaofficer_referral_document')
+    document = models.ForeignKey(QAOfficerDocument, blank=True, null=True, related_name='qaofficer_referral_document', on_delete=models.PROTECT)
 
 
     class Meta:
@@ -4770,7 +4770,7 @@ class HelpPage(models.Model):
         (HELP_TEXT_INTERNAL, 'Internal'),
     )
 
-    application_type = models.ForeignKey(ApplicationType)
+    application_type = models.ForeignKey(ApplicationType, on_delete=models.PROTECT)
     content = RichTextField()
     description = models.CharField(max_length=256, blank=True, null=True)
     help_type = models.SmallIntegerField('Help Type', choices=HELP_TYPE_CHOICES, default=HELP_TEXT_EXTERNAL)
@@ -4913,8 +4913,8 @@ class ProposalFilmingOtherDetails(models.Model):
 
 class ProposalFilmingParks(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
-    proposal = models.ForeignKey(Proposal, related_name='filming_parks', null=True)
-    park= models.ForeignKey(Park, related_name='filming_proposal')
+    proposal = models.ForeignKey(Proposal, related_name='filming_parks', null=True, on_delete=models.PROTECT)
+    park= models.ForeignKey(Park, related_name='filming_proposal', on_delete=models.PROTECT)
     feature_of_interest=models.CharField('Feture of interest', max_length=100, blank=True, null=True)
     from_date=models.DateField(blank=True, null=True)
     to_date=models.DateField(blank=True, null=True)
@@ -5009,7 +5009,7 @@ class ProposalFilmingParks(models.Model):
 
 
 class FilmingParkDocument(Document):
-    filming_park = models.ForeignKey('ProposalFilmingParks',related_name='filming_park_documents')
+    filming_park = models.ForeignKey('ProposalFilmingParks',related_name='filming_park_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -5026,7 +5026,7 @@ class FilmingParkDocument(Document):
 class DistrictProposalAssessorGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
-    district = models.ForeignKey(District, null=True, blank=True)
+    district = models.ForeignKey(District, null=True, blank=True, on_delete=models.PROTECT)
     default = models.BooleanField(default=False)
 
     class Meta:
@@ -5059,7 +5059,7 @@ class DistrictProposalAssessorGroup(models.Model):
 class DistrictProposalApproverGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
-    district = models.ForeignKey(District, null=True, blank=True)
+    district = models.ForeignKey(District, null=True, blank=True, on_delete=models.PROTECT)
     default = models.BooleanField(default=False)
 
     class Meta:
@@ -5106,10 +5106,10 @@ class DistrictProposal(models.Model):
                                 (PROCESSING_STATUS_DISCARDED, 'Discarded'),
 
                                 )
-    proposal = models.ForeignKey(Proposal, related_name='district_proposals')
-    district = models.ForeignKey(District, related_name='proposals')
+    proposal = models.ForeignKey(Proposal, related_name='district_proposals', on_delete=models.PROTECT)
+    district = models.ForeignKey(District, related_name='proposals', on_delete=models.PROTECT)
     proposal_park=models.ManyToManyField(ProposalFilmingParks)
-    district_approval = models.ForeignKey('commercialoperator.DistrictApproval',null=True,blank=True)
+    district_approval = models.ForeignKey('commercialoperator.DistrictApproval',null=True,blank=True, on_delete=models.PROTECT)
     processing_status = models.CharField('Processing Status', max_length=30, choices=PROCESSING_STATUS_CHOICES,
                                          default=PROCESSING_STATUS_CHOICES[0][0])
     assigned_officer = models.ForeignKey(EmailUser, blank=True, null=True, related_name='commercialoperator_district_proposals_assigned', on_delete=models.SET_NULL)
@@ -5773,7 +5773,7 @@ class DistrictProposal(models.Model):
 class DistrictProposalDeclinedDetails(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='declined_details')
     district_proposal = models.OneToOneField(DistrictProposal)
-    officer = models.ForeignKey(EmailUser, null=False)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
     reason = models.TextField(blank=True)
     cc_email = models.TextField(null=True)
 
@@ -5877,8 +5877,8 @@ class ProposalEventOtherDetails(models.Model):
 
 class ProposalEventsParks(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
-    proposal = models.ForeignKey(Proposal, related_name='events_parks', null=True)
-    park= models.ForeignKey(Park, related_name='events_proposal')
+    proposal = models.ForeignKey(Proposal, related_name='events_parks', null=True, on_delete=models.PROTECT)
+    park= models.ForeignKey(Park, related_name='events_proposal', on_delete=models.PROTECT)
     activities_assessor=models.ManyToManyField(Activity, null=True, blank=True)
     event_activities=models.CharField(max_length=255,null=True,blank=True)
 
@@ -5917,8 +5917,8 @@ class ProposalEventsParks(models.Model):
         return
 
 class AbseilingClimbingActivity(models.Model):
-    proposal = models.ForeignKey(Proposal, related_name='event_abseiling_climbing_activity', null=True)
-    event_activities = models.ForeignKey('ProposalEventActivities',related_name='abseiling_climbing_activity_data')
+    proposal = models.ForeignKey(Proposal, related_name='event_abseiling_climbing_activity', null=True, on_delete=models.PROTECT)
+    event_activities = models.ForeignKey('ProposalEventActivities',related_name='abseiling_climbing_activity_data', on_delete=models.PROTECT)
     leader = models.CharField(max_length=255,null=True,blank=True)
     rego_number = models.CharField(max_length=255,null=True,blank=True)
     expiry_date= models.DateField(blank=True, null=True)
@@ -5928,7 +5928,7 @@ class AbseilingClimbingActivity(models.Model):
 
 
 class EventsParkDocument(Document):
-    events_park = models.ForeignKey('ProposalEventsParks',related_name='events_park_documents')
+    events_park = models.ForeignKey('ProposalEventsParks',related_name='events_park_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -5943,8 +5943,8 @@ class EventsParkDocument(Document):
 
 class ProposalPreEventsParks(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
-    proposal = models.ForeignKey(Proposal, related_name='pre_event_parks', null=True)
-    park= models.ForeignKey(Park, related_name='pre_event_proposal')
+    proposal = models.ForeignKey(Proposal, related_name='pre_event_parks', null=True, on_delete=models.PROTECT)
+    park= models.ForeignKey(Park, related_name='pre_event_proposal', on_delete=models.PROTECT)
     activities=models.CharField(max_length=255,null=True,blank=True)
 
     def __str__(self):
@@ -5977,7 +5977,7 @@ class ProposalPreEventsParks(models.Model):
                 raise
         return
 class PreEventsParkDocument(Document):
-    pre_event_park = models.ForeignKey('ProposalPreEventsParks',related_name='pre_event_park_documents')
+    pre_event_park = models.ForeignKey('ProposalPreEventsParks',related_name='pre_event_park_documents', on_delete=models.PROTECT)
     _file = models.FileField(upload_to=update_pre_event_park_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255,null=True,blank=True)
     can_delete = models.BooleanField(default=True) # after initial submit prevent document from being deleted
@@ -5992,9 +5992,9 @@ class PreEventsParkDocument(Document):
 
 class ProposalEventsTrails(models.Model):
     #proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
-    proposal = models.ForeignKey(Proposal, related_name='events_trails', null=True)
-    trail= models.ForeignKey(Trail, related_name='events_proposal', null=True)
-    section= models.ForeignKey(Section, related_name='events_proposal', null=True)
+    proposal = models.ForeignKey(Proposal, related_name='events_trails', null=True, on_delete=models.PROTECT)
+    trail= models.ForeignKey(Trail, related_name='events_proposal', null=True, on_delete=models.PROTECT)
+    section= models.ForeignKey(Section, related_name='events_proposal', null=True, on_delete=models.PROTECT)
     activities_assessor=models.ManyToManyField(Activity, blank=True, null=True) 
     event_trail_activities=models.CharField(max_length=255,null=True,blank=True)
 

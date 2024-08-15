@@ -211,7 +211,7 @@ class Booking(Payment):
 class ParkBooking(RevisionedMixin):
     created = models.DateTimeField(auto_now_add=True)
     booking = models.ForeignKey(Booking, on_delete=models.PROTECT, blank=True, null=True, related_name='park_bookings')
-    park = models.ForeignKey(Park, related_name='bookings')
+    park = models.ForeignKey(Park, related_name='bookings', on_delete=models.PROTECT)
     arrival = models.DateField()
     no_adults = models.SmallIntegerField(default=0)
     no_children = models.SmallIntegerField(default=0)
@@ -297,7 +297,7 @@ class BookingInvoice(RevisionedMixin):
         (PAYMENT_METHOD_OTHER, 'Other (Cash/Cheque)'),
     )
 
-    booking = models.ForeignKey(Booking, related_name='invoices')
+    booking = models.ForeignKey(Booking, related_name='invoices', on_delete=models.PROTECT)
     invoice_reference = models.CharField(max_length=50, null=True, blank=True, default='')
     payment_method = models.SmallIntegerField(choices=PAYMENT_METHOD_CHOICES, default=0) # duplicating from ledger Invoice model to allow easier filtering on payment dashboard
     deferred_payment_date = models.DateField(blank=True, null=True)
@@ -420,7 +420,7 @@ class ApplicationFee(Payment):
         app_label = 'commercialoperator'
 
 class ApplicationFeeInvoice(RevisionedMixin):
-    application_fee = models.ForeignKey(ApplicationFee, related_name='application_fee_invoices')
+    application_fee = models.ForeignKey(ApplicationFee, related_name='application_fee_invoices', on_delete=models.PROTECT)
     invoice_reference = models.CharField(max_length=50, null=True, blank=True, default='')
 
     def __str__(self):
@@ -479,7 +479,7 @@ class ComplianceFee(Payment):
 
 class ComplianceFeeInvoice(RevisionedMixin):
     """ For Application Type Events """
-    compliance_fee = models.ForeignKey(ComplianceFee, related_name='compliance_fee_invoices')
+    compliance_fee = models.ForeignKey(ComplianceFee, related_name='compliance_fee_invoices', on_delete=models.PROTECT)
     invoice_reference = models.CharField(max_length=50, null=True, blank=True, default='')
 
     def __str__(self):
@@ -529,7 +529,7 @@ class FilmingFee(Payment):
 
 class FilmingFeeInvoice(RevisionedMixin):
     """ For Application Type Filming """
-    filming_fee = models.ForeignKey(FilmingFee, related_name='filming_fee_invoices')
+    filming_fee = models.ForeignKey(FilmingFee, related_name='filming_fee_invoices', on_delete=models.PROTECT)
     invoice_reference = models.CharField(max_length=50, null=True, blank=True, default='')
 
     def __str__(self):
