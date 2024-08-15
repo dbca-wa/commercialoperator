@@ -2,7 +2,9 @@ from django.conf import settings
 from rest_framework import serializers
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger.accounts.models import OrganisationAddress
+from commercialoperator.components.stubs.classes import (
+    ErsatzAddress as OrganisationAddress,
+)  # ledger.accounts.models.OrganisationAddress
 from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
