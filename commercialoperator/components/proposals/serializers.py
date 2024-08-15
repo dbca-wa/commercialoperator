@@ -2,50 +2,64 @@ from django.conf import settings
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.proposals.models import (
-                                    ProposalType,
-                                    Proposal,
-                                    ProposalUserAction,
-                                    ProposalLogEntry,
-                                    Referral,
-                                    ProposalRequirement,
-                                    ProposalStandardRequirement,
-                                    ProposalDeclinedDetails,
-                                    AmendmentRequest,
-                                    AmendmentReason,
-                                    ProposalApplicantDetails,
-                                    ProposalActivitiesLand,
-                                    ProposalActivitiesMarine,
-                                    ProposalPark,
-                                    ProposalParkActivity,
-                                    Vehicle,
-                                    Vessel,
-                                    ProposalTrail,
-                                    QAOfficerReferral,
-                                    ProposalParkAccess,
-                                    ProposalTrailSection,
-                                    ProposalTrailSectionActivity,
-                                    ProposalParkZoneActivity,
-                                    ProposalParkZone,
-                                    ProposalOtherDetails,
-                                    ProposalAccreditation,
-                                    ChecklistQuestion,
-                                    ProposalAssessmentAnswer,
-                                    ProposalAssessment,
-                                    RequirementDocument,
-                                    DistrictProposal,
-                                    DistrictProposalDeclinedDetails,
-                                )
-from commercialoperator.components.organisations.models import (
-                                Organisation
-                            )
-from commercialoperator.components.main.serializers import CommunicationLogEntrySerializer, ParkSerializer, ActivitySerializer, AccessTypeSerializer, TrailSerializer
-from commercialoperator.components.proposals.serializers_filming import ProposalFilmingOtherDetailsSerializer, ProposalFilmingActivitySerializer, ProposalFilmingAccessSerializer, ProposalFilmingEquipmentSerializer
-from commercialoperator.components.proposals.serializers_event import ProposalEventOtherDetailsSerializer, ProposalEventManagementSerializer, ProposalEventVehiclesVesselsSerializer, ProposalEventActivitiesSerializer
-from commercialoperator.components.organisations.serializers import OrganisationSerializer
-from commercialoperator.components.users.serializers import UserAddressSerializer, DocumentSerializer
+    ProposalType,
+    Proposal,
+    ProposalUserAction,
+    ProposalLogEntry,
+    Referral,
+    ProposalRequirement,
+    ProposalStandardRequirement,
+    ProposalDeclinedDetails,
+    AmendmentRequest,
+    ProposalApplicantDetails,
+    ProposalActivitiesLand,
+    ProposalActivitiesMarine,
+    ProposalPark,
+    ProposalParkActivity,
+    Vehicle,
+    Vessel,
+    ProposalTrail,
+    QAOfficerReferral,
+    ProposalParkAccess,
+    ProposalTrailSection,
+    ProposalTrailSectionActivity,
+    ProposalParkZoneActivity,
+    ProposalParkZone,
+    ProposalOtherDetails,
+    ProposalAccreditation,
+    ChecklistQuestion,
+    ProposalAssessmentAnswer,
+    ProposalAssessment,
+    RequirementDocument,
+    DistrictProposal,
+    DistrictProposalDeclinedDetails,
+)
+from commercialoperator.components.organisations.models import Organisation
+from commercialoperator.components.main.serializers import (
+    CommunicationLogEntrySerializer,
+    ParkSerializer,
+    ActivitySerializer,
+    AccessTypeSerializer,
+    TrailSerializer,
+)
+from commercialoperator.components.proposals.serializers_filming import (
+    ProposalFilmingOtherDetailsSerializer,
+    ProposalFilmingActivitySerializer,
+    ProposalFilmingAccessSerializer,
+    ProposalFilmingEquipmentSerializer,
+)
+from commercialoperator.components.proposals.serializers_event import (
+    ProposalEventOtherDetailsSerializer,
+    ProposalEventManagementSerializer,
+    ProposalEventVehiclesVesselsSerializer,
+    ProposalEventActivitiesSerializer,
+)
+from commercialoperator.components.organisations.serializers import (
+    OrganisationSerializer,
+)
+from commercialoperator.components.users.serializers import UserAddressSerializer
 from rest_framework import serializers
-from django.db.models import Q
-from reversion.models import Version
+
 
 class ProposalTypeSerializer(serializers.ModelSerializer):
     activities = serializers.SerializerMethodField()
@@ -100,7 +114,7 @@ class ProposalActivitiesMarineSerializer(serializers.ModelSerializer):
         model = ProposalActivitiesMarine
         fields = ('id','activities_marine')
 
-#class ParkEntrySerializer(serializers.ModelSerializer):
+# class ParkEntrySerializer(serializers.ModelSerializer):
 #    class Meta:
 #        model = ParkEntry
 #        fields = '__all__'
@@ -474,7 +488,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
     def get_allow_full_discount(self,obj):
         return True if obj.application_type.name==ApplicationType.TCLASS and obj.allow_full_discount else False
 
-#Not used anymore
+# Not used anymore
 class DTProposalSerializer(BaseProposalSerializer):
     submitter = EmailUserSerializer()
     applicant = serializers.CharField(source='applicant.organisation.name')
@@ -629,7 +643,7 @@ class ProposalSerializer(BaseProposalSerializer):
     def get_readonly(self,obj):
         return obj.can_user_view
 
-#class ProposalApplicantDetailsSerializer(serializers.ModelSerializer):
+# class ProposalApplicantDetailsSerializer(serializers.ModelSerializer):
 #
 #    class Meta:
 #        model = ProposalApplicantDetails
@@ -688,7 +702,6 @@ class SaveProposalSerializer(BaseProposalSerializer):
                 #'other_details',
                 )
         read_only_fields=('documents','requirements',)
-
 
 
 class ApplicantSerializer(serializers.ModelSerializer):
@@ -1060,7 +1073,6 @@ class DTReferralSerializer(serializers.ModelSerializer):
         return False
 
 
-
 class RequirementDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequirementDocument
@@ -1404,7 +1416,7 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
     def get_fee_invoice_url(self,obj):
         return '/cols/payments/invoice-pdf/{}'.format(obj.fee_invoice_reference) if obj.fee_paid else None
 
-#Event serializer
+# Event serializer
 class ProposalEventSerializer(BaseProposalSerializer):
     assessor_data = serializers.JSONField(required=False)
     application_type = serializers.CharField(source='application_type.name', read_only=True)
