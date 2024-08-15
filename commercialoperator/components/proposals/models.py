@@ -4132,9 +4132,7 @@ class ProposalParkZone(models.Model):
         related_name="proposal_zones",
         on_delete=models.PROTECT,
     )
-    access_point = models.CharField(
-        max_length=200, blank=True, on_delete=models.PROTECT
-    )
+    access_point = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.zone.name
