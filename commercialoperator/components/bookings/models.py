@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 from django.db import models, transaction
 from six import python_2_unicode_compatible

@@ -1,13 +1,8 @@
-from __future__ import unicode_literals
-
 from django.db import models, transaction
 from django.contrib.sites.models import Site
-from django.dispatch import receiver
-from django.db.models.signals import pre_delete
 from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
-from django.contrib.postgres.fields.jsonb import JSONField
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MinValueValidator
 from commercialoperator.components.stubs.classes import (
     Ersatz as ledger_organisation,
 )  # ledger.accounts.models.Organisation
