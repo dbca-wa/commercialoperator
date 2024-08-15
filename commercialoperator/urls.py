@@ -4,7 +4,6 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from rest_framework import routers
 from commercialoperator import views
-from commercialoperator.admin import commercialoperator_admin_site
 from commercialoperator.components.proposals import views as proposal_views
 from commercialoperator.components.organisations import views as organisation_views
 from commercialoperator.components.bookings import views as booking_views
