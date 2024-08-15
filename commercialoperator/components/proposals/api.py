@@ -23,7 +23,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, B
 from rest_framework.pagination import PageNumberPagination
 from collections import OrderedDict
 from django.core.cache import cache
-from ledger.accounts.models import EmailUser, Address
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger.address.models import Country
 from datetime import datetime, timedelta, date
 from commercialoperator.components.proposals.utils import save_proponent_data,save_assessor_data, proposal_submit

@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.utils import timezone
-from ledger.accounts.models import EmailUser,Address
 from ledger.payments.invoice.models import Invoice
 from commercialoperator.components.proposals.serializers import ProposalSerializer, InternalProposalSerializer, ProposalParkSerializer
 from commercialoperator.components.main.serializers import ApplicationTypeSerializer

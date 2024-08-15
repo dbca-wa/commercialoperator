@@ -5,8 +5,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 
 from ledger.accounts import admin as ledger_admin
-#from ledger.accounts.models import EmailUser, Document, Address, Profile
-from ledger.accounts.models import EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from copy import deepcopy
 
 

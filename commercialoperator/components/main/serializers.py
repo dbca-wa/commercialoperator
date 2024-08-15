@@ -3,7 +3,7 @@ from django.db.models import Sum, Max
 from commercialoperator.components.main.models import CommunicationsLogEntry, Region, District, Tenure, ApplicationType, ActivityMatrix, AccessType, Park, Trail, Activity, ActivityCategory, Section, Zone, RequiredDocument, Question, GlobalSettings #, ParkPrice
 from commercialoperator.components.proposals.models import  ProposalParkActivity
 from commercialoperator.components.bookings.models import  ParkBooking
-from ledger.accounts.models import EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import datetime, date
 #from commercialoperator.components.proposals.serializers import ProposalTypeSerializer
 

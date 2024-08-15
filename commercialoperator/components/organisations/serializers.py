@@ -1,5 +1,6 @@
 from django.conf import settings
-from ledger.accounts.models import EmailUser,OrganisationAddress
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger.accounts.models import OrganisationAddress
 from commercialoperator.components.organisations.models import (
                                 Organisation,
                                 OrganisationContact,

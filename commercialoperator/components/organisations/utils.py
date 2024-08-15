@@ -4,7 +4,7 @@ import random
 
 def can_manage_org(organisation,user):
     from commercialoperator.components.organisations.models import Organisation, OrganisationAccessGroup,UserDelegation
-    from ledger.accounts.models import EmailUser
+    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
     try:
         UserDelegation.objects.get(organisation=organisation,user=user)
         return can_admin_org(organisation, user)

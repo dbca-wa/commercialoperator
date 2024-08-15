@@ -23,7 +23,8 @@ from rest_framework.pagination import PageNumberPagination
 from datetime import datetime, timedelta
 from collections import OrderedDict
 from django.core.cache import cache
-from ledger.accounts.models import EmailUser,Address, Profile, EmailIdentity, EmailUserAction
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger.accounts.models import Address, Profile, EmailIdentity, EmailUserAction
 from ledger.address.models import Country
 from datetime import datetime,timedelta, date
 from commercialoperator.components.organisations.models import  (

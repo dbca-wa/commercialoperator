@@ -1,5 +1,5 @@
 from django.contrib import admin
-from ledger.accounts.models import EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals import models
 from commercialoperator.components.bookings.models import ApplicationFeeInvoice
 from commercialoperator.components.proposals import forms

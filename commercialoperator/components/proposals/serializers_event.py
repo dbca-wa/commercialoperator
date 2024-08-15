@@ -1,5 +1,4 @@
 from django.conf import settings
-from ledger.accounts.models import EmailUser,Address
 from commercialoperator.components.proposals.models import (
 #                                    ProposalType,
 #                                    Proposal,

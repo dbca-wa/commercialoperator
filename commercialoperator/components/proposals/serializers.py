@@ -1,5 +1,5 @@
 from django.conf import settings
-from ledger.accounts.models import EmailUser,Address
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.proposals.models import (
                                     ProposalType,

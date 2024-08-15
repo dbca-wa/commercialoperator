@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.conf import settings
-from ledger.accounts.models import EmailUser
 from commercialoperator.components.bookings.utils import create_monthly_invoice
 from commercialoperator.components.bookings.email import send_monthly_invoices_failed_tclass
 import datetime

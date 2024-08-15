@@ -4,7 +4,7 @@ from django.conf import settings
 from commercialoperator.components.approvals.models import Approval, NotificationPeriod
 from commercialoperator.components.approvals.email import send_approval_renewal_email_notification
 from commercialoperator.components.main.models import ApplicationType, LicencePeriod
-from ledger.accounts.models import EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import date, timedelta
 
 import itertools

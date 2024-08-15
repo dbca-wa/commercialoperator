@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from ledger.accounts.models import EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.models import ProposalAssessorGroup,ProposalApproverGroup, HelpPage, DistrictProposalAssessorGroup, DistrictProposalApproverGroup
 from commercialoperator.components.main.models import SystemMaintenance
 from ckeditor.widgets import CKEditorWidget
