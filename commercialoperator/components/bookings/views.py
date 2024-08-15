@@ -53,11 +53,9 @@ from commercialoperator.components.bookings.utils import (
     get_session_filming_invoice,
     set_session_filming_invoice,
     delete_session_filming_invoice,
-    calc_payment_due_date,
     create_bpay_invoice,
     create_other_invoice,
     create_monthly_confirmation,
-    get_basket,
     redirect_to_zero_payment_view,
 )
 from commercialoperator.components.bookings.models import (
