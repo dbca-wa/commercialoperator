@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from django.db import models, transaction
-from six import python_2_unicode_compatible
 from django.utils import timezone
 from django.contrib.postgres.fields.jsonb import JSONField
 from ledger.accounts.models import EmailUser, RevisionedMixin

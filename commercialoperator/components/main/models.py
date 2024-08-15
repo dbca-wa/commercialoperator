@@ -1,14 +1,12 @@
 import os
 
 from django.db import models
-from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from django.contrib.postgres.fields.jsonb import JSONField
 
 
-@python_2_unicode_compatible
 class Region(models.Model):
     name = models.CharField(max_length=200, unique=True)
     forest_region = models.BooleanField(default=False)
@@ -25,7 +23,6 @@ class Region(models.Model):
     #     return District.objects.filter(region=self)
 
 
-@python_2_unicode_compatible
 class District(models.Model):
     region = models.ForeignKey(
         Region, related_name="districts", on_delete=models.PROTECT
@@ -119,7 +116,6 @@ class NotificationMonth(models.Model):
         return str(self.month)
 
 
-@python_2_unicode_compatible
 class AccessType(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
@@ -132,7 +128,6 @@ class AccessType(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class ActivityType(models.Model):
     ACTIVITY_TYPE_CHOICES = (
         ("land", "Land"),
@@ -155,7 +150,6 @@ class ActivityType(models.Model):
         return self.type_name
 
 
-@python_2_unicode_compatible
 class ActivityCategory(models.Model):
     ACTIVITY_TYPE_CHOICES = (
         ("land", "Land"),
@@ -181,7 +175,6 @@ class ActivityCategory(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Activity(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
@@ -198,7 +191,6 @@ class Activity(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Park(models.Model):
     PARK_TYPE_CHOICES = (
         ("land", "Land"),
@@ -262,7 +254,6 @@ class Park(models.Model):
             )
 
 
-@python_2_unicode_compatible
 class Zone(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
@@ -281,7 +272,6 @@ class Zone(models.Model):
         return [i.id for i in self.allowed_activities.all()]
 
 
-@python_2_unicode_compatible
 class Trail(models.Model):
     name = models.CharField(max_length=200, unique=True)
     code = models.CharField(max_length=10, blank=True)
@@ -304,7 +294,6 @@ class Trail(models.Model):
         return [i.id for i in self.allowed_activities.all()]
 
 
-@python_2_unicode_compatible
 class Section(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
@@ -319,7 +308,6 @@ class Section(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class RequiredDocument(models.Model):
     question = models.TextField(blank=False)
     activity = models.ForeignKey(
@@ -334,7 +322,6 @@ class RequiredDocument(models.Model):
         return self.question
 
 
-@python_2_unicode_compatible
 class ApplicationType(models.Model):
     """
     for park in Park.objects.all().order_by('id'):
@@ -414,7 +401,6 @@ class ApplicationType(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class OracleCode(models.Model):
     CODE_TYPE_CHOICES = (
         (ApplicationType.TCLASS, ApplicationType.TCLASS),
@@ -440,7 +426,6 @@ class OracleCode(models.Model):
         return "{} - {}".format(self.code_type, self.code)
 
 
-@python_2_unicode_compatible
 class ActivityMatrix(models.Model):
     name = models.CharField(
         verbose_name="Activity matrix name",
@@ -465,7 +450,6 @@ class ActivityMatrix(models.Model):
         return "{} - v{}".format(self.name, self.version)
 
 
-@python_2_unicode_compatible
 class Tenure(models.Model):
     name = models.CharField(max_length=255, unique=True)
     order = models.PositiveSmallIntegerField(default=0)
@@ -481,7 +465,6 @@ class Tenure(models.Model):
         return "{}: {}".format(self.name, self.application_type)
 
 
-@python_2_unicode_compatible
 class Question(models.Model):
     CORRECT_ANSWER_CHOICES = (
         ("answer_one", "Answer one"),
@@ -517,7 +500,6 @@ class Question(models.Model):
         return getattr(self, self.correct_answer)
 
 
-@python_2_unicode_compatible
 class UserAction(models.Model):
     who = models.ForeignKey(
         EmailUser, null=False, blank=False, on_delete=models.PROTECT
@@ -575,7 +557,6 @@ class CommunicationsLogEntry(models.Model):
         app_label = "commercialoperator"
 
 
-@python_2_unicode_compatible
 class Document(models.Model):
     name = models.CharField(
         max_length=255, blank=True, verbose_name="name", help_text=""
@@ -634,7 +615,6 @@ class GlobalSettings(models.Model):
         verbose_name_plural = "Global Settings"
 
 
-@python_2_unicode_compatible
 class SystemMaintenance(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()

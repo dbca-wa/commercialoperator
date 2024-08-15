@@ -6,7 +6,6 @@ from dateutil.relativedelta import relativedelta
 from django.db import models,transaction
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
-from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError, MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.postgres.fields.jsonb import JSONField
@@ -351,7 +350,7 @@ class ProposalActivitiesMarine(models.Model):
         verbose_name_plural = "Application Activities (Marine)"
 
 
-@python_2_unicode_compatible
+
 class ParkEntry(models.Model):
     park = models.ForeignKey('Park', related_name='park_entries')
     proposal = models.ForeignKey('Proposal', related_name='park_entries')
@@ -3039,7 +3038,7 @@ class ProposalTrailSectionActivity(models.Model):
     def activity_name(self):
         return self.activity.name
 
-@python_2_unicode_compatible
+
 class Vehicle(models.Model):
     capacity = models.CharField(max_length=200, blank=True)
     rego = models.CharField(max_length=200, blank=True)
@@ -3058,7 +3057,7 @@ class Vehicle(models.Model):
         return self.rego
 
 
-@python_2_unicode_compatible
+
 class Vessel(models.Model):
     nominated_vessel = models.CharField(max_length=200, blank=True)
     spv_no = models.CharField(max_length=200, blank=True)
@@ -3077,7 +3076,7 @@ class Vessel(models.Model):
     def __str__(self):
         return self.nominated_vessel
 
-@python_2_unicode_compatible
+
 class ProposalRequest(models.Model):
     proposal = models.ForeignKey(Proposal, related_name='proposalrequest_set')
     subject = models.CharField(max_length=200, blank=True)
@@ -3199,7 +3198,7 @@ class ProposalOnHold(models.Model):
         app_label = 'commercialoperator'
 
 
-@python_2_unicode_compatible
+
 #class ProposalStandardRequirement(models.Model):
 class ProposalStandardRequirement(RevisionedMixin):
     text = models.TextField()
@@ -3840,7 +3839,7 @@ class ProposalRequirement(OrderedModel):
 
 
 
-@python_2_unicode_compatible
+
 #class ProposalStandardRequirement(models.Model):
 class ChecklistQuestion(RevisionedMixin):
     TYPE_CHOICES = (

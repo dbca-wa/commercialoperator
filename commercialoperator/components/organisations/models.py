@@ -1,6 +1,5 @@
 from django.db import models, transaction
 from django.contrib.sites.models import Site
-from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from commercialoperator.components.stubs.classes import (
@@ -33,7 +32,6 @@ from commercialoperator.components.organisations.emails import (
 )
 
 
-@python_2_unicode_compatible
 class Organisation(models.Model):
     organisation = models.ForeignKey(ledger_organisation)
     # TODO: business logic related to delegate changes.
@@ -674,7 +672,6 @@ class Organisation(models.Model):
         ]
 
 
-@python_2_unicode_compatible
 class OrganisationContact(models.Model):
     USER_STATUS_CHOICES = (
         ("draft", "Draft"),

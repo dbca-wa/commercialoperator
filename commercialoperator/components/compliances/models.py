@@ -4,7 +4,6 @@ import datetime
 from django.db import models,transaction
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
-from six import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields.jsonb import JSONField
 from django.utils import timezone
