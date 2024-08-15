@@ -27,13 +27,12 @@ from commercialoperator.components.bookings.email import (
     send_monthly_invoice_tclass_email_notification,
 )
 
-from ledger.checkout.utils import (
+from ledger_api_client.utils import (
     create_basket_session,
     use_existing_basket_from_invoice,
     create_checkout_session,
-    get_cookie_basket,
-    createCustomBasket,
 )
+from commercialoperator.components.stubs.utils import createCustomBasket
 from ledger.payments.utils import oracle_parser
 from ledger_api_client.utils import calculate_excl_gst
 
@@ -1020,8 +1019,8 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
 #    return lines
 
 
-def get_basket(request):
-    return get_cookie_basket(settings.OSCAR_BASKET_COOKIE_OPEN, request)
+# def get_basket(request):
+#     return get_cookie_basket(settings.OSCAR_BASKET_COOKIE_OPEN, request)
 
 
 def checkout(
