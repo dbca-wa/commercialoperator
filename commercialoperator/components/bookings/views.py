@@ -82,7 +82,7 @@ from ledger.basket.models import Basket
 
 from ledger.order.models import Order
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
-from ledger.payments.helpers import is_payment_admin
+from ledger_api_client.helpers import is_payment_admin
 
 import logging
 

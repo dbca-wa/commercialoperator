@@ -2,7 +2,7 @@ from django.template import Library
 from django.conf import settings
 from commercialoperator import helpers as commercialoperator_helpers
 from commercialoperator.components.main.models import SystemMaintenance
-from ledger.payments.helpers import is_payment_admin
+from ledger_api_client.helpers import is_payment_admin
 from datetime import timedelta
 from django.utils import timezone
 import pytz

@@ -25,7 +25,7 @@ from commercialoperator.helpers import is_commercialoperator_admin
 from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers
 from ledger.accounts.utils import in_dbca_domain
-from ledger.payments.helpers import is_payment_admin
+from ledger_api_client.helpers import is_payment_admin
 from django.utils import timezone
 from datetime import timedelta
 
