@@ -1,16 +1,14 @@
 from django.conf import settings
 from django.db.models import Q
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger.accounts.models import (
-    Address,
-    EmailUserAction,
-    EmailUserLogEntry,
-    CommunicationsLogEntry,
-)
+from commercialoperator.components.stubs.classes import (
+    ErsatzAddress as Address,
+)  # ledger.accounts.models.Address
 from commercialoperator.components.organisations.models import (
     Organisation,
 )
 from commercialoperator.components.main.models import (
+    CommunicationsLogEntry,
     UserSystemSettings,
     Document,
     ApplicationType,
@@ -21,17 +19,19 @@ from commercialoperator.components.organisations.utils import (
     is_consultant,
     is_org_access_member,
 )
-from commercialoperator.helpers import is_commercialoperator_admin
+from commercialoperator.components.stubs.models import (
+    EmailUserAction,
+    EmailUserLogEntry,
+)
+from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin
 from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers
-from ledger.accounts.utils import in_dbca_domain
 from ledger_api_client.helpers import is_payment_admin
 from django.utils import timezone
 from datetime import timedelta
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Document
         fields = ("id", "description", "file", "name", "uploaded_date")
