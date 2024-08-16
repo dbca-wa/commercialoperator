@@ -3,7 +3,8 @@ import json
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, serializers
-from rest_framework.decorators import detail_route, renderer_classes
+from rest_framework.decorators import renderer_classes
+from rest_framework.decorators import action as detail_route
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from commercialoperator.components.proposals.models import ProposalUserAction

@@ -1,6 +1,6 @@
 from django.db.models import Q
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action as list_route
 from commercialoperator.components.bookings.models import (
     Booking,
     ParkBooking,

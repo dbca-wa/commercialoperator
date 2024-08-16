@@ -4,7 +4,9 @@ from django.conf import settings
 from django.db import transaction
 from wsgiref.util import FileWrapper
 from rest_framework import viewsets, serializers, status, generics, views
-from rest_framework.decorators import detail_route, list_route, renderer_classes, parser_classes
+from rest_framework.decorators import renderer_classes
+from rest_framework.decorators import action as detail_route
+from rest_framework.decorators import action as list_route
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, BasePermission

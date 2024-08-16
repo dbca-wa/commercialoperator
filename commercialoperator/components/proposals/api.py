@@ -8,7 +8,9 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
 from rest_framework import viewsets, serializers, status, views
-from rest_framework.decorators import detail_route, list_route, renderer_classes
+from rest_framework.decorators import renderer_classes
+from rest_framework.decorators import action as detail_route
+from rest_framework.decorators import action as list_route
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.pagination import PageNumberPagination
