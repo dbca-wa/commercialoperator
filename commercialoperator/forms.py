@@ -4,10 +4,10 @@ from django.contrib.auth import get_user_model
 from django.forms import Form, ModelForm, ValidationError, EmailField
 
 from commercialoperator.components.stubs.classes import (
-    ErsatzAddress as Address,
+    Address,
 )  # ledger.accounts.models.Address
 from commercialoperator.components.stubs.classes import (
-    ErsatzOrganisation as Organisation,
+    LedgerOrganisation as Organisation,
 )  # ledger.accounts.models.Organisation
 
 

@@ -4,7 +4,7 @@ class Ersatz(models.Model):
     class Meta:
         abstract = True
 
-class ErsatzAddress(Ersatz):
+class Address(Ersatz):
 
     line1 = models.Field()
     line2 = models.Field()
@@ -15,7 +15,7 @@ class ErsatzAddress(Ersatz):
     class Meta:
         abstract = True
 
-class ErsatzOrganisation(Ersatz):
+class LedgerOrganisation(Ersatz):
 
     identification = models.Field()
     name = models.Field()

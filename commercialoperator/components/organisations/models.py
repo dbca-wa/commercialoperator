@@ -3,7 +3,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from commercialoperator.components.stubs.classes import (
-    Ersatz as ledger_organisation,
+    LedgerOrganisation as ledger_organisation,
 )  # ledger.accounts.models.Organisation
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.main.models import (

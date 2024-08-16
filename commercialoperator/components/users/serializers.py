@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db.models import Q
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.stubs.classes import (
-    ErsatzAddress as Address,
+    Address,
 )  # ledger.accounts.models.Address
 from commercialoperator.components.organisations.models import (
     Organisation,
