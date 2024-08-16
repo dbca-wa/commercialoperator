@@ -11,6 +11,8 @@ class Ersatz(models.Model):
     (e.g. implementing in ledger api client, refactoring cols logic)
     """
 
+    objects = models.Manager()
+
     class Meta:
         abstract = True
 
@@ -25,7 +27,7 @@ class Address(Ersatz):
     postcode = models.Field()
 
     class Meta:
-        abstract = True
+        managed = False
 
 
 class LedgerOrganisation(Ersatz):
@@ -36,18 +38,18 @@ class LedgerOrganisation(Ersatz):
     abn = models.Field()
 
     class Meta:
-        abstract = True
+        managed = False
 
 
 class CreateInvoiceBasket(Ersatz, LedgerOrder):
     """ledger.payments.invoice.utils.CreateInvoiceBasket"""
 
     class Meta:
-        abstract = True
+        managed = False
 
 
 class Order(Ersatz):
     """ledger.order.models.Order"""
 
     class Meta:
-        abstract = True
+        managed = False
