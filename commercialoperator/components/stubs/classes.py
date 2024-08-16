@@ -1,12 +1,14 @@
 from django.db import models
 
-from ledger_api_client.order import Order as LedgerOrder
+from ledger_api_client.order import (
+    Order as LedgerOrder,
+)  # Exists in ledger_api_client.order, but is empty
 
 
 class Ersatz(models.Model):
     """Base class for substitute classes for models in ledger
-        that require additional handling in commercialoperator
-        (e.g. implementing in ledger api client, refactoring cols logic)
+    that require additional handling in commercialoperator
+    (e.g. implementing in ledger api client, refactoring cols logic)
     """
 
     class Meta:
