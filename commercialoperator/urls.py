@@ -28,7 +28,7 @@ from commercialoperator.components.proposals import api_event as proposal_api_ev
 #from commercialoperator.components.approvals import api_event as approval_api_event
 #from commercialoperator.components.compliances import api_event as compliances_api_event
 
-from ledger.urls import urlpatterns as ledger_patterns
+from ledger_api_client.urls import urlpatterns as ledger_patterns
 from django_media_serv.urls import urlpatterns as media_serv_patterns
 
 # API patterns
