@@ -189,6 +189,7 @@ PAYMENT_SYSTEM_PREFIX = env('PAYMENT_SYSTEM_PREFIX', PAYMENT_SYSTEM_ID.replace('
 os.environ['LEDGER_PRODUCT_CUSTOM_FIELDS'] = "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
 CRON_NOTIFICATION_EMAIL = env('CRON_NOTIFICATION_EMAIL', NOTIFICATION_EMAIL).lower()
 VERSION_NO="1.0.1"
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL=env('DEV_APP_BUILD_URL')
 
 TIME_ZONE='Australia/Perth'
