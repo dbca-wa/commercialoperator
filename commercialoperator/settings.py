@@ -60,7 +60,7 @@ STATIC_URL = '/static/'
 
 INSTALLED_APPS += [
     'reversion_compare',
-    # 'bootstrap3',
+    'bootstrap3',
     'commercialoperator',
     'commercialoperator.components.main',
     'commercialoperator.components.organisations',
@@ -193,8 +193,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL=env('DEV_APP_BUILD_URL')
 
 TIME_ZONE='Australia/Perth'
-
-LEDGER_TEMPLATE = "bootstrap5"
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
