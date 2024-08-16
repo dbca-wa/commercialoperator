@@ -64,7 +64,7 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             queryset = District.objects.all().order_by("id")
             return queryset
         return District.objects.none()
@@ -102,7 +102,7 @@ class RegionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             queryset = Region.objects.all().order_by("id")
             return queryset
         return Region.objects.none()
@@ -115,7 +115,7 @@ class ActivityMatrixViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return [
                 ActivityMatrix.objects.filter(name="Commercial Operator")
                 .order_by("-version")
@@ -136,7 +136,7 @@ class ApplicationTypeViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return ApplicationType.objects.order_by("order").filter(visible=True)
         return ApplicationType.objects.none()
 
@@ -147,7 +147,7 @@ class AccessTypeViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return AccessType.objects.all().order_by("id")
         return AccessType.objects.none()
 
@@ -163,7 +163,7 @@ class GlobalSettingsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             queryset = GlobalSettings.objects.all().order_by("id")
             return queryset
         return GlobalSettings.objects.none()
@@ -176,7 +176,7 @@ class LandActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
             trails_allowed_activities_id = (
                 Trail.objects.all()
@@ -235,7 +235,7 @@ class MarineActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
             Container = namedtuple(
                 "ActivityMarineTab",
@@ -273,7 +273,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             queryset = Park.objects.all().order_by("id")
             return queryset
         return Park.objects.none()
@@ -383,7 +383,7 @@ class TrailViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             queryset = Trail.objects.all().order_by("id")
             return queryset
         return Trail.objects.none()
@@ -408,7 +408,7 @@ class LandActivitiesViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             categories = ActivityCategory.objects.filter(activity_type="land")
             activities = Activity.objects.filter(
                 Q(activity_category__in=categories) & Q(visible=True)
@@ -423,7 +423,7 @@ class MarineActivitiesViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             categories = ActivityCategory.objects.filter(activity_type="marine")
             return categories
         return ActivityCategory.objects.none()
@@ -435,7 +435,7 @@ class RequiredDocumentViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return RequiredDocument.objects.all()
         return RequiredDocument.objects.none()
 
@@ -446,7 +446,7 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return Question.objects.all()
         return Question.objects.none()
 
@@ -626,7 +626,7 @@ class TrailTabViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
             Container = namedtuple(
                 "TrailTab",
@@ -662,7 +662,7 @@ class EventsParkTabViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
             Container = namedtuple(
                 "EventTab", ("parks", "event_activity_types", "parks_external")

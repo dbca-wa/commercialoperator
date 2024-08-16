@@ -457,7 +457,7 @@ class ComplianceFeeSuccessView(TemplateView):
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
 
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 basket = Basket.objects.filter(
                     status="Submitted", owner=request.user
                 ).order_by("-id")[:1]
@@ -831,7 +831,7 @@ class ApplicationFeeSuccessView(TemplateView):
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
 
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 basket = Basket.objects.filter(
                     status="Submitted", owner=request.user
                 ).order_by("-id")[:1]
@@ -995,7 +995,7 @@ class BookingSuccessView(TemplateView):
             # make distinct
             recipients = list(set(recipients))
 
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 basket = Basket.objects.filter(
                     status="Submitted", owner=request.user
                 ).order_by("-id")[:1]

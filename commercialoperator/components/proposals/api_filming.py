@@ -48,7 +48,7 @@ class ProposalFilmingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if is_internal(self.request):  # user.is_authenticated():
+        if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
             # return Proposal.objects.filter(region__isnull=False)
@@ -236,7 +236,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated() and is_internal(self.request):
+        if user.is_authenticated and is_internal(self.request):
             # queryset =  Referral.objects.filter(referral=user)
             queryset = DistrictProposal.objects.all()
             return queryset

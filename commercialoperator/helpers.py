@@ -28,7 +28,7 @@ def belongs_to(user, group_name):
 def is_commercialoperator_admin(request):
     # logger.info('settings.ADMIN_GROUP: {}'.format(settings.ADMIN_GROUP))
     return (
-        request.user.is_authenticated()
+        request.user.is_authenticated
         and in_dbca_domain(request)
         and (belongs_to(request.user, settings.ADMIN_GROUP))
     )
@@ -53,12 +53,11 @@ def is_in_organisation_contacts(request, organisation):
 
 
 def is_departmentUser(request):
-    return request.user.is_authenticated() and in_dbca_domain(request)
+    return request.user.is_authenticated and in_dbca_domain(request)
 
 
 def is_customer(request):
-    # return request.user.is_authenticated() and is_email_auth_backend(request)
-    return request.user.is_authenticated() and not request.user.is_staff
+    return request.user.is_authenticated and not request.user.is_staff
 
 
 def is_internal(request):

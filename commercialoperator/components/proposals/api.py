@@ -432,7 +432,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if is_internal(self.request):  # user.is_authenticated():
+        if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
         elif is_customer(self.request):
@@ -647,7 +647,7 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if is_internal(self.request):  # user.is_authenticated():
+        if is_internal(self.request):
             return Proposal.objects.all().exclude(application_type=self.excluded_type)
             # return Proposal.objects.filter(region__isnull=False)
         elif is_customer(self.request):
@@ -709,7 +709,7 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
         Now excludes parks with free admission
         """
         user = self.request.user
-        if is_internal(self.request):  # user.is_authenticated():
+        if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs  # .exclude(migrated=True)
             # return Proposal.objects.filter(region__isnull=False)
@@ -750,7 +750,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if is_internal(self.request):  # user.is_authenticated():
+        if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
             # return Proposal.objects.filter(region__isnull=False)
@@ -2569,7 +2569,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated() and is_internal(self.request):
+        if user.is_authenticated and is_internal(self.request):
             # queryset =  Referral.objects.filter(referral=user)
             queryset = Referral.objects.all()
             return queryset
@@ -3075,7 +3075,7 @@ class ProposalStandardRequirementViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return ProposalStandardRequirement.objects.all()
         return ProposalStandardRequirement.objects.none()
 
@@ -3453,7 +3453,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated() and is_internal(self.request):
+        if user.is_authenticated and is_internal(self.request):
             # queryset =  Referral.objects.filter(referral=user)
             queryset = DistrictProposal.objects.all()
             return queryset
@@ -3782,7 +3782,7 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if is_internal(self.request):  # user.is_authenticated():
+        if is_internal(self.request):
             user_assessor_groups = user.districtproposalassessorgroup_set.all()
             user_approver_groups = user.districtproposalapprovergroup_set.all()
             qs = [
