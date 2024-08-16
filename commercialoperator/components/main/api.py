@@ -1,30 +1,61 @@
 import traceback
-from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
-from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db import transaction
 from wsgiref.util import FileWrapper
-from rest_framework import viewsets, serializers, status, generics, views
-from rest_framework.decorators import detail_route, list_route, renderer_classes, parser_classes
+from rest_framework import viewsets, serializers, status, views
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, BasePermission
-from rest_framework.pagination import PageNumberPagination
-from django.urls import reverse
-from commercialoperator.components.main.models import Region, District, Tenure, ApplicationType, ActivityMatrix, AccessType, Park, Trail, ActivityCategory, Activity, RequiredDocument, Question, GlobalSettings
-from commercialoperator.components.main.serializers import RegionSerializer, DistrictSerializer, TenureSerializer, ApplicationTypeSerializer, ActivityMatrixSerializer,  AccessTypeSerializer, ParkSerializer, ParkFilterSerializer, TrailSerializer, ActivitySerializer, ActivityCategorySerializer, RequiredDocumentSerializer, QuestionSerializer, GlobalSettingsSerializer, OracleSerializer, BookingSettlementReportSerializer, LandActivityTabSerializer, MarineActivityTabSerializer, EventsParkSerializer, TrailTabSerializer, FilmingParkSerializer, EventsTabSerializer
+from commercialoperator.components.main.models import (
+    Region,
+    District,
+    Tenure,
+    ApplicationType,
+    ActivityMatrix,
+    AccessType,
+    Park,
+    Trail,
+    ActivityCategory,
+    Activity,
+    RequiredDocument,
+    Question,
+    GlobalSettings,
+)
+from commercialoperator.components.main.serializers import (
+    RegionSerializer,
+    DistrictSerializer,
+    TenureSerializer,
+    ApplicationTypeSerializer,
+    ActivityMatrixSerializer,
+    AccessTypeSerializer,
+    ParkSerializer,
+    ParkFilterSerializer,
+    TrailSerializer,
+    ActivitySerializer,
+    ActivityCategorySerializer,
+    RequiredDocumentSerializer,
+    QuestionSerializer,
+    GlobalSettingsSerializer,
+    OracleSerializer,
+    BookingSettlementReportSerializer,
+    LandActivityTabSerializer,
+    MarineActivityTabSerializer,
+    EventsParkSerializer,
+    TrailTabSerializer,
+    FilmingParkSerializer,
+    EventsTabSerializer,
+)
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.proposals.serializers import ProposalSerializer
 from commercialoperator.components.bookings.utils import oracle_integration
 from commercialoperator.components.bookings import reports
-from ledger.checkout.utils import create_basket_session, create_checkout_session, place_order_submission, get_cookie_basket
 from collections import namedtuple
-import json
-from decimal import Decimal
 
 import logging
-logger = logging.getLogger('payment_checkout')
+
+logger = logging.getLogger("payment_checkout")
 
 
 class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
@@ -33,65 +64,80 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            queryset =  District.objects.all().order_by('id')
+        if user.is_authenticated:
+            queryset = District.objects.all().order_by("id")
             return queryset
         return District.objects.none()
 
-    @detail_route(methods=['GET',])
-    def land_parks(self, request, *args, **kwargs):            
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=True,
+    )
+    def land_parks(self, request, *args, **kwargs):
         instance = self.get_object()
         qs = instance.land_parks
-        qs.order_by('id')
-        serializer = ParkSerializer(qs,context={'request':request}, many=True)
+        qs.order_by("id")
+        serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['GET',])
-    def parks(self, request, *args, **kwargs):            
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=True,
+    )
+    def parks(self, request, *args, **kwargs):
         instance = self.get_object()
         qs = instance.parks
-        qs.order_by('id')
-        serializer = ParkSerializer(qs,context={'request':request}, many=True)
+        qs.order_by("id")
+        serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
 
 class RegionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Region.objects.all().order_by('id')
+    queryset = Region.objects.all().order_by("id")
     serializer_class = RegionSerializer
-    
+
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            queryset =  Region.objects.all().order_by('id')
+        if user.is_authenticated:
+            queryset = Region.objects.all().order_by("id")
             return queryset
         return Region.objects.none()
 
+
 class ActivityMatrixViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = ActivityMatrix.objects.all().order_by('id')
+    # queryset = ActivityMatrix.objects.all().order_by('id')
     queryset = ActivityMatrix.objects.none()
     serializer_class = ActivityMatrixSerializer
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            return [ActivityMatrix.objects.filter(name='Commercial Operator').order_by('-version').first()]
+        if user.is_authenticated:
+            return [
+                ActivityMatrix.objects.filter(name="Commercial Operator")
+                .order_by("-version")
+                .first()
+            ]
         return ActivityMatrix.objects.none()
 
 
 class TenureViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Tenure.objects.all().order_by('order')
+    queryset = Tenure.objects.all().order_by("order")
     serializer_class = TenureSerializer
 
 
 class ApplicationTypeViewSet(viewsets.ReadOnlyModelViewSet):
-    #queryset = ApplicationType.objects.all().order_by('order')
+    # queryset = ApplicationType.objects.all().order_by('order')
     queryset = ApplicationType.objects.none()
     serializer_class = ApplicationTypeSerializer
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            return ApplicationType.objects.order_by('order').filter(visible=True)
+        if user.is_authenticated:
+            return ApplicationType.objects.order_by("order").filter(visible=True)
         return ApplicationType.objects.none()
 
 
@@ -101,13 +147,13 @@ class AccessTypeViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            return AccessType.objects.all().order_by('id')
+        if user.is_authenticated:
+            return AccessType.objects.all().order_by("id")
         return AccessType.objects.none()
 
 
 class ParkFilterViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Park.objects.all().order_by('id')
+    queryset = Park.objects.all().order_by("id")
     serializer_class = ParkFilterSerializer
 
 
@@ -117,66 +163,109 @@ class GlobalSettingsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            queryset =  GlobalSettings.objects.all().order_by('id')
+        if user.is_authenticated:
+            queryset = GlobalSettings.objects.all().order_by("id")
             return queryset
         return GlobalSettings.objects.none()
-    
+
 
 class LandActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     A simple ViewSet for listing the various serialized viewsets in a single container
     """
+
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
-            #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-            trails_allowed_activities_id=Trail.objects.all().order_by('allowed_activities').values_list('allowed_activities', flat=True).distinct()
-            trail_activity_types=Activity.objects.filter(id__in=trails_allowed_activities_id)
-            Container = namedtuple('ActivityLandTab', ('access_types', 'land_activity_types', 'trail_activity_types', 'marine_activity_types', 'trails', 'marine_activities', 'land_required_documents', 'regions'))
-            container = Container(
-                access_types=AccessType.objects.all().order_by('id'),
-                land_activity_types=Activity.objects.filter(activity_category__activity_type='land').order_by('id'),
-                trail_activity_types=trail_activity_types,
-                marine_activity_types=Activity.objects.filter(activity_category__activity_type='marine').order_by('id'),
-                trails=Trail.objects.all().order_by('id'),
-                marine_activities=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
-                land_required_documents=RequiredDocument.objects.filter().order_by('id'),
-                regions=Region.objects.all().order_by('id'),
+        if user.is_authenticated:
+            # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
+            trails_allowed_activities_id = (
+                Trail.objects.all()
+                .order_by("allowed_activities")
+                .values_list("allowed_activities", flat=True)
+                .distinct()
             )
-            #print(container)
+            trail_activity_types = Activity.objects.filter(
+                id__in=trails_allowed_activities_id
+            )
+            Container = namedtuple(
+                "ActivityLandTab",
+                (
+                    "access_types",
+                    "land_activity_types",
+                    "trail_activity_types",
+                    "marine_activity_types",
+                    "trails",
+                    "marine_activities",
+                    "land_required_documents",
+                    "regions",
+                ),
+            )
+            container = Container(
+                access_types=AccessType.objects.all().order_by("id"),
+                land_activity_types=Activity.objects.filter(
+                    activity_category__activity_type="land"
+                ).order_by("id"),
+                trail_activity_types=trail_activity_types,
+                marine_activity_types=Activity.objects.filter(
+                    activity_category__activity_type="marine"
+                ).order_by("id"),
+                trails=Trail.objects.all().order_by("id"),
+                marine_activities=ActivityCategory.objects.filter(
+                    activity_type="marine"
+                ).order_by("id"),
+                land_required_documents=RequiredDocument.objects.filter().order_by(
+                    "id"
+                ),
+                regions=Region.objects.all().order_by("id"),
+            )
+            # print(container)
             serializer = LandActivityTabSerializer(container)
             return Response(serializer.data)
         else:
-            Container = namedtuple('ActivityLandTab', ())
+            Container = namedtuple("ActivityLandTab", ())
             container = Container()
             serializer = LandActivityTabSerializer(container)
             return Response(serializer.data)
+
 
 class MarineActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     A simple ViewSet for listing the various serialized viewsets in a single container
     """
+
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
-            #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-            Container = namedtuple('ActivityMarineTab', ('marine_activities', 'marine_parks', 'required_documents', 'marine_parks_external'))
+        if user.is_authenticated:
+            # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
+            Container = namedtuple(
+                "ActivityMarineTab",
+                (
+                    "marine_activities",
+                    "marine_parks",
+                    "required_documents",
+                    "marine_parks_external",
+                ),
+            )
             container = Container(
-                #marine_activity_types=Activity.objects.filter(activity_category__activity_type='marine').order_by('id'),
-                marine_activities=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
-                #marine_parks=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
-                marine_parks=Park.objects.filter(park_type='marine').order_by('id'),
-                required_documents=RequiredDocument.objects.filter().order_by('id'),
-                marine_parks_external=Park.objects.filter(park_type='marine').exclude(visible_to_external=False).order_by('id'),
+                # marine_activity_types=Activity.objects.filter(activity_category__activity_type='marine').order_by('id'),
+                marine_activities=ActivityCategory.objects.filter(
+                    activity_type="marine"
+                ).order_by("id"),
+                # marine_parks=ActivityCategory.objects.filter(activity_type='marine').order_by('id'),
+                marine_parks=Park.objects.filter(park_type="marine").order_by("id"),
+                required_documents=RequiredDocument.objects.filter().order_by("id"),
+                marine_parks_external=Park.objects.filter(park_type="marine")
+                .exclude(visible_to_external=False)
+                .order_by("id"),
             )
             serializer = MarineActivityTabSerializer(container)
             return Response(serializer.data)
         else:
-            Container = namedtuple('ActivityMarineTab', ())
+            Container = namedtuple("ActivityMarineTab", ())
             container = Container()
             serializer = MarineActivityTabSerializer(container)
             return Response(serializer.data)
+
 
 class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Park.objects.none()
@@ -184,60 +273,107 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            queryset = Park.objects.all().order_by('id')
+        if user.is_authenticated:
+            queryset = Park.objects.all().order_by("id")
             return queryset
         return Park.objects.none()
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def filter_list(self, request, *args, **kwargs):
-        serializer = ParkFilterSerializer(self.get_queryset(),context={'request':request}, many=True)
+        serializer = ParkFilterSerializer(
+            self.get_queryset(), context={"request": request}, many=True
+        )
         return Response(serializer.data)
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def events_parks_list(self, request, *args, **kwargs):
-        serializer = EventsParkSerializer(self.get_queryset(),context={'request':request}, many=True)
+        serializer = EventsParkSerializer(
+            self.get_queryset(), context={"request": request}, many=True
+        )
         return Response(serializer.data)
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def filming_parks_list(self, request, *args, **kwargs):
-        serializer = FilmingParkSerializer(self.get_queryset(),context={'request':request}, many=True)
+        serializer = FilmingParkSerializer(
+            self.get_queryset(), context={"request": request}, many=True
+        )
         return Response(serializer.data)
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def filming_parks_external_list(self, request, *args, **kwargs):
-        qs=self.get_queryset()
-        new_qs=qs.exclude(visible_to_external=False)
-        serializer = FilmingParkSerializer(new_qs,context={'request':request}, many=True)
+        qs = self.get_queryset()
+        new_qs = qs.exclude(visible_to_external=False)
+        serializer = FilmingParkSerializer(
+            new_qs, context={"request": request}, many=True
+        )
         return Response(serializer.data)
 
-
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def marine_parks(self, request, *args, **kwargs):
-        qs = self.get_queryset().filter(park_type='marine')
-        serializer = ParkSerializer(qs,context={'request':request}, many=True)
+        qs = self.get_queryset().filter(park_type="marine")
+        serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def land_parks(self, request, *args, **kwargs):
-        qs = self.get_queryset().filter(park_type='land')
-        serializer = ParkSerializer(qs,context={'request':request}, many=True)
+        qs = self.get_queryset().filter(park_type="land")
+        serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=True,
+    )
     def allowed_activities(self, request, *args, **kwargs):
         instance = self.get_object()
         qs = instance.allowed_activities.all()
-        serializer = ActivitySerializer(qs,context={'request':request}, many=True)
-        #serializer = ActivitySerializer(qs)
+        serializer = ActivitySerializer(qs, context={"request": request}, many=True)
+        # serializer = ActivitySerializer(qs)
         return Response(serializer.data)
 
-    @detail_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=True,
+    )
     def allowed_access(self, request, *args, **kwargs):
         instance = self.get_object()
         qs = instance.allowed_access.all()
-        serializer = AccessTypeSerializer(qs,context={'request':request}, many=True)
-        #serializer = ActivitySerializer(qs)
+        serializer = AccessTypeSerializer(qs, context={"request": request}, many=True)
+        # serializer = ActivitySerializer(qs)
         return Response(serializer.data)
 
 
@@ -247,17 +383,22 @@ class TrailViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            queryset = Trail.objects.all().order_by('id')
+        if user.is_authenticated:
+            queryset = Trail.objects.all().order_by("id")
             return queryset
         return Trail.objects.none()
 
-    @detail_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=True,
+    )
     def allowed_activities(self, request, *args, **kwargs):
         instance = self.get_object()
         qs = instance.allowed_activities.all()
-        serializer = ActivitySerializer(qs,context={'request':request}, many=True)
-        #serializer = ActivitySerializer(qs)
+        serializer = ActivitySerializer(qs, context={"request": request}, many=True)
+        # serializer = ActivitySerializer(qs)
         return Response(serializer.data)
 
 
@@ -267,20 +408,23 @@ class LandActivitiesViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            categories=ActivityCategory.objects.filter(activity_type='land')
-            activities=Activity.objects.filter(Q(activity_category__in = categories)& Q(visible=True))
+        if user.is_authenticated:
+            categories = ActivityCategory.objects.filter(activity_type="land")
+            activities = Activity.objects.filter(
+                Q(activity_category__in=categories) & Q(visible=True)
+            )
             return activities
         return Activity.objects.none()
+
 
 class MarineActivitiesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ActivityCategory.objects.none()
     serializer_class = ActivityCategorySerializer
-    
+
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
-            categories=ActivityCategory.objects.filter(activity_type='marine')
+        if user.is_authenticated:
+            categories = ActivityCategory.objects.filter(activity_type="marine")
             return categories
         return ActivityCategory.objects.none()
 
@@ -291,7 +435,7 @@ class RequiredDocumentViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return RequiredDocument.objects.all()
         return RequiredDocument.objects.none()
 
@@ -302,54 +446,71 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             return Question.objects.all()
         return Question.objects.none()
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def tclass_questions_list(self, request, *args, **kwargs):
-        qs=Question.objects.filter(application_type__name=ApplicationType.TCLASS)
-        serializer = QuestionSerializer(qs,context={'request':request}, many=True)
+        qs = Question.objects.filter(application_type__name=ApplicationType.TCLASS)
+        serializer = QuestionSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @list_route(methods=['GET',])
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
     def events_questions_list(self, request, *args, **kwargs):
-        qs=Question.objects.filter(application_type__name=ApplicationType.EVENT)
-        serializer = QuestionSerializer(qs,context={'request':request}, many=True)
+        qs = Question.objects.filter(application_type__name=ApplicationType.EVENT)
+        serializer = QuestionSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    #queryset = Proposal.objects.all()
+    # queryset = Proposal.objects.all()
     queryset = Proposal.objects.none()
-    #serializer_class = ProposalSerializer
+    # serializer_class = ProposalSerializer
     serializer_class = ProposalSerializer
-    lookup_field = 'id'
+    lookup_field = "id"
 
     def create(self, request, *args, **kwargs):
         response = super(PaymentViewSet, self).create(request, *args, **kwargs)
         # here may be placed additional operations for
         # extracting id of the object and using reverse()
-        fallback_url = request.build_absolute_uri('/')
-        return HttpResponseRedirect(redirect_to=fallback_url + '/success/')
+        fallback_url = request.build_absolute_uri("/")
+        return HttpResponseRedirect(redirect_to=fallback_url + "/success/")
 
-    @detail_route(methods=['POST',])
+    @action(
+        methods=[
+            "POST",
+        ],
+        detail=True,
+    )
     @renderer_classes((JSONRenderer,))
     def park_payment(self, request, *args, **kwargs):
 
         try:
             with transaction.atomic():
-                #instance = self.get_object()
-                proposal = Proposal.objects.get(id=kwargs['id'])
+                # instance = self.get_object()
+                proposal = Proposal.objects.get(id=kwargs["id"])
                 lines = self.create_lines(request)
-                response = self.checkout(request, proposal, lines, invoice_text='Some invoice text')
+                response = self.checkout(
+                    request, proposal, lines, invoice_text="Some invoice text"
+                )
 
                 return response
 
-                #data = [dict(key='My Response')]
-                #return Response(data)
+                # data = [dict(key='My Response')]
+                # return Response(data)
 
-                #return Response(serializer.data)
+                # return Response(serializer.data)
 
         except serializers.ValidationError:
             print(traceback.print_exc())
@@ -365,32 +526,38 @@ class PaymentViewSet(viewsets.ModelViewSet):
 class BookingSettlementReportView(views.APIView):
     renderer_classes = (JSONRenderer,)
 
-    def get(self,request,format=None):
+    def get(self, request, format=None):
         try:
             http_status = status.HTTP_200_OK
-            #parse and validate data
+            # parse and validate data
             report = None
             data = {
-                "date":request.GET.get('date'),
+                "date": request.GET.get("date"),
             }
             serializer = BookingSettlementReportSerializer(data=data)
             serializer.is_valid(raise_exception=True)
-            filename = 'Booking Settlement Report-{}'.format(str(serializer.validated_data['date']))
+            filename = "Booking Settlement Report-{}".format(
+                str(serializer.validated_data["date"])
+            )
             # Generate Report
-            report = reports.booking_bpoint_settlement_report(serializer.validated_data['date'])
+            report = reports.booking_bpoint_settlement_report(
+                serializer.validated_data["date"]
+            )
             if report:
-                response = HttpResponse(FileWrapper(report), content_type='text/csv')
-                response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(filename)
+                response = HttpResponse(FileWrapper(report), content_type="text/csv")
+                response["Content-Disposition"] = (
+                    'attachment; filename="{}.csv"'.format(filename)
+                )
                 return response
             else:
-                raise serializers.ValidationError('No report was generated.')
+                raise serializers.ValidationError("No report was generated.")
         except serializers.ValidationError:
             raise
         except Exception as e:
             traceback.print_exc()
 
 
-#class BookingReportView(views.APIView):
+# class BookingReportView(views.APIView):
 #    renderer_classes = (JSONRenderer,)
 #
 #    def get(self,request,format=None):
@@ -419,69 +586,100 @@ class BookingSettlementReportView(views.APIView):
 
 
 class OracleJob(views.APIView):
-    renderer_classes = [JSONRenderer,]
+    renderer_classes = [
+        JSONRenderer,
+    ]
+
     def get(self, request, format=None):
         try:
             data = {
-                "date":request.GET.get("date"),
-                "override": request.GET.get("override")
+                "date": request.GET.get("date"),
+                "override": request.GET.get("override"),
             }
             serializer = OracleSerializer(data=data)
             serializer.is_valid(raise_exception=True)
-            oracle_integration(serializer.validated_data['date'].strftime('%Y-%m-%d'),serializer.validated_data['override'])
-            data = {'successful':True}
+            oracle_integration(
+                serializer.validated_data["date"].strftime("%Y-%m-%d"),
+                serializer.validated_data["override"],
+            )
+            data = {"successful": True}
             return Response(data)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
         except ValidationError as e:
-            raise serializers.ValidationError(repr(e.error_dict)) if hasattr(e, 'error_dict') else serializers.ValidationError(e)
+            raise (
+                serializers.ValidationError(repr(e.error_dict))
+                if hasattr(e, "error_dict")
+                else serializers.ValidationError(e)
+            )
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e[0]))
 
-#To display only trails and activity types on Event activity tab
+
+# To display only trails and activity types on Event activity tab
 class TrailTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     A simple ViewSet for listing the various serialized viewsets in a single container
     """
+
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
-            #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-            Container = namedtuple('TrailTab', ('land_activity_types', 'trails', 'event_activity_types',))
+        if user.is_authenticated:
+            # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
+            Container = namedtuple(
+                "TrailTab",
+                (
+                    "land_activity_types",
+                    "trails",
+                    "event_activity_types",
+                ),
+            )
             container = Container(
-                land_activity_types=Activity.objects.filter(activity_category__activity_type='land').order_by('id'),
-                trails=Trail.objects.all().order_by('id'),
-                event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
+                land_activity_types=Activity.objects.filter(
+                    activity_category__activity_type="land"
+                ).order_by("id"),
+                trails=Trail.objects.all().order_by("id"),
+                event_activity_types=Activity.objects.filter(
+                    activity_category__activity_type="event"
+                ).order_by("id"),
             )
             serializer = TrailTabSerializer(container)
             return Response(serializer.data)
         else:
-            Container = namedtuple('TrailTab', ())
+            Container = namedtuple("TrailTab", ())
             container = Container()
             serializer = TrailTabSerializer(container)
             return Response(serializer.data)
 
-#To display only trails and activity types on Event activity tab
+
+# To display only trails and activity types on Event activity tab
 class EventsParkTabViewSet(viewsets.ReadOnlyModelViewSet):
     """
     A simple ViewSet for listing the various serialized viewsets in a single container
     """
+
     def list(self, request):
         user = self.request.user
-        if user.is_authenticated():
-            #Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
-            Container = namedtuple('EventTab', ('parks', 'event_activity_types','parks_external'))
+        if user.is_authenticated:
+            # Container = namedtuple('ActivityLandTab', ('access_types', 'activity_types', 'regions'))
+            Container = namedtuple(
+                "EventTab", ("parks", "event_activity_types", "parks_external")
+            )
             container = Container(
-                parks=Park.objects.all().order_by('id'),
-                parks_external=Park.objects.all().exclude(visible_to_external=False).order_by('id'),
-                event_activity_types=Activity.objects.filter(activity_category__activity_type='event').order_by('id'),
+                parks=Park.objects.all().order_by("id"),
+                parks_external=Park.objects.all()
+                .exclude(visible_to_external=False)
+                .order_by("id"),
+                event_activity_types=Activity.objects.filter(
+                    activity_category__activity_type="event"
+                ).order_by("id"),
             )
             serializer = EventsTabSerializer(container)
             return Response(serializer.data)
         else:
-            Container = namedtuple('EventTab', ())
+            Container = namedtuple("EventTab", ())
             container = Container()
             serializer = EventsTabSerializer(container)
             return Response(serializer.data)

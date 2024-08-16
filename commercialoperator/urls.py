@@ -4,7 +4,6 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from rest_framework import routers
 from commercialoperator import views
-from commercialoperator.admin import commercialoperator_admin_site
 from commercialoperator.components.proposals import views as proposal_views
 from commercialoperator.components.organisations import views as organisation_views
 from commercialoperator.components.bookings import views as booking_views
@@ -29,7 +28,7 @@ from commercialoperator.components.proposals import api_event as proposal_api_ev
 #from commercialoperator.components.approvals import api_event as approval_api_event
 #from commercialoperator.components.compliances import api_event as compliances_api_event
 
-from ledger.urls import urlpatterns as ledger_patterns
+from ledger_api_client.urls import urlpatterns as ledger_patterns
 from django_media_serv.urls import urlpatterns as media_serv_patterns
 
 # API patterns
@@ -72,8 +71,8 @@ router.register(r'vessels', proposal_api.VesselViewSet,"vessels")
 router.register(r'assessments', proposal_api.ProposalAssessmentViewSet,"assessments")
 router.register(r'parks', main_api.ParkViewSet,"parks")
 #router.register(r'park_treeview', main_api.RegionViewSet2)
-router.register(r'tclass_container_land', main_api.LandActivityTabViewSet, base_name='tclass_container_land')
-router.register(r'tclass_container_marine', main_api.MarineActivityTabViewSet, base_name='tclass_container_marine')
+router.register(r'tclass_container_land', main_api.LandActivityTabViewSet, basename='tclass_container_land')
+router.register(r'tclass_container_marine', main_api.MarineActivityTabViewSet, basename='tclass_container_marine')
 router.register(r'trails', main_api.TrailViewSet,"trails")
 router.register(r'vehicles', proposal_api.VehicleViewSet,"vehicles")
 router.register(r'land_activities', main_api.LandActivitiesViewSet,"land_activities")
@@ -81,15 +80,15 @@ router.register(r'marine_activities', main_api.MarineActivitiesViewSet,"marine_a
 router.register(r'required_documents', main_api.RequiredDocumentViewSet,"required_documents")
 router.register(r'questions', main_api.QuestionViewSet,"questions")
 router.register(r'payment', main_api.PaymentViewSet,"payment")
-router.register(r'event_trail_container', main_api.TrailTabViewSet, base_name='event_trail_container')
-router.register(r'event_park_container', main_api.EventsParkTabViewSet, base_name='event_park_container')
+router.register(r'event_trail_container', main_api.TrailTabViewSet, basename='event_trail_container')
+router.register(r'event_park_container', main_api.EventsParkTabViewSet, basename='event_park_container')
 
 
 # Filming
 #router.register(r'proposal',proposal_api_filming.ProposalViewSet)
 #router.register(r'proposal_filming', proposal_api_filming.ProposalFilmingViewSet)
 router.register(r'proposal_filming_parks', proposal_api_filming.ProposalFilmingParksViewSet,"proposal_filming_parks")
-#router.register(r'filming_activity_tab', proposal_api_filming.FilmingActivityTabView, base_name='filming_activity_tab')
+#router.register(r'filming_activity_tab', proposal_api_filming.FilmingActivityTabView, basename='filming_activity_tab')
 router.register(r'district_proposals',proposal_api.DistrictProposalViewSet,"district_proposals")
 router.register(r'district_proposal_paginated',proposal_api.DistrictProposalPaginatedViewSet,"district_proposal_paginated")
 

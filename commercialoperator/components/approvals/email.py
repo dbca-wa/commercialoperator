@@ -6,7 +6,8 @@ from django.urls import reverse
 from django.conf import settings
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
-from ledger.accounts.models import EmailUser
+
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 logger = logging.getLogger(__name__)
 

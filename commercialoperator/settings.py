@@ -42,7 +42,6 @@ if SHOW_DEBUG_TOOLBAR:
 
     MIDDLEWARE_CLASSES += [
         'debug_toolbar.middleware.DebugToolbarMiddleware',
-        #'whitenoise.middleware.WhiteNoiseMiddleware',
     ]
     INSTALLED_APPS += (
         'debug_toolbar',
@@ -61,7 +60,7 @@ STATIC_URL = '/static/'
 
 INSTALLED_APPS += [
     'reversion_compare',
-    # 'bootstrap3',
+    'bootstrap3',
     'commercialoperator',
     'commercialoperator.components.main',
     'commercialoperator.components.organisations',
@@ -118,6 +117,8 @@ MIDDLEWARE_CLASSES += [
     'commercialoperator.middleware.RevisionOverrideMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+MIDDLEWARE = MIDDLEWARE_CLASSES
+MIDDLEWARE_CLASSES = None
 
 TEMPLATES[0]['DIRS'].append(os.path.join(BASE_DIR, 'commercialoperator', 'templates'))
 TEMPLATES[0]['DIRS'].append(os.path.join(BASE_DIR, 'commercialoperator','components','organisations', 'templates'))
@@ -188,11 +189,10 @@ PAYMENT_SYSTEM_PREFIX = env('PAYMENT_SYSTEM_PREFIX', PAYMENT_SYSTEM_ID.replace('
 os.environ['LEDGER_PRODUCT_CUSTOM_FIELDS'] = "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
 CRON_NOTIFICATION_EMAIL = env('CRON_NOTIFICATION_EMAIL', NOTIFICATION_EMAIL).lower()
 VERSION_NO="1.0.1"
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL=env('DEV_APP_BUILD_URL')
 
 TIME_ZONE='Australia/Perth'
-
-LEDGER_TEMPLATE = "bootstrap5"
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]

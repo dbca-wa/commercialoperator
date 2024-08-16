@@ -53,11 +53,9 @@ from commercialoperator.components.bookings.utils import (
     get_session_filming_invoice,
     set_session_filming_invoice,
     delete_session_filming_invoice,
-    calc_payment_due_date,
     create_bpay_invoice,
     create_other_invoice,
     create_monthly_confirmation,
-    get_basket,
     redirect_to_zero_payment_view,
 )
 from commercialoperator.components.bookings.models import (
@@ -73,16 +71,15 @@ from commercialoperator.components.bookings.models import (
 )
 
 
-from ledger.payments.utils import update_payments
-from ledger.payments.invoice.utils import CreateInvoiceBasket
+from commercialoperator.components.stubs.utils import update_payments
+from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Order
 
 
-from ledger.payments.models import Invoice
-from ledger.basket.models import Basket
+from ledger_api_client.ledger_models import Invoice
+from ledger_api_client.ledger_models import Basket
 
-from ledger.order.models import Order
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
-from ledger.payments.helpers import is_payment_admin
+from ledger_api_client.helpers import is_payment_admin
 
 import logging
 
@@ -460,7 +457,7 @@ class ComplianceFeeSuccessView(TemplateView):
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
 
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 basket = Basket.objects.filter(
                     status="Submitted", owner=request.user
                 ).order_by("-id")[:1]
@@ -834,7 +831,7 @@ class ApplicationFeeSuccessView(TemplateView):
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
 
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 basket = Basket.objects.filter(
                     status="Submitted", owner=request.user
                 ).order_by("-id")[:1]
@@ -998,7 +995,7 @@ class BookingSuccessView(TemplateView):
             # make distinct
             recipients = list(set(recipients))
 
-            if self.request.user.is_authenticated():
+            if self.request.user.is_authenticated:
                 basket = Basket.objects.filter(
                     status="Submitted", owner=request.user
                 ).order_by("-id")[:1]

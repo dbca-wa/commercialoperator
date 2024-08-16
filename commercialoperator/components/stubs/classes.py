@@ -1,2 +1,80 @@
-class Ersatz(object):
-    pass
+from django.db import models
+
+from ledger_api_client.order import (
+    Order as LedgerOrder,
+)  # Exists in ledger_api_client.order, but is empty
+
+
+class Ersatz(models.Model):
+    """Base class for substitute classes for models in ledger
+    that require additional handling in commercialoperator
+    (e.g. implementing in ledger api client, refactoring cols logic)
+    """
+
+    objects = models.Manager()
+
+    class Meta:
+        abstract = True
+
+
+class Address(Ersatz):
+    """ledger.accounts.models.Address"""
+
+    line1 = models.Field()
+    line2 = models.Field()
+    locality = models.Field()
+    state = models.Field()
+    postcode = models.Field()
+
+    class Meta:
+        managed = False
+
+
+class LedgerOrganisation(Ersatz):
+    """ledger.accounts.models.Organisation"""
+
+    identification = models.Field()
+    name = models.Field()
+    abn = models.Field()
+
+    class Meta:
+        managed = False
+
+
+class CreateInvoiceBasket(Ersatz, LedgerOrder):
+    """ledger.payments.invoice.utils.CreateInvoiceBasket"""
+
+    class Meta:
+        managed = False
+
+
+class Order(Ersatz):
+    """ledger.order.models.Order"""
+
+    class Meta:
+        managed = False
+
+class CashTransaction(Ersatz):
+    """ledger.payments.models.CashTransaction"""
+
+    class Meta:
+        managed = False
+
+class BpointTransaction(Ersatz):
+    """ledger.payments.models.BpointTransaction"""
+
+    class Meta:
+        managed = False
+
+class BpayTransaction(Ersatz):
+    """ledger.payments.models.BpayTransaction"""
+
+    class Meta:
+        managed = False
+
+class Invoice(Ersatz):
+    """ledger.payments.models.Invoice"""
+
+    class Meta:
+        managed = False
+

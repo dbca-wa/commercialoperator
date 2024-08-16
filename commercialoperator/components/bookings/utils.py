@@ -27,16 +27,14 @@ from commercialoperator.components.bookings.email import (
     send_monthly_invoice_tclass_email_notification,
 )
 
-# from ledger.checkout.utils import create_basket_session, create_checkout_session, calculate_excl_gst, createCustomBasket
-from ledger.checkout.utils import (
+from ledger_api_client.utils import (
     create_basket_session,
     use_existing_basket_from_invoice,
     create_checkout_session,
-    calculate_excl_gst,
-    get_cookie_basket,
-    createCustomBasket,
 )
-from ledger.payments.utils import oracle_parser
+from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
+from ledger_api_client.utils import calculate_excl_gst
+
 import json
 
 from decimal import Decimal
@@ -1020,8 +1018,8 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
 #    return lines
 
 
-def get_basket(request):
-    return get_cookie_basket(settings.OSCAR_BASKET_COOKIE_OPEN, request)
+# def get_basket(request):
+#     return get_cookie_basket(settings.OSCAR_BASKET_COOKIE_OPEN, request)
 
 
 def checkout(
@@ -1228,9 +1226,9 @@ def test_create_invoice(payment_method="bpay"):
                     http://localhost:8499/ledger/payments/invoice/05572188633
 
     """
-    from ledger.checkout.utils import createCustomBasket
-    from ledger.payments.invoice.utils import CreateInvoiceBasket
-    from ledger.accounts.models import EmailUser
+    from commercialoperator.components.stubs.utils import createCustomBasket
+    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
     from decimal import Decimal
 
     products = [
@@ -1263,9 +1261,9 @@ def create_invoice(booking, payment_method="bpay"):
     This will create and invoice and order from a basket bypassing the session
     and payment bpoint code constraints.
     """
-    from ledger.checkout.utils import createCustomBasket
-    from ledger.payments.invoice.utils import CreateInvoiceBasket
-    from ledger.accounts.models import EmailUser
+    from commercialoperator.components.stubs.utils import createCustomBasket
+    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
     from decimal import Decimal
 
     # products = Booking.objects.last().as_line_items

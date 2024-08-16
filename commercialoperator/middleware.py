@@ -13,37 +13,43 @@ CHECKOUT_PATH = re.compile("^/ledger/checkout/checkout")
 
 
 class FirstTimeNagScreenMiddleware(object):
-    def process_request(self, request):
-        # print ("FirstTimeNagScreenMiddleware: REQUEST SESSION")
-        if "static" in request.path:
-            return
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         if (
-            request.user.is_authenticated()
-            and request.method == "GET"
-            and "api" not in request.path
-            and "admin" not in request.path
-            and "static" not in request.path
+            not request.user.is_authenticated
+            or not request.method == "GET"
+            or "api" in request.path
+            or "admin" in request.path
+            or "static" in request.path
         ):
-            # print('DEBUG: {}: {} == {}, {} == {}, {} == {}'.format(request.user, request.user.first_name, (not request.user.first_name), request.user.last_name, (not request.user.last_name), request.user.dob, (not request.user.dob) ))
-            if (not request.user.first_name) or (
-                not request.user.last_name
-            ):  # or (not request.user.dob):
-                path_ft = reverse("first_time")
-                path_logout = reverse("accounts:logout")
-                if request.path not in (path_ft, path_logout):
-                    return redirect(
-                        reverse("first_time")
-                        + "?next="
-                        + urlquote_plus(request.get_full_path())
-                    )
+            return self.get_response(request)
+
+        if (
+            request.user.first_name
+            and request.user.last_name
+            and request.user.residential_address_id
+            or (request.user.phone_number or request.user.mobile_number)
+        ):
+            return self.get_response(request)
+
+        path_ft = reverse("first_time")
+        path_logout = reverse("accounts:logout")
+        if request.path not in (path_ft, path_logout):
+            return redirect(
+                reverse("first_time")
+                + "?next="
+                + urlquote_plus(request.get_full_path())
+            )
 
 
 class BookingTimerMiddleware(object):
-    def process_request(self, request):
-        # print ("BookingTimerMiddleware: REQUEST SESSION")
-        # print request.session['ps_booking']
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         if "cols_app_invoice" in request.session:
-            # print ("BOOKING SESSION : "+str(request.session['ps_booking']))
             try:
                 application_fee = ApplicationFee.objects.get(
                     pk=request.session["cols_app_invoice"]
@@ -51,11 +57,15 @@ class BookingTimerMiddleware(object):
             except:
                 # no idea what object is in self.request.session['ps_booking'], ditch it
                 del request.session["cols_app_invoice"]
-                return
+
+                # Note: changed to returning response instead of just returning
+                return self.get_response(request)
             if application_fee.payment_type != ApplicationFee.PAYMENT_TYPE_TEMPORARY:
                 # booking in the session is not a temporary type, ditch it
                 del request.session["cols_app_invoice"]
-        return
+
+        # Note: changed to returning response instead of just returning
+        return self.get_response(request)
 
 
 class RevisionOverrideMiddleware(RevisionMiddleware):
