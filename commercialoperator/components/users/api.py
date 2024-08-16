@@ -10,7 +10,8 @@ from rest_framework.decorators import action as list_route
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger.accounts.models import Address, EmailUserAction
+from commercialoperator.components.stubs.models import EmailUserAction
+from commercialoperator.components.stubs.classes import Address
 
 from commercialoperator.components.users.serializers import (
     UserSerializer,
