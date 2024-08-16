@@ -4,11 +4,17 @@ from ledger_api_client.order import Order as LedgerOrder
 
 
 class Ersatz(models.Model):
+    """Base class for substitute classes for models in ledger
+        that require additional handling in commercialoperator
+        (e.g. implementing in ledger api client, refactoring cols logic)
+    """
+
     class Meta:
         abstract = True
 
 
 class Address(Ersatz):
+    """ledger.accounts.models.Address"""
 
     line1 = models.Field()
     line2 = models.Field()
@@ -21,6 +27,7 @@ class Address(Ersatz):
 
 
 class LedgerOrganisation(Ersatz):
+    """ledger.accounts.models.Organisation"""
 
     identification = models.Field()
     name = models.Field()
