@@ -14,7 +14,7 @@ class EmailUserLogEntry(CommunicationsLogEntry):
         return f"Email User ID: {self.email_user} - {self.subject}"
 
     class Meta:
-        abstract = True
+        managed = False
         app_label = "boranga"
 
 
@@ -30,5 +30,5 @@ class EmailUserAction(UserAction):
         )
 
     class Meta:
-        abstract = True
+        managed = False
         app_label = "CommunicationsLogEntry"
