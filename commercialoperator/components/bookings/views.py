@@ -76,7 +76,7 @@ from commercialoperator.components.stubs.classes import CreateInvoiceBasket
 
 
 from ledger_api_client.ledger_models import Invoice
-from ledger.basket.models import Basket
+from ledger_api_client.ledger_models import Basket
 
 from ledger.order.models import Order
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
