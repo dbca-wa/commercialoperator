@@ -1,5 +1,7 @@
 from django.db import models
 
+from ledger_api_client.order import Order as LedgerOrder
+
 
 class Ersatz(models.Model):
     class Meta:
@@ -28,8 +30,15 @@ class LedgerOrganisation(Ersatz):
         abstract = True
 
 
-class CreateInvoiceBasket(Ersatz):
+class CreateInvoiceBasket(Ersatz, LedgerOrder):
     """ledger.payments.invoice.utils.CreateInvoiceBasket"""
+
+    class Meta:
+        abstract = True
+
+
+class Order(Ersatz):
+    """ledger.order.models.Order"""
 
     class Meta:
         abstract = True

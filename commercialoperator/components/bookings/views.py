@@ -72,13 +72,12 @@ from commercialoperator.components.bookings.models import (
 
 
 from commercialoperator.components.stubs.utils import update_payments
-from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Order
 
 
 from ledger_api_client.ledger_models import Invoice
 from ledger_api_client.ledger_models import Basket
 
-from ledger.order.models import Order
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
 
