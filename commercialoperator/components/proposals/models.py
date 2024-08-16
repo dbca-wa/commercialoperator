@@ -3181,8 +3181,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         from commercialoperator.components.bookings.utils import (
             create_filming_fee_lines,
         )
-        from ledger.checkout.utils import createCustomBasket
-        from ledger.payments.invoice.utils import CreateInvoiceBasket
+        from commercialoperator.components.stubs.utils import createCustomBasket
+        from commercialoperator.components.stubs.classes import CreateInvoiceBasket
 
         filming_fee = None
         if (

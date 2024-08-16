@@ -1226,9 +1226,9 @@ def test_create_invoice(payment_method="bpay"):
                     http://localhost:8499/ledger/payments/invoice/05572188633
 
     """
-    from ledger.checkout.utils import createCustomBasket
-    from ledger.payments.invoice.utils import CreateInvoiceBasket
-    from ledger.accounts.models import EmailUser
+    from commercialoperator.components.stubs.utils import createCustomBasket
+    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
     from decimal import Decimal
 
     products = [
@@ -1261,9 +1261,9 @@ def create_invoice(booking, payment_method="bpay"):
     This will create and invoice and order from a basket bypassing the session
     and payment bpoint code constraints.
     """
-    from ledger.checkout.utils import createCustomBasket
-    from ledger.payments.invoice.utils import CreateInvoiceBasket
-    from ledger.accounts.models import EmailUser
+    from commercialoperator.components.stubs.utils import createCustomBasket
+    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
     from decimal import Decimal
 
     # products = Booking.objects.last().as_line_items

@@ -72,7 +72,7 @@ from commercialoperator.components.bookings.models import (
 
 
 from commercialoperator.components.stubs.utils import update_payments
-from ledger.payments.invoice.utils import CreateInvoiceBasket
+from commercialoperator.components.stubs.classes import CreateInvoiceBasket
 
 
 from ledger_api_client.ledger_models import Invoice
