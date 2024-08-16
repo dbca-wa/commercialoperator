@@ -69,7 +69,8 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def compliances_external(self, request, *args, **kwargs):
         """
@@ -152,7 +153,8 @@ class ComplianceViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""

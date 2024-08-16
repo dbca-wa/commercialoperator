@@ -129,7 +129,8 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def approvals_external(self, request, *args, **kwargs):
         """
@@ -209,7 +210,8 @@ class ApprovalPaymentFilterViewSet(generics.ListAPIView):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def _list(self, request, *args, **kwargs):
         data = []
@@ -281,7 +283,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""

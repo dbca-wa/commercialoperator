@@ -42,7 +42,8 @@ class BookingPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def bookings_external(self, request, *args, **kwargs):
         """
@@ -147,7 +148,8 @@ class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def park_bookings(self, request, *args, **kwargs):
         """

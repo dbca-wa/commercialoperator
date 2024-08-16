@@ -391,7 +391,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def get_department_users(self, request, *args, **kwargs):
         try:

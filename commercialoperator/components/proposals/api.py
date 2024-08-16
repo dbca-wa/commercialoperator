@@ -459,7 +459,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def proposals_internal(self, request, *args, **kwargs):
         """
@@ -489,7 +490,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def referrals_internal(self, request, *args, **kwargs):
         """
@@ -519,7 +521,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def qaofficer_info(self, request, *args, **kwargs):
         """
@@ -540,7 +543,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def qaofficer_internal(self, request, *args, **kwargs):
         """
@@ -579,7 +583,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def proposals_external(self, request, *args, **kwargs):
         """
@@ -824,7 +829,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the internal/external dashboard filters"""
@@ -1164,7 +1170,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def list_paginated(self, request, *args, **kwargs):
         """
@@ -1502,7 +1509,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def user_list(self, request, *args, **kwargs):
         qs = self.get_queryset().exclude(processing_status="discarded")
@@ -1513,7 +1521,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def user_list_paginated(self, request, *args, **kwargs):
         """
@@ -1534,7 +1543,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def list_paginated(self, request, *args, **kwargs):
         """
@@ -2570,7 +2580,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""
@@ -2634,7 +2645,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def user_list(self, request, *args, **kwargs):
         qs = self.get_queryset().filter(referral=request.user)
@@ -2645,7 +2657,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def user_group_list(self, request, *args, **kwargs):
         qs = ReferralRecipientGroup.objects.filter().values_list("name", flat=True)
@@ -2654,7 +2667,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def datatable_list(self, request, *args, **kwargs):
         proposal = request.GET.get("proposal", None)
@@ -3647,7 +3661,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""
@@ -3785,7 +3800,8 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def district_proposals_internal(self, request, *args, **kwargs):
         """

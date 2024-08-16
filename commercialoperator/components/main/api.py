@@ -283,7 +283,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
         serializer = ParkFilterSerializer(
@@ -294,7 +295,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def events_parks_list(self, request, *args, **kwargs):
         serializer = EventsParkSerializer(
@@ -305,7 +307,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filming_parks_list(self, request, *args, **kwargs):
         serializer = FilmingParkSerializer(
@@ -316,7 +319,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def filming_parks_external_list(self, request, *args, **kwargs):
         qs = self.get_queryset()
@@ -329,7 +333,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def marine_parks(self, request, *args, **kwargs):
         qs = self.get_queryset().filter(park_type="marine")
@@ -339,7 +344,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def land_parks(self, request, *args, **kwargs):
         qs = self.get_queryset().filter(park_type="land")
@@ -449,7 +455,8 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def tclass_questions_list(self, request, *args, **kwargs):
         qs = Question.objects.filter(application_type__name=ApplicationType.TCLASS)
@@ -459,7 +466,8 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def events_questions_list(self, request, *args, **kwargs):
         qs = Question.objects.filter(application_type__name=ApplicationType.EVENT)

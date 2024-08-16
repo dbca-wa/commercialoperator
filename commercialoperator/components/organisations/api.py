@@ -566,7 +566,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=False,
     )
     def existance(self, request, *args, **kwargs):
         try:
@@ -776,7 +777,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def datatable_list(self, request, *args, **kwargs):
         try:
@@ -815,7 +817,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def get_pending_requests(self, request, *args, **kwargs):
         try:
@@ -837,7 +840,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @list_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=False,
     )
     def get_amendment_requested_requests(self, request, *args, **kwargs):
         try:
