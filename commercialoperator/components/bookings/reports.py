@@ -2,7 +2,7 @@ import csv
 import pytz
 from six import StringIO
 from django.utils import timezone
-from ledger.payments.models import (
+from commercialoperator.components.stubs.classes import (
     CashTransaction,
     BpointTransaction,
     BpayTransaction,

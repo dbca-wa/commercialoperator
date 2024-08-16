@@ -53,3 +53,28 @@ class Order(Ersatz):
 
     class Meta:
         managed = False
+
+class CashTransaction(Ersatz):
+    """ledger.payments.models.CashTransaction"""
+
+    class Meta:
+        managed = False
+
+class BpointTransaction(Ersatz):
+    """ledger.payments.models.BpointTransaction"""
+
+    class Meta:
+        managed = False
+
+class BpayTransaction(Ersatz):
+    """ledger.payments.models.BpayTransaction"""
+
+    class Meta:
+        managed = False
+
+class Invoice(Ersatz):
+    """ledger.payments.models.Invoice"""
+
+    class Meta:
+        managed = False
+
