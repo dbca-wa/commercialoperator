@@ -119,7 +119,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def update_contact(self, request, *args, **kwargs):
         try:
@@ -170,7 +171,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def update_address(self, request, *args, **kwargs):
         try:
@@ -219,7 +221,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def update_system_settings(self, request, *args, **kwargs):
         try:
@@ -249,7 +252,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def upload_id(self, request, *args, **kwargs):
         try:
@@ -280,7 +284,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def pending_org_requests(self, request, *args, **kwargs):
         try:
@@ -304,7 +309,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -325,7 +331,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -346,7 +353,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):

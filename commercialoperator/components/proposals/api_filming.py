@@ -94,7 +94,7 @@ class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalFilmingParks.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -151,7 +151,8 @@ class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def delete_document(self, request, *args, **kwargs):

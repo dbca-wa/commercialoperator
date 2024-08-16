@@ -611,7 +611,8 @@ class VersionableModelViewSetMixin(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def history(self, request, *args, **kwargs):
         _object = self.get_object()
@@ -721,7 +722,8 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def proposal_parks(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -870,7 +872,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def compare_list(self, request, *args, **kwargs):
         """Returns the reversion-compare urls --> list"""
@@ -892,7 +895,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         ]
         return Response(urls)
 
-    @detail_route(methods=["POST"])
+    @detail_route(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_document(self, request, *args, **kwargs):
         try:
@@ -985,7 +988,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["POST"])
+    @detail_route(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_onhold_document(self, request, *args, **kwargs):
         try:
@@ -1074,7 +1077,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["POST"])
+    @detail_route(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_qaofficer_document(self, request, *args, **kwargs):
         try:
@@ -1180,7 +1183,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -1201,7 +1205,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -1222,7 +1227,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
@@ -1259,7 +1265,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def requirements(self, request, *args, **kwargs):
         try:
@@ -1284,7 +1291,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def amendment_request(self, request, *args, **kwargs):
         try:
@@ -1306,7 +1314,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def vehicles(self, request, *args, **kwargs):
         try:
@@ -1328,7 +1337,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def vessels(self, request, *args, **kwargs):
         try:
@@ -1350,7 +1360,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def filming_parks(self, request, *args, **kwargs):
         try:
@@ -1374,7 +1385,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def events_parks(self, request, *args, **kwargs):
         try:
@@ -1396,7 +1408,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def events_trails(self, request, *args, **kwargs):
         try:
@@ -1418,7 +1431,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def pre_event_parks(self, request, *args, **kwargs):
         try:
@@ -1440,7 +1454,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def abseiling_climbing_activities(self, request, *args, **kwargs):
         try:
@@ -1462,7 +1477,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def district_proposals(self, request, *args, **kwargs):
         try:
@@ -1537,7 +1553,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
     # Documents on Activities(land)and Activities(Marine) tab for T-Class related to required document questions
-    @detail_route(methods=["POST"])
+    @detail_route(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_required_document(self, request, *args, **kwargs):
         try:
@@ -1642,7 +1658,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     # @renderer_classes((JSONRenderer,))
     def parks_and_trails(self, request, *args, **kwargs):
@@ -1653,7 +1670,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def internal_proposal(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -1707,7 +1725,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
     #            print(traceback.print_exc())
     #            raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
     def submit(self, request, *args, **kwargs):
         try:
@@ -1757,7 +1775,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
@@ -1780,7 +1799,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -1813,7 +1833,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def unassign(self, request, *args, **kwargs):
         try:
@@ -1836,7 +1857,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def switch_status(self, request, *args, **kwargs):
         try:
@@ -1881,7 +1903,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def reissue_approval(self, request, *args, **kwargs):
         try:
@@ -1921,7 +1944,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def renew_approval(self, request, *args, **kwargs):
         try:
@@ -1937,7 +1961,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def amend_approval(self, request, *args, **kwargs):
         try:
@@ -1953,7 +1978,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def proposed_approval(self, request, *args, **kwargs):
         try:
@@ -1981,7 +2007,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def approval_level_document(self, request, *args, **kwargs):
         try:
@@ -2007,7 +2034,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def final_approval(self, request, *args, **kwargs):
         try:
@@ -2035,7 +2063,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def proposed_decline(self, request, *args, **kwargs):
         try:
@@ -2063,7 +2092,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def final_decline(self, request, *args, **kwargs):
         try:
@@ -2091,7 +2121,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def on_hold(self, request, *args, **kwargs):
@@ -2147,7 +2178,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def with_qaofficer(self, request, *args, **kwargs):
@@ -2208,7 +2240,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def assesor_send_referral(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2238,7 +2270,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
     def draft(self, request, *args, **kwargs):
         try:
@@ -2258,7 +2290,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
         raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def update_training_flag(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2299,7 +2331,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
         raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def send_to_districts(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2318,7 +2350,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def send_to_kensington(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2337,7 +2369,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
     def assessor_save(self, request, *args, **kwargs):
         try:
@@ -2635,7 +2667,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def referral_list(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -2651,7 +2684,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @detail_route(methods=["GET", "POST"])
+    @detail_route(methods=["GET", "POST"], detail=True)
     def complete(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2688,7 +2721,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def remind(self, request, *args, **kwargs):
         try:
@@ -2711,7 +2745,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def recall(self, request, *args, **kwargs):
         try:
@@ -2734,7 +2769,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def resend(self, request, *args, **kwargs):
         try:
@@ -2754,7 +2790,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def send_referral(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2783,7 +2819,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
@@ -2805,7 +2842,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -2837,7 +2875,8 @@ class ReferralViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def unassign(self, request, *args, **kwargs):
         try:
@@ -2878,7 +2917,8 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def move_up(self, request, *args, **kwargs):
         try:
@@ -2900,7 +2940,8 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def move_down(self, request, *args, **kwargs):
         try:
@@ -2922,7 +2963,8 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def discard(self, request, *args, **kwargs):
         try:
@@ -2944,7 +2986,8 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def delete_document(self, request, *args, **kwargs):
@@ -3211,7 +3254,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
             return qs
         return Vehicle.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_vehicle(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3276,7 +3319,7 @@ class VesselViewSet(viewsets.ModelViewSet):
             return qs
         return Vessel.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_vessel(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3353,7 +3396,7 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
             return qs
         return ProposalAssessment.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def update_assessment(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3425,7 +3468,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
@@ -3448,7 +3492,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -3481,7 +3526,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def unassign(self, request, *args, **kwargs):
         try:
@@ -3504,7 +3550,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def switch_status(self, request, *args, **kwargs):
         try:
@@ -3542,7 +3589,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def proposed_decline(self, request, *args, **kwargs):
         try:
@@ -3570,7 +3618,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def final_decline(self, request, *args, **kwargs):
         try:
@@ -3652,7 +3701,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def proposed_approval(self, request, *args, **kwargs):
         try:
@@ -3680,7 +3730,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def final_approval(self, request, *args, **kwargs):
         try:

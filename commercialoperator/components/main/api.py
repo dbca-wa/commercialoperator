@@ -74,7 +74,8 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def land_parks(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -86,7 +87,8 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def parks(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -347,7 +349,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def allowed_activities(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -359,7 +362,8 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def allowed_access(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -383,7 +387,8 @@ class TrailViewSet(viewsets.ReadOnlyModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def allowed_activities(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -479,7 +484,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def park_payment(self, request, *args, **kwargs):

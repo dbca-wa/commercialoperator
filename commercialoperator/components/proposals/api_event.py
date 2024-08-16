@@ -49,7 +49,7 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalEventsParks.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -105,7 +105,8 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def delete_document(self, request, *args, **kwargs):
@@ -145,7 +146,7 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return AbseilingClimbingActivity.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_abseiling_climbing(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -191,7 +192,7 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalPreEventsParks.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -249,7 +250,8 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def delete_document(self, request, *args, **kwargs):
@@ -289,7 +291,7 @@ class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalEventsTrails.objects.none()
 
-    @detail_route(methods=["post"])
+    @detail_route(methods=["post"], detail=True)
     def edit_trail(self, request, *args, **kwargs):
         try:
             instance = self.get_object()

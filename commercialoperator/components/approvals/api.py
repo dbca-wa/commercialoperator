@@ -306,7 +306,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @detail_route(methods=["POST"])
+    @detail_route(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_document(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -372,7 +372,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def add_eclass_licence(self, request, *args, **kwargs):
@@ -492,7 +493,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def approval_extend(self, request, *args, **kwargs):
         try:
@@ -518,7 +520,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def approval_cancellation(self, request, *args, **kwargs):
         try:
@@ -544,7 +547,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def approval_suspension(self, request, *args, **kwargs):
         try:
@@ -570,7 +574,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def approval_reinstate(self, request, *args, **kwargs):
         try:
@@ -594,7 +599,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def approval_surrender(self, request, *args, **kwargs):
         try:
@@ -620,7 +626,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -641,7 +648,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -662,7 +670,8 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):

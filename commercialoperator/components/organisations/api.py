@@ -64,7 +64,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def contacts(self, request, *args, **kwargs):
         try:
@@ -86,7 +87,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def contacts_linked(self, request, *args, **kwargs):
         try:
@@ -106,7 +108,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def contacts_exclude(self, request, *args, **kwargs):
         try:
@@ -127,7 +130,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def validate_pins(self, request, *args, **kwargs):
         try:
@@ -164,7 +168,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def accept_user(self, request, *args, **kwargs):
         try:
@@ -190,7 +195,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def accept_declined_user(self, request, *args, **kwargs):
         try:
@@ -220,7 +226,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def decline_user(self, request, *args, **kwargs):
         try:
@@ -246,7 +253,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def unlink_user(self, request, *args, **kwargs):
         try:
@@ -277,7 +285,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def make_admin_user(self, request, *args, **kwargs):
         try:
@@ -307,7 +316,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def make_user(self, request, *args, **kwargs):
         try:
@@ -337,7 +347,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def make_consultant(self, request, *args, **kwargs):
         try:
@@ -363,7 +374,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def suspend_user(self, request, *args, **kwargs):
         try:
@@ -393,7 +405,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def reinstate_user(self, request, *args, **kwargs):
         try:
@@ -423,7 +436,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def relink_user(self, request, *args, **kwargs):
         try:
@@ -453,7 +467,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -491,7 +506,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -512,7 +528,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
@@ -575,7 +592,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def update_details(self, request, *args, **kwargs):
         try:
@@ -635,7 +653,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def update_address(self, request, *args, **kwargs):
         try:
@@ -669,7 +688,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def upload_id(self, request, *args, **kwargs):
         pass
@@ -839,7 +859,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
@@ -859,7 +880,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def unassign(self, request, *args, **kwargs):
         try:
@@ -880,7 +902,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def accept(self, request, *args, **kwargs):
         try:
@@ -906,7 +929,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def amendment_request(self, request, *args, **kwargs):
         try:
@@ -927,7 +951,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "PUT",
-        ]
+        ],
+        detail=True,
     )
     def reupload_identification_amendment_request(self, request, *args, **kwargs):
         try:
@@ -948,7 +973,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def decline(self, request, *args, **kwargs):
         try:
@@ -970,7 +996,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -1001,7 +1028,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -1022,7 +1050,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "GET",
-        ]
+        ],
+        detail=True,
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -1043,7 +1072,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     @detail_route(
         methods=[
             "POST",
-        ]
+        ],
+        detail=True,
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
