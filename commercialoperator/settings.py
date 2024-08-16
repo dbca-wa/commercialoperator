@@ -41,8 +41,7 @@ if SHOW_DEBUG_TOOLBAR:
         return True
 
     MIDDLEWARE_CLASSES += [
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-        #'whitenoise.middleware.WhiteNoiseMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',        
     ]
     INSTALLED_APPS += (
         'debug_toolbar',
@@ -118,6 +117,8 @@ MIDDLEWARE_CLASSES += [
     'commercialoperator.middleware.RevisionOverrideMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+MIDDLEWARE = MIDDLEWARE_CLASSES
+MIDDLEWARE_CLASSES = None
 
 TEMPLATES[0]['DIRS'].append(os.path.join(BASE_DIR, 'commercialoperator', 'templates'))
 TEMPLATES[0]['DIRS'].append(os.path.join(BASE_DIR, 'commercialoperator','components','organisations', 'templates'))
