@@ -32,8 +32,7 @@ from ledger_api_client.utils import (
     use_existing_basket_from_invoice,
     create_checkout_session,
 )
-from commercialoperator.components.stubs.utils import createCustomBasket
-from ledger.payments.utils import oracle_parser
+from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
 from ledger_api_client.utils import calculate_excl_gst
 
 import json
