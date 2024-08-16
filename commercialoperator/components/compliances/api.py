@@ -3,9 +3,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, serializers, views
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
-from rest_framework.decorators import action as list_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -66,7 +64,7 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
     #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
     #        return response
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -150,7 +148,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -178,7 +176,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -191,7 +189,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    #    @list_route(methods=['GET',])
+    #    @action(methods=['GET',])
     #    def compliances_paginated(self, request, *args, **kwargs):
     #        """
     #        Used by the external dashboard
@@ -208,14 +206,14 @@ class ComplianceViewSet(viewsets.ModelViewSet):
     #        serializer = ComplianceSerializer(result_page, context={'request':request}, many=True)
     #        return paginator.get_paginated_response(serializer.data)
 
-    #    @list_route(methods=['GET',])
+    #    @action(methods=['GET',])
     #    def user_list(self, request, *args, **kwargs):
     #        #Remove filter to include 'Apporved Proposals in external dashboard .exclude(processing_status=Proposal.PROCESSING_STATUS_CHOICES[13][0])
     #        queryset = self.get_queryset().exclude(processing_status='future')
     #        serializer = ComplianceSerializer(queryset, many=True)
     #        return Response(serializer.data)
     #
-    #    @list_route(methods=['GET'])
+    #    @action(methods=['GET'])
     #    def user_list_paginated(self, request, *args, **kwargs):
     #        """
     #        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
@@ -231,7 +229,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
     #        serializer = self.get_serializer(result_page, context={'request':request}, many=True)
     #        return paginator.get_paginated_response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -287,7 +285,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -309,7 +307,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -333,7 +331,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -365,7 +363,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -387,7 +385,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -409,7 +407,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -432,7 +430,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -454,7 +452,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -476,7 +474,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],

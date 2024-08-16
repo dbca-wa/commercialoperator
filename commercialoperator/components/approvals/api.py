@@ -7,9 +7,7 @@ from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from rest_framework import viewsets, serializers, generics
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
-from rest_framework.decorators import action as list_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from datetime import datetime
@@ -126,7 +124,7 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
     #        return response
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -207,7 +205,7 @@ class ApprovalPaymentFilterViewSet(generics.ListAPIView):
         )  # get lastest licence, ignore the amended
         return approval_qs
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -280,7 +278,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -309,7 +307,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @detail_route(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_document(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -372,7 +370,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             ]
         )
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -493,7 +491,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -520,7 +518,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -547,7 +545,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -574,7 +572,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -599,7 +597,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -626,7 +624,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -648,7 +646,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -670,7 +668,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],

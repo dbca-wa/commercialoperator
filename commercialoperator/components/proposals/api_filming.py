@@ -3,8 +3,7 @@ import json
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, serializers, views
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from commercialoperator.components.proposals.models import ProposalUserAction
@@ -94,7 +93,7 @@ class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalFilmingParks.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -148,7 +147,7 @@ class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],

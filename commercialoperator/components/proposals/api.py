@@ -8,9 +8,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
 from rest_framework import viewsets, serializers, status, views
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
-from rest_framework.decorators import action as list_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework.pagination import PageNumberPagination
@@ -456,7 +454,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
     #        return response
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -487,7 +485,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         )
         return self.paginator.get_paginated_response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -518,7 +516,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         )
         return self.paginator.get_paginated_response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -540,7 +538,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         else:
             return Response({"QA_Officer": False})
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -580,7 +578,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         )
         return self.paginator.get_paginated_response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -613,7 +611,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
 
 class VersionableModelViewSetMixin(viewsets.ModelViewSet):
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -667,7 +665,7 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
 #        serializer.partial = True
 #        serializer.save(created_by=self.request.user)
 
-# @detail_route(methods=['post'])
+# @action(methods=['post'])
 # @renderer_classes((JSONRenderer,))
 # def submit(self, request, *args, **kwargs):
 #     try:
@@ -724,7 +722,7 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
         # logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -826,7 +824,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -875,7 +873,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -901,7 +899,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         ]
         return Response(urls)
 
-    @detail_route(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_document(self, request, *args, **kwargs):
         try:
@@ -994,7 +992,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_onhold_document(self, request, *args, **kwargs):
         try:
@@ -1083,7 +1081,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_qaofficer_document(self, request, *args, **kwargs):
         try:
@@ -1167,7 +1165,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
     #        serializer = ListProposalSerializer(self.get_queryset(), context={'request':request}, many=True)
     #        return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1187,7 +1185,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return paginator.get_paginated_response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1209,7 +1207,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1231,7 +1229,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -1269,7 +1267,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1295,7 +1293,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1318,7 +1316,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1341,7 +1339,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1364,7 +1362,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1389,7 +1387,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1412,7 +1410,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1435,7 +1433,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1458,7 +1456,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1481,7 +1479,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1506,7 +1504,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1518,7 +1516,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         serializer = ListProposalSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1540,7 +1538,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return paginator.get_paginated_response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1563,7 +1561,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         return paginator.get_paginated_response(serializer.data)
 
     # Documents on Activities(land)and Activities(Marine) tab for T-Class related to required document questions
-    @detail_route(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_required_document(self, request, *args, **kwargs):
         try:
@@ -1665,7 +1663,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1677,7 +1675,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         serializer = ParksAndTrailSerializer(instance, context={"request": request})
         return Response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1700,13 +1698,13 @@ class ProposalViewSet(viewsets.ModelViewSet):
             )
         return Response(serializer.data)
 
-    #    @detail_route(methods=['GET',])
+    #    @action(methods=['GET',])
     #    def proposal_parks(self, request, *args, **kwargs):
     #        instance = self.get_object()
     #        serializer = ProposalParkSerializer(instance,context={'request':request})
     #        return Response(serializer.data)
 
-    #    @detail_route(methods=['post'])
+    #    @action(methods=['post'])
     #    @renderer_classes((JSONRenderer,))
     #    def _submit(self, request, *args, **kwargs):
     #        try:
@@ -1735,7 +1733,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
     #            print(traceback.print_exc())
     #            raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
     def submit(self, request, *args, **kwargs):
         try:
@@ -1759,7 +1757,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    #    @detail_route(methods=['post'])
+    #    @action(methods=['post'])
     #    @renderer_classes((JSONRenderer,))
     #    def update_files(self, request, *args, **kwargs):
     #        try:
@@ -1782,7 +1780,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
     #            print(traceback.print_exc())
     #            raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1806,7 +1804,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -1840,7 +1838,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1864,7 +1862,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -1910,7 +1908,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -1951,7 +1949,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1968,7 +1966,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             if hasattr(e, "message"):
                 raise serializers.ValidationError(e.message)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -1985,7 +1983,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             if hasattr(e, "message"):
                 raise serializers.ValidationError(e.message)
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2014,7 +2012,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2041,7 +2039,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2070,7 +2068,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2099,7 +2097,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2128,7 +2126,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2185,7 +2183,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2250,7 +2248,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def assesor_send_referral(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2280,7 +2278,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
     def draft(self, request, *args, **kwargs):
         try:
@@ -2300,7 +2298,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
         raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def update_training_flag(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2341,7 +2339,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
         raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def send_to_districts(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2360,7 +2358,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def send_to_kensington(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2379,7 +2377,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
     def assessor_save(self, request, *args, **kwargs):
         try:
@@ -2577,7 +2575,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             return queryset
         return Referral.objects.none()
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2642,7 +2640,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, context={"request": request})
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2654,7 +2652,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
         # serializer = DTReferralSerializer(self.get_queryset(), many=True)
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2664,7 +2662,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
         qs = ReferralRecipientGroup.objects.filter().values_list("name", flat=True)
         return Response(qs)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2678,7 +2676,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
         serializer = DTReferralSerializer(qs, many=True, context={"request": request})
         return Response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2698,7 +2696,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @detail_route(methods=["GET", "POST"], detail=True)
+    @action(methods=["GET", "POST"], detail=True)
     def complete(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2732,7 +2730,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2756,7 +2754,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2780,7 +2778,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2804,7 +2802,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def send_referral(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2830,7 +2828,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2853,7 +2851,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -2886,7 +2884,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2928,7 +2926,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             return qs
         return ProposalRequirement.objects.none()
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2951,7 +2949,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2974,7 +2972,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -2997,7 +2995,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3268,7 +3266,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
             return qs
         return Vehicle.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_vehicle(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3333,7 +3331,7 @@ class VesselViewSet(viewsets.ModelViewSet):
             return qs
         return Vessel.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_vessel(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3410,7 +3408,7 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
             return qs
         return ProposalAssessment.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def update_assessment(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3479,7 +3477,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -3503,7 +3501,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3537,7 +3535,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -3561,7 +3559,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3600,7 +3598,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3629,7 +3627,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3658,7 +3656,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -3713,7 +3711,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3742,7 +3740,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -3797,7 +3795,7 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
             return queryset
         return DistrictProposal.objects.none()
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],

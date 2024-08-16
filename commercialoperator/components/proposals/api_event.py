@@ -3,8 +3,7 @@ import json
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, serializers
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from commercialoperator.components.proposals.models import ProposalUserAction
@@ -49,7 +48,7 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalEventsParks.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -102,7 +101,7 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -146,7 +145,7 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return AbseilingClimbingActivity.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_abseiling_climbing(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -192,7 +191,7 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalPreEventsParks.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -247,7 +246,7 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -291,7 +290,7 @@ class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
             ).order_by("id")
         return ProposalEventsTrails.objects.none()
 
-    @detail_route(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True)
     def edit_trail(self, request, *args, **kwargs):
         try:
             instance = self.get_object()

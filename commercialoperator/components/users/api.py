@@ -4,9 +4,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
 from rest_framework import viewsets, serializers, generics, views
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
-from rest_framework.decorators import action as list_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -97,7 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return qs
         return EmailUser.objects.none()
 
-    #    @detail_route(methods=['POST',])
+    #    @action(methods=['POST',])
     #    def update_personal(self, request, *args, **kwargs):
     #        try:
     #            instance = self.get_object()
@@ -116,7 +114,7 @@ class UserViewSet(viewsets.ModelViewSet):
     #            print(traceback.print_exc())
     #            raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -140,7 +138,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    # @detail_route(methods=['POST',])
+    # @action(methods=['POST',])
     # def update_address(self, request, *args, **kwargs):
     #     try:
     #         instance = self.get_object()
@@ -168,7 +166,7 @@ class UserViewSet(viewsets.ModelViewSet):
     #         print(traceback.print_exc())
     #         raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -218,7 +216,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -249,7 +247,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -281,7 +279,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -306,7 +304,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -328,7 +326,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -350,7 +348,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
@@ -388,7 +386,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],

@@ -3,9 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.db import transaction
 from wsgiref.util import FileWrapper
 from rest_framework import viewsets, serializers, status, views
-from rest_framework.decorators import renderer_classes
-from rest_framework.decorators import action as detail_route
-from rest_framework.decorators import action as list_route
+from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from commercialoperator.components.main.models import (
@@ -71,7 +69,7 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
         return District.objects.none()
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -84,7 +82,7 @@ class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -280,7 +278,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
         return Park.objects.none()
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -292,7 +290,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -304,7 +302,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -316,7 +314,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -330,7 +328,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         )
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -341,7 +339,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -352,7 +350,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = ParkSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -365,7 +363,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         # serializer = ActivitySerializer(qs)
         return Response(serializer.data)
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -390,7 +388,7 @@ class TrailViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
         return Trail.objects.none()
 
-    @detail_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -452,7 +450,7 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
             return Question.objects.all()
         return Question.objects.none()
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -463,7 +461,7 @@ class QuestionViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = QuestionSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @list_route(
+    @action(
         methods=[
             "GET",
         ],
@@ -489,7 +487,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         fallback_url = request.build_absolute_uri("/")
         return HttpResponseRedirect(redirect_to=fallback_url + "/success/")
 
-    @detail_route(
+    @action(
         methods=[
             "POST",
         ],
