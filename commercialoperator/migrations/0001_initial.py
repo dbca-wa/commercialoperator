@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('taggit', '0002_auto_20150616_2121'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('accounts', '0021_emailuser_position_title'),
+        # ('accounts', '0021_emailuser_position_title'),
         ('sites', '0002_alter_domain_unique'),
     ]
 
