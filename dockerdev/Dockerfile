@@ -1,6 +1,6 @@
 # Prepare the base environment.
 FROM dbcawa/commercialoperator:latest as builder_base_commercialoperatordev
-
+USER root
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y npm patch
 RUN apt-get install --no-install-recommends -y libpq-dev git ssh sudo 
