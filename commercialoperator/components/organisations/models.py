@@ -34,6 +34,9 @@ from commercialoperator.components.organisations.emails import (
 
 class Organisation(models.Model):
     organisation = models.ForeignKey(ledger_organisation, on_delete=models.PROTECT)
+    # organisation = models.IntegerField(
+    #     unique=True, verbose_name="Ledger Organisation ID"
+    # )
     # TODO: business logic related to delegate changes.
     delegates = models.ManyToManyField(
         EmailUser,
@@ -701,7 +704,7 @@ class OrganisationContact(models.Model):
     )
     is_admin = models.BooleanField(default=False)
     organisation = models.ForeignKey(
-        Organisation, related_name="contacts", on_delete=models.PROTECT
+        Organisation, related_name="contacts", on_delete=models.CASCADE
     )
     email = models.EmailField(blank=False)
     first_name = models.CharField(
@@ -745,8 +748,8 @@ class OrganisationContact(models.Model):
 
 
 class OrganisationContactDeclinedDetails(models.Model):
-    request = models.ForeignKey(OrganisationContact, on_delete=models.PROTECT)
-    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
+    request = models.ForeignKey(OrganisationContact, on_delete=models.CASCADE)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     # reason = models.TextField(blank=True)
 
     class Meta:
@@ -754,8 +757,8 @@ class OrganisationContactDeclinedDetails(models.Model):
 
 
 class UserDelegation(models.Model):
-    organisation = models.ForeignKey(Organisation, on_delete=models.PROTECT)
-    user = models.ForeignKey(EmailUser, on_delete=models.PROTECT)
+    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    user = models.ForeignKey(EmailUser, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = (("organisation", "user"),)
@@ -810,7 +813,7 @@ class OrganisationAction(UserAction):
         return cls.objects.create(organisation=organisation, who=user, what=str(action))
 
     organisation = models.ForeignKey(
-        Organisation, related_name="action_logs", on_delete=models.PROTECT
+        Organisation, related_name="action_logs", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -825,7 +828,7 @@ def update_organisation_comms_log_filename(instance, filename):
 
 class OrganisationLogDocument(Document):
     log_entry = models.ForeignKey(
-        "OrganisationLogEntry", related_name="documents", on_delete=models.PROTECT
+        "OrganisationLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
         upload_to=update_organisation_comms_log_filename, max_length=512
@@ -837,7 +840,7 @@ class OrganisationLogDocument(Document):
 
 class OrganisationLogEntry(CommunicationsLogEntry):
     organisation = models.ForeignKey(
-        Organisation, related_name="comms_logs", on_delete=models.PROTECT
+        Organisation, related_name="comms_logs", on_delete=models.CASCADE
     )
 
     def save(self, **kwargs):
@@ -865,7 +868,7 @@ class OrganisationRequest(models.Model):
         blank=True,
         null=True,
         related_name="org_request_assignee",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     identification = models.FileField(
         upload_to="organisation/requests/%Y/%m/%d",
@@ -1004,7 +1007,7 @@ class OrganisationRequest(models.Model):
 
 
 class OrganisationAccessGroup(models.Model):
-    site = models.OneToOneField(Site, default="1", on_delete=models.PROTECT)
+    site = models.OneToOneField(Site, default="1", on_delete=models.CASCADE)
     members = models.ManyToManyField(EmailUser)
 
     def __str__(self):
@@ -1041,7 +1044,7 @@ class OrganisationRequestUserAction(UserAction):
         return cls.objects.create(request=request, who=user, what=str(action))
 
     request = models.ForeignKey(
-        OrganisationRequest, related_name="action_logs", on_delete=models.PROTECT
+        OrganisationRequest, related_name="action_logs", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -1049,8 +1052,8 @@ class OrganisationRequestUserAction(UserAction):
 
 
 class OrganisationRequestDeclinedDetails(models.Model):
-    request = models.ForeignKey(OrganisationRequest, on_delete=models.PROTECT)
-    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
+    request = models.ForeignKey(OrganisationRequest, on_delete=models.CASCADE)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)
 
     class Meta:
@@ -1067,7 +1070,7 @@ class OrganisationRequestLogDocument(Document):
     log_entry = models.ForeignKey(
         "OrganisationRequestLogEntry",
         related_name="documents",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(
         upload_to=update_organisation_request_comms_log_filename, max_length=512
@@ -1079,7 +1082,7 @@ class OrganisationRequestLogDocument(Document):
 
 class OrganisationRequestLogEntry(CommunicationsLogEntry):
     request = models.ForeignKey(
-        OrganisationRequest, related_name="comms_logs", on_delete=models.PROTECT
+        OrganisationRequest, related_name="comms_logs", on_delete=models.CASCADE
     )
 
     def save(self, **kwargs):

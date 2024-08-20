@@ -56,12 +56,12 @@ class Compliance(RevisionedMixin):
     proposal = models.ForeignKey(
         "commercialoperator.Proposal",
         related_name="compliances",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     approval = models.ForeignKey(
         "commercialoperator.Approval",
         related_name="compliances",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     due_date = models.DateField()
     text = models.TextField(blank=True)
@@ -113,14 +113,14 @@ class Compliance(RevisionedMixin):
         related_name="district_compliance",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     district_approval = models.ForeignKey(
         DistrictApproval,
         related_name="district_compliance",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -375,7 +375,7 @@ def update_proposal_complaince_filename(instance, filename):
 
 class ComplianceDocument(Document):
     compliance = models.ForeignKey(
-        "Compliance", related_name="documents", on_delete=models.PROTECT
+        "Compliance", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
         upload_to=update_proposal_complaince_filename, max_length=512
@@ -415,7 +415,7 @@ class ComplianceUserAction(UserAction):
         return cls.objects.create(compliance=compliance, who=user, what=str(action))
 
     compliance = models.ForeignKey(
-        Compliance, related_name="action_logs", on_delete=models.PROTECT
+        Compliance, related_name="action_logs", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -424,7 +424,7 @@ class ComplianceUserAction(UserAction):
 
 class ComplianceLogEntry(CommunicationsLogEntry):
     compliance = models.ForeignKey(
-        Compliance, related_name="comms_logs", on_delete=models.PROTECT
+        Compliance, related_name="comms_logs", on_delete=models.CASCADE
     )
 
     def save(self, **kwargs):
@@ -445,7 +445,7 @@ def update_compliance_comms_log_filename(instance, filename):
 
 class ComplianceLogDocument(Document):
     log_entry = models.ForeignKey(
-        "ComplianceLogEntry", related_name="documents", on_delete=models.PROTECT
+        "ComplianceLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
         upload_to=update_compliance_comms_log_filename, max_length=512
@@ -456,10 +456,10 @@ class ComplianceLogDocument(Document):
 
 
 class CompRequest(models.Model):
-    compliance = models.ForeignKey(Compliance, on_delete=models.PROTECT)
+    compliance = models.ForeignKey(Compliance, on_delete=models.CASCADE)
     subject = models.CharField(max_length=200, blank=True)
     text = models.TextField(blank=True)
-    officer = models.ForeignKey(EmailUser, null=True, on_delete=models.PROTECT)
+    officer = models.ForeignKey(EmailUser, null=True, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "commercialoperator"
@@ -494,7 +494,7 @@ class ComplianceAmendmentRequest(CompRequest):
     )
     # reason = models.CharField('Reason', max_length=30, choices=REASON_CHOICES, default=REASON_CHOICES[0][0])
     reason = models.ForeignKey(
-        ComplianceAmendmentReason, blank=True, null=True, on_delete=models.PROTECT
+        ComplianceAmendmentReason, blank=True, null=True, on_delete=models.CASCADE
     )
 
     class Meta:

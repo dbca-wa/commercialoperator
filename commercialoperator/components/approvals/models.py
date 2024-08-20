@@ -53,7 +53,7 @@ def update_approval_comms_log_filename(instance, filename):
 
 class ApprovalDocument(Document):
     approval = models.ForeignKey(
-        "Approval", related_name="documents", on_delete=models.PROTECT
+        "Approval", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512)
     can_delete = models.BooleanField(
@@ -75,7 +75,7 @@ class ApprovalDocument(Document):
 
 class NotificationPeriod(RevisionedMixin):
     approval = models.ForeignKey(
-        "Approval", related_name="notifications", on_delete=models.PROTECT
+        "Approval", related_name="notifications", on_delete=models.CASCADE
     )
     notification_date = models.DateField()
     notification_sent = models.BooleanField(default=False)
@@ -117,21 +117,21 @@ class Approval(RevisionedMixin):
         blank=True,
         null=True,
         related_name="licence_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     cover_letter_document = models.ForeignKey(
         ApprovalDocument,
         blank=True,
         null=True,
         related_name="cover_letter_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     replaced_by = models.ForeignKey(
-        "self", blank=True, null=True, on_delete=models.PROTECT
+        "self", blank=True, null=True, on_delete=models.CASCADE
     )
     # current_proposal = models.ForeignKey(Proposal,related_name = '+')
     current_proposal = models.ForeignKey(
-        Proposal, related_name="approvals", null=True, on_delete=models.PROTECT
+        Proposal, related_name="approvals", null=True, on_delete=models.CASCADE
     )
     #    activity = models.CharField(max_length=255)
     #    region = models.CharField(max_length=255)
@@ -142,7 +142,7 @@ class Approval(RevisionedMixin):
         blank=True,
         null=True,
         related_name="renewal_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()
@@ -876,7 +876,7 @@ class PreviewTempApproval(Approval):
 
 class ApprovalLogEntry(CommunicationsLogEntry):
     approval = models.ForeignKey(
-        Approval, related_name="comms_logs", on_delete=models.PROTECT
+        Approval, related_name="comms_logs", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -894,7 +894,7 @@ class ApprovalLogDocument(Document):
         "ApprovalLogEntry",
         related_name="documents",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(
         upload_to=update_approval_comms_log_filename, null=True, max_length=512
@@ -925,7 +925,7 @@ class ApprovalUserAction(UserAction):
         return cls.objects.create(approval=approval, who=user, what=str(action))
 
     approval = models.ForeignKey(
-        Approval, related_name="action_logs", on_delete=models.PROTECT
+        Approval, related_name="action_logs", on_delete=models.CASCADE
     )
 
 
@@ -957,24 +957,24 @@ class DistrictApproval(RevisionedMixin):
         blank=True,
         null=True,
         related_name="district_licence_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     # cover_letter_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='cover_letter_document')
     replaced_by = models.ForeignKey(
-        "self", blank=True, null=True, on_delete=models.PROTECT
+        "self", blank=True, null=True, on_delete=models.CASCADE
     )
     current_district_proposal = models.ForeignKey(
         DistrictProposal,
         related_name="district_approvals",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     renewal_document = models.ForeignKey(
         ApprovalDocument,
         blank=True,
         null=True,
         related_name="district_renewal_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()
