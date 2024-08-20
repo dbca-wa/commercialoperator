@@ -1336,7 +1336,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organisation',
             name='organisation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.Organisation'),
+            # field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.Organisation'),
+            field=models.IntegerField(unique=True, verbose_name='Ledger Organisation ID'),
         ),
         migrations.AddField(
             model_name='onholddocument',
