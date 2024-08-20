@@ -59,6 +59,7 @@ STATIC_URL = '/static/'
 
 
 INSTALLED_APPS += [
+    "reversion",
     'reversion_compare',
     'bootstrap3',
     "ledger_api_client",
