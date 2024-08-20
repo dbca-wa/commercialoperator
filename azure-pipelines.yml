@@ -29,7 +29,7 @@ stages:
         command: buildAndPush
         dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
         tags: | 
-              latest
+              latest_seg
               $(tagDate)
         containerRegistry: DockerHub
         repository: dbcawa/commercialoperator
@@ -39,7 +39,7 @@ stages:
         command: buildAndPush
         dockerfile: '$(Build.SourcesDirectory)/dockerdev/Dockerfile'
         tags: | 
-              commercialoperator_dev_latest
-              commercialoperator_dev_$(tagDate)              
+              commercialoperator_seg_dev_latest
+              commercialoperator_seg_dev_$(tagDate)              
         containerRegistry: DockerHub
         repository: dbcawa/docker_app_dev       
