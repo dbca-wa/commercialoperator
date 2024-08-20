@@ -61,6 +61,7 @@ STATIC_URL = '/static/'
 INSTALLED_APPS += [
     'reversion_compare',
     'bootstrap3',
+    "ledger_api_client",
     'commercialoperator',
     'commercialoperator.components.main',
     'commercialoperator.components.organisations',
@@ -77,7 +78,6 @@ INSTALLED_APPS += [
     'ckeditor',
     'multiselectfield',
     'appmonitor_client',
-    "ledger_api_client",
 ]
 
 ADD_REVERSION_ADMIN=True
