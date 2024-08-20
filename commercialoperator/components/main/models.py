@@ -545,10 +545,10 @@ class CommunicationsLogEntry(models.Model):
     text = models.TextField(blank=True)
 
     customer = models.ForeignKey(
-        EmailUser, null=True, related_name="+", on_delete=models.PROTECT
+        EmailUser, null=True, related_name="+", on_delete=models.CASCADE
     )
     staff = models.ForeignKey(
-        EmailUser, null=True, related_name="+", on_delete=models.PROTECT
+        EmailUser, null=True, related_name="+", on_delete=models.CASCADE
     )
 
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)

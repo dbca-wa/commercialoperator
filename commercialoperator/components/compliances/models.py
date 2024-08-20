@@ -85,7 +85,7 @@ class Compliance(RevisionedMixin):
         related_name="commercialoperator_compliance_assignments",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     # requirement = models.TextField(null=True,blank=True)
     requirement = models.ForeignKey(
@@ -101,7 +101,7 @@ class Compliance(RevisionedMixin):
         blank=True,
         null=True,
         related_name="commercialoperator_compliances",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     reminder_sent = models.BooleanField(default=False)
     post_reminder_sent = models.BooleanField(default=False)

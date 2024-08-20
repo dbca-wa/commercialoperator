@@ -755,14 +755,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         blank=True,
         null=True,
         related_name="commercialoperator_proxy",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     submitter = models.ForeignKey(
         EmailUser,
         blank=True,
         null=True,
         related_name="commercialoperator_proposals",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     assigned_officer = models.ForeignKey(
@@ -784,7 +784,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         blank=True,
         null=True,
         related_name="commercialoperator_approved_by",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     processing_status = models.CharField(
         "Processing Status",
@@ -4386,7 +4386,7 @@ class Assessment(ProposalRequest):
         ("assessment_expired", "Assessment Period Expired"),
     )
     assigned_assessor = models.ForeignKey(
-        EmailUser, blank=True, null=True, on_delete=models.PROTECT
+        EmailUser, blank=True, null=True, on_delete=models.CASCADE
     )
     status = models.CharField(
         "Status", max_length=20, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0]
@@ -5327,7 +5327,7 @@ class ProposalAssessment(RevisionedMixin):
         blank=True,
         null=True,
         related_name="proposal_assessment",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     referral_assessment = models.BooleanField(default=False)
     referral_group = models.ForeignKey(

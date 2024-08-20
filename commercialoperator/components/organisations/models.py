@@ -33,10 +33,10 @@ from commercialoperator.components.organisations.emails import (
 
 
 class Organisation(models.Model):
-    organisation = models.ForeignKey(ledger_organisation, on_delete=models.PROTECT)
-    # organisation = models.IntegerField(
-    #     unique=True, verbose_name="Ledger Organisation ID"
-    # )
+    # organisation = models.ForeignKey(ledger_organisation, on_delete=models.PROTECT)
+    organisation = models.IntegerField(
+        unique=True, verbose_name="Ledger Organisation ID"
+    )
     # TODO: business logic related to delegate changes.
     delegates = models.ManyToManyField(
         EmailUser,
@@ -862,7 +862,7 @@ class OrganisationRequest(models.Model):
     ROLE_CHOICES = (("employee", "Employee"), ("consultant", "Consultant"))
     name = models.CharField(max_length=128)
     abn = models.CharField(max_length=50, null=True, blank=True, verbose_name="ABN")
-    requester = models.ForeignKey(EmailUser, on_delete=models.PROTECT)
+    requester = models.ForeignKey(EmailUser, on_delete=models.CASCADE)
     assigned_officer = models.ForeignKey(
         EmailUser,
         blank=True,
