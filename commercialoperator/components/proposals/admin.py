@@ -410,18 +410,26 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
     list_display = ["name"]
     exclude = ("site",)
     actions = None
+    ordering = ("id",)
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "staff_members",
+        "default",
+    )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
-            # kwargs["queryset"] = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(QAOfficerGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
         )
 
-    # list_display = ['id','name', 'visible']
-    list_display = ["name"]
-    ordering = ("id",)
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
+
 
 
 @admin.register(Question)
@@ -472,6 +480,7 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
         return ", ".join(
             [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
+
 
 @admin.register(models.DistrictProposalApproverGroup)
 class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
