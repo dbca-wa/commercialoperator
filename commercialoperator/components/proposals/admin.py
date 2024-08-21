@@ -395,12 +395,22 @@ class ReferralRecipientGroupAdmin(admin.ModelAdmin):
     list_display = ["name"]
     exclude = ("site",)
     actions = None
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "staff_members",
+    )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(ReferralRecipientGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
+        )
+
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
 
 
@@ -429,7 +439,6 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
         return ", ".join(
             [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
-
 
 
 @admin.register(Question)
