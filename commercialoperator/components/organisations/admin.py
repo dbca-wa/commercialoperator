@@ -1,6 +1,7 @@
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.organisations import models
+from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
 
 
 @admin.register(models.Organisation)
@@ -22,7 +23,7 @@ class OrganisationAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.OrganisationRequest)
-class OrganisationRequestAdmin(admin.ModelAdmin):
+class OrganisationRequestAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "requester", "abn", "status"]
 
 
