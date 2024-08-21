@@ -91,7 +91,7 @@ class Organisation(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return str(self.organisation)
+        return str(f"Organisation ID: {self.organisation_id}")
 
     def log_user_action(self, action, request):
         return OrganisationAction.log_action(self, action, request.user)
