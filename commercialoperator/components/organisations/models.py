@@ -34,7 +34,7 @@ from commercialoperator.components.organisations.emails import (
 
 class Organisation(models.Model):
     # organisation = models.ForeignKey(ledger_organisation, on_delete=models.PROTECT)
-    organisation = models.IntegerField(
+    organisation_id = models.IntegerField(
         unique=True, verbose_name="Ledger Organisation ID"
     )
     # TODO: business logic related to delegate changes.
