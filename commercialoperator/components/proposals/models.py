@@ -261,9 +261,6 @@ class TaggedProposalApproverGroupActivities(TaggedItemBase):
 
 class ProposalApproverGroup(models.Model):
     name = models.CharField(max_length=255)
-    # members = models.ManyToManyField(EmailUser,blank=True)
-    # regions = TaggableManager(verbose_name="Regions",help_text="A comma-separated list of regions.",through=TaggedProposalApproverGroupRegions,related_name = "+",blank=True)
-    # activities = TaggableManager(verbose_name="Activities",help_text="A comma-separated list of activities.",through=TaggedProposalApproverGroupActivities,related_name = "+",blank=True)
     members = models.ManyToManyField(EmailUser)
     region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
