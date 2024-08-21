@@ -1,6 +1,7 @@
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.organisations import models
+from commercialoperator.components.organisations.forms import OrganisationAccessGroupAdminForm
 from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
 
 
@@ -30,12 +31,16 @@ class OrganisationRequestAdmin(EmailUserFieldAdminBase):
 @admin.register(models.OrganisationAccessGroup)
 class OrganisationAccessGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ("members",)
+    form = OrganisationAccessGroupAdminForm
     exclude = ("site",)
     actions = None
+    readonly_fields = ["staff_members"]
+    fields = (
+        "staff_members",
+    )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
-            # kwargs["queryset"] = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(OrganisationAccessGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
@@ -46,3 +51,9 @@ class OrganisationAccessGroupAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
+
