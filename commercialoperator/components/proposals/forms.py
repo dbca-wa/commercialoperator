@@ -154,13 +154,22 @@ class SystemMaintenanceAdminForm(forms.ModelForm):
 class DistrictProposalAssessorGroupAdminForm(forms.ModelForm):
     class Meta:
         model = DistrictProposalAssessorGroup
-        fields = "__all__"
+        fields = [
+            "name",
+            "district",
+            "default",
+        ]
 
     def __init__(self, *args, **kwargs):
         super(DistrictProposalAssessorGroupAdminForm, self).__init__(*args, **kwargs)
         if self.instance:
-            # self.fields['members'].queryset = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
-            self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
+            # Note: adding the members here programmatically does not work yet
+            self.fields["members"] = forms.ModelMultipleChoiceField(
+                queryset=EmailUser.objects.filter(is_staff=True),
+                required=True,
+                widget=forms.SelectMultiple,
+            )
+            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(DistrictProposalAssessorGroupAdminForm, self).clean()
@@ -190,8 +199,13 @@ class DistrictProposalApproverGroupAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DistrictProposalApproverGroupAdminForm, self).__init__(*args, **kwargs)
         if self.instance:
-            # self.fields['members'].queryset = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
-            self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
+            # Note: adding the members here programmatically does not work yet
+            self.fields["members"] = forms.ModelMultipleChoiceField(
+                queryset=EmailUser.objects.filter(is_staff=True),
+                required=True,
+                widget=forms.SelectMultiple,
+            )
+            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(DistrictProposalApproverGroupAdminForm, self).clean()

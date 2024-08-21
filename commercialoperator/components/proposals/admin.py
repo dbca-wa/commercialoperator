@@ -57,7 +57,7 @@ class ProposalAdmin(VersionAdmin):
 class ProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
-    # form = forms.ProposalAssessorGroupAdminForm
+    form = forms.ProposalAssessorGroupAdminForm
     readonly_fields = ["default", "staff_members"]
 
     fields = (
@@ -93,7 +93,6 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
 
 @admin.register(models.ProposalApproverGroup)
 class ProposalApproverGroupAdmin(admin.ModelAdmin):
-    # class ProposalApproverGroupAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalApproverGroupAdminForm
@@ -448,8 +447,13 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.DistrictProposalAssessorGroupAdminForm
-    # readonly_fields = ['default']
-    # readonly_fields = ['default', 'regions', 'activities']
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "district",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(DistrictProposalAssessorGroupAdmin, self).get_actions(request)
@@ -464,19 +468,23 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
             request, obj
         )
 
-    # def has_add_permission(self, request):
-    #     if self.model.objects.count() > 0:
-    #         return False
-    #     return super(DistrictProposalAssessorGroupAdmin, self).has_add_permission(request)
-
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
 
 @admin.register(models.DistrictProposalApproverGroup)
 class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.DistrictProposalApproverGroupAdminForm
-    # readonly_fields = ['default']
-    # readonly_fields = ['default', 'regions', 'activities']
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "district",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(DistrictProposalApproverGroupAdmin, self).get_actions(request)
@@ -491,7 +499,7 @@ class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
             request, obj
         )
 
-    # def has_add_permission(self, request):
-    #     if self.model.objects.count() > 0:
-    #         return False
-    #     return super(DistrictProposalApproverGroupAdmin, self).has_add_permission(request)
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
