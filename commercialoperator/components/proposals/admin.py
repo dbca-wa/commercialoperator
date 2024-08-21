@@ -57,9 +57,15 @@ class ProposalAdmin(VersionAdmin):
 class ProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
-    form = forms.ProposalAssessorGroupAdminForm
-    readonly_fields = ["default"]
-    # readonly_fields = ['regions', 'activities']
+    # form = forms.ProposalAssessorGroupAdminForm
+    readonly_fields = ["default", "staff_members"]
+
+    fields = (
+        "name",
+        "region",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(ProposalAssessorGroupAdmin, self).get_actions(request)
@@ -79,14 +85,26 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
             return False
         return super(ProposalAssessorGroupAdmin, self).has_add_permission(request)
 
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
+
 
 @admin.register(models.ProposalApproverGroup)
-class ProposalApproverGroupAdmin(EmailUserFieldAdminBase):
+class ProposalApproverGroupAdmin(admin.ModelAdmin):
+    # class ProposalApproverGroupAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalApproverGroupAdminForm
-    readonly_fields = ["default"]
-    # readonly_fields = ['default', 'regions', 'activities']
+    readonly_fields = ["default", "staff_members"]
+
+    fields = (
+        "name",
+        "region",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(ProposalApproverGroupAdmin, self).get_actions(request)
@@ -105,6 +123,11 @@ class ProposalApproverGroupAdmin(EmailUserFieldAdminBase):
         if self.model.objects.count() > 0:
             return False
         return super(ProposalApproverGroupAdmin, self).has_add_permission(request)
+
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
 
 
 @admin.register(models.ProposalStandardRequirement)

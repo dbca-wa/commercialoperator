@@ -18,13 +18,18 @@ from datetime import datetime, timedelta
 class ProposalAssessorGroupAdminForm(forms.ModelForm):
     class Meta:
         model = ProposalAssessorGroup
-        fields = "__all__"
+        fields = ["name", "region", "default"]
 
     def __init__(self, *args, **kwargs):
         super(ProposalAssessorGroupAdminForm, self).__init__(*args, **kwargs)
         if self.instance:
-            # self.fields['members'].queryset = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
-            self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
+            # Note: adding the members here programmatically does not work yet
+            self.fields["members"] = forms.ModelMultipleChoiceField(
+                queryset=EmailUser.objects.filter(is_staff=True),
+                required=True,
+                widget=forms.SelectMultiple,
+            )
+            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(ProposalAssessorGroupAdminForm, self).clean()
@@ -49,13 +54,18 @@ class ProposalAssessorGroupAdminForm(forms.ModelForm):
 class ProposalApproverGroupAdminForm(forms.ModelForm):
     class Meta:
         model = ProposalApproverGroup
-        fields = "__all__"
+        fields = ["name", "region", "default"]
 
     def __init__(self, *args, **kwargs):
         super(ProposalApproverGroupAdminForm, self).__init__(*args, **kwargs)
         if self.instance:
-            # self.fields['members'].queryset = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
-            self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
+            # Note: adding the members here programmatically does not work yet
+            self.fields["members"] = forms.ModelMultipleChoiceField(
+                queryset=EmailUser.objects.filter(is_staff=True),
+                required=True,
+                widget=forms.SelectMultiple,
+            )
+            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(ProposalApproverGroupAdminForm, self).clean()
