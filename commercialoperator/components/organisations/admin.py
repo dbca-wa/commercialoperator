@@ -5,7 +5,7 @@ from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
 
 
 @admin.register(models.Organisation)
-class OrganisationAdmin(admin.ModelAdmin):
+class OrganisationAdmin(EmailUserFieldAdminBase):
     list_display = [
         "organisation",
         "admin_pin_one",
