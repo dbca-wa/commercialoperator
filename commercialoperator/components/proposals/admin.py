@@ -23,6 +23,7 @@ from commercialoperator.components.main.models import (
 from reversion.admin import VersionAdmin
 from django.conf.urls import url
 from django.http import HttpResponseRedirect
+from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
 from commercialoperator.utils import create_helppage_object
 
 
@@ -80,7 +81,7 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.ProposalApproverGroup)
-class ProposalApproverGroupAdmin(admin.ModelAdmin):
+class ProposalApproverGroupAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalApproverGroupAdminForm

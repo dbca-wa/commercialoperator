@@ -11,6 +11,7 @@ class EmailUserFieldAdminBase(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         list_display_map = {fn: fn for fn in self.list_display}
+
         # Replace list_display fields with _field
         for fn in ["requester", "organisation"]:
             if fn in list_display_map:
@@ -27,3 +28,6 @@ class EmailUserFieldAdminBase(admin.ModelAdmin):
 
     def _organisation(self, obj):
         return obj.organisation_id
+
+    def _members(self, obj):
+        return obj.members_id
