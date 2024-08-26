@@ -58,6 +58,7 @@ from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
 )
 from commercialoperator.components.users.serializers import UserAddressSerializer
+from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
 from rest_framework import serializers
 
 
@@ -75,10 +76,8 @@ class ProposalTypeSerializer(serializers.ModelSerializer):
     def get_activities(self,obj):
         return obj.activities.names()
 
-class EmailUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmailUser
-        fields = ('id','email','first_name','last_name','title','organisation')
+class EmailUserSerializer(EmailUserRoSerializer):
+    pass
 
 class EmailUserAppViewSerializer(serializers.ModelSerializer):
     residential_address = UserAddressSerializer()
@@ -337,7 +336,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
     readonly = serializers.SerializerMethodField(read_only=True)
     documents_url = serializers.SerializerMethodField()
     proposal_type = serializers.SerializerMethodField()
-    allowed_assessors = EmailUserSerializer(many=True)
+    # allowed_assessors = EmailUserSerializer(many=True)
     #qaofficer_referral = QAOfficerReferralSerializer(required=False)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
 
@@ -406,7 +405,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
                 'lodgement_number',
                 'lodgement_sequence',
                 'can_officer_process',
-                'allowed_assessors',
+                # 'allowed_assessors',
                 'proposal_type',
                 'is_qa_officer',
                 'qaofficer_referrals',
@@ -504,13 +503,13 @@ class DTProposalSerializer(BaseProposalSerializer):
 
 
 class ListProposalSerializer(BaseProposalSerializer):
-    submitter = EmailUserSerializer()
+    submitter = EmailUserSerializer(source='submitter_id')
     applicant = serializers.CharField(read_only=True)
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
     #assigned_officer = serializers.CharField(source='assigned_officer.get_full_name')
-    assigned_officer = serializers.SerializerMethodField(read_only=True)
+    # assigned_officer = serializers.SerializerMethodField(read_only=True)
 
     application_type = serializers.CharField(source='application_type.name', read_only=True)
     #region = serializers.CharField(source='region.name', read_only=True)
@@ -519,8 +518,8 @@ class ListProposalSerializer(BaseProposalSerializer):
     district = serializers.SerializerMethodField(read_only=True)
 
     #tenure = serializers.CharField(source='tenure.name', read_only=True)
-    assessor_process = serializers.SerializerMethodField(read_only=True)
-    qaofficer_referrals = QAOfficerReferralSerializer(many=True)
+    # assessor_process = serializers.SerializerMethodField(read_only=True)
+    # qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     fee_invoice_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -541,7 +540,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'applicant',
                 'proxy_applicant',
                 'submitter',
-                'assigned_officer',
+                # 'assigned_officer',
                 'previous_application',
                 'get_history',
                 'lodgement_date',
@@ -553,11 +552,11 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'lodgement_number',
                 'lodgement_sequence',
                 'can_officer_process',
-                'assessor_process',
-                'allowed_assessors',
+                # 'assessor_process',
+                # 'allowed_assessors',
                 'proposal_type',
-                'qaofficer_referrals',
-                'is_qa_officer',
+                # 'qaofficer_referrals',
+                # 'is_qa_officer',
                 'fee_invoice_url',
                 'fee_invoice_reference',
                 'fee_paid',
@@ -575,15 +574,15 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'processing_status',
                 'applicant',
                 'submitter',
-                'assigned_officer',
+                # 'assigned_officer',
                 'lodgement_date',
                 'can_user_edit',
                 'can_user_view',
                 'reference',
                 'lodgement_number',
                 'can_officer_process',
-                'assessor_process',
-                'allowed_assessors',
+                # 'assessor_process',
+                # 'allowed_assessors',
                 'fee_invoice_url',
                 'fee_invoice_reference',
                 'fee_paid',
