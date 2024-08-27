@@ -6,6 +6,8 @@ from django.db import models
 
 from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction
 
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
 
 class EmailUserLogEntry(CommunicationsLogEntry):
     emailuser = models.IntegerField()
@@ -32,3 +34,22 @@ class EmailUserAction(UserAction):
     class Meta:
         managed = False
         app_label = "CommunicationsLogEntry"
+
+class ReferralRecipientGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_referralrecipientgroup_members"
+        managed = False
+        unique_together = ("referralrecipientgroup", "emailuser")
+
+    referralrecipientgroup = models.ForeignKey(
+        "ReferralRecipientGroup",
+        on_delete=models.PROTECT,
+        related_name="referralrecipientgroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="referralrecipientgroup_members",
+    )

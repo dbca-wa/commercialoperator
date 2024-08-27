@@ -497,15 +497,22 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         http://localhost:8499/api/proposal_paginated/referrals_internal/?format=datatables&draw=1&length=2
         """
         self.serializer_class = ReferralSerializer
-        # qs = Referral.objects.filter(referral=request.user) if is_internal(self.request) else Referral.objects.none()
+
+        request_user_id = request.user.id
+        # request_user_id = 70348 # This is an existing user id for testing
+        # Query the through-table on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
+        request_user_referralrecipientgroup_set = ReferralRecipientGroup.objects.filter(
+            referralrecipientgroup_members__emailuser__id__in=[request_user_id]
+        )
+
         qs = (
             Referral.objects.filter(
-                referral_group__in=request.user.referralrecipientgroup_set.all()
+                # referral_group__in=request.user.referralrecipientgroup_set.all() # Replaced this with the line below
+                referral_group__in=request_user_referralrecipientgroup_set
             )
             if is_internal(self.request)
             else Referral.objects.none()
         )
-        # qs = self.filter_queryset(self.request, qs, self)
         qs = self.filter_queryset(qs)
 
         self.paginator.page_size = qs.count()
