@@ -17,7 +17,8 @@ def retrieve_email_user(email_user_id):
         except EmailUser.DoesNotExist:
             logger.error(f"EmailUser with id {email_user_id} does not exist")
             return None
-        cache.set(cache_key, email_user, settings.CACHE_TIMEOUT_5_SECONDS)
+        else:
+            cache.set(cache_key, email_user, settings.CACHE_TIMEOUT_5_SECONDS)
     return email_user
 
 
