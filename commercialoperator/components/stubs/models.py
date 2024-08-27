@@ -8,6 +8,8 @@ from commercialoperator.components.main.models import CommunicationsLogEntry, Us
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from commercialoperator.components.stubs.utils import retrieve_email_user
+
 
 class EmailUserLogEntry(CommunicationsLogEntry):
     emailuser = models.IntegerField()
@@ -73,10 +75,29 @@ class QAOfficerGroupMembers(models.Model):
         related_name="qaofficergroup_members",
     )
 
-    @property
-    def xyz(self):
-        return self.emailuser_id
 
+class ProposalAssessorGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_proposalassessorgroup_members"
+        managed = False
+        unique_together = ("proposalassessorgroup", "emailuser")
+
+    proposalassessorgroup = models.ForeignKey(
+        "ProposalAssessorGroup",
+        on_delete=models.PROTECT,
+        related_name="proposalassessorgroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="proposalassessorgroup_members",
+    )
+
+    @property
+    def emailuserro(self):
+        return retrieve_email_user(self.emailuser_id)
 
 
 # class ProposalApproverGroupMembers(models.Model):

@@ -336,7 +336,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
     readonly = serializers.SerializerMethodField(read_only=True)
     documents_url = serializers.SerializerMethodField()
     proposal_type = serializers.SerializerMethodField()
-    # allowed_assessors = EmailUserSerializer(many=True)
+    allowed_assessors = EmailUserSerializer(many=True)
     #qaofficer_referral = QAOfficerReferralSerializer(required=False)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
 
@@ -405,7 +405,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
                 'lodgement_number',
                 'lodgement_sequence',
                 'can_officer_process',
-                # 'allowed_assessors',
+                'allowed_assessors',
                 'proposal_type',
                 'is_qa_officer',
                 'qaofficer_referrals',
@@ -519,7 +519,7 @@ class ListProposalSerializer(BaseProposalSerializer):
 
     #tenure = serializers.CharField(source='tenure.name', read_only=True)
     # assessor_process = serializers.SerializerMethodField(read_only=True)
-    # qaofficer_referrals = QAOfficerReferralSerializer(many=True)
+    qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     fee_invoice_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -553,10 +553,10 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'lodgement_sequence',
                 'can_officer_process',
                 # 'assessor_process',
-                # 'allowed_assessors',
+                'allowed_assessors',
                 'proposal_type',
-                # 'qaofficer_referrals',
-                # 'is_qa_officer',
+                'qaofficer_referrals',
+                'is_qa_officer',
                 'fee_invoice_url',
                 'fee_invoice_reference',
                 'fee_paid',
@@ -582,7 +582,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'lodgement_number',
                 'can_officer_process',
                 # 'assessor_process',
-                # 'allowed_assessors',
+                'allowed_assessors',
                 'fee_invoice_url',
                 'fee_invoice_reference',
                 'fee_paid',
@@ -1020,7 +1020,6 @@ class DTReferralSerializer(serializers.ModelSerializer):
     proposal_event_name= serializers.CharField(source='proposal.event_name')
     submitter = serializers.SerializerMethodField()
     region = serializers.CharField(source='region.name', read_only=True)
-    #referral = EmailUserSerializer()
     referral = serializers.CharField(source='referral_group.name')
     document = serializers.SerializerMethodField()
     can_user_process=serializers.SerializerMethodField()

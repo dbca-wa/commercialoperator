@@ -1505,7 +1505,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             group = QAOfficerGroup.objects.get(default=True)
         else:
             group = self.__assessor_group()
-        return group.members.all() if group else []
+
+        # return group.members.all() if group else []
+        return (
+            [m.emailuser_id for m in group.proposalassessorgroup_members.all()]
+            if group
+            else []
+        )
 
     @property
     def compliance_assessors(self):
