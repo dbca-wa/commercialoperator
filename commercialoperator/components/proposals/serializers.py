@@ -57,6 +57,7 @@ from commercialoperator.components.proposals.serializers_event import (
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
 )
+from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.components.users.serializers import UserAddressSerializer
 from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
 from rest_framework import serializers
@@ -509,7 +510,7 @@ class ListProposalSerializer(BaseProposalSerializer):
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
     #assigned_officer = serializers.CharField(source='assigned_officer.get_full_name')
-    # assigned_officer = serializers.SerializerMethodField(read_only=True)
+    assigned_officer = serializers.SerializerMethodField(read_only=True)
 
     application_type = serializers.CharField(source='application_type.name', read_only=True)
     #region = serializers.CharField(source='region.name', read_only=True)
@@ -540,7 +541,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'applicant',
                 'proxy_applicant',
                 'submitter',
-                # 'assigned_officer',
+                'assigned_officer',
                 'previous_application',
                 'get_history',
                 'lodgement_date',
@@ -574,7 +575,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'processing_status',
                 'applicant',
                 'submitter',
-                # 'assigned_officer',
+                'assigned_officer',
                 'lodgement_date',
                 'can_user_edit',
                 'can_user_view',
@@ -590,10 +591,17 @@ class ListProposalSerializer(BaseProposalSerializer):
                 )
 
     def get_assigned_officer(self,obj):
-        if obj.processing_status==Proposal.PROCESSING_STATUS_WITH_APPROVER and obj.assigned_approver:
-            return obj.assigned_approver.get_full_name()
-        if obj.assigned_officer:
-            return obj.assigned_officer.get_full_name()
+        if obj.processing_status==Proposal.PROCESSING_STATUS_WITH_APPROVER and obj.assigned_approver_id:
+            # return obj.assigned_approver.get_full_name()
+            emailuser = retrieve_email_user(obj.assigned_approver_id)
+        elif obj.assigned_officer_id:
+            # return obj.assigned_officer.get_full_name()
+            emailuser = retrieve_email_user(obj.assigned_officer_id)
+        else:
+            emailuser = None
+
+        if emailuser:
+            return emailuser.get_full_name()
         return None
 
     def get_region(self,obj):
