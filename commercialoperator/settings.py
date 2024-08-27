@@ -61,6 +61,7 @@ STATIC_URL = '/static/'
 INSTALLED_APPS += [
     "reversion",
     'reversion_compare',
+    # "webtemplate_dbca",
     'bootstrap3',
     "ledger_api_client",
     'commercialoperator',
@@ -236,4 +237,16 @@ LOGGING['loggers']['commercialoperator'] = {
             'level': 'INFO'
         }
 
+DEV_EMAILUSER_REPLACEMENT_ID = env("DEV_EMAILUSER_REPLACEMENT_ID", None)
 
+# Cache timeouts
+CACHE_TIMEOUT_5_SECONDS = 5
+CACHE_TIMEOUT_10_SECONDS = 10
+CACHE_TIMEOUT_1_MINUTE = 60
+CACHE_TIMEOUT_5_MINUTES = 60 * 5
+CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2
+CACHE_TIMEOUT_24_HOURS = 60 * 60 * 24
+CACHE_TIMEOUT_NEVER = None
+
+# Cache keys
+CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
