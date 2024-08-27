@@ -53,3 +53,47 @@ class ReferralRecipientGroupMembers(models.Model):
         on_delete=models.PROTECT,
         related_name="referralrecipientgroup_members",
     )
+
+class QAOfficerGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_qaofficergroup_members"
+        managed = False
+        unique_together = ("qaofficergroup", "emailuser")
+
+    qaofficergroup = models.ForeignKey(
+        "QAOfficerGroup",
+        on_delete=models.PROTECT,
+        related_name="qaofficergroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="qaofficergroup_members",
+    )
+
+    @property
+    def xyz(self):
+        return self.emailuser_id
+
+
+
+# class ProposalApproverGroupMembers(models.Model):
+#     class Meta:
+#         app_label = "commercialoperator"
+#         # Mirror the existing django-managed through table of the m2m field
+#         db_table = "commercialoperator_proposalapprovergroup_members"
+#         managed = False
+#         unique_together = ("proposalapprovergroup", "emailuser")
+
+#     proposalapprovergroup = models.ForeignKey(
+#         "ProposalApproverGroup",
+#         on_delete=models.PROTECT,
+#         related_name="proposalapprovergroup_members",
+#     )
+#     emailuser = models.ForeignKey(
+#         EmailUser,
+#         on_delete=models.PROTECT,
+#         related_name="proposalapprovergroup_members",
+#     )

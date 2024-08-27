@@ -1338,18 +1338,30 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         return False
 
     def qa_officers(self, name=None):
+        qaofficergroup_set = QAOfficerGroup.objects.none()
+        # Query the through-tables on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
         if not name:
-            return (
-                QAOfficerGroup.objects.get(default=True)
-                .members.all()
-                .values_list("email", flat=True)
-            )
+            # return (
+            #     QAOfficerGroup.objects.get(default=True)
+            #     .members.all()
+            #     .values_list("email", flat=True)
+            # )
+            qaofficergroup_set = QAOfficerGroup.objects.filter(
+                default=True
+            ).values_list("qaofficergroup_members__emailuser__id", flat=True)
         else:
-            return (
-                QAOfficerGroup.objects.get(name=name)
-                .members.all()
-                .values_list("email", flat=True)
-            )
+            # return (
+            #     QAOfficerGroup.objects.get(name=name)
+            #     .members.all()
+            #     .values_list("email", flat=True)
+            # )
+            qaofficergroup_set = QAOfficerGroup.objects.filter(
+                name="Licensing Officer"
+            ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+
+        return EmailUser.objects.filter(
+            id__in=[id for id in qaofficergroup_set]
+        ).values_list("email", flat=True)
 
     @property
     def get_history(self):
