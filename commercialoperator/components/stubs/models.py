@@ -37,6 +37,7 @@ class EmailUserAction(UserAction):
         managed = False
         app_label = "CommunicationsLogEntry"
 
+
 class ReferralRecipientGroupMembers(models.Model):
     class Meta:
         app_label = "commercialoperator"
@@ -55,6 +56,7 @@ class ReferralRecipientGroupMembers(models.Model):
         on_delete=models.PROTECT,
         related_name="referralrecipientgroup_members",
     )
+
 
 class QAOfficerGroupMembers(models.Model):
     class Meta:
@@ -118,3 +120,51 @@ class ProposalAssessorGroupMembers(models.Model):
 #         on_delete=models.PROTECT,
 #         related_name="proposalapprovergroup_members",
 #     )
+
+
+class DistrictProposalAssessorGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_districtproposalassessorgroup_members"
+        managed = False
+        unique_together = ("districtproposalassessorgroup", "emailuser")
+
+    districtproposalassessorgroup = models.ForeignKey(
+        "DistrictProposalAssessorGroup",
+        on_delete=models.PROTECT,
+        related_name="districtproposalassessorgroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="districtproposalassessorgroup_members",
+    )
+
+    @property
+    def emailuserro(self):
+        return retrieve_email_user(self.emailuser_id)
+
+
+class DistrictProposalApproverGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_districtproposalapprovergroup_members"
+        managed = False
+        unique_together = ("districtproposalapprovergroup", "emailuser")
+
+    districtproposalapprovergroup = models.ForeignKey(
+        "DistrictProposalApproverGroup",
+        on_delete=models.PROTECT,
+        related_name="districtproposalapprovergroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="districtproposalapprovergroup_members",
+    )
+
+    @property
+    def emailuserro(self):
+        return retrieve_email_user(self.emailuser_id)

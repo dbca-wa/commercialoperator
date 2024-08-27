@@ -115,6 +115,10 @@ from commercialoperator.components.bookings.models import (
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
+from commercialoperator.components.stubs.utils import (
+    retrieve_user_districtproposal_approver_groups,
+    retrieve_user_districtproposal_assessor_groups,
+)
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -3777,11 +3781,8 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
 
 
 class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
-    # queryset = DistrictProposal.objects.all()
-    # filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     queryset = DistrictProposal.objects.none()
     serializer_class = ListDistrictProposalSerializer
     page_size = 10
@@ -3789,8 +3790,17 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
-            user_assessor_groups = user.districtproposalassessorgroup_set.all()
-            user_approver_groups = user.districtproposalapprovergroup_set.all()
+            user_id = user.id
+            # user_id = 132360  # A real user id for testing
+            # user_assessor_groups = user.districtproposalassessorgroup_set.all()
+            user_assessor_groups = retrieve_user_districtproposal_assessor_groups(
+                user_id
+            )
+            # user_approver_groups = user.districtproposalapprovergroup_set.all()
+            user_approver_groups = retrieve_user_districtproposal_approver_groups(
+                user_id
+            )
+
             qs = [
                 d.id
                 for d in DistrictProposal.objects.all()
@@ -3815,14 +3825,6 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
         """
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
-
-        # on the internal organisations dashboard, filter the DistrictProposal/Approval/Compliance datatables by applicant/organisation
-        # applicant_id = request.GET.get('org_id')
-        # if applicant_id:
-        #     qs = qs.filter(proposal__org_applicant_id=applicant_id)
-        # submitter_id = request.GET.get('submitter_id', None)
-        # if submitter_id:
-        #     qs = qs.filter(proposal__submitter_id=submitter_id)
 
         self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)

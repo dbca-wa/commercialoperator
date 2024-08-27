@@ -40,3 +40,23 @@ def update_payments(*args, **kwargs):
     raise NotImplementedError(
         "ledger.payments.utils.update_payments needs implementation"
     )
+
+
+def retrieve_user_districtproposal_assessor_groups(user_id):
+    from commercialoperator.components.proposals.models import (
+        DistrictProposalAssessorGroup,
+    )
+
+    return DistrictProposalAssessorGroup.objects.filter(
+        districtproposalassessorgroup_members__emailuser_id=user_id
+    )
+
+
+def retrieve_user_districtproposal_approver_groups(user_id):
+    from commercialoperator.components.proposals.models import (
+        DistrictProposalApproverGroup,
+    )
+
+    return DistrictProposalApproverGroup.objects.filter(
+        districtproposalapprovergroup_members__emailuser_id=user_id
+    )

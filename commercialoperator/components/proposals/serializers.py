@@ -1770,20 +1770,13 @@ class DistrictProposalSerializer(serializers.ModelSerializer):
     can_process_requirements = serializers.SerializerMethodField()
     district_name = serializers.CharField(read_only=True)
     districtproposaldeclineddetails = DistrictProposalDeclinedDetailsSerializer()
-    #customer_status = serializers.CharField(source='get_customer_status_display')
-    # latest_referrals = ProposalReferralSerializer(many=True)
-    # can_be_completed = serializers.BooleanField()
-    # can_process=serializers.SerializerMethodField()
-    # referral_assessment=ProposalAssessmentSerializer(read_only=True)
-    #proposal=FilmingDistrictProposalSerializer()
-
 
     class Meta:
         model = DistrictProposal
         fields = '__all__'
 
     def __init__(self,*args,**kwargs):
-        super(DistrictProposalSerializer, self).__init__(*args, **kwargs)       
+        super(DistrictProposalSerializer, self).__init__(*args, **kwargs)
         self.fields['proposal'] = FilmingDistrictProposalSerializer(context={'request': self.context['request']})
 
     def get_district_assessor_can_assess(self,obj):
@@ -1811,8 +1804,8 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
     proposal_lodgement_date = serializers.CharField(source='proposal.lodgement_date')
     proposal_lodgement_number = serializers.CharField(source='proposal.lodgement_number')
     submitter = serializers.SerializerMethodField()
+    submitter = EmailUserSerializer(source="proposal.submitter_id")
     assigned_officer = serializers.CharField(source='assigned_officer.get_full_name', allow_null=True)
-    #submitter= EmailUserAppViewSerializer()
 
     class Meta:
         model = DistrictProposal
@@ -1853,8 +1846,6 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
         user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
         return obj.can_assess(user)
 
-    def get_submitter(self,obj):
-        return EmailUserSerializer(obj.proposal.submitter).data
 
 class ReferralProposalSerializer(InternalProposalSerializer):
     def get_assessor_mode(self,obj):

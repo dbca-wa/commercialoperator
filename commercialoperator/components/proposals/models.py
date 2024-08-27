@@ -40,6 +40,10 @@ from commercialoperator.components.proposals.email import (
     send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
 )
+from commercialoperator.components.stubs.utils import (
+    retrieve_user_districtproposal_approver_groups,
+    retrieve_user_districtproposal_assessor_groups,
+)
 from commercialoperator.ordered_model import OrderedModel
 from commercialoperator.components.proposals.email import (
     send_submit_email_notification,
@@ -7082,14 +7086,19 @@ class DistrictProposal(models.Model):
         return recipients
 
     def can_assess(self, user):
-        # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
+        user_id = user.id
+
         if self.processing_status in ["with_assessor", "with_assessor_requirements"]:
+            user_assessor_groups = retrieve_user_districtproposal_assessor_groups(user_id)
+            # user.districtproposalassessorgroup_set.all()
             return (
-                self.__assessor_group() in user.districtproposalassessorgroup_set.all()
+                self.__assessor_group() in user_assessor_groups
             )
         elif self.processing_status == "with_approver":
+            user_approver_groups = retrieve_user_districtproposal_approver_groups(user_id)
+            # user.districtproposalapprovergroup_set.all()
             return (
-                self.__approver_group() in user.districtproposalapprovergroup_set.all()
+                self.__approver_group() in user_approver_groups
             )
         else:
             return False
