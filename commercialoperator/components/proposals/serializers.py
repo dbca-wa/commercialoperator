@@ -519,7 +519,7 @@ class ListProposalSerializer(BaseProposalSerializer):
     district = serializers.SerializerMethodField(read_only=True)
 
     #tenure = serializers.CharField(source='tenure.name', read_only=True)
-    # assessor_process = serializers.SerializerMethodField(read_only=True)
+    assessor_process = serializers.SerializerMethodField(read_only=True)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     fee_invoice_url = serializers.SerializerMethodField()
 
@@ -553,7 +553,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'lodgement_number',
                 'lodgement_sequence',
                 'can_officer_process',
-                # 'assessor_process',
+                'assessor_process',
                 'allowed_assessors',
                 'proposal_type',
                 'qaofficer_referrals',
@@ -582,7 +582,7 @@ class ListProposalSerializer(BaseProposalSerializer):
                 'reference',
                 'lodgement_number',
                 'can_officer_process',
-                # 'assessor_process',
+                'assessor_process',
                 'allowed_assessors',
                 'fee_invoice_url',
                 'fee_invoice_reference',
