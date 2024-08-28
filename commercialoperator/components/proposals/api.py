@@ -538,11 +538,14 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         http://localhost:8499/api/proposal_paginated/qaofficer_internal/?format=datatables&draw=1&length=2
         """
-        qa_officers = (
-            QAOfficerGroup.objects.get(default=True)
-            .members.all()
-            .values_list("email", flat=True)
-        )
+        qaofficergroup_set = QAOfficerGroup.objects.filter(
+            default=True
+        ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+
+        qa_officers = EmailUser.objects.filter(
+            id__in=[id for id in qaofficergroup_set]
+        ).values_list("email", flat=True)
+
         if request.user.email in qa_officers:
             return Response({"QA_Officer": True})
         else:
@@ -560,11 +563,14 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         http://localhost:8499/api/proposal_paginated/qaofficer_internal/?format=datatables&draw=1&length=2
         """
-        qa_officers = (
-            QAOfficerGroup.objects.get(default=True)
-            .members.all()
-            .values_list("email", flat=True)
-        )
+        qaofficergroup_set = QAOfficerGroup.objects.filter(
+            default=True
+        ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+
+        qa_officers = EmailUser.objects.filter(
+            id__in=[id for id in qaofficergroup_set]
+        ).values_list("email", flat=True)
+
         if request.user.email not in qa_officers:
             return self.paginator.get_paginated_response([])
 
