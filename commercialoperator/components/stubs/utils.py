@@ -1,3 +1,4 @@
+from django.db import models
 from django.conf import settings
 from django.core.cache import cache
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -20,6 +21,56 @@ def retrieve_email_user(email_user_id):
         else:
             cache.set(cache_key, email_user, settings.CACHE_TIMEOUT_5_SECONDS)
     return email_user
+
+
+class EmailUserQuerySet(models.QuerySet):
+    def expand_emailuser_fields(self, emailuser_fk_field, emailuser_properties={}):
+        """
+        Args:
+            emailuser_fk_field: str, name of the field that points to an EmailUser foreign key, e.g. "submitter"
+            emailuser_properties: Set of str, names of the properties of EmailUser to be added to the QuerySet, e.g. ["email", "first_name", "last_name"]
+
+        Returns:
+            QuerySet with additional fields emailuser_fk_field_exists, emailuser_fk_field_email, emailuser_fk_field_first_name, emailuser_fk_field_last_name
+        """
+
+        if not emailuser_fk_field:
+            raise ValueError(
+                "A emailuser_fk_field that points to an EmailUser foreign key must be provided"
+            )
+
+        emailuser_fk_field_id = f"{emailuser_fk_field}_id"
+
+        if not getattr(self.model, emailuser_fk_field_id, None):
+            raise ValueError(f"Field {emailuser_fk_field} does not exist in the model")
+
+        # I wish this would work :(((
+        # from django.db.models import Subquery, OuterRef
+        # return self.annotate(user_email=Subquery(EmailUser.objects.filter(id=OuterRef("submitter_id")).values("email")))
+
+        emailuser_property_values = {
+            f"{emailuser_fk_field}_{property}": models.Value("")
+            for property in emailuser_properties
+        }
+        emailuser_property_values[f"{emailuser_fk_field}_exists"] = models.Value(False)
+
+        self = self.annotate(**emailuser_property_values)
+
+        for obj in self:
+            emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id)
+            emailuser = retrieve_email_user(emailuser_fk_field_id_value)
+            if emailuser is not None:
+                for property in emailuser_properties:
+                    if property == f"{emailuser_fk_field}_exists":
+                        setattr(obj, f"{emailuser_fk_field}_exists", True)
+                        continue
+                    setattr(
+                        obj,
+                        f"{emailuser_fk_field}_{property}",
+                        getattr(emailuser, property),
+                    )
+
+        return self
 
 
 def createCustomBasket(*args, **kwargs):

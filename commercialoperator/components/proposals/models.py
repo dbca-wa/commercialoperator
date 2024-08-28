@@ -41,6 +41,7 @@ from commercialoperator.components.proposals.email import (
     send_amendment_email_notification,
 )
 from commercialoperator.components.stubs.utils import (
+    EmailUserQuerySet,
     retrieve_user_districtproposal_approver_groups,
     retrieve_user_districtproposal_assessor_groups,
 )
@@ -558,7 +559,9 @@ class ParkEntry(models.Model):
 
 
 class Proposal(DirtyFieldsMixin, RevisionedMixin):
-    # class Proposal(DirtyFieldsMixin, models.Model):
+    # objects = EmailUserRoManager()
+    objects = EmailUserQuerySet.as_manager()
+
     APPLICANT_TYPE_ORGANISATION = "ORG"
     APPLICANT_TYPE_PROXY = "PRX"
     APPLICANT_TYPE_SUBMITTER = "SUB"
