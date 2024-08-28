@@ -26,9 +26,14 @@ def retrieve_email_user(email_user_id):
 class EmailUserQuerySet(models.QuerySet):
     def expand_emailuser_fields(self, emailuser_fk_field, emailuser_properties={}):
         """
+        Adds the emailuser object to the QuerySet and expands it with additional fields that are properties
+        of an EmailUser foreign key if provided through the `emailuser_properties` parameter.
+
         Args:
             emailuser_fk_field: str, name of the field that points to an EmailUser foreign key, e.g. "submitter"
-            emailuser_properties: Set of str, names of the properties of EmailUser to be added to the QuerySet, e.g. ["email", "first_name", "last_name"]
+            emailuser_properties: Set of str, names of the properties of EmailUser to be added to the QuerySet,
+                e.g. ["email", "first_name", "last_name"] become submitter_email, submitter_first_name, submitter_last_name
+                if emailuser_fk_field is "submitter"
 
         Returns:
             QuerySet with additional fields emailuser_fk_field_exists, emailuser_fk_field_email, emailuser_fk_field_first_name, emailuser_fk_field_last_name
@@ -59,6 +64,7 @@ class EmailUserQuerySet(models.QuerySet):
         for obj in self:
             emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id)
             emailuser = retrieve_email_user(emailuser_fk_field_id_value)
+            setattr(obj, emailuser_fk_field, emailuser)
             if emailuser is not None:
                 for property in emailuser_properties:
                     if property == f"{emailuser_fk_field}_exists":

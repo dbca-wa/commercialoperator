@@ -2606,16 +2606,30 @@ class ReferralViewSet(viewsets.ModelViewSet):
             .values_list("proposal__activity", flat=True)
             .distinct()
         )
-        submitter_qs = (
-            qs.filter(proposal__submitter__isnull=False)
-            .order_by("proposal__submitter")
-            .distinct("proposal__submitter")
-            .values_list(
-                "proposal__submitter__first_name",
-                "proposal__submitter__last_name",
-                "proposal__submitter__email",
+        # submitter_qs = (
+        #     qs.filter(proposal__submitter__isnull=False)
+        #     .order_by("proposal__submitter")
+        #     .distinct("proposal__submitter")
+        #     .values_list(
+        #         "proposal__submitter__first_name",
+        #         "proposal__submitter__last_name",
+        #         "proposal__submitter__email",
+        #     )
+        # )
+        submitter_qs = Proposal.objects.filter(
+            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
+                "proposal_id"
             )
+        ).expand_emailuser_fields(
+            "submitter", {"email", "first_name", "last_name"}
+        ).order_by(
+            "submitter_email"
+        ).distinct(
+            "submitter_email"
+        ).values_list(
+            "submitter_first_name", "submitter_last_name", "submitter_email"
         )
+
         submitters = [
             dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
             for i in submitter_qs
@@ -3686,16 +3700,31 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             .values_list("proposal__activity", flat=True)
             .distinct()
         )
-        submitter_qs = (
-            qs.filter(proposal__submitter__isnull=False)
-            .order_by("proposal__submitter")
-            .distinct("proposal__submitter")
-            .values_list(
-                "proposal__submitter__first_name",
-                "proposal__submitter__last_name",
-                "proposal__submitter__email",
+
+        # submitter_qs = (
+        #     qs.filter(proposal__submitter__isnull=False)
+        #     .order_by("proposal__submitter")
+        #     .distinct("proposal__submitter")
+        #     .values_list(
+        #         "proposal__submitter__first_name",
+        #         "proposal__submitter__last_name",
+        #         "proposal__submitter__email",
+        #     )
+        # )
+        submitter_qs = Proposal.objects.filter(
+            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
+                "proposal_id"
             )
+        ).expand_emailuser_fields(
+            "submitter", {"email", "first_name", "last_name"}
+        ).order_by(
+            "submitter_email"
+        ).distinct(
+            "submitter_email"
+        ).values_list(
+            "submitter_first_name", "submitter_last_name", "submitter_email"
         )
+
         submitters = [
             dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
             for i in submitter_qs
