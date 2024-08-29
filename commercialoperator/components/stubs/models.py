@@ -102,24 +102,24 @@ class ProposalAssessorGroupMembers(models.Model):
         return retrieve_email_user(self.emailuser_id)
 
 
-# class ProposalApproverGroupMembers(models.Model):
-#     class Meta:
-#         app_label = "commercialoperator"
-#         # Mirror the existing django-managed through table of the m2m field
-#         db_table = "commercialoperator_proposalapprovergroup_members"
-#         managed = False
-#         unique_together = ("proposalapprovergroup", "emailuser")
+class ProposalApproverGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_proposalapprovergroup_members"
+        managed = False
+        unique_together = ("proposalapprovergroup", "emailuser")
 
-#     proposalapprovergroup = models.ForeignKey(
-#         "ProposalApproverGroup",
-#         on_delete=models.PROTECT,
-#         related_name="proposalapprovergroup_members",
-#     )
-#     emailuser = models.ForeignKey(
-#         EmailUser,
-#         on_delete=models.PROTECT,
-#         related_name="proposalapprovergroup_members",
-#     )
+    proposalapprovergroup = models.ForeignKey(
+        "ProposalApproverGroup",
+        on_delete=models.PROTECT,
+        related_name="proposalapprovergroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="proposalapprovergroup_members",
+    )
 
 
 class DistrictProposalAssessorGroupMembers(models.Model):

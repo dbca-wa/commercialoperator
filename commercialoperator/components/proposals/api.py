@@ -116,8 +116,7 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.stubs.utils import (
-    retrieve_user_districtproposal_approver_groups,
-    retrieve_user_districtproposal_assessor_groups,
+    retrieve_user_groups
 )
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
@@ -538,9 +537,9 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         http://localhost:8499/api/proposal_paginated/qaofficer_internal/?format=datatables&draw=1&length=2
         """
-        qaofficergroup_set = QAOfficerGroup.objects.filter(
-            default=True
-        ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+        qaofficergroup_set = QAOfficerGroup.objects.filter(default=True).values_list(
+            "qaofficergroup_members__emailuser__id", flat=True
+        )
 
         qa_officers = EmailUser.objects.filter(
             id__in=[id for id in qaofficergroup_set]
@@ -563,9 +562,9 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         http://localhost:8499/api/proposal_paginated/qaofficer_internal/?format=datatables&draw=1&length=2
         """
-        qaofficergroup_set = QAOfficerGroup.objects.filter(
-            default=True
-        ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+        qaofficergroup_set = QAOfficerGroup.objects.filter(default=True).values_list(
+            "qaofficergroup_members__emailuser__id", flat=True
+        )
 
         qa_officers = EmailUser.objects.filter(
             id__in=[id for id in qaofficergroup_set]
@@ -2622,18 +2621,18 @@ class ReferralViewSet(viewsets.ModelViewSet):
         #         "proposal__submitter__email",
         #     )
         # )
-        submitter_qs = Proposal.objects.filter(
-            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id"
+        submitter_qs = (
+            Proposal.objects.filter(
+                id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
+                    "proposal_id"
+                )
             )
-        ).expand_emailuser_fields(
-            "submitter", {"email", "first_name", "last_name"}
-        ).order_by(
-            "submitter_email"
-        ).distinct(
-            "submitter_email"
-        ).values_list(
-            "submitter_first_name", "submitter_last_name", "submitter_email"
+            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .order_by("submitter_email")
+            .distinct("submitter_email")
+            .values_list(
+                "submitter_first_name", "submitter_last_name", "submitter_email"
+            )
         )
 
         submitters = [
@@ -3717,18 +3716,18 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
         #         "proposal__submitter__email",
         #     )
         # )
-        submitter_qs = Proposal.objects.filter(
-            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id"
+        submitter_qs = (
+            Proposal.objects.filter(
+                id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
+                    "proposal_id"
+                )
             )
-        ).expand_emailuser_fields(
-            "submitter", {"email", "first_name", "last_name"}
-        ).order_by(
-            "submitter_email"
-        ).distinct(
-            "submitter_email"
-        ).values_list(
-            "submitter_first_name", "submitter_last_name", "submitter_email"
+            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .order_by("submitter_email")
+            .distinct("submitter_email")
+            .values_list(
+                "submitter_first_name", "submitter_last_name", "submitter_email"
+            )
         )
 
         submitters = [
@@ -3826,12 +3825,12 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
             user_id = user.id
             # user_id = 132360  # A real user id for testing
             # user_assessor_groups = user.districtproposalassessorgroup_set.all()
-            user_assessor_groups = retrieve_user_districtproposal_assessor_groups(
-                user_id
+            user_assessor_groups = retrieve_user_groups(
+                "districtproposalassessorgroup", user_id
             )
             # user_approver_groups = user.districtproposalapprovergroup_set.all()
-            user_approver_groups = retrieve_user_districtproposal_approver_groups(
-                user_id
+            user_approver_groups = retrieve_user_groups(
+                "districtproposalapprovergroup", user_id
             )
 
             qs = [

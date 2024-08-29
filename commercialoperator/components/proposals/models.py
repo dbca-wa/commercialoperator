@@ -42,8 +42,7 @@ from commercialoperator.components.proposals.email import (
 )
 from commercialoperator.components.stubs.utils import (
     EmailUserQuerySet,
-    retrieve_user_districtproposal_approver_groups,
-    retrieve_user_districtproposal_assessor_groups,
+    retrieve_user_groups,
 )
 from commercialoperator.ordered_model import OrderedModel
 from commercialoperator.components.proposals.email import (
@@ -559,7 +558,6 @@ class ParkEntry(models.Model):
 
 
 class Proposal(DirtyFieldsMixin, RevisionedMixin):
-    # objects = EmailUserRoManager()
     objects = EmailUserQuerySet.as_manager()
 
     APPLICANT_TYPE_ORGANISATION = "ORG"
@@ -1998,11 +1996,22 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     # Check if the user is member of assessor group for the Proposal
     def is_assessor(self, user):
-        return self.__assessor_group() in user.proposalassessorgroup_set.all()
+        user_id = user.id
+        # user_id = 102712 # An existing user id for testing
+        proposalassessorgroups = retrieve_user_groups(
+            "proposalassessorgroup", user_id
+        )
+        # return self.__assessor_group() in user.proposalassessorgroup_set.all()
+        return self.__assessor_group() in proposalassessorgroups
 
     # Check if the user is member of assessor group for the Proposal
     def is_approver(self, user):
-        return self.__approver_group() in user.proposalapprovergroup_set.all()
+        user_id = user.id
+        proposalapprovergroups = retrieve_user_groups(
+            "proposalapprovergroup", user_id
+        )
+        # return self.__approver_group() in user.proposalapprovergroup_set.all()
+        return self.__approver_group() in proposalapprovergroups
 
     def can_assess(self, user):
         # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
@@ -7092,17 +7101,17 @@ class DistrictProposal(models.Model):
         user_id = user.id
 
         if self.processing_status in ["with_assessor", "with_assessor_requirements"]:
-            user_assessor_groups = retrieve_user_districtproposal_assessor_groups(user_id)
+            user_assessor_groups = retrieve_user_groups(
+                "districtproposalassessorgroup", user_id
+            )
             # user.districtproposalassessorgroup_set.all()
-            return (
-                self.__assessor_group() in user_assessor_groups
-            )
+            return self.__assessor_group() in user_assessor_groups
         elif self.processing_status == "with_approver":
-            user_approver_groups = retrieve_user_districtproposal_approver_groups(user_id)
-            # user.districtproposalapprovergroup_set.all()
-            return (
-                self.__approver_group() in user_approver_groups
+            user_approver_groups = retrieve_user_groups(
+                "districtproposalapprovergroup", user_id
             )
+            # user.districtproposalapprovergroup_set.all()
+            return self.__approver_group() in user_approver_groups
         else:
             return False
 

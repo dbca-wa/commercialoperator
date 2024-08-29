@@ -31,6 +31,7 @@ from commercialoperator.components.approvals.email import (
     send_approval_reinstate_email_notification,
     send_approval_surrender_email_notification,
 )
+from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.utils import search_keys, search_multiple_keys
 from commercialoperator.helpers import is_customer
 
@@ -415,7 +416,12 @@ class Approval(RevisionedMixin):
 
     @property
     def allowed_assessors(self):
-        return self.current_proposal.allowed_assessors
+        # return self.current_proposal.allowed_assessors
+        email_users = [
+            retrieve_email_user(user_id)
+            for user_id in self.current_proposal.allowed_assessors
+        ]
+        return [user for user in email_users if user]
 
     def is_assessor(self, user):
         return self.current_proposal.is_assessor(user)

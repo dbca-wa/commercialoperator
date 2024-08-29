@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 def retrieve_email_user(email_user_id):
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)
     cache_timeout = (
-        settings.DEBUG and settings.CACHE_TIMEOUT_24_HOURS
+        settings.DEBUG
+        and settings.CACHE_TIMEOUT_24_HOURS
         or settings.CACHE_TIMEOUT_5_SECONDS
     )
     email_user = cache.get(cache_key)
@@ -31,7 +32,6 @@ def retrieve_email_user(email_user_id):
         else:
             cache.set(cache_key, email_user, cache_timeout)
     return email_user
-
 
 
 class EmailUserQuerySet(models.QuerySet):
@@ -110,23 +110,13 @@ def update_payments(*args, **kwargs):
     )
 
 
-def retrieve_user_districtproposal_assessor_groups(user_id):
-    from commercialoperator.components.proposals.models import (
-        DistrictProposalAssessorGroup,
-    )
+def retrieve_user_groups(class_name, user_id, app_label="commercialoperator"):
+    """Retrieves m2m-field groups using the associated through model"""
 
-    return DistrictProposalAssessorGroup.objects.filter(
-        districtproposalassessorgroup_members__emailuser_id=user_id
-    )
+    InstanceClass = apps.get_model(app_label=app_label, model_name=f"{class_name}")
 
-
-def retrieve_user_districtproposal_approver_groups(user_id):
-    from commercialoperator.components.proposals.models import (
-        DistrictProposalApproverGroup,
-    )
-
-    return DistrictProposalApproverGroup.objects.filter(
-        districtproposalapprovergroup_members__emailuser_id=user_id
+    return InstanceClass.objects.filter(
+        **{f"{class_name.lower()}_members__emailuser_id": user_id}
     )
 
 

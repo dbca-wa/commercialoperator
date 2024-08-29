@@ -131,7 +131,9 @@ class ApprovalSerializer(serializers.ModelSerializer):
     renewal_sent = serializers.SerializerMethodField(read_only=True)
     status = serializers.CharField(source="get_status_display")
     allowed_assessors = EmailUserSerializer(many=True)
-    region = serializers.CharField(source="current_proposal.region.name")
+    region = serializers.CharField(
+        source="current_proposal.region.name", allow_null=True
+    )
     district = serializers.CharField(
         source="current_proposal.district.name", allow_null=True
     )
