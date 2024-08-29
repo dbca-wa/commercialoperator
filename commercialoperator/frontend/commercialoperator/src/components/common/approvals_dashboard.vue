@@ -204,6 +204,7 @@ export default {
                 keepInvalid:true,
                 allowInputToggle:true
             },
+            application_types: [],
             approval_status:[],
             proposal_submitters: [],
             proposal_headers:[

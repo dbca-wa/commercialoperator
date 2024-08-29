@@ -124,6 +124,7 @@ export default {
                 keepInvalid:true,
                 allowInputToggle:true
             },
+            application_types: [],
             proposal_status:[],
             proposal_submitters: [],
             proposal_headers:["Number","Licence Type","Submitter","Applicant","Status","Lodged on", "Assigned Officer", "Event Name","Action"],

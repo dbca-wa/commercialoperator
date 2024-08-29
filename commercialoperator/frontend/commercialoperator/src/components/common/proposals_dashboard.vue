@@ -150,6 +150,7 @@ export default {
                 keepInvalid:true,
                 allowInputToggle:true
             },
+            application_types: [],
             // application_types:[
             //     {value:'T Class', name:'T Class'},
             //     {value:'Filming', name:'Filming'},
