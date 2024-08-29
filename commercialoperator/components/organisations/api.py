@@ -8,9 +8,6 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from commercialoperator.components.stubs.classes import (
-    Address as OrganisationAddress,
-)  # ledger.accounts.models.OrganisationAddress
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
     Organisation,

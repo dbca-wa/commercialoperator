@@ -1,9 +1,5 @@
 from django.conf import settings
 from django.db.models import Q
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from commercialoperator.components.stubs.classes import (
-    Address,
-)  # ledger.accounts.models.Address
 from commercialoperator.components.organisations.models import (
     Organisation,
 )
@@ -23,12 +19,19 @@ from commercialoperator.components.stubs.models import (
     EmailUserAction,
     EmailUserLogEntry,
 )
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin
 from commercialoperator.components.approvals.models import Approval
-from rest_framework import serializers
+from rest_framework import serializers, status
+from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
 from ledger_api_client.helpers import is_payment_admin
+from ledger_api_client.utils import get_organisation
 from django.utils import timezone
 from datetime import timedelta
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -50,9 +53,11 @@ class UserSystemSettingsSerializer(serializers.ModelSerializer):
 
 
 class UserOrganisationSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="organisation.name")
-    abn = serializers.CharField(source="organisation.abn")
-    email = serializers.SerializerMethodField()
+    name = serializers.CharField(source="organisation_name", read_only=True)
+    abn = serializers.CharField(source="organisation_abn", read_only=True)
+    email = serializers.SerializerMethodField(
+        source="organisation_email", read_only=True
+    )
     is_consultant = serializers.SerializerMethodField(read_only=True)
     is_admin = serializers.SerializerMethodField(read_only=True)
     active_proposals = serializers.SerializerMethodField(read_only=True)
@@ -101,7 +106,8 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
             # NOTE: approval__expiry_date__gt=today --> needed in qs because expired (expired and replace_by_id) Migrated licences are showing as 'current'
             qs = (
                 Proposal.objects.filter(
-                    application_type__name=application_type, org_applicant=obj
+                    application_type__name=application_type,
+                    org_applicant=obj["organisation_id"],
                 )
                 .exclude(
                     Q(processing_status__in=["approved", "declined", "discarded"])
@@ -118,7 +124,8 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
         for application_type in [ApplicationType.FILMING, ApplicationType.EVENT]:
             qs = (
                 Proposal.objects.filter(
-                    application_type__name=application_type, org_applicant=obj
+                    application_type__name=application_type,
+                    org_applicant=obj["organisation_id"],
                 )
                 .exclude(processing_status__in=["approved", "declined", "discarded"])
                 .values_list("lodgement_number", flat=True)
@@ -132,13 +139,13 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
         # Only return the Approvals in last 12 months
         year_date = today - timedelta(days=365)
         _list = []
-        # for application_type in ['T Class', 'Filming', 'Event']:
+
         qs = (
             Approval.objects.filter(
                 expiry_date__lte=today,
                 expiry_date__gte=year_date,
                 current_proposal__application_type__name=ApplicationType.EVENT,
-                current_proposal__org_applicant=obj,
+                current_proposal__org_applicant=obj["organisation_id"],
             )
             .values(
                 "id", "current_proposal", "current_proposal__event_activity__event_name"
@@ -167,7 +174,6 @@ class UserSerializer(serializers.ModelSerializer):
     address_details = serializers.SerializerMethodField()
     contact_details = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
-    # identification = DocumentSerializer()
     is_department_user = serializers.SerializerMethodField()
     is_payment_admin = serializers.SerializerMethodField()
     system_settings = serializers.SerializerMethodField()
@@ -182,7 +188,6 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "first_name",
             "email",
-            #'identification',
             "residential_address",
             "phone_number",
             "mobile_number",
@@ -219,8 +224,9 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
     def get_is_department_user(self, obj):
+        request = self.context["request"] if self.context else None
         if obj.email:
-            return in_dbca_domain(obj)
+            return in_dbca_domain(request)
         else:
             return False
 
@@ -228,11 +234,31 @@ class UserSerializer(serializers.ModelSerializer):
         return is_payment_admin(obj)
 
     def get_commercialoperator_organisations(self, obj):
-        commercialoperator_organisations = obj.commercialoperator_organisations
+        # commercialoperator_organisations = obj.commercialoperator_organisations
+        user_id = obj.id
+        # user_id = 163998  # An existing user id for testing
+        organisation_ids = retrieve_delegate_organisation_ids(user_id)
+        commercialoperator_organisations = []
+
+        for org_id in organisation_ids:
+            organisations_response = get_organisation(obj.id)
+            if organisations_response.get("status", None) == status.HTTP_200_OK:
+                commercialoperator_organisations.append(
+                    organisations_response.get("data", [])
+                )
+                # Note: Set a cache here
+            else:
+                raise serializers.ValidationError(
+                    f"Error retrieving organisations for user {obj.id}"
+                )
+            logger.info(
+                f"Retrieved organisations for user {obj.id}: {commercialoperator_organisations}"
+            )
+
         serialized_orgs = UserOrganisationSerializer(
             commercialoperator_organisations, many=True, context={"user_id": obj.id}
-        ).data
-        return serialized_orgs
+        )
+        return serialized_orgs.data
 
     def get_system_settings(self, obj):
         try:

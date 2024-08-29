@@ -30,6 +30,7 @@ from commercialoperator.components.organisations.emails import (
     send_organisation_request_email_notification,
     send_organisation_request_link_email_notification,
 )
+from commercialoperator.components.stubs.utils import retrieve_members
 
 
 class Organisation(models.Model):
@@ -1023,7 +1024,9 @@ class OrganisationAccessGroup(models.Model):
 
     @property
     def filtered_members(self):
-        return self.members.all()
+        # return self.members.all()
+        return retrieve_members(self).all()
+
 
     class Meta:
         app_label = "commercialoperator"

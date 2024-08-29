@@ -17,19 +17,6 @@ class Ersatz(models.Model):
         abstract = True
 
 
-class Address(Ersatz):
-    """ledger.accounts.models.Address"""
-
-    line1 = models.Field()
-    line2 = models.Field()
-    locality = models.Field()
-    state = models.Field()
-    postcode = models.Field()
-
-    class Meta:
-        managed = False
-
-
 class LedgerOrganisation(Ersatz):
     """ledger.accounts.models.Organisation"""
 
@@ -54,11 +41,13 @@ class Order(Ersatz):
     class Meta:
         managed = False
 
+
 class CashTransaction(Ersatz):
     """ledger.payments.models.CashTransaction"""
 
     class Meta:
         managed = False
+
 
 class BpointTransaction(Ersatz):
     """ledger.payments.models.BpointTransaction"""
@@ -66,15 +55,16 @@ class BpointTransaction(Ersatz):
     class Meta:
         managed = False
 
+
 class BpayTransaction(Ersatz):
     """ledger.payments.models.BpayTransaction"""
 
     class Meta:
         managed = False
 
+
 class Invoice(Ersatz):
     """ledger.payments.models.Invoice"""
 
     class Meta:
         managed = False
-

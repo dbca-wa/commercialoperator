@@ -7,9 +7,8 @@ from rest_framework import viewsets, serializers, generics, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
 from commercialoperator.components.stubs.models import EmailUserAction
-from commercialoperator.components.stubs.classes import Address
 
 from commercialoperator.components.users.serializers import (
     UserSerializer,

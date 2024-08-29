@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.db import models
 from django.conf import settings
 from django.core.cache import cache
@@ -117,3 +118,38 @@ def retrieve_user_districtproposal_approver_groups(user_id):
     return DistrictProposalApproverGroup.objects.filter(
         districtproposalapprovergroup_members__emailuser_id=user_id
     )
+
+
+def retrieve_members(class_object, app_label="commercialoperator"):
+    """Retrieves m2m-field members using the associated through model
+    `ClassWithMembersFieldMembers`.
+    """
+
+    class_name = class_object.__class__.__name__
+    InstanceClass = apps.get_model(
+        app_label=app_label, model_name=f"{class_name}Members"
+    )
+    return InstanceClass.objects.filter(
+        **{f"{class_name.lower()}_id": class_object.id}
+    ).values_list("emailuser_id", flat=True)
+
+
+def retrieve_delegate_organisation_ids(email_user_id):
+    from commercialoperator.components.organisations.models import (
+        Organisation,
+        UserDelegation,
+    )
+
+    organisation_ids = UserDelegation.objects.filter(user_id=email_user_id).values_list(
+        "organisation_id", flat=True
+    )
+
+    # return list(
+    #     Organisation.objects.filter(
+    #         delegates__user=email_user_id,
+    #         # contacts__user=email_user_id,
+    #         # contacts__user_status=OrganisationContact.USER_STATUS_CHOICE_ACTIVE,
+    #     ).values_list("id", flat=True)
+    # )
+
+    return organisation_ids

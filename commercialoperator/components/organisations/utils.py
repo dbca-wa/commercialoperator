@@ -47,18 +47,17 @@ def is_last_admin(organisation, user):
 
 def can_admin_org(organisation, user):
     from commercialoperator.components.organisations.models import (
-        Organisation,
-        OrganisationAccessGroup,
-        UserDelegation,
         OrganisationContact,
     )
-    from ledger.accounts.models import EmailUser
+
+    organisation_id = organisation.get("organisation_id", None)
+    if not organisation_id:
+        return False
 
     try:
         org_contact = OrganisationContact.objects.get(
-            organisation_id=organisation, email=user.email
+            organisation_id=organisation_id, email=user.email
         )
-        # if org_contact.can_edit
 
         return org_contact.can_edit
     except OrganisationContact.DoesNotExist:
@@ -97,19 +96,16 @@ def can_approve(organisation, user):
 
 
 def is_consultant(organisation, user):
-    from commercialoperator.components.organisations.models import (
-        Organisation,
-        OrganisationAccessGroup,
-        UserDelegation,
-        OrganisationContact,
-    )
-    from ledger.accounts.models import EmailUser
+    from commercialoperator.components.organisations.models import OrganisationContact
+
+    organisation_id = organisation.get("organisation_id", None)
+    if not organisation_id:
+        return False
 
     try:
         org_contact = OrganisationContact.objects.get(
-            organisation_id=organisation, email=user.email
+            organisation_id=organisation_id, email=user.email
         )
-        # if org_contact.can_edit
 
         return org_contact.check_consultant
     except OrganisationContact.DoesNotExist:
@@ -143,6 +139,7 @@ def has_atleast_one_admin(organisation):
 def is_org_access_member(user):
     from commercialoperator.components.organisations.models import (
         OrganisationAccessGroup,
+        OrganisationContact,
     )
 
     try:

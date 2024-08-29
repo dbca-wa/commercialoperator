@@ -168,3 +168,26 @@ class DistrictProposalApproverGroupMembers(models.Model):
     @property
     def emailuserro(self):
         return retrieve_email_user(self.emailuser_id)
+
+class OrganisationAccessGroupMembers(models.Model):
+    class Meta:
+        app_label = "commercialoperator"
+        # Mirror the existing django-managed through table of the m2m field
+        db_table = "commercialoperator_organisationaccessgroup_members"
+        managed = False
+        unique_together = ("organisationaccessgroup", "emailuser")
+
+    organisationaccessgroup = models.ForeignKey(
+        "OrganisationAccessGroup",
+        on_delete=models.PROTECT,
+        related_name="organisationaccessgroup_members",
+    )
+    emailuser = models.ForeignKey(
+        EmailUser,
+        on_delete=models.PROTECT,
+        related_name="organisationaccessgroup_members",
+    )
+
+    @property
+    def emailuserro(self):
+        return retrieve_email_user(self.emailuser_id)
