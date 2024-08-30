@@ -46,16 +46,14 @@ export default {
     watch: {},
     mounted: function () {
         this.check_qaofficer_membership();
-        ``;
     },
     methods: {
         check_qaofficer_membership: function () {
             let vm = this;
 
-            //vm.$http.get(api_endpoints.filter_list).then((response) => {
             vm.$http.get(vm.dashboard_url).then(
                 (response) => {
-                    vm.is_qaofficer = response.body.data['QA_Officer'];
+                    vm.is_qaofficer = response.data['QA_Officer'];
                 },
                 (error) => {
                     console.log(error);

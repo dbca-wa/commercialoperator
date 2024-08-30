@@ -116,7 +116,8 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.stubs.utils import (
-    retrieve_user_groups
+    retrieve_group_members,
+    retrieve_user_groups,
 )
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
@@ -537,8 +538,9 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         http://localhost:8499/api/proposal_paginated/qaofficer_internal/?format=datatables&draw=1&length=2
         """
-        qaofficergroup_set = QAOfficerGroup.objects.filter(default=True).values_list(
-            "qaofficergroup_members__emailuser__id", flat=True
+
+        qaofficergroup_set = retrieve_group_members(
+            QAOfficerGroup.objects.filter(default=True)
         )
 
         qa_officers = EmailUser.objects.filter(
@@ -562,8 +564,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         http://localhost:8499/api/proposal_paginated/qaofficer_internal/?format=datatables&draw=1&length=2
         """
-        qaofficergroup_set = QAOfficerGroup.objects.filter(default=True).values_list(
-            "qaofficergroup_members__emailuser__id", flat=True
+        qaofficergroup_set = retrieve_group_members(
+            QAOfficerGroup.objects.filter(default=True)
         )
 
         qa_officers = EmailUser.objects.filter(

@@ -505,7 +505,8 @@ class DTProposalSerializer(BaseProposalSerializer):
 
 class ListProposalSerializer(BaseProposalSerializer):
     submitter = EmailUserSerializer(source='submitter_id')
-    applicant = serializers.CharField(read_only=True)
+    # applicant = serializers.CharField(read_only=True)
+    applicant = serializers.SerializerMethodField(read_only=True)
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
@@ -601,7 +602,7 @@ class ListProposalSerializer(BaseProposalSerializer):
             emailuser = None
 
         if emailuser:
-            return emailuser.get_full_name()
+            return f"{emailuser.first_name} {emailuser.last_name}"
         return None
 
     def get_region(self,obj):
@@ -634,6 +635,15 @@ class ListProposalSerializer(BaseProposalSerializer):
 
     def get_fee_invoice_url(self,obj):
         return '/cols/payments/invoice-pdf/{}'.format(obj.fee_invoice_reference) if obj.fee_paid else None
+
+    def get_applicant(self, obj):
+        if obj.applicant_type == Proposal.APPLICANT_TYPE_ORGANISATION:
+            return obj.org_applicant.name
+
+        emailuser = retrieve_email_user(obj.proxy_applicant_id)
+        if emailuser:
+            return f"{emailuser.first_name} {emailuser.last_name}"
+        return None
 
 class ProposalSerializer(BaseProposalSerializer):
     submitter = serializers.CharField(source='submitter.get_full_name')

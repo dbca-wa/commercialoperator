@@ -19,13 +19,13 @@ def retrieve_email_user(email_user_id):
     )
     email_user = cache.get(cache_key)
 
-    if settings.DEBUG and email_user == EmailUser.DoesNotExist:
+    if settings.DEBUG and email_user is EmailUser.DoesNotExist:
         return None
     elif email_user is None:
         try:
             email_user = EmailUser.objects.get(id=email_user_id)
         except EmailUser.DoesNotExist:
-            logger.error(f"EmailUser with id {email_user_id} does not exist")
+            # logger.error(f"EmailUser with id {email_user_id} does not exist")
             if settings.DEBUG:
                 cache.set(cache_key, EmailUser.DoesNotExist, cache_timeout)
             return None
@@ -110,8 +110,17 @@ def update_payments(*args, **kwargs):
     )
 
 
+def retrieve_group_members(queryset, app_label="commercialoperator"):
+    """Retrieves m2m-field members that belong to a queryset of groups, using the associated through model"""
+
+    class_name = queryset.model.__name__
+    return queryset.values_list(
+        f"{class_name.lower()}_members__emailuser__id", flat=True
+    )
+
+
 def retrieve_user_groups(class_name, user_id, app_label="commercialoperator"):
-    """Retrieves m2m-field groups using the associated through model"""
+    """Retrieves m2m-field groups a user belongs to, using the associated through model"""
 
     InstanceClass = apps.get_model(app_label=app_label, model_name=f"{class_name}")
 

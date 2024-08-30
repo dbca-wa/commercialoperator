@@ -2,10 +2,14 @@ from django.db import models, transaction
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+
+from rest_framework import status
+
 from commercialoperator.components.stubs.classes import (
     LedgerOrganisation as ledger_organisation,
 )  # ledger.accounts.models.Organisation
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import get_organisation
 from commercialoperator.components.main.models import (
     UserAction,
     CommunicationsLogEntry,
@@ -641,23 +645,39 @@ class Organisation(models.Model):
 
     @property
     def name(self):
-        return self.organisation.name
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("organisation_name", "")
+        return ""
 
     @property
     def abn(self):
-        return self.organisation.abn
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("organisation_abn", "")
+        return ""
 
     @property
     def address(self):
-        return self.organisation.postal_address
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("postal_address", "")
+        return ""
 
     @property
     def phone_number(self):
-        return self.organisation.phone_number
+        # Note: There doesn't seem to be a phone number field in the ledger organisation model
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("phone_number", "")
+        return ""
 
     @property
     def email(self):
-        return self.organisation.email
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("organisation_email", "")
+        return ""
 
     @property
     def first_five(self):
@@ -1026,7 +1046,6 @@ class OrganisationAccessGroup(models.Model):
     def filtered_members(self):
         # return self.members.all()
         return retrieve_members(self).all()
-
 
     class Meta:
         app_label = "commercialoperator"

@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.ledger_models import Address as OrganisationAddress
+from ledger_api_client.utils import get_organisation
 from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
@@ -137,6 +138,12 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "max_num_months_ahead",
             "last_event_application_fee_date",
         )
+
+    def to_representation(self, instance):
+        if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
+            # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
+            instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
+        return super().to_representation(instance)
 
     def get_apply_application_discount(self, obj):
         return obj.apply_application_discount
