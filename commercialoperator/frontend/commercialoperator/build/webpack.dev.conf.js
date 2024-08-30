@@ -17,9 +17,15 @@ module.exports = merge(baseWebpackConfig, {
         rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap }),
     },
     // cheap-module-eval-source-map is faster for development
-    devtool: '#cheap-module-eval-source-map',
+    // https://docs.w3cub.com/webpack/configuration/devtool.html#development
+    // devtool: 'source-map',
+    devtool: 'eval-source-map',
+    // devtool: 'eval-cheap-source-map',
+    // devtool: 'eval-cheap-module-source-map',
+    // devtool: 'inline-cheap-source-map',
+    // devtool: 'cheap-module-eval-source-map',
     output: {
-        publicPath: 'http://' + config.dev.webpackHost.replace(/\"/g, '') + '/',
+        publicPath: 'http://' + config.dev.webpackHost.replace(/"/g, '') + '/',
     },
     plugins: [
         new webpack.DefinePlugin({
