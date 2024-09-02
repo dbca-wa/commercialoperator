@@ -34,6 +34,7 @@ from commercialoperator.components.organisations.emails import (
     send_organisation_request_email_notification,
     send_organisation_request_link_email_notification,
 )
+from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import retrieve_members
 
 
@@ -1027,20 +1028,12 @@ class OrganisationRequest(models.Model):
         return OrganisationRequestUserAction.log_action(self, action, request.user)
 
 
-class OrganisationAccessGroup(models.Model):
+class OrganisationAccessGroup(models.Model, MembersPropertiesMixin):
     site = models.OneToOneField(Site, default="1", on_delete=models.CASCADE)
     members = models.ManyToManyField(EmailUser)
 
     def __str__(self):
         return "Organisation Access Group"
-
-    @property
-    def all_members(self):
-        all_members = []
-        all_members.extend(self.members.all())
-        member_ids = [m.id for m in self.members.all()]
-        # all_members.extend(EmailUser.objects.filter(is_superuser=True,is_staff=True,is_active=True).exclude(id__in=member_ids))
-        return all_members
 
     @property
     def filtered_members(self):

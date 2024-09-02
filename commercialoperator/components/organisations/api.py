@@ -8,6 +8,7 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
     Organisation,
@@ -778,10 +779,9 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         detail=False,
     )
     def datatable_list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
         try:
-            qs = self.get_queryset()
             serializer = OrganisationRequestDTSerializer(qs, many=True)
-            return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
@@ -791,25 +791,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
-
-    # @action(methods=['GET',])
-    # def user_organisation_request_list(self, request, *args, **kwargs):
-    #     try:
-    #         queryset = self.get_queryset()
-    #         queryset = queryset.filter(requester = request.user)
-
-    #         # instance = OrganisationRequest.objects.get(requester = request.user)
-    #         serializer = self.get_serializer(queryset, many=True)
-    #         return Response(serializer.data)
-    #     except serializers.ValidationError:
-    #         print(traceback.print_exc())
-    #         raise
-    #     except ValidationError as e:
-    #         print(traceback.print_exc())
-    #         raise serializers.ValidationError(repr(e.error_dict))
-    #     except Exception as e:
-    #         print(traceback.print_exc())
-    #         raise serializers.ValidationError(str(e))
+        else:
+            return Response(serializer.data)
 
     @action(
         methods=[
@@ -1154,12 +1137,23 @@ class OrganisationAccessGroupMembers(views.APIView):
             group = OrganisationAccessGroup.objects.first()
             if group:
                 for m in group.all_members:
-                    members.append({"name": m.get_full_name(), "id": m.id})
+                    emailuser = retrieve_email_user(m)
+                    if emailuser:
+                        full_name = f"{emailuser.first_name} {emailuser.last_name}"
+                        members.append(
+                            {
+                                "name": full_name,
+                                "id": m,
+                            }
+                        )
             else:
                 for m in EmailUser.objects.filter(
                     is_superuser=True, is_staff=True, is_active=True
                 ):
-                    members.append({"name": m.get_full_name(), "id": m.id})
+                    emailuser = retrieve_email_user(m)
+                    if emailuser:
+                        full_name = f"{emailuser.first_name} {emailuser.last_name}"
+                        members.append({"name": full_name, "id": m.id})
         return Response(members)
 
 

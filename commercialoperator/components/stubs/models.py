@@ -169,6 +169,7 @@ class DistrictProposalApproverGroupMembers(models.Model):
     def emailuserro(self):
         return retrieve_email_user(self.emailuser_id)
 
+
 class OrganisationAccessGroupMembers(models.Model):
     class Meta:
         app_label = "commercialoperator"

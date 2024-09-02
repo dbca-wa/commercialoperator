@@ -40,6 +40,7 @@ from commercialoperator.components.proposals.email import (
     send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
 )
+from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     EmailUserQuerySet,
     retrieve_group_members,
@@ -4641,7 +4642,7 @@ class ProposalUserAction(UserAction):
     )
 
 
-class ReferralRecipientGroup(models.Model):
+class ReferralRecipientGroup(models.Model, MembersPropertiesMixin):
     # site = models.OneToOneField(Site, default='1')
     name = models.CharField(max_length=30, unique=True)
     members = models.ManyToManyField(EmailUser)
@@ -4650,13 +4651,7 @@ class ReferralRecipientGroup(models.Model):
         # return 'Referral Recipient Group'
         return self.name
 
-    @property
-    def all_members(self):
-        all_members = []
-        all_members.extend(self.members.all())
-        member_ids = [m.id for m in self.members.all()]
-        # all_members.extend(EmailUser.objects.filter(is_superuser=True,is_staff=True,is_active=True).exclude(id__in=member_ids))
-        return all_members
+
 
     @property
     def filtered_members(self):
@@ -4672,8 +4667,7 @@ class ReferralRecipientGroup(models.Model):
         verbose_name_plural = "Referral groups"
 
 
-class QAOfficerGroup(models.Model):
-    # site = models.OneToOneField(Site, default='1')
+class QAOfficerGroup(models.Model, MembersPropertiesMixin):
     name = models.CharField(max_length=30, unique=True)
     members = models.ManyToManyField(EmailUser)
     default = models.BooleanField(default=False)
@@ -4681,13 +4675,6 @@ class QAOfficerGroup(models.Model):
     def __str__(self):
         return "QA Officer Group"
 
-    @property
-    def all_members(self):
-        all_members = []
-        all_members.extend(self.members.all())
-        member_ids = [m.id for m in self.members.all()]
-        # all_members.extend(EmailUser.objects.filter(is_superuser=True,is_staff=True,is_active=True).exclude(id__in=member_ids))
-        return all_members
 
     @property
     def filtered_members(self):
