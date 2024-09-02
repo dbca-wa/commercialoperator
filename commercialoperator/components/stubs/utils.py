@@ -110,13 +110,29 @@ def update_payments(*args, **kwargs):
     )
 
 
-def retrieve_group_members(queryset, app_label="commercialoperator"):
-    """Retrieves m2m-field members that belong to a queryset of groups, using the associated through model"""
+def retrieve_group_members(group_object, app_label="commercialoperator"):
+    """Retrieves m2m-field members that belong to a group-object (single object or queryset), using the associated through model"""
 
-    class_name = queryset.model.__name__
-    return queryset.values_list(
-        f"{class_name.lower()}_members__emailuser__id", flat=True
-    )
+    if hasattr(group_object, "_meta"):
+        # group_object is a model object
+        try:
+            # The group object's model name
+            model_name = group_object._meta.model_name
+        except AttributeError:
+            raise ValueError("The model object does not have a model name attribute")
+        # Get the group object's Members through-model
+        class_name = f"{model_name.lower()}members"
+        InstanceClass = apps.get_model(app_label=app_label, model_name=f"{class_name}")
+
+        return InstanceClass.objects.filter(
+            **{f"{model_name.lower()}_id": group_object.id}
+        ).values_list("emailuser_id", flat=True)
+    else:
+        # group_object is a QuerySet
+        class_name = group_object.model.__name__
+        return group_object.values_list(
+            f"{class_name.lower()}_members__emailuser__id", flat=True
+        )
 
 
 def retrieve_user_groups(class_name, user_id, app_label="commercialoperator"):

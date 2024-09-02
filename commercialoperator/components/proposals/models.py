@@ -42,6 +42,7 @@ from commercialoperator.components.proposals.email import (
 )
 from commercialoperator.components.stubs.utils import (
     EmailUserQuerySet,
+    retrieve_group_members,
     retrieve_user_groups,
 )
 from commercialoperator.ordered_model import OrderedModel
@@ -1511,17 +1512,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         else:
             group = self.__assessor_group()
 
-        # return group.members.all() if group else []
-        return (
-            [m.emailuser_id for m in group.proposalassessorgroup_members.all()]
-            if group
-            else []
-        )
+        return retrieve_group_members(group) if group else []
 
     @property
     def compliance_assessors(self):
         group = self.__assessor_group()
-        return group.members.all() if group else []
+        return retrieve_group_members(group) if group else []
 
     @property
     def can_officer_process(self):
@@ -1998,18 +1994,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def is_assessor(self, user):
         user_id = user.id
         # user_id = 102712 # An existing user id for testing
-        proposalassessorgroups = retrieve_user_groups(
-            "proposalassessorgroup", user_id
-        )
+        proposalassessorgroups = retrieve_user_groups("proposalassessorgroup", user_id)
         # return self.__assessor_group() in user.proposalassessorgroup_set.all()
         return self.__assessor_group() in proposalassessorgroups
 
     # Check if the user is member of assessor group for the Proposal
     def is_approver(self, user):
         user_id = user.id
-        proposalapprovergroups = retrieve_user_groups(
-            "proposalapprovergroup", user_id
-        )
+        proposalapprovergroups = retrieve_user_groups("proposalapprovergroup", user_id)
         # return self.__approver_group() in user.proposalapprovergroup_set.all()
         return self.__approver_group() in proposalapprovergroups
 

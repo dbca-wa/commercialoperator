@@ -509,16 +509,12 @@ class ListProposalSerializer(BaseProposalSerializer):
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    #assigned_officer = serializers.CharField(source='assigned_officer.get_full_name')
     assigned_officer = serializers.SerializerMethodField(read_only=True)
 
     application_type = serializers.CharField(source='application_type.name', read_only=True)
-    #region = serializers.CharField(source='region.name', read_only=True)
-    #district = serializers.CharField(source='district.name', read_only=True)
     region = serializers.SerializerMethodField(read_only=True)
     district = serializers.SerializerMethodField(read_only=True)
 
-    #tenure = serializers.CharField(source='tenure.name', read_only=True)
     assessor_process = serializers.SerializerMethodField(read_only=True)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     fee_invoice_url = serializers.SerializerMethodField()

@@ -7,26 +7,24 @@ from commercialoperator.components.compliances.models import (
 )
 from rest_framework import serializers
 
+from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
+from commercialoperator.components.stubs.utils import retrieve_email_user
 
-class EmailUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmailUser
-        fields = ("id", "email", "first_name", "last_name", "title", "organisation")
+
+class EmailUserSerializer(EmailUserRoSerializer):
+    pass
 
 
 class ComplianceSerializer(serializers.ModelSerializer):
     regions = serializers.CharField(source="proposal.region")
     activity = serializers.CharField(source="proposal.activity")
     title = serializers.CharField(source="proposal.title")
-    holder = serializers.CharField(source="proposal.applicant")
+    holder = serializers.SerializerMethodField(read_only=True)
     processing_status = serializers.CharField(source="get_processing_status_display")
     customer_status = serializers.CharField(source="get_customer_status_display")
     submitter = serializers.SerializerMethodField(read_only=True)
     documents = serializers.SerializerMethodField()
-    # submitter = serializers.CharField(source='submitter.get_full_name')
-    submitter = serializers.SerializerMethodField(read_only=True)
     allowed_assessors = EmailUserSerializer(many=True)
-    # assigned_to = serializers.CharField(source='assigned_to.get_full_name')
     assigned_to = serializers.SerializerMethodField(read_only=True)
     requirement = serializers.CharField(
         source="requirement.requirement", required=False, allow_null=True
@@ -75,18 +73,29 @@ class ComplianceSerializer(serializers.ModelSerializer):
         return obj.approval.lodgement_number
 
     def get_assigned_to(self, obj):
-        if obj.assigned_to:
-            return obj.assigned_to.get_full_name()
+        if obj.assigned_to_id:
+            emailuser = retrieve_email_user(obj.assigned_to_id)
+            if emailuser:
+                return f"{emailuser.first_name} {emailuser.last_name}"
         return None
 
     def get_submitter(self, obj):
-        if obj.submitter:
-            return obj.submitter.get_full_name()
+        if obj.submitter_id:
+            emailuser = retrieve_email_user(obj.submitter_id)
+            if emailuser:
+                return f"{emailuser.first_name} {emailuser.last_name}"
         return None
 
     def get_application_type(self, obj):
         if obj.proposal.application_type:
             return obj.proposal.application_type.name
+        return None
+
+    def get_holder(self, obj):
+        if obj.proposal and obj.proposal.applicant_id:
+            emailuser = retrieve_email_user(obj.proposal.applicant_id)
+            if emailuser:
+                return f"{emailuser.first_name} {emailuser.last_name}"
         return None
 
 
