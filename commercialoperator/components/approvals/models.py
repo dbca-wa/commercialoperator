@@ -31,6 +31,7 @@ from commercialoperator.components.approvals.email import (
     send_approval_reinstate_email_notification,
     send_approval_surrender_email_notification,
 )
+from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.utils import search_keys, search_multiple_keys
 from commercialoperator.helpers import is_customer
 
@@ -53,7 +54,7 @@ def update_approval_comms_log_filename(instance, filename):
 
 class ApprovalDocument(Document):
     approval = models.ForeignKey(
-        "Approval", related_name="documents", on_delete=models.PROTECT
+        "Approval", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512)
     can_delete = models.BooleanField(
@@ -75,7 +76,7 @@ class ApprovalDocument(Document):
 
 class NotificationPeriod(RevisionedMixin):
     approval = models.ForeignKey(
-        "Approval", related_name="notifications", on_delete=models.PROTECT
+        "Approval", related_name="notifications", on_delete=models.CASCADE
     )
     notification_date = models.DateField()
     notification_sent = models.BooleanField(default=False)
@@ -117,21 +118,21 @@ class Approval(RevisionedMixin):
         blank=True,
         null=True,
         related_name="licence_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     cover_letter_document = models.ForeignKey(
         ApprovalDocument,
         blank=True,
         null=True,
         related_name="cover_letter_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     replaced_by = models.ForeignKey(
-        "self", blank=True, null=True, on_delete=models.PROTECT
+        "self", blank=True, null=True, on_delete=models.CASCADE
     )
     # current_proposal = models.ForeignKey(Proposal,related_name = '+')
     current_proposal = models.ForeignKey(
-        Proposal, related_name="approvals", null=True, on_delete=models.PROTECT
+        Proposal, related_name="approvals", null=True, on_delete=models.CASCADE
     )
     #    activity = models.CharField(max_length=255)
     #    region = models.CharField(max_length=255)
@@ -142,7 +143,7 @@ class Approval(RevisionedMixin):
         blank=True,
         null=True,
         related_name="renewal_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()
@@ -415,7 +416,12 @@ class Approval(RevisionedMixin):
 
     @property
     def allowed_assessors(self):
-        return self.current_proposal.allowed_assessors
+        # return self.current_proposal.allowed_assessors
+        email_users = [
+            retrieve_email_user(user_id)
+            for user_id in self.current_proposal.allowed_assessors
+        ]
+        return [user for user in email_users if user]
 
     def is_assessor(self, user):
         return self.current_proposal.is_assessor(user)
@@ -876,7 +882,7 @@ class PreviewTempApproval(Approval):
 
 class ApprovalLogEntry(CommunicationsLogEntry):
     approval = models.ForeignKey(
-        Approval, related_name="comms_logs", on_delete=models.PROTECT
+        Approval, related_name="comms_logs", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -894,7 +900,7 @@ class ApprovalLogDocument(Document):
         "ApprovalLogEntry",
         related_name="documents",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(
         upload_to=update_approval_comms_log_filename, null=True, max_length=512
@@ -925,7 +931,7 @@ class ApprovalUserAction(UserAction):
         return cls.objects.create(approval=approval, who=user, what=str(action))
 
     approval = models.ForeignKey(
-        Approval, related_name="action_logs", on_delete=models.PROTECT
+        Approval, related_name="action_logs", on_delete=models.CASCADE
     )
 
 
@@ -957,24 +963,24 @@ class DistrictApproval(RevisionedMixin):
         blank=True,
         null=True,
         related_name="district_licence_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     # cover_letter_document = models.ForeignKey(ApprovalDocument, blank=True, null=True, related_name='cover_letter_document')
     replaced_by = models.ForeignKey(
-        "self", blank=True, null=True, on_delete=models.PROTECT
+        "self", blank=True, null=True, on_delete=models.CASCADE
     )
     current_district_proposal = models.ForeignKey(
         DistrictProposal,
         related_name="district_approvals",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     renewal_document = models.ForeignKey(
         ApprovalDocument,
         blank=True,
         null=True,
         related_name="district_renewal_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     renewal_sent = models.BooleanField(default=False)
     issue_date = models.DateTimeField()

@@ -134,8 +134,9 @@ api_patterns = [
 urlpatterns = [
     #url(r'^admin/', include(commercialoperator_admin_site.urls)),
     #url(r'^admin/', commercialoperator_admin_site.urls),
-    url(r'^ledger/admin/', admin.site.urls, name='ledger_admin'),
+    url(r'^admin/', admin.site.urls, name='admin'),
     url(r'', include(api_patterns)),
+    url(r'^$', views.CommercialOperatorRoutingView.as_view(), name='home'),
     url(r'^$', views.CommercialOperatorRoutingView.as_view(), name='ds_home'),
     url(r'^contact/', views.CommercialOperatorContactView.as_view(), name='ds_contact'),
     url(r'^further_info/', views.CommercialOperatorFurtherInformationView.as_view(), name='ds_further_info'),

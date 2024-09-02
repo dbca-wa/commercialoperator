@@ -57,7 +57,9 @@ from commercialoperator.components.proposals.serializers_event import (
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
 )
+from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.components.users.serializers import UserAddressSerializer
+from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
 from rest_framework import serializers
 
 
@@ -75,10 +77,8 @@ class ProposalTypeSerializer(serializers.ModelSerializer):
     def get_activities(self,obj):
         return obj.activities.names()
 
-class EmailUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmailUser
-        fields = ('id','email','first_name','last_name','title','organisation')
+class EmailUserSerializer(EmailUserRoSerializer):
+    pass
 
 class EmailUserAppViewSerializer(serializers.ModelSerializer):
     residential_address = UserAddressSerializer()
@@ -504,21 +504,17 @@ class DTProposalSerializer(BaseProposalSerializer):
 
 
 class ListProposalSerializer(BaseProposalSerializer):
-    submitter = EmailUserSerializer()
-    applicant = serializers.CharField(read_only=True)
+    submitter = EmailUserSerializer(source='submitter_id')
+    applicant = serializers.SerializerMethodField(read_only=True)
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    #assigned_officer = serializers.CharField(source='assigned_officer.get_full_name')
     assigned_officer = serializers.SerializerMethodField(read_only=True)
 
     application_type = serializers.CharField(source='application_type.name', read_only=True)
-    #region = serializers.CharField(source='region.name', read_only=True)
-    #district = serializers.CharField(source='district.name', read_only=True)
     region = serializers.SerializerMethodField(read_only=True)
     district = serializers.SerializerMethodField(read_only=True)
 
-    #tenure = serializers.CharField(source='tenure.name', read_only=True)
     assessor_process = serializers.SerializerMethodField(read_only=True)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     fee_invoice_url = serializers.SerializerMethodField()
@@ -591,10 +587,17 @@ class ListProposalSerializer(BaseProposalSerializer):
                 )
 
     def get_assigned_officer(self,obj):
-        if obj.processing_status==Proposal.PROCESSING_STATUS_WITH_APPROVER and obj.assigned_approver:
-            return obj.assigned_approver.get_full_name()
-        if obj.assigned_officer:
-            return obj.assigned_officer.get_full_name()
+        if obj.processing_status==Proposal.PROCESSING_STATUS_WITH_APPROVER and obj.assigned_approver_id:
+            # return obj.assigned_approver.get_full_name()
+            emailuser = retrieve_email_user(obj.assigned_approver_id)
+        elif obj.assigned_officer_id:
+            # return obj.assigned_officer.get_full_name()
+            emailuser = retrieve_email_user(obj.assigned_officer_id)
+        else:
+            emailuser = None
+
+        if emailuser:
+            return f"{emailuser.first_name} {emailuser.last_name}"
         return None
 
     def get_region(self,obj):
@@ -627,6 +630,15 @@ class ListProposalSerializer(BaseProposalSerializer):
 
     def get_fee_invoice_url(self,obj):
         return '/cols/payments/invoice-pdf/{}'.format(obj.fee_invoice_reference) if obj.fee_paid else None
+
+    def get_applicant(self, obj):
+        if obj.applicant_type == Proposal.APPLICANT_TYPE_ORGANISATION:
+            return obj.org_applicant.name
+
+        emailuser = retrieve_email_user(obj.proxy_applicant_id)
+        if emailuser:
+            return f"{emailuser.first_name} {emailuser.last_name}"
+        return None
 
 class ProposalSerializer(BaseProposalSerializer):
     submitter = serializers.CharField(source='submitter.get_full_name')
@@ -1021,7 +1033,6 @@ class DTReferralSerializer(serializers.ModelSerializer):
     proposal_event_name= serializers.CharField(source='proposal.event_name')
     submitter = serializers.SerializerMethodField()
     region = serializers.CharField(source='region.name', read_only=True)
-    #referral = EmailUserSerializer()
     referral = serializers.CharField(source='referral_group.name')
     document = serializers.SerializerMethodField()
     can_user_process=serializers.SerializerMethodField()
@@ -1764,20 +1775,13 @@ class DistrictProposalSerializer(serializers.ModelSerializer):
     can_process_requirements = serializers.SerializerMethodField()
     district_name = serializers.CharField(read_only=True)
     districtproposaldeclineddetails = DistrictProposalDeclinedDetailsSerializer()
-    #customer_status = serializers.CharField(source='get_customer_status_display')
-    # latest_referrals = ProposalReferralSerializer(many=True)
-    # can_be_completed = serializers.BooleanField()
-    # can_process=serializers.SerializerMethodField()
-    # referral_assessment=ProposalAssessmentSerializer(read_only=True)
-    #proposal=FilmingDistrictProposalSerializer()
-
 
     class Meta:
         model = DistrictProposal
         fields = '__all__'
 
     def __init__(self,*args,**kwargs):
-        super(DistrictProposalSerializer, self).__init__(*args, **kwargs)       
+        super(DistrictProposalSerializer, self).__init__(*args, **kwargs)
         self.fields['proposal'] = FilmingDistrictProposalSerializer(context={'request': self.context['request']})
 
     def get_district_assessor_can_assess(self,obj):
@@ -1805,8 +1809,8 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
     proposal_lodgement_date = serializers.CharField(source='proposal.lodgement_date')
     proposal_lodgement_number = serializers.CharField(source='proposal.lodgement_number')
     submitter = serializers.SerializerMethodField()
+    submitter = EmailUserSerializer(source="proposal.submitter_id")
     assigned_officer = serializers.CharField(source='assigned_officer.get_full_name', allow_null=True)
-    #submitter= EmailUserAppViewSerializer()
 
     class Meta:
         model = DistrictProposal
@@ -1847,8 +1851,6 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
         user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
         return obj.can_assess(user)
 
-    def get_submitter(self,obj):
-        return EmailUserSerializer(obj.proposal.submitter).data
 
 class ReferralProposalSerializer(InternalProposalSerializer):
     def get_assessor_mode(self,obj):

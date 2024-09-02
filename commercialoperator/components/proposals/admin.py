@@ -23,6 +23,7 @@ from commercialoperator.components.main.models import (
 from reversion.admin import VersionAdmin
 from django.conf.urls import url
 from django.http import HttpResponseRedirect
+from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
 from commercialoperator.utils import create_helppage_object
 
 
@@ -57,8 +58,14 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalAssessorGroupAdminForm
-    readonly_fields = ["default"]
-    # readonly_fields = ['regions', 'activities']
+    readonly_fields = ["default", "staff_members"]
+
+    fields = (
+        "name",
+        "region",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(ProposalAssessorGroupAdmin, self).get_actions(request)
@@ -78,14 +85,25 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
             return False
         return super(ProposalAssessorGroupAdmin, self).has_add_permission(request)
 
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
+
 
 @admin.register(models.ProposalApproverGroup)
 class ProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalApproverGroupAdminForm
-    readonly_fields = ["default"]
-    # readonly_fields = ['default', 'regions', 'activities']
+    readonly_fields = ["default", "staff_members"]
+
+    fields = (
+        "name",
+        "region",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(ProposalApproverGroupAdmin, self).get_actions(request)
@@ -104,6 +122,11 @@ class ProposalApproverGroupAdmin(admin.ModelAdmin):
         if self.model.objects.count() > 0:
             return False
         return super(ProposalApproverGroupAdmin, self).has_add_permission(request)
+
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
 
 
 @admin.register(models.ProposalStandardRequirement)
@@ -372,12 +395,22 @@ class ReferralRecipientGroupAdmin(admin.ModelAdmin):
     list_display = ["name"]
     exclude = ("site",)
     actions = None
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "staff_members",
+    )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(ReferralRecipientGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
+        )
+
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
 
 
@@ -387,18 +420,25 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
     list_display = ["name"]
     exclude = ("site",)
     actions = None
+    ordering = ("id",)
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "staff_members",
+        "default",
+    )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
-            # kwargs["queryset"] = EmailUser.objects.filter(email__icontains='@dbca.wa.gov.au')
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(QAOfficerGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
         )
 
-    # list_display = ['id','name', 'visible']
-    list_display = ["name"]
-    ordering = ("id",)
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
 
 
 @admin.register(Question)
@@ -424,8 +464,13 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.DistrictProposalAssessorGroupAdminForm
-    # readonly_fields = ['default']
-    # readonly_fields = ['default', 'regions', 'activities']
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "district",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(DistrictProposalAssessorGroupAdmin, self).get_actions(request)
@@ -440,10 +485,10 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
             request, obj
         )
 
-    # def has_add_permission(self, request):
-    #     if self.model.objects.count() > 0:
-    #         return False
-    #     return super(DistrictProposalAssessorGroupAdmin, self).has_add_permission(request)
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )
 
 
 @admin.register(models.DistrictProposalApproverGroup)
@@ -451,8 +496,13 @@ class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.DistrictProposalApproverGroupAdminForm
-    # readonly_fields = ['default']
-    # readonly_fields = ['default', 'regions', 'activities']
+    readonly_fields = ["staff_members"]
+    fields = (
+        "name",
+        "district",
+        "default",
+        "staff_members",
+    )
 
     def get_actions(self, request):
         actions = super(DistrictProposalApproverGroupAdmin, self).get_actions(request)
@@ -467,7 +517,7 @@ class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
             request, obj
         )
 
-    # def has_add_permission(self, request):
-    #     if self.model.objects.count() > 0:
-    #         return False
-    #     return super(DistrictProposalApproverGroupAdmin, self).has_add_permission(request)
+    def staff_members(self, obj):
+        return ", ".join(
+            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
+        )

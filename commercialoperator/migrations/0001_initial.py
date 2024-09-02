@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('taggit', '0002_auto_20150616_2121'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('accounts', '0021_emailuser_position_title'),
+        # ('accounts', '0021_emailuser_position_title'),
         ('sites', '0002_alter_domain_unique'),
     ]
 
@@ -1335,8 +1335,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='organisation',
-            name='organisation',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.Organisation'),
+            name='organisation_id',
+            # field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.Organisation'),
+            field=models.IntegerField(unique=True, verbose_name='Ledger Organisation ID'),
         ),
         migrations.AddField(
             model_name='onholddocument',

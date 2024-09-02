@@ -3,9 +3,7 @@ from crispy_forms.layout import Layout, Submit
 from django.contrib.auth import get_user_model
 from django.forms import Form, ModelForm, ValidationError, EmailField
 
-from commercialoperator.components.stubs.classes import (
-    Address,
-)  # ledger.accounts.models.Address
+from ledger_api_client.ledger_models import Address
 from commercialoperator.components.stubs.classes import (
     LedgerOrganisation as Organisation,
 )  # ledger.accounts.models.Organisation

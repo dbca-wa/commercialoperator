@@ -25,7 +25,7 @@ class Region(models.Model):
 
 class District(models.Model):
     region = models.ForeignKey(
-        Region, related_name="districts", on_delete=models.PROTECT
+        Region, related_name="districts", on_delete=models.CASCADE
     )
     name = models.CharField(max_length=200, unique=True)
     code = models.CharField(max_length=3)
@@ -104,7 +104,7 @@ class LicencePeriod(models.Model):
 
 class NotificationMonth(models.Model):
     licence_period = models.ForeignKey(
-        LicencePeriod, related_name="notification_months", on_delete=models.PROTECT
+        LicencePeriod, related_name="notification_months", on_delete=models.CASCADE
     )
     month = models.PositiveSmallIntegerField(default=0)
 
@@ -179,7 +179,7 @@ class Activity(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
     activity_category = models.ForeignKey(
-        ActivityCategory, related_name="activities", on_delete=models.PROTECT
+        ActivityCategory, related_name="activities", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -198,7 +198,7 @@ class Park(models.Model):
         ("Film", "Film"),
     )
     district = models.ForeignKey(
-        District, related_name="parks", on_delete=models.PROTECT
+        District, related_name="parks", on_delete=models.CASCADE
     )
     name = models.CharField(max_length=200, unique=True)
     code = models.CharField(max_length=10, blank=True)
@@ -257,7 +257,7 @@ class Park(models.Model):
 class Zone(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
-    park = models.ForeignKey(Park, related_name="zones", on_delete=models.PROTECT)
+    park = models.ForeignKey(Park, related_name="zones", on_delete=models.CASCADE)
     allowed_activities = models.ManyToManyField(Activity, blank=True)
 
     class Meta:
@@ -297,7 +297,7 @@ class Trail(models.Model):
 class Section(models.Model):
     name = models.CharField(max_length=200, blank=True)
     visible = models.BooleanField(default=True)
-    trail = models.ForeignKey(Trail, related_name="sections", on_delete=models.PROTECT)
+    trail = models.ForeignKey(Trail, related_name="sections", on_delete=models.CASCADE)
     doc_url = models.CharField("Document URL", max_length=255, blank=True)
 
     class Meta:
@@ -311,9 +311,9 @@ class Section(models.Model):
 class RequiredDocument(models.Model):
     question = models.TextField(blank=False)
     activity = models.ForeignKey(
-        Activity, null=True, blank=True, on_delete=models.PROTECT
+        Activity, null=True, blank=True, on_delete=models.CASCADE
     )
-    park = models.ForeignKey(Park, null=True, blank=True, on_delete=models.PROTECT)
+    park = models.ForeignKey(Park, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "commercialoperator"
@@ -408,7 +408,7 @@ class OracleCode(models.Model):
         (ApplicationType.EVENT, ApplicationType.EVENT),
     )
     park = models.ForeignKey(
-        Park, related_name="oracle_codes", on_delete=models.PROTECT
+        Park, related_name="oracle_codes", on_delete=models.CASCADE
     )
     code_type = models.CharField(
         "Application Type",
@@ -454,7 +454,7 @@ class Tenure(models.Model):
     name = models.CharField(max_length=255, unique=True)
     order = models.PositiveSmallIntegerField(default=0)
     application_type = models.ForeignKey(
-        ApplicationType, related_name="tenure_app_types", on_delete=models.PROTECT
+        ApplicationType, related_name="tenure_app_types", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -485,7 +485,7 @@ class Question(models.Model):
         default=CORRECT_ANSWER_CHOICES[0][0],
     )
     application_type = models.ForeignKey(
-        ApplicationType, null=True, blank=True, on_delete=models.PROTECT
+        ApplicationType, null=True, blank=True, on_delete=models.CASCADE
     )
 
     class Meta:
@@ -502,7 +502,7 @@ class Question(models.Model):
 
 class UserAction(models.Model):
     who = models.ForeignKey(
-        EmailUser, null=False, blank=False, on_delete=models.PROTECT
+        EmailUser, null=False, blank=False, on_delete=models.CASCADE
     )
     when = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     what = models.TextField(blank=False)
@@ -545,10 +545,10 @@ class CommunicationsLogEntry(models.Model):
     text = models.TextField(blank=True)
 
     customer = models.ForeignKey(
-        EmailUser, null=True, related_name="+", on_delete=models.PROTECT
+        EmailUser, null=True, related_name="+", on_delete=models.CASCADE
     )
     staff = models.ForeignKey(
-        EmailUser, null=True, related_name="+", on_delete=models.PROTECT
+        EmailUser, null=True, related_name="+", on_delete=models.CASCADE
     )
 
     created = models.DateTimeField(auto_now_add=True, null=False, blank=False)
@@ -647,7 +647,7 @@ class UserSystemSettings(models.Model):
         default=False
     )  # Setting for user if they want to see Payment (Park Entry Fees Dashboard) by one row per park or one row per booking
     user = models.ForeignKey(
-        EmailUser, unique=True, related_name="system_settings", on_delete=models.PROTECT
+        EmailUser, unique=True, related_name="system_settings", on_delete=models.CASCADE
     )
     event_training_completed = models.BooleanField(default=False)
     event_training_date = models.DateField(blank=True, null=True)

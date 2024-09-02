@@ -243,7 +243,7 @@ class ParkBooking(RevisionedMixin):
         null=True,
         related_name="park_bookings",
     )
-    park = models.ForeignKey(Park, related_name="bookings", on_delete=models.PROTECT)
+    park = models.ForeignKey(Park, related_name="bookings", on_delete=models.CASCADE)
     arrival = models.DateField()
     no_adults = models.SmallIntegerField(default=0)
     no_children = models.SmallIntegerField(default=0)
@@ -418,7 +418,7 @@ class BookingInvoice(RevisionedMixin):
     )
 
     booking = models.ForeignKey(
-        Booking, related_name="invoices", on_delete=models.PROTECT
+        Booking, related_name="invoices", on_delete=models.CASCADE
     )
     invoice_reference = models.CharField(
         max_length=50, null=True, blank=True, default=""
@@ -574,7 +574,7 @@ class ApplicationFeeInvoice(RevisionedMixin):
     application_fee = models.ForeignKey(
         ApplicationFee,
         related_name="application_fee_invoices",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     invoice_reference = models.CharField(
         max_length=50, null=True, blank=True, default=""
@@ -657,7 +657,7 @@ class ComplianceFeeInvoice(RevisionedMixin):
     """For Application Type Events"""
 
     compliance_fee = models.ForeignKey(
-        ComplianceFee, related_name="compliance_fee_invoices", on_delete=models.PROTECT
+        ComplianceFee, related_name="compliance_fee_invoices", on_delete=models.CASCADE
     )
     invoice_reference = models.CharField(
         max_length=50, null=True, blank=True, default=""
@@ -729,7 +729,7 @@ class FilmingFeeInvoice(RevisionedMixin):
     """For Application Type Filming"""
 
     filming_fee = models.ForeignKey(
-        FilmingFee, related_name="filming_fee_invoices", on_delete=models.PROTECT
+        FilmingFee, related_name="filming_fee_invoices", on_delete=models.CASCADE
     )
     invoice_reference = models.CharField(
         max_length=50, null=True, blank=True, default=""

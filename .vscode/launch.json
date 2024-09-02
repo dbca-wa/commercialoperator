@@ -24,6 +24,7 @@
             "webRoot": "${workspaceFolder}/commercialoperator/frontend/commercialoperator/",
             "skipFiles": [
               "${workspaceFolder}/commercialoperator/frontend/commercialoperator/node_modules/**/",
+              "${workspaceFolder}/commercialoperator/frontend/commercialoperator/src/third-party/**/",
               "*/<node_internals>/**",
               "*/<node_modules>/**"
             ],
@@ -31,8 +32,8 @@
             "smartStep": true,
             "outFiles": [
               "${workspaceFolder}/commercialoperator/frontend/commercialoperator/src/**/*.js",
-              "${workspaceFolder}/commercialoperator/frontend/commercialoperator/**/*.vue",
-              "${workspaceFolder}/commercialoperator/frontend/commercialoperator/**/*.html"
+              "${workspaceFolder}/commercialoperator/frontend/commercialoperator/src/**/*.vue",
+              "${workspaceFolder}/commercialoperator/frontend/commercialoperator/src/**/*.html"
             ],
             "preLaunchTask": "node: start"
         }

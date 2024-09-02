@@ -25,8 +25,8 @@
             },
             "background": {
               "activeOnStart": true,
-              "beginsPattern": "Starting development server",
-              "endsPattern": "Compiled successfully"
+              "beginsPattern": "Starting development server.",
+              "endsPattern": "Compiled successfully."
             }
           }
         ]

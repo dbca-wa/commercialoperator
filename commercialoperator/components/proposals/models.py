@@ -40,6 +40,12 @@ from commercialoperator.components.proposals.email import (
     send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
 )
+from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
+from commercialoperator.components.stubs.utils import (
+    EmailUserQuerySet,
+    retrieve_group_members,
+    retrieve_user_groups,
+)
 from commercialoperator.ordered_model import OrderedModel
 from commercialoperator.components.proposals.email import (
     send_submit_email_notification,
@@ -172,7 +178,7 @@ class ProposalType(models.Model):
 
 class TaggedProposalAssessorGroupRegions(TaggedItemBase):
     content_object = models.ForeignKey(
-        "ProposalAssessorGroup", on_delete=models.PROTECT
+        "ProposalAssessorGroup", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -181,7 +187,7 @@ class TaggedProposalAssessorGroupRegions(TaggedItemBase):
 
 class TaggedProposalAssessorGroupActivities(TaggedItemBase):
     content_object = models.ForeignKey(
-        "ProposalAssessorGroup", on_delete=models.PROTECT
+        "ProposalAssessorGroup", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -191,7 +197,7 @@ class TaggedProposalAssessorGroupActivities(TaggedItemBase):
 class ProposalAssessorGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
-    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.PROTECT)
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
 
     class Meta:
@@ -243,7 +249,7 @@ class ProposalAssessorGroup(models.Model):
 
 class TaggedProposalApproverGroupRegions(TaggedItemBase):
     content_object = models.ForeignKey(
-        "ProposalApproverGroup", on_delete=models.PROTECT
+        "ProposalApproverGroup", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -252,7 +258,7 @@ class TaggedProposalApproverGroupRegions(TaggedItemBase):
 
 class TaggedProposalApproverGroupActivities(TaggedItemBase):
     content_object = models.ForeignKey(
-        "ProposalApproverGroup", on_delete=models.PROTECT
+        "ProposalApproverGroup", on_delete=models.CASCADE
     )
 
     class Meta:
@@ -261,11 +267,8 @@ class TaggedProposalApproverGroupActivities(TaggedItemBase):
 
 class ProposalApproverGroup(models.Model):
     name = models.CharField(max_length=255)
-    # members = models.ManyToManyField(EmailUser,blank=True)
-    # regions = TaggableManager(verbose_name="Regions",help_text="A comma-separated list of regions.",through=TaggedProposalApproverGroupRegions,related_name = "+",blank=True)
-    # activities = TaggableManager(verbose_name="Activities",help_text="A comma-separated list of activities.",through=TaggedProposalApproverGroupActivities,related_name = "+",blank=True)
     members = models.ManyToManyField(EmailUser)
-    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.PROTECT)
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
 
     class Meta:
@@ -338,7 +341,7 @@ class DefaultDocument(Document):
 
 class ProposalDocument(Document):
     proposal = models.ForeignKey(
-        "Proposal", related_name="documents", on_delete=models.PROTECT
+        "Proposal", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -359,7 +362,7 @@ class ProposalDocument(Document):
 
 class OnHoldDocument(Document):
     proposal = models.ForeignKey(
-        "Proposal", related_name="onhold_documents", on_delete=models.PROTECT
+        "Proposal", related_name="onhold_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -378,7 +381,7 @@ class OnHoldDocument(Document):
 # Documents on Activities(land)and Activities(Marine) tab for T-Class related to required document questions
 class ProposalRequiredDocument(Document):
     proposal = models.ForeignKey(
-        "Proposal", related_name="required_documents", on_delete=models.PROTECT
+        "Proposal", related_name="required_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
         upload_to=update_proposal_required_doc_filename, max_length=512
@@ -388,7 +391,7 @@ class ProposalRequiredDocument(Document):
         default=True
     )  # after initial submit prevent document from being deleted
     required_doc = models.ForeignKey(
-        "RequiredDocument", related_name="proposals", on_delete=models.PROTECT
+        "RequiredDocument", related_name="proposals", on_delete=models.CASCADE
     )
     can_hide = models.BooleanField(
         default=False
@@ -412,7 +415,7 @@ class ProposalRequiredDocument(Document):
 
 class QAOfficerDocument(Document):
     proposal = models.ForeignKey(
-        "Proposal", related_name="qaofficer_documents", on_delete=models.PROTECT
+        "Proposal", related_name="qaofficer_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -438,7 +441,7 @@ class QAOfficerDocument(Document):
 
 class ReferralDocument(Document):
     referral = models.ForeignKey(
-        "Referral", related_name="referral_documents", on_delete=models.PROTECT
+        "Referral", related_name="referral_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -463,7 +466,7 @@ class RequirementDocument(Document):
     requirement = models.ForeignKey(
         "ProposalRequirement",
         related_name="requirement_documents",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -506,10 +509,10 @@ class ProposalActivitiesMarine(models.Model):
 
 class ParkEntry(models.Model):
     park = models.ForeignKey(
-        "Park", related_name="park_entries", on_delete=models.PROTECT
+        "Park", related_name="park_entries", on_delete=models.CASCADE
     )
     proposal = models.ForeignKey(
-        "Proposal", related_name="park_entries", on_delete=models.PROTECT
+        "Proposal", related_name="park_entries", on_delete=models.CASCADE
     )
     arrival_date = models.DateField()
     number_adults = models.PositiveSmallIntegerField(
@@ -557,7 +560,8 @@ class ParkEntry(models.Model):
 
 
 class Proposal(DirtyFieldsMixin, RevisionedMixin):
-    # class Proposal(DirtyFieldsMixin, models.Model):
+    objects = EmailUserQuerySet.as_manager()
+
     APPLICANT_TYPE_ORGANISATION = "ORG"
     APPLICANT_TYPE_PROXY = "PRX"
     APPLICANT_TYPE_SUBMITTER = "SUB"
@@ -743,7 +747,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         blank=True,
         null=True,
         related_name="org_applications",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     lodgement_number = models.CharField(max_length=9, blank=True, default="")
     lodgement_sequence = models.IntegerField(blank=True, default=0)
@@ -755,14 +759,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         blank=True,
         null=True,
         related_name="commercialoperator_proxy",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     submitter = models.ForeignKey(
         EmailUser,
         blank=True,
         null=True,
         related_name="commercialoperator_proposals",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     assigned_officer = models.ForeignKey(
@@ -784,7 +788,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         blank=True,
         null=True,
         related_name="commercialoperator_approved_by",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     processing_status = models.CharField(
         "Processing Status",
@@ -819,12 +823,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     )
 
     approval = models.ForeignKey(
-        "commercialoperator.Approval", null=True, blank=True, on_delete=models.PROTECT
+        "commercialoperator.Approval", null=True, blank=True, on_delete=models.CASCADE
     )
 
     # previous_application = models.ForeignKey('self', on_delete=models.PROTECT, blank=True, null=True)
     previous_application = models.ForeignKey(
-        "self", blank=True, null=True, on_delete=models.PROTECT
+        "self", blank=True, null=True, on_delete=models.CASCADE
     )
     proposed_decline_status = models.BooleanField(default=False)
     # qaofficer_referral = models.BooleanField(default=False)
@@ -835,12 +839,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     # region = models.CharField(max_length=255,null=True,blank=True)
     tenure = models.CharField(max_length=255, null=True, blank=True)
     # activity = models.ForeignKey(Activity, null=True, blank=True)
-    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.PROTECT)
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
     district = models.ForeignKey(
-        District, null=True, blank=True, on_delete=models.PROTECT
+        District, null=True, blank=True, on_delete=models.CASCADE
     )
     # tenure = models.ForeignKey(Tenure, null=True, blank=True)
-    application_type = models.ForeignKey(ApplicationType, on_delete=models.PROTECT)
+    application_type = models.ForeignKey(ApplicationType, on_delete=models.CASCADE)
     approval_level = models.CharField(
         "Activity matrix approval level", max_length=255, null=True, blank=True
     )
@@ -849,7 +853,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         blank=True,
         null=True,
         related_name="approval_level_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     approval_comment = models.TextField(blank=True)
     # If the proposal is created as part of migration of approvals
@@ -863,10 +867,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     # T Class
     activities_land = models.OneToOneField(
-        ProposalActivitiesLand, blank=True, null=True, on_delete=models.PROTECT
+        ProposalActivitiesLand, blank=True, null=True, on_delete=models.CASCADE
     )  # , related_name='activities_land')
     activities_marine = models.OneToOneField(
-        ProposalActivitiesMarine, blank=True, null=True, on_delete=models.PROTECT
+        ProposalActivitiesMarine, blank=True, null=True, on_delete=models.CASCADE
     )  # , related_name='activities_marine')
     # other_details = models.OneToOneField(ProposalOtherDetails, blank=True, null=True, related_name='proposal')
     # online_training = models.OneToOneField(ProposalOnlineTraining, blank=True, null=True)
@@ -1341,18 +1345,30 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         return False
 
     def qa_officers(self, name=None):
+        qaofficergroup_set = QAOfficerGroup.objects.none()
+        # Query the through-tables on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
         if not name:
-            return (
-                QAOfficerGroup.objects.get(default=True)
-                .members.all()
-                .values_list("email", flat=True)
-            )
+            # return (
+            #     QAOfficerGroup.objects.get(default=True)
+            #     .members.all()
+            #     .values_list("email", flat=True)
+            # )
+            qaofficergroup_set = QAOfficerGroup.objects.filter(
+                default=True
+            ).values_list("qaofficergroup_members__emailuser__id", flat=True)
         else:
-            return (
-                QAOfficerGroup.objects.get(name=name)
-                .members.all()
-                .values_list("email", flat=True)
-            )
+            # return (
+            #     QAOfficerGroup.objects.get(name=name)
+            #     .members.all()
+            #     .values_list("email", flat=True)
+            # )
+            qaofficergroup_set = QAOfficerGroup.objects.filter(
+                name="Licensing Officer"
+            ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+
+        return EmailUser.objects.filter(
+            id__in=[id for id in qaofficergroup_set]
+        ).values_list("email", flat=True)
 
     @property
     def get_history(self):
@@ -1496,12 +1512,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             group = QAOfficerGroup.objects.get(default=True)
         else:
             group = self.__assessor_group()
-        return group.members.all() if group else []
+
+        return retrieve_group_members(group) if group else []
 
     @property
     def compliance_assessors(self):
         group = self.__assessor_group()
-        return group.members.all() if group else []
+        return retrieve_group_members(group) if group else []
 
     @property
     def can_officer_process(self):
@@ -1976,11 +1993,18 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     # Check if the user is member of assessor group for the Proposal
     def is_assessor(self, user):
-        return self.__assessor_group() in user.proposalassessorgroup_set.all()
+        user_id = user.id
+        # user_id = 102712 # An existing user id for testing
+        proposalassessorgroups = retrieve_user_groups("proposalassessorgroup", user_id)
+        # return self.__assessor_group() in user.proposalassessorgroup_set.all()
+        return self.__assessor_group() in proposalassessorgroups
 
     # Check if the user is member of assessor group for the Proposal
     def is_approver(self, user):
-        return self.__approver_group() in user.proposalapprovergroup_set.all()
+        user_id = user.id
+        proposalapprovergroups = retrieve_user_groups("proposalapprovergroup", user_id)
+        # return self.__approver_group() in user.proposalapprovergroup_set.all()
+        return self.__approver_group() in proposalapprovergroups
 
     def can_assess(self, user):
         # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
@@ -3862,7 +3886,7 @@ class ApplicationFeeDiscount(RevisionedMixin):
         (DISCOUNT_TYPE_LICENCE, "Discount licence"),
     )
     proposal = models.ForeignKey(
-        Proposal, related_name="fee_discounts", null=True, on_delete=models.PROTECT
+        Proposal, related_name="fee_discounts", null=True, on_delete=models.CASCADE
     )
     discount_type = models.CharField(max_length=40, choices=DISCOUNT_TYPE_CHOICES)
     discount = models.FloatField(validators=[MinValueValidator(0.0)])
@@ -3901,7 +3925,7 @@ class ApplicationFeeDiscount(RevisionedMixin):
 
 class ProposalLogDocument(Document):
     log_entry = models.ForeignKey(
-        "ProposalLogEntry", related_name="documents", on_delete=models.PROTECT
+        "ProposalLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
         upload_to=update_proposal_comms_log_filename, max_length=512
@@ -3913,7 +3937,7 @@ class ProposalLogDocument(Document):
 
 class ProposalLogEntry(CommunicationsLogEntry):
     proposal = models.ForeignKey(
-        Proposal, related_name="comms_logs", on_delete=models.PROTECT
+        Proposal, related_name="comms_logs", on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -3949,7 +3973,7 @@ class ProposalOtherDetails(models.Model):
         "Docket books number", max_length=20, blank=True
     )
     proposal = models.OneToOneField(
-        Proposal, related_name="other_details", null=True, on_delete=models.PROTECT
+        Proposal, related_name="other_details", null=True, on_delete=models.CASCADE
     )
 
     class Meta:
@@ -4026,7 +4050,7 @@ class ProposalAccreditation(models.Model):
         ProposalOtherDetails,
         related_name="accreditations",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -4038,10 +4062,10 @@ class ProposalAccreditation(models.Model):
 
 class ProposalPark(models.Model):
     park = models.ForeignKey(
-        Park, blank=True, null=True, related_name="proposals", on_delete=models.PROTECT
+        Park, blank=True, null=True, related_name="proposals", on_delete=models.CASCADE
     )
     proposal = models.ForeignKey(
-        Proposal, blank=True, null=True, related_name="parks", on_delete=models.PROTECT
+        Proposal, blank=True, null=True, related_name="parks", on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -4077,10 +4101,10 @@ class ProposalParkActivity(models.Model):
         blank=True,
         null=True,
         related_name="activities",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     activity = models.ForeignKey(
-        Activity, blank=True, null=True, on_delete=models.PROTECT
+        Activity, blank=True, null=True, on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -4102,10 +4126,10 @@ class ProposalParkAccess(models.Model):
         blank=True,
         null=True,
         related_name="access_types",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     access_type = models.ForeignKey(
-        AccessType, blank=True, null=True, on_delete=models.PROTECT
+        AccessType, blank=True, null=True, on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -4123,14 +4147,14 @@ class ProposalParkZone(models.Model):
         blank=True,
         null=True,
         related_name="zones",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     zone = models.ForeignKey(
         Zone,
         blank=True,
         null=True,
         related_name="proposal_zones",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     access_point = models.CharField(max_length=200, blank=True)
 
@@ -4148,10 +4172,10 @@ class ProposalParkZoneActivity(models.Model):
         blank=True,
         null=True,
         related_name="park_activities",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     activity = models.ForeignKey(
-        Activity, blank=True, null=True, on_delete=models.PROTECT
+        Activity, blank=True, null=True, on_delete=models.CASCADE
     )
     # section=models.ForeignKey(Section, blank=True, null= True)
 
@@ -4169,10 +4193,10 @@ class ProposalParkZoneActivity(models.Model):
 
 class ProposalTrail(models.Model):
     trail = models.ForeignKey(
-        Trail, blank=True, null=True, related_name="proposals", on_delete=models.PROTECT
+        Trail, blank=True, null=True, related_name="proposals", on_delete=models.CASCADE
     )
     proposal = models.ForeignKey(
-        Proposal, blank=True, null=True, related_name="trails", on_delete=models.PROTECT
+        Proposal, blank=True, null=True, related_name="trails", on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -4189,14 +4213,14 @@ class ProposalTrailSection(models.Model):
         blank=True,
         null=True,
         related_name="sections",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     section = models.ForeignKey(
         Section,
         blank=True,
         null=True,
         related_name="proposal_trails",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -4213,10 +4237,10 @@ class ProposalTrailSectionActivity(models.Model):
         blank=True,
         null=True,
         related_name="trail_activities",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     activity = models.ForeignKey(
-        Activity, blank=True, null=True, on_delete=models.PROTECT
+        Activity, blank=True, null=True, on_delete=models.CASCADE
     )
     # section=models.ForeignKey(Section, blank=True, null= True)
 
@@ -4237,11 +4261,11 @@ class Vehicle(models.Model):
     rego = models.CharField(max_length=200, blank=True)
     license = models.CharField(max_length=200, blank=True)
     access_type = models.ForeignKey(
-        AccessType, null=True, related_name="vehicles", on_delete=models.PROTECT
+        AccessType, null=True, related_name="vehicles", on_delete=models.CASCADE
     )
     rego_expiry = models.DateField(blank=True, null=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="vehicles", on_delete=models.PROTECT
+        Proposal, related_name="vehicles", on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -4262,7 +4286,7 @@ class Vessel(models.Model):
     size = models.CharField(max_length=200, blank=True)
     # rego_expiry= models.DateField(blank=True, null=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="vessels", on_delete=models.PROTECT
+        Proposal, related_name="vessels", on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -4277,11 +4301,11 @@ class Vessel(models.Model):
 
 class ProposalRequest(models.Model):
     proposal = models.ForeignKey(
-        Proposal, related_name="proposalrequest_set", on_delete=models.PROTECT
+        Proposal, related_name="proposalrequest_set", on_delete=models.CASCADE
     )
     subject = models.CharField(max_length=200, blank=True)
     text = models.TextField(blank=True)
-    officer = models.ForeignKey(EmailUser, null=True, on_delete=models.PROTECT)
+    officer = models.ForeignKey(EmailUser, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{} - {}".format(self.subject, self.text)
@@ -4340,7 +4364,7 @@ class AmendmentRequest(ProposalRequest):
     )
     # reason = models.CharField('Reason', max_length=30, choices=REASON_CHOICES, default=REASON_CHOICES[0][0])
     reason = models.ForeignKey(
-        AmendmentReason, blank=True, null=True, on_delete=models.PROTECT
+        AmendmentReason, blank=True, null=True, on_delete=models.CASCADE
     )
     # reason = models.ForeignKey(AmendmentReason)
 
@@ -4386,7 +4410,7 @@ class Assessment(ProposalRequest):
         ("assessment_expired", "Assessment Period Expired"),
     )
     assigned_assessor = models.ForeignKey(
-        EmailUser, blank=True, null=True, on_delete=models.PROTECT
+        EmailUser, blank=True, null=True, on_delete=models.CASCADE
     )
     status = models.CharField(
         "Status", max_length=20, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0]
@@ -4402,8 +4426,8 @@ class Assessment(ProposalRequest):
 
 class ProposalDeclinedDetails(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='declined_details')
-    proposal = models.OneToOneField(Proposal, on_delete=models.PROTECT)
-    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
+    proposal = models.OneToOneField(Proposal, on_delete=models.CASCADE)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)
     cc_email = models.TextField(null=True)
 
@@ -4413,15 +4437,15 @@ class ProposalDeclinedDetails(models.Model):
 
 class ProposalOnHold(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='onhold')
-    proposal = models.OneToOneField(Proposal, on_delete=models.PROTECT)
-    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
+    proposal = models.OneToOneField(Proposal, on_delete=models.CASCADE)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     comment = models.TextField(blank=True)
     documents = models.ForeignKey(
         ProposalDocument,
         blank=True,
         null=True,
         related_name="onhold_documents",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -4434,7 +4458,7 @@ class ProposalStandardRequirement(RevisionedMixin):
     code = models.CharField(max_length=10, unique=True)
     obsolete = models.BooleanField(default=False)
     application_type = models.ForeignKey(
-        ApplicationType, null=True, blank=True, on_delete=models.PROTECT
+        ApplicationType, null=True, blank=True, on_delete=models.CASCADE
     )
     participant_number_required = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
@@ -4614,11 +4638,11 @@ class ProposalUserAction(UserAction):
         return cls.objects.create(proposal=proposal, who=user, what=str(action))
 
     proposal = models.ForeignKey(
-        Proposal, related_name="action_logs", on_delete=models.PROTECT
+        Proposal, related_name="action_logs", on_delete=models.CASCADE
     )
 
 
-class ReferralRecipientGroup(models.Model):
+class ReferralRecipientGroup(models.Model, MembersPropertiesMixin):
     # site = models.OneToOneField(Site, default='1')
     name = models.CharField(max_length=30, unique=True)
     members = models.ManyToManyField(EmailUser)
@@ -4627,13 +4651,7 @@ class ReferralRecipientGroup(models.Model):
         # return 'Referral Recipient Group'
         return self.name
 
-    @property
-    def all_members(self):
-        all_members = []
-        all_members.extend(self.members.all())
-        member_ids = [m.id for m in self.members.all()]
-        # all_members.extend(EmailUser.objects.filter(is_superuser=True,is_staff=True,is_active=True).exclude(id__in=member_ids))
-        return all_members
+
 
     @property
     def filtered_members(self):
@@ -4649,8 +4667,7 @@ class ReferralRecipientGroup(models.Model):
         verbose_name_plural = "Referral groups"
 
 
-class QAOfficerGroup(models.Model):
-    # site = models.OneToOneField(Site, default='1')
+class QAOfficerGroup(models.Model, MembersPropertiesMixin):
     name = models.CharField(max_length=30, unique=True)
     members = models.ManyToManyField(EmailUser)
     default = models.BooleanField(default=False)
@@ -4658,13 +4675,6 @@ class QAOfficerGroup(models.Model):
     def __str__(self):
         return "QA Officer Group"
 
-    @property
-    def all_members(self):
-        all_members = []
-        all_members.extend(self.members.all())
-        member_ids = [m.id for m in self.members.all()]
-        # all_members.extend(EmailUser.objects.filter(is_superuser=True,is_staff=True,is_active=True).exclude(id__in=member_ids))
-        return all_members
 
     @property
     def filtered_members(self):
@@ -4730,26 +4740,26 @@ class Referral(RevisionedMixin):
     )
     lodged_on = models.DateTimeField(auto_now_add=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="referrals", on_delete=models.PROTECT
+        Proposal, related_name="referrals", on_delete=models.CASCADE
     )
     sent_by = models.ForeignKey(
         EmailUser,
         related_name="commercialoperator_assessor_referrals",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     referral = models.ForeignKey(
         EmailUser,
         null=True,
         blank=True,
         related_name="commercialoperator_referalls",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     referral_group = models.ForeignKey(
         ReferralRecipientGroup,
         null=True,
         blank=True,
         related_name="commercialoperator_referral_groups",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     linked = models.BooleanField(default=False)
     sent_from = models.SmallIntegerField(
@@ -4768,7 +4778,7 @@ class Referral(RevisionedMixin):
         blank=True,
         null=True,
         related_name="referral_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     assigned_officer = models.ForeignKey(
         EmailUser,
@@ -5174,12 +5184,12 @@ class Referral(RevisionedMixin):
 class ProposalRequirement(OrderedModel):
     RECURRENCE_PATTERNS = [(1, "Weekly"), (2, "Monthly"), (3, "Yearly")]
     standard_requirement = models.ForeignKey(
-        ProposalStandardRequirement, null=True, blank=True, on_delete=models.PROTECT
+        ProposalStandardRequirement, null=True, blank=True, on_delete=models.CASCADE
     )
     free_requirement = models.TextField(null=True, blank=True)
     standard = models.BooleanField(default=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="requirements", on_delete=models.PROTECT
+        Proposal, related_name="requirements", on_delete=models.CASCADE
     )
     due_date = models.DateField(null=True, blank=True)
     recurrence = models.BooleanField(default=False)
@@ -5200,7 +5210,7 @@ class ProposalRequirement(OrderedModel):
         null=True,
         blank=True,
         related_name="requirement_referral_groups",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     # order = models.IntegerField(default=1)
     # application_type = models.ForeignKey(ApplicationType, null=True, blank=True)
@@ -5211,14 +5221,14 @@ class ProposalRequirement(OrderedModel):
         null=True,
         blank=True,
         related_name="district_proposal_requirements",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     district = models.ForeignKey(
         District,
         related_name="district_requirements",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     notification_only = models.BooleanField(default=False)
 
@@ -5305,7 +5315,7 @@ class ChecklistQuestion(RevisionedMixin):
 
     # correct_answer= models.BooleanField(default=False)
     application_type = models.ForeignKey(
-        ApplicationType, blank=True, null=True, on_delete=models.PROTECT
+        ApplicationType, blank=True, null=True, on_delete=models.CASCADE
     )
     obsolete = models.BooleanField(default=False)
     order = models.PositiveSmallIntegerField(default=1)
@@ -5319,7 +5329,7 @@ class ChecklistQuestion(RevisionedMixin):
 
 class ProposalAssessment(RevisionedMixin):
     proposal = models.ForeignKey(
-        Proposal, related_name="assessment", on_delete=models.PROTECT
+        Proposal, related_name="assessment", on_delete=models.CASCADE
     )
     completed = models.BooleanField(default=False)
     submitter = models.ForeignKey(
@@ -5327,7 +5337,7 @@ class ProposalAssessment(RevisionedMixin):
         blank=True,
         null=True,
         related_name="proposal_assessment",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     referral_assessment = models.BooleanField(default=False)
     referral_group = models.ForeignKey(
@@ -5335,14 +5345,14 @@ class ProposalAssessment(RevisionedMixin):
         null=True,
         blank=True,
         related_name="referral_assessment",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     referral = models.ForeignKey(
         Referral,
         related_name="assessment",
         blank=True,
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     # def __str__(self):
     #     return self.proposal
@@ -5368,7 +5378,7 @@ class ProposalAssessment(RevisionedMixin):
 
 class ProposalAssessmentAnswer(RevisionedMixin):
     question = models.ForeignKey(
-        ChecklistQuestion, related_name="answers", on_delete=models.PROTECT
+        ChecklistQuestion, related_name="answers", on_delete=models.CASCADE
     )
     answer = models.NullBooleanField()
     assessment = models.ForeignKey(
@@ -5376,7 +5386,7 @@ class ProposalAssessmentAnswer(RevisionedMixin):
         related_name="answers",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     text_answer = models.CharField(max_length=256, blank=True, null=True)
 
@@ -5398,24 +5408,24 @@ class QAOfficerReferral(RevisionedMixin):
     )
     lodged_on = models.DateTimeField(auto_now_add=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="qaofficer_referrals", on_delete=models.PROTECT
+        Proposal, related_name="qaofficer_referrals", on_delete=models.CASCADE
     )
     sent_by = models.ForeignKey(
-        EmailUser, related_name="assessor_qaofficer_referrals", on_delete=models.PROTECT
+        EmailUser, related_name="assessor_qaofficer_referrals", on_delete=models.CASCADE
     )
     qaofficer = models.ForeignKey(
         EmailUser,
         null=True,
         blank=True,
         related_name="qaofficers",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     qaofficer_group = models.ForeignKey(
         QAOfficerGroup,
         null=True,
         blank=True,
         related_name="qaofficer_groups",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     linked = models.BooleanField(default=False)
     sent_from = models.SmallIntegerField(
@@ -5434,7 +5444,7 @@ class QAOfficerReferral(RevisionedMixin):
         blank=True,
         null=True,
         related_name="qaofficer_referral_document",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -6442,7 +6452,7 @@ class HelpPage(models.Model):
         (HELP_TEXT_INTERNAL, "Internal"),
     )
 
-    application_type = models.ForeignKey(ApplicationType, on_delete=models.PROTECT)
+    application_type = models.ForeignKey(ApplicationType, on_delete=models.CASCADE)
     content = RichTextField()
     description = models.CharField(max_length=256, blank=True, null=True)
     help_type = models.SmallIntegerField(
@@ -6546,7 +6556,7 @@ class ProposalFilmingActivity(models.Model):
         null=True,
     )
     proposal = models.OneToOneField(
-        Proposal, related_name="filming_activity", null=True, on_delete=models.PROTECT
+        Proposal, related_name="filming_activity", null=True, on_delete=models.CASCADE
     )
     # pdswa_location=models.BooleanField('Event location within PDSWA',default=False)
 
@@ -6563,7 +6573,7 @@ class ProposalFilmingActivity(models.Model):
 
 class ProposalFilmingAccess(models.Model):
     proposal = models.OneToOneField(
-        Proposal, related_name="filming_access", null=True, on_delete=models.PROTECT
+        Proposal, related_name="filming_access", null=True, on_delete=models.CASCADE
     )
     track_use = models.BooleanField("Use of Tracks or trails", default=False)
     track_use_details = models.TextField(blank=True)
@@ -6616,7 +6626,7 @@ class ProposalFilmingEquipment(models.Model):
     )
     other_equipments = models.TextField("Other equipment", blank=True, null=True)
     proposal = models.OneToOneField(
-        Proposal, related_name="filming_equipment", null=True, on_delete=models.PROTECT
+        Proposal, related_name="filming_equipment", null=True, on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -6640,7 +6650,7 @@ class ProposalFilmingOtherDetails(models.Model):
         Proposal,
         related_name="filming_other_details",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -6653,10 +6663,10 @@ class ProposalFilmingOtherDetails(models.Model):
 class ProposalFilmingParks(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="filming_parks", null=True, on_delete=models.PROTECT
+        Proposal, related_name="filming_parks", null=True, on_delete=models.CASCADE
     )
     park = models.ForeignKey(
-        Park, related_name="filming_proposal", on_delete=models.PROTECT
+        Park, related_name="filming_proposal", on_delete=models.CASCADE
     )
     feature_of_interest = models.CharField(
         "Feture of interest", max_length=100, blank=True, null=True
@@ -6781,7 +6791,7 @@ class FilmingParkDocument(Document):
     filming_park = models.ForeignKey(
         "ProposalFilmingParks",
         related_name="filming_park_documents",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -6805,7 +6815,7 @@ class DistrictProposalAssessorGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     district = models.ForeignKey(
-        District, null=True, blank=True, on_delete=models.PROTECT
+        District, null=True, blank=True, on_delete=models.CASCADE
     )
     default = models.BooleanField(default=False)
 
@@ -6844,7 +6854,7 @@ class DistrictProposalApproverGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     district = models.ForeignKey(
-        District, null=True, blank=True, on_delete=models.PROTECT
+        District, null=True, blank=True, on_delete=models.CASCADE
     )
     default = models.BooleanField(default=False)
 
@@ -6896,17 +6906,17 @@ class DistrictProposal(models.Model):
         (PROCESSING_STATUS_DISCARDED, "Discarded"),
     )
     proposal = models.ForeignKey(
-        Proposal, related_name="district_proposals", on_delete=models.PROTECT
+        Proposal, related_name="district_proposals", on_delete=models.CASCADE
     )
     district = models.ForeignKey(
-        District, related_name="proposals", on_delete=models.PROTECT
+        District, related_name="proposals", on_delete=models.CASCADE
     )
     proposal_park = models.ManyToManyField(ProposalFilmingParks)
     district_approval = models.ForeignKey(
         "commercialoperator.DistrictApproval",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     processing_status = models.CharField(
         "Processing Status",
@@ -7067,15 +7077,20 @@ class DistrictProposal(models.Model):
         return recipients
 
     def can_assess(self, user):
-        # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
+        user_id = user.id
+
         if self.processing_status in ["with_assessor", "with_assessor_requirements"]:
-            return (
-                self.__assessor_group() in user.districtproposalassessorgroup_set.all()
+            user_assessor_groups = retrieve_user_groups(
+                "districtproposalassessorgroup", user_id
             )
+            # user.districtproposalassessorgroup_set.all()
+            return self.__assessor_group() in user_assessor_groups
         elif self.processing_status == "with_approver":
-            return (
-                self.__approver_group() in user.districtproposalapprovergroup_set.all()
+            user_approver_groups = retrieve_user_groups(
+                "districtproposalapprovergroup", user_id
             )
+            # user.districtproposalapprovergroup_set.all()
+            return self.__approver_group() in user_approver_groups
         else:
             return False
 
@@ -7815,8 +7830,8 @@ class DistrictProposal(models.Model):
 
 class DistrictProposalDeclinedDetails(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='declined_details')
-    district_proposal = models.OneToOneField(DistrictProposal, on_delete=models.PROTECT)
-    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.PROTECT)
+    district_proposal = models.OneToOneField(DistrictProposal, on_delete=models.CASCADE)
+    officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)
     cc_email = models.TextField(null=True)
 
@@ -7837,7 +7852,7 @@ class DistrictProposalDeclinedDetails(models.Model):
 class ProposalEventActivities(models.Model):
     event_name = models.CharField("Event name", max_length=100, blank=True, null=True)
     proposal = models.OneToOneField(
-        Proposal, related_name="event_activity", null=True, on_delete=models.PROTECT
+        Proposal, related_name="event_activity", null=True, on_delete=models.CASCADE
     )
     commencement_date = models.DateField(blank=True, null=True)
     completion_date = models.DateField(blank=True, null=True)
@@ -7872,7 +7887,7 @@ class ProposalEventManagement(models.Model):
         "Number of participants expected", blank=True, null=True
     )
     proposal = models.OneToOneField(
-        Proposal, related_name="event_management", null=True, on_delete=models.PROTECT
+        Proposal, related_name="event_management", null=True, on_delete=models.CASCADE
     )
     num_spectators = models.SmallIntegerField(
         "Number of spectators expected", blank=True, null=True
@@ -7916,7 +7931,7 @@ class ProposalEventVehiclesVessels(models.Model):
         Proposal,
         related_name="event_vehicles_vessels",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -7933,7 +7948,7 @@ class ProposalEventOtherDetails(models.Model):
         Proposal,
         related_name="event_other_details",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     participants_number = models.CharField(max_length=24, null=True, blank=True)
     officials_number = models.CharField(max_length=24, null=True, blank=True)
@@ -7950,10 +7965,10 @@ class ProposalEventOtherDetails(models.Model):
 class ProposalEventsParks(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="events_parks", null=True, on_delete=models.PROTECT
+        Proposal, related_name="events_parks", null=True, on_delete=models.CASCADE
     )
     park = models.ForeignKey(
-        Park, related_name="events_proposal", on_delete=models.PROTECT
+        Park, related_name="events_proposal", on_delete=models.CASCADE
     )
     activities_assessor = models.ManyToManyField(Activity, null=True, blank=True)
     event_activities = models.CharField(max_length=255, null=True, blank=True)
@@ -8005,12 +8020,12 @@ class AbseilingClimbingActivity(models.Model):
         Proposal,
         related_name="event_abseiling_climbing_activity",
         null=True,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     event_activities = models.ForeignKey(
         "ProposalEventActivities",
         related_name="abseiling_climbing_activity_data",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     leader = models.CharField(max_length=255, null=True, blank=True)
     rego_number = models.CharField(max_length=255, null=True, blank=True)
@@ -8024,7 +8039,7 @@ class EventsParkDocument(Document):
     events_park = models.ForeignKey(
         "ProposalEventsParks",
         related_name="events_park_documents",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512)
     input_name = models.CharField(max_length=255, null=True, blank=True)
@@ -8046,10 +8061,10 @@ class EventsParkDocument(Document):
 class ProposalPreEventsParks(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="pre_event_parks", null=True, on_delete=models.PROTECT
+        Proposal, related_name="pre_event_parks", null=True, on_delete=models.CASCADE
     )
     park = models.ForeignKey(
-        Park, related_name="pre_event_proposal", on_delete=models.PROTECT
+        Park, related_name="pre_event_proposal", on_delete=models.CASCADE
     )
     activities = models.CharField(max_length=255, null=True, blank=True)
 
@@ -8092,7 +8107,7 @@ class PreEventsParkDocument(Document):
     pre_event_park = models.ForeignKey(
         "ProposalPreEventsParks",
         related_name="pre_event_park_documents",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     _file = models.FileField(
         upload_to=update_pre_event_park_doc_filename, max_length=512
@@ -8116,13 +8131,13 @@ class PreEventsParkDocument(Document):
 class ProposalEventsTrails(models.Model):
     # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
     proposal = models.ForeignKey(
-        Proposal, related_name="events_trails", null=True, on_delete=models.PROTECT
+        Proposal, related_name="events_trails", null=True, on_delete=models.CASCADE
     )
     trail = models.ForeignKey(
-        Trail, related_name="events_proposal", null=True, on_delete=models.PROTECT
+        Trail, related_name="events_proposal", null=True, on_delete=models.CASCADE
     )
     section = models.ForeignKey(
-        Section, related_name="events_proposal", null=True, on_delete=models.PROTECT
+        Section, related_name="events_proposal", null=True, on_delete=models.CASCADE
     )
     activities_assessor = models.ManyToManyField(Activity, blank=True, null=True)
     event_trail_activities = models.CharField(max_length=255, null=True, blank=True)

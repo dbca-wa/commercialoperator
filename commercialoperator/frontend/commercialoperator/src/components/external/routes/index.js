@@ -50,7 +50,7 @@ export default
         {
             path: 'payment_order',
             component: PaymentOrder,
-            name:"payment_order"
+            name: 'external-payment_order',
         },
         {
             path: 'proposal',

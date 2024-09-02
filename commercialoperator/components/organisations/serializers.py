@@ -2,9 +2,8 @@ from django.conf import settings
 from rest_framework import serializers
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from commercialoperator.components.stubs.classes import (
-    Address as OrganisationAddress,
-)  # ledger.accounts.models.OrganisationAddress
+from ledger_api_client.ledger_models import Address as OrganisationAddress
+from ledger_api_client.utils import get_organisation
 from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
@@ -25,6 +24,7 @@ from commercialoperator.components.organisations.utils import (
 from commercialoperator.components.main.serializers import (
     CommunicationLogEntrySerializer,
 )
+from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.helpers import is_commercialoperator_admin
 
 
@@ -104,7 +104,8 @@ class OrganisationSerializer(serializers.ModelSerializer):
     pins = serializers.SerializerMethodField(read_only=True)
     # delegates = DelegateSerializer(many=True, read_only=True)
     delegates = serializers.SerializerMethodField(read_only=True)
-    organisation = LedgerOrganisationSerializer()
+    # organisation = LedgerOrganisationSerializer()
+    organisation = serializers.IntegerField(source="organisation_id")
     trading_name = serializers.SerializerMethodField(read_only=True)
     apply_application_discount = serializers.SerializerMethodField(read_only=True)
     application_discount = serializers.SerializerMethodField(read_only=True)
@@ -138,6 +139,12 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "max_num_months_ahead",
             "last_event_application_fee_date",
         )
+
+    def to_representation(self, instance):
+        if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
+            # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
+            instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
+        return super().to_representation(instance)
 
     def get_apply_application_discount(self, obj):
         return obj.apply_application_discount
@@ -344,9 +351,8 @@ class OrgRequestRequesterSerializer(serializers.ModelSerializer):
 
 class OrganisationRequestSerializer(serializers.ModelSerializer):
     identification = serializers.FileField()
-    requester = OrgRequestRequesterSerializer(read_only=True)
+    requester = OrgRequestRequesterSerializer(source="requester_id", read_only=True)
     status = serializers.SerializerMethodField()
-    # role = serializers.SerializerMethodField()
 
     class Meta:
         model = OrganisationRequest
@@ -356,16 +362,22 @@ class OrganisationRequestSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         return obj.get_status_display()
 
-    # def get_role(self,obj):
-    #     return obj.get_role_display()
-
 
 class OrganisationRequestDTSerializer(OrganisationRequestSerializer):
-    assigned_officer = serializers.CharField(source="assigned_officer.get_full_name")
+    assigned_officer = serializers.SerializerMethodField()
     requester = serializers.SerializerMethodField()
 
+    def get_assigned_officer(self, obj):
+        emailuser = retrieve_email_user(obj.assigned_officer_id)
+        if not emailuser:
+            return ""
+        return emailuser.get_full_name()
+
     def get_requester(self, obj):
-        return obj.requester.get_full_name()
+        emailuser = retrieve_email_user(obj.requester_id)
+        if not emailuser:
+            return ""
+        return emailuser.get_full_name()
 
 
 class UserOrganisationSerializer(serializers.ModelSerializer):
