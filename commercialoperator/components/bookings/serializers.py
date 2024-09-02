@@ -1,3 +1,4 @@
+from django.conf import settings
 from ledger_api_client.ledger_models import Invoice
 from commercialoperator.components.bookings.models import (
     Booking,
@@ -5,6 +6,10 @@ from commercialoperator.components.bookings.models import (
     BookingInvoice,
 )
 from rest_framework import serializers
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BookingInvoiceSerializer(serializers.ModelSerializer):
@@ -137,9 +142,15 @@ class BookingSerializer(serializers.ModelSerializer):
     def get_payment_method(self, obj):
         if obj and obj.invoices.last():
             inv = obj.invoices.last()
-            return Invoice.objects.get(
-                reference=inv.invoice_reference
-            ).get_payment_method_display()
+            try:
+                return Invoice.objects.get(
+                    reference=inv.invoice_reference
+                ).get_payment_method_display()
+            except Invoice.DoesNotExist:
+                logger.error(
+                    f"Invoice with reference {inv.invoice_reference} does not exist"
+                )
+                return settings.INVOICE_NOT_FOUND
         else:
             # if no invoice exists, likely this is booking is for monthly_invoicing
             return obj.get_booking_type_display()

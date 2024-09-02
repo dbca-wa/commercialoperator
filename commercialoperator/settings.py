@@ -250,3 +250,6 @@ CACHE_TIMEOUT_NEVER = None
 
 # Cache keys
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
+
+# Error messages
+INVOICE_NOT_FOUND = "Invoice not found"
