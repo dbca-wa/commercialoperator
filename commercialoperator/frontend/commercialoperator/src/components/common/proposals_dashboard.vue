@@ -442,11 +442,7 @@ export default {
                     },
                     {
                         data: 'applicant',
-                        // name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
-                        // mRender: function (data, type, full) {
-                        //     console.log(">>> applicant", full)
-                        //     return full.lodgement_number;
-                        // },
+                        name: 'applicant',
                     },
                     {
                         data: 'processing_status',

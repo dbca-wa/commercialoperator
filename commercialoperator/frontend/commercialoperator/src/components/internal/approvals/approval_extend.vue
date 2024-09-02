@@ -1,18 +1,35 @@
 <template lang="html">
     <div id="approvalExtend">
-        <modal transition="modal fade" @ok="ok()" @cancel="cancel()" :title="title" large>
+        <modal
+            transition="modal fade"
+            :title="title"
+            large
+            @ok="ok()"
+            @cancel="cancel()"
+        >
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="approvalForm">
-                        <alert :show.sync="showError" type="danger"><strong>{{errorString}}</strong></alert>
+                        <alert :show.sync="showError" type="danger"
+                            ><strong>{{ errorString }}</strong></alert
+                        >
                         <div class="col-sm-12">
                             <div class="form-group">
                                 <div class="row">
                                     <div class="col-sm-3">
-                                        <label class="control-label pull-left"  for="Name">Extend Details</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Extend Details</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <textarea name="extend_details" class="form-control" style="width:70%;" v-model="approval.extend_details"></textarea>
+                                        <textarea
+                                            v-model="approval.extend_details"
+                                            name="extend_details"
+                                            class="form-control"
+                                            style="width: 70%"
+                                        ></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -21,9 +38,26 @@
                 </div>
             </div>
             <div slot="footer">
-                <button type="button" v-if="issuingApproval" disabled class="btn btn-default" @click="ok"><i class="fa fa-spinner fa-spin"></i> Processing</button>
-                <button type="button" v-else class="btn btn-default" @click="ok">Ok</button>
-                <button type="button" class="btn btn-default" @click="cancel">Cancel</button>
+                <button
+                    v-if="issuingApproval"
+                    type="button"
+                    disabled
+                    class="btn btn-default"
+                    @click="ok"
+                >
+                    <i class="fa fa-spinner fa-spin"></i> Processing
+                </button>
+                <button
+                    v-else
+                    type="button"
+                    class="btn btn-default"
+                    @click="ok"
+                >
+                    Ok
+                </button>
+                <button type="button" class="btn btn-default" @click="cancel">
+                    Cancel
+                </button>
             </div>
         </modal>
     </div>
@@ -31,57 +65,65 @@
 
 <script>
 //import $ from 'jquery'
-import modal from '@vue-utils/bootstrap-modal.vue'
-import alert from '@vue-utils/alert.vue'
-import {helpers,api_endpoints} from "@/utils/hooks.js"
+import modal from '@vue-utils/bootstrap-modal.vue';
+import alert from '@vue-utils/alert.vue';
+import { helpers, api_endpoints } from '@/utils/hooks.js';
 export default {
-    name:'Extend-Approval',
-    components:{
+    // eslint-disable-next-line vue/component-definition-name-casing
+    name: 'Extend-Approval',
+    components: {
         modal,
-        alert
+        alert,
     },
-    props:{
+    props: {
+        // eslint-disable-next-line vue/prop-name-casing
         approval_id: {
             type: Number,
-            required: true
+            required: true,
         },
     },
-    data:function () {
-        let vm = this;
+    data: function () {
         return {
-            isModalOpen:false,
-            form:null,
+            isModalOpen: false,
+            form: null,
             approval: {},
-            approval_id: Number,
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,
             errors: false,
             errorString: '',
             successString: '',
-            success:false,
-        }
+            success: false,
+        };
     },
     computed: {
-        showError: function() {
+        showError: function () {
             var vm = this;
             return vm.errors;
         },
-        title: function(){
+        title: function () {
             return 'Extend Licence';
-        }
+        },
     },
-    methods:{
-        ok:function () {
-            let vm =this;
-            if($(vm.form).valid()){
+    mounted: function () {
+        let vm = this;
+        vm.form = document.forms.approvalForm;
+        vm.addFormValidations();
+        this.$nextTick(() => {
+            vm.eventListeners();
+        });
+    },
+    methods: {
+        ok: function () {
+            let vm = this;
+            if ($(vm.form).valid()) {
                 vm.sendData();
             }
         },
-        cancel:function () {
-            this.close()
+        cancel: function () {
+            this.close();
         },
-        close:function () {
+        close: function () {
             this.isModalOpen = false;
             this.approval = {};
             this.errors = false;
@@ -89,72 +131,75 @@ export default {
             //$(this.$refs.cancellation_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
-        sendData:function(){
+        sendData: function () {
             let vm = this;
             vm.errors = false;
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 
-            vm.$http.post(helpers.add_endpoint_json(api_endpoints.approvals,vm.approval_id+'/approval_extend'),JSON.stringify(approval),{
-                        emulateJSON:true,
-                    }).then((response)=>{
+            vm.$http
+                .post(
+                    helpers.add_endpoint_json(
+                        api_endpoints.approvals,
+                        vm.approval_id + '/approval_extend'
+                    ),
+                    JSON.stringify(approval),
+                    {
+                        emulateJSON: true,
+                    }
+                )
+                .then(
+                    (response) => {
                         vm.issuingApproval = false;
                         vm.close();
                         swal(
-                             'Extended',
-                             'Licence has been extended',
-                             'success'
+                            'Extended',
+                            'Licence has been extended',
+                            'success'
                         );
-                        vm.$emit('refreshFromResponse',response);
-
-                    },(error)=>{
+                        vm.$emit('refreshFromResponse', response);
+                    },
+                    (error) => {
                         vm.errors = true;
                         vm.issuingApproval = false;
                         vm.errorString = helpers.apiVueResourceError(error);
-                    });
+                    }
+                );
         },
-        addFormValidations: function() {
+        addFormValidations: function () {
             let vm = this;
             vm.validation_form = $(vm.form).validate({
                 rules: {
-                    extend_details:"required",
+                    extend_details: 'required',
                 },
-                messages: {
-                },
-                showErrors: function(errorMap, errorList) {
-                    $.each(this.validElements(), function(index, element) {
+                messages: {},
+                showErrors: function (errorMap, errorList) {
+                    $.each(this.validElements(), function (index, element) {
                         var $element = $(element);
-                        $element.attr("data-original-title", "").parents('.form-group').removeClass('has-error');
+                        $element
+                            .attr('data-original-title', '')
+                            .parents('.form-group')
+                            .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $("." + this.settings.validClass).tooltip("destroy");
+                    $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
                         $(error.element)
                             .tooltip({
-                                trigger: "focus"
+                                trigger: 'focus',
                             })
-                            .attr("data-original-title", error.message)
-                            .parents('.form-group').addClass('has-error');
+                            .attr('data-original-title', error.message)
+                            .parents('.form-group')
+                            .addClass('has-error');
                     }
-                }
+                },
             });
-       },
-       eventListeners:function () {
-            let vm = this;
-       }
-   },
-   mounted:function () {
-        let vm =this;
-        vm.form = document.forms.approvalForm;
-        vm.addFormValidations();
-        this.$nextTick(()=>{
-            vm.eventListeners();
-        });
-   }
-}
+        },
+        eventListeners: function () {},
+    },
+};
 </script>
 
-<style lang="css">
-</style>
+<style lang="css"></style>
