@@ -505,8 +505,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         request_user_id = request.user.id
         # request_user_id = 70348 # This is an existing user id for testing
         # Query the through-table on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
-        request_user_referralrecipientgroup_set = ReferralRecipientGroup.objects.filter(
-            referralrecipientgroup_members__emailuser__id__in=[request_user_id]
+        request_user_referralrecipientgroup_set = retrieve_user_groups(
+            "ReferralRecipientGroup", request_user_id
         )
 
         qs = (

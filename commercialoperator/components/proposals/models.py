@@ -1353,18 +1353,18 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             #     .members.all()
             #     .values_list("email", flat=True)
             # )
-            qaofficergroup_set = QAOfficerGroup.objects.filter(
-                default=True
-            ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+            qaofficergroup_set = retrieve_group_members(
+                QAOfficerGroup.objects.get(default=True)
+            )
         else:
             # return (
             #     QAOfficerGroup.objects.get(name=name)
             #     .members.all()
             #     .values_list("email", flat=True)
             # )
-            qaofficergroup_set = QAOfficerGroup.objects.filter(
-                name="Licensing Officer"
-            ).values_list("qaofficergroup_members__emailuser__id", flat=True)
+            qaofficergroup_set = retrieve_group_members(
+                QAOfficerGroup.objects.get(name=name)
+            )
 
         return EmailUser.objects.filter(
             id__in=[id for id in qaofficergroup_set]
@@ -4651,8 +4651,6 @@ class ReferralRecipientGroup(models.Model, MembersPropertiesMixin):
         # return 'Referral Recipient Group'
         return self.name
 
-
-
     @property
     def filtered_members(self):
         return self.members.all()
@@ -4674,7 +4672,6 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
 
     def __str__(self):
         return "QA Officer Group"
-
 
     @property
     def filtered_members(self):
