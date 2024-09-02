@@ -505,7 +505,6 @@ class DTProposalSerializer(BaseProposalSerializer):
 
 class ListProposalSerializer(BaseProposalSerializer):
     submitter = EmailUserSerializer(source='submitter_id')
-    # applicant = serializers.CharField(read_only=True)
     applicant = serializers.SerializerMethodField(read_only=True)
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
