@@ -8,6 +8,7 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
+from commercialoperator.components.organisations.models import OrganisationRequest
 from commercialoperator.components.stubs.models import EmailUserAction
 
 from commercialoperator.components.users.serializers import (
@@ -287,8 +288,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def pending_org_requests(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            requester_id = instance.id
+            # requester_id = 284700 # An existing user id
             serializer = OrganisationRequestDTSerializer(
-                instance.organisationrequest_set.filter(status="with_assessor"),
+                OrganisationRequest.objects.filter(
+                    status="with_assessor", requester_id=requester_id
+                ),
                 many=True,
                 context={"request": request},
             )
