@@ -190,10 +190,6 @@ export default {
                 return options.indexOf(val) != -1 ? true : false;
             },
         },
-        url: {
-            type: String,
-            required: true,
-        },
     },
     data() {
         let vm = this;
