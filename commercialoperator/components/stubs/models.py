@@ -2,6 +2,7 @@
     TODO: Need to be placed in a proper location
 """
 
+from enum import unique
 from django.db import models
 
 from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction
@@ -38,157 +39,78 @@ class EmailUserAction(UserAction):
         app_label = "CommunicationsLogEntry"
 
 
-class ReferralRecipientGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_referralrecipientgroup_members"
-        managed = False
-        unique_together = ("referralrecipientgroup", "emailuser")
+def members_through_model_factory(model_name):
+    """Returns a through model for a m2m field that mirrors the existing django-managed through table of the m2m field"""
 
-    referralrecipientgroup = models.ForeignKey(
-        "ReferralRecipientGroup",
-        on_delete=models.PROTECT,
-        related_name="referralrecipientgroup_members",
+    class MembersThroughModel(models.Model):
+        class Meta:
+            app_label = "commercialoperator"
+            # Mirror the existing django-managed through table of the m2m field
+            db_table = f"commercialoperator_{model_name.lower()}_members"
+            abstract = True
+            managed = False
+            unique_together = (f"{model_name.lower()}", "emailuser")
+
+        @property
+        def emailuser_object(self):
+            return retrieve_email_user(self.emailuser_id)
+
+    # Fk to model instance
+    MembersThroughModel.add_to_class(
+        f"{model_name.lower()}",
+        models.ForeignKey(
+            f"{model_name}",
+            on_delete=models.PROTECT,
+            related_name=f"{model_name.lower()}_members",
+        ),
     )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="referralrecipientgroup_members",
+    # Fk to EmailUserRO
+    MembersThroughModel.add_to_class(
+        "emailuser",
+        models.ForeignKey(
+            EmailUser,
+            on_delete=models.PROTECT,
+            related_name=f"{model_name.lower()}_members",
+        ),
     )
+    return MembersThroughModel
 
 
-class QAOfficerGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_qaofficergroup_members"
-        managed = False
-        unique_together = ("qaofficergroup", "emailuser")
-
-    qaofficergroup = models.ForeignKey(
-        "QAOfficerGroup",
-        on_delete=models.PROTECT,
-        related_name="qaofficergroup_members",
-    )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="qaofficergroup_members",
-    )
+class ReferralRecipientGroupMembers(
+    members_through_model_factory("ReferralRecipientGroup")
+):
+    pass
 
 
-class ProposalAssessorGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_proposalassessorgroup_members"
-        managed = False
-        unique_together = ("proposalassessorgroup", "emailuser")
-
-    proposalassessorgroup = models.ForeignKey(
-        "ProposalAssessorGroup",
-        on_delete=models.PROTECT,
-        related_name="proposalassessorgroup_members",
-    )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="proposalassessorgroup_members",
-    )
-
-    @property
-    def emailuserro(self):
-        return retrieve_email_user(self.emailuser_id)
+class QAOfficerGroupMembers(members_through_model_factory("QAOfficerGroup")):
+    pass
 
 
-class ProposalApproverGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_proposalapprovergroup_members"
-        managed = False
-        unique_together = ("proposalapprovergroup", "emailuser")
-
-    proposalapprovergroup = models.ForeignKey(
-        "ProposalApproverGroup",
-        on_delete=models.PROTECT,
-        related_name="proposalapprovergroup_members",
-    )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="proposalapprovergroup_members",
-    )
+class ProposalAssessorGroupMembers(
+    members_through_model_factory("ProposalAssessorGroup")
+):
+    pass
 
 
-class DistrictProposalAssessorGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_districtproposalassessorgroup_members"
-        managed = False
-        unique_together = ("districtproposalassessorgroup", "emailuser")
-
-    districtproposalassessorgroup = models.ForeignKey(
-        "DistrictProposalAssessorGroup",
-        on_delete=models.PROTECT,
-        related_name="districtproposalassessorgroup_members",
-    )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="districtproposalassessorgroup_members",
-    )
-
-    @property
-    def emailuserro(self):
-        return retrieve_email_user(self.emailuser_id)
+class ProposalApproverGroupMembers(
+    members_through_model_factory("ProposalApproverGroup")
+):
+    pass
 
 
-class DistrictProposalApproverGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_districtproposalapprovergroup_members"
-        managed = False
-        unique_together = ("districtproposalapprovergroup", "emailuser")
-
-    districtproposalapprovergroup = models.ForeignKey(
-        "DistrictProposalApproverGroup",
-        on_delete=models.PROTECT,
-        related_name="districtproposalapprovergroup_members",
-    )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="districtproposalapprovergroup_members",
-    )
-
-    @property
-    def emailuserro(self):
-        return retrieve_email_user(self.emailuser_id)
+class DistrictProposalAssessorGroupMembers(
+    members_through_model_factory("DistrictProposalAssessorGroup")
+):
+    pass
 
 
-class OrganisationAccessGroupMembers(models.Model):
-    class Meta:
-        app_label = "commercialoperator"
-        # Mirror the existing django-managed through table of the m2m field
-        db_table = "commercialoperator_organisationaccessgroup_members"
-        managed = False
-        unique_together = ("organisationaccessgroup", "emailuser")
+class DistrictProposalApproverGroupMembers(
+    members_through_model_factory("DistrictProposalApproverGroup")
+):
+    pass
 
-    organisationaccessgroup = models.ForeignKey(
-        "OrganisationAccessGroup",
-        on_delete=models.PROTECT,
-        related_name="organisationaccessgroup_members",
-    )
-    emailuser = models.ForeignKey(
-        EmailUser,
-        on_delete=models.PROTECT,
-        related_name="organisationaccessgroup_members",
-    )
 
-    @property
-    def emailuserro(self):
-        return retrieve_email_user(self.emailuser_id)
+class OrganisationAccessGroupMembers(
+    members_through_model_factory("OrganisationAccessGroup")
+):
+    pass
