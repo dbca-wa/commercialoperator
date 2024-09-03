@@ -617,10 +617,11 @@ class ListProposalSerializer(BaseProposalSerializer):
         if obj.can_officer_process:
             '''if (obj.assigned_officer and obj.assigned_officer == user) or (user in obj.allowed_assessors):
                 return True'''
-            if obj.assigned_officer:
-                if obj.assigned_officer == user:
+            if obj.assigned_officer_id:
+                assigned_officer = retrieve_email_user(obj.assigned_approver_id)
+                if assigned_officer == user:
                     return True
-            elif user in obj.allowed_assessors:
+            elif user.id in obj.allowed_assessors:
                 return True
         return False
 
