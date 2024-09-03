@@ -349,6 +349,7 @@
 <script>
 import $ from 'jquery';
 import datatable from '@/utils/vue/datatable.vue';
+import alert from '@vue-utils/alert.vue';
 import TextFilteredField from '@/components/forms/text-filtered.vue';
 import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
@@ -356,6 +357,7 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ExternalDashboard',
     components: {
+        alert,
         datatable,
         TextFilteredField,
         TextFilteredOrgField,
