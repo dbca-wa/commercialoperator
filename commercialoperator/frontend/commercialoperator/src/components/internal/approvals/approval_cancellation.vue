@@ -111,18 +111,13 @@ export default {
         modal,
         alert,
     },
-    props: {
-        // eslint-disable-next-line vue/prop-name-casing
-        approval_id: {
-            type: Number,
-            required: true,
-        },
-    },
+    props: {},
     data: function () {
         return {
             isModalOpen: false,
             form: null,
             approval: {},
+            approval_id: Number,
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,

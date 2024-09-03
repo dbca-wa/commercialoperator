@@ -76,12 +76,7 @@ export default {
         modal,
         alert
     },
-    props:{
-        approval_id: {
-            type: Number,
-            required: true
-        },
-    },
+    props:{},
     data:function () {
         let vm = this;
         return {
