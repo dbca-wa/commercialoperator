@@ -17,8 +17,8 @@
                             <div class="row">
                                 <div class="col-sm-12">
                                     <strong>Submitted by</strong><br />
-                                    {{ proposal.submitter.first_name }}
-                                    {{ proposal.submitter.last_name }}
+                                    <!-- {{ proposal.submitter.first_name }}
+                                    {{ proposal.submitter.last_name }} -->
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
