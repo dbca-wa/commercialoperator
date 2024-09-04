@@ -86,14 +86,14 @@ class LedgerOrganisation(models.Model):
         return f"Ledger Organisation ID: {self.organisation_id})"
 
 
-def members_through_model_factory(model_name):
-    """Returns a through model for a m2m field that mirrors the existing django-managed through table of the m2m field"""
+def m2m_field_through_model_factory(model_name, m2m_field_name="members"):
+    """Returns a through model for a m2m field (e.g. members) that mirrors the existing django-managed through table of the m2m field"""
 
     class MembersThroughModel(models.Model):
         class Meta:
             app_label = "commercialoperator"
             # Mirror the existing django-managed through table of the m2m field
-            db_table = f"commercialoperator_{model_name.lower()}_members"
+            db_table = f"commercialoperator_{model_name.lower()}_{m2m_field_name}"
             abstract = True
             managed = False
             unique_together = (f"{model_name.lower()}", "emailuser")
@@ -108,7 +108,7 @@ def members_through_model_factory(model_name):
         models.ForeignKey(
             f"{model_name}",
             on_delete=models.PROTECT,
-            related_name=f"{model_name.lower()}_members",
+            related_name=f"{model_name.lower()}_{m2m_field_name}",
         ),
     )
     # Fk to EmailUserRO
@@ -117,47 +117,47 @@ def members_through_model_factory(model_name):
         models.ForeignKey(
             EmailUser,
             on_delete=models.PROTECT,
-            related_name=f"{model_name.lower()}_members",
+            related_name=f"{model_name.lower()}_{m2m_field_name}",
         ),
     )
     return MembersThroughModel
 
 
 class ReferralRecipientGroupMembers(
-    members_through_model_factory("ReferralRecipientGroup")
+    m2m_field_through_model_factory("ReferralRecipientGroup")
 ):
     pass
 
 
-class QAOfficerGroupMembers(members_through_model_factory("QAOfficerGroup")):
+class QAOfficerGroupMembers(m2m_field_through_model_factory("QAOfficerGroup")):
     pass
 
 
 class ProposalAssessorGroupMembers(
-    members_through_model_factory("ProposalAssessorGroup")
+    m2m_field_through_model_factory("ProposalAssessorGroup")
 ):
     pass
 
 
 class ProposalApproverGroupMembers(
-    members_through_model_factory("ProposalApproverGroup")
+    m2m_field_through_model_factory("ProposalApproverGroup")
 ):
     pass
 
 
 class DistrictProposalAssessorGroupMembers(
-    members_through_model_factory("DistrictProposalAssessorGroup")
+    m2m_field_through_model_factory("DistrictProposalAssessorGroup")
 ):
     pass
 
 
 class DistrictProposalApproverGroupMembers(
-    members_through_model_factory("DistrictProposalApproverGroup")
+    m2m_field_through_model_factory("DistrictProposalApproverGroup")
 ):
     pass
 
 
 class OrganisationAccessGroupMembers(
-    members_through_model_factory("OrganisationAccessGroup")
+    m2m_field_through_model_factory("OrganisationAccessGroup")
 ):
     pass
