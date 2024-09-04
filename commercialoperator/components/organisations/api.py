@@ -8,7 +8,12 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from commercialoperator.components.stubs.utils import retrieve_email_user
+
+from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
+from commercialoperator.components.stubs.utils import (
+    filter_organisation_list,
+    retrieve_email_user,
+)
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
     Organisation,
@@ -17,7 +22,7 @@ from commercialoperator.components.organisations.models import (
     OrganisationRequestUserAction,
     OrganisationContact,
     OrganisationAccessGroup,
-    ledger_organisation,
+    # ledger_organisation,
 )
 
 from commercialoperator.components.organisations.serializers import (
@@ -746,18 +751,32 @@ from rest_framework import filters
 class OrganisationListFilterView(generics.ListAPIView):
     """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
 
-    # queryset = Organisation.objects.all()
-    queryset = ledger_organisation.objects.none()
+    queryset = Organisation.objects.none()
     serializer_class = LedgerOrganisationFilterSerializer
-    filter_backends = (filters.SearchFilter,)
+    # filter_backends = (filters.SearchFilter,)
+    filter_backends = (LedgerOrganisationFilterBackend,)
     search_fields = (
-        "name",
-        "trading_name",
+        # "name",
+        # "trading_name",
+        "organisation_name",
+        "organisation_trading_name",
     )
 
     def get_queryset(self):
         org_list = Organisation.objects.all().values_list("organisation_id", flat=True)
-        return ledger_organisation.objects.filter(id__in=org_list)
+        return Organisation.objects.filter(id__in=org_list)
+
+    def list(self, request, *args, **kwargs):
+        from commercialoperator.components.stubs.serializers import (
+            OrganisationListSerializer,
+        )
+
+        organisations = filter_organisation_list(self, request, *args, **kwargs)
+        serializer = OrganisationListSerializer(
+            organisations, many=True, context={"request": request}
+        )
+
+        return Response(serializer.data)
 
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):

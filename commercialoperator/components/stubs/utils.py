@@ -2,8 +2,14 @@ from django.apps import apps
 from django.db import models
 from django.conf import settings
 from django.core.cache import cache
+from rest_framework import status
+
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import oracle_parser, update_payments
+from ledger_api_client.utils import (
+    oracle_parser,
+    update_payments,
+    get_all_organisation,
+)
 
 import logging
 
@@ -178,3 +184,38 @@ def retrieve_delegate_organisation_ids(email_user_id):
     # )
 
     return organisation_ids
+
+
+class ListAsQuerySet(list):
+
+    def __init__(self, *args, model, **kwargs):
+        self.model = model
+        super().__init__(*args, **kwargs)
+
+    def filter(self, *args, **kwargs):
+        return self
+
+    def order_by(self, *args, **kwargs):
+        return self
+
+
+def filter_organisation_list(view, request, *args, **kwargs):
+    from commercialoperator.components.stubs.models import LedgerOrganisation
+
+    queryset = view.get_queryset()
+    ledger_organisation_response = get_all_organisation()
+    if ledger_organisation_response["status"] == status.HTTP_200_OK:
+        ledger_organisations = ledger_organisation_response["data"]
+
+    org_ids = queryset.values_list("organisation_id", flat=True)
+
+    organisation_dicts = [
+        org for org in ledger_organisations if org["organisation_id"] in org_ids
+    ]
+
+    organisations = [LedgerOrganisation(**org_dict) for org_dict in organisation_dicts]
+    organisations = view.filter_queryset(
+        ListAsQuerySet(organisations, model=LedgerOrganisation)
+    )
+
+    return organisations

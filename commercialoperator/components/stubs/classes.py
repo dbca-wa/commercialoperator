@@ -17,17 +17,6 @@ class Ersatz(models.Model):
         abstract = True
 
 
-class LedgerOrganisation(Ersatz):
-    """ledger.accounts.models.Organisation"""
-
-    identification = models.Field()
-    name = models.Field()
-    abn = models.Field()
-
-    class Meta:
-        managed = False
-
-
 class CreateInvoiceBasket(Ersatz, LedgerOrder):
     """ledger.payments.invoice.utils.CreateInvoiceBasket"""
 

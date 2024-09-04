@@ -5,9 +5,9 @@ from django.core.validators import MinValueValidator
 
 from rest_framework import status
 
-from commercialoperator.components.stubs.classes import (
-    LedgerOrganisation as ledger_organisation,
-)  # ledger.accounts.models.Organisation
+# from commercialoperator.components.stubs.models import (
+#     LedgerOrganisation as ledger_organisation,
+# )  # ledger.accounts.models.Organisation
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import get_organisation
 from commercialoperator.components.main.models import (
@@ -1112,7 +1112,7 @@ class OrganisationRequestLogEntry(CommunicationsLogEntry):
 
 import reversion
 
-reversion.register(ledger_organisation, follow=["organisation_set"])
+# reversion.register(ledger_organisation, follow=["organisation_set"])
 reversion.register(
     Organisation,
     follow=[

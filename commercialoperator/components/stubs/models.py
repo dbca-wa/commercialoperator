@@ -2,7 +2,6 @@
     TODO: Need to be placed in a proper location
 """
 
-from enum import unique
 from django.db import models
 
 from commercialoperator.components.main.models import CommunicationsLogEntry, UserAction
@@ -10,6 +9,10 @@ from commercialoperator.components.main.models import CommunicationsLogEntry, Us
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from commercialoperator.components.stubs.utils import retrieve_email_user
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class EmailUserLogEntry(CommunicationsLogEntry):
@@ -37,6 +40,50 @@ class EmailUserAction(UserAction):
     class Meta:
         managed = False
         app_label = "CommunicationsLogEntry"
+
+
+class LedgerOrganisation(models.Model):
+    organisation_id = models.IntegerField(
+        unique=True, verbose_name="Ledger Organisation ID"
+    )  # Ledger Organisation
+    organisation_name = models.CharField(
+        max_length=255,
+        verbose_name="Ledger Organisation Name",
+        editable=False,
+        default="",
+    )
+    organisation_trading_name = models.CharField(
+        max_length=255,
+        verbose_name="Ledger Organisation Trading Name",
+        editable=False,
+        null=True,
+    )
+    organisation_abn = models.CharField(
+        max_length=50,
+        verbose_name="Ledger Organisation ABN",
+        editable=False,
+        default="",
+    )
+    organisation_email = models.EmailField(
+        verbose_name="Ledger Organisation Email",
+        null=True,
+        blank=True,
+        editable=False,
+    )
+    admin_pin_one = models.CharField(max_length=50, blank=True)
+    admin_pin_two = models.CharField(max_length=50, blank=True)
+    user_pin_one = models.CharField(max_length=50, blank=True)
+    user_pin_two = models.CharField(max_length=50, blank=True)
+
+    class Meta:
+        app_label = "commercialoperator"
+
+    def __str__(self):
+        if self.organisation_name and self.organisation_abn:
+            return f"{self.organisation_name} (ABN: {self.organisation_abn})"
+        if self.organisation_name:
+            return self.organisation_name
+        return f"Ledger Organisation ID: {self.organisation_id})"
 
 
 def members_through_model_factory(model_name):

@@ -1,6 +1,8 @@
 import string
 import random
 
+from commercialoperator.components.stubs.utils import retrieve_group_members
+
 
 def can_manage_org(organisation, user):
     from commercialoperator.components.organisations.models import (
@@ -17,7 +19,9 @@ def can_manage_org(organisation, user):
     try:
         group = OrganisationAccessGroup.objects.first()
         if group:
-            group.members.get(id=user.id)
+            # group.members.get(id=user.id)
+            if not user.id in retrieve_group_members(group):
+                raise EmailUser.DoesNotExist
         return True
     except EmailUser.DoesNotExist:
         pass

@@ -12,7 +12,6 @@ from commercialoperator.components.organisations.models import (
     OrganisationAction,
     OrganisationRequestLogEntry,
     OrganisationLogEntry,
-    ledger_organisation,
 )
 from commercialoperator.components.organisations.utils import (
     can_manage_org,
@@ -30,7 +29,8 @@ from commercialoperator.helpers import is_commercialoperator_admin
 
 class LedgerOrganisationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ledger_organisation
+        # model = ledger_organisation
+        model = Organisation
         fields = "__all__"
 
 
@@ -40,7 +40,8 @@ class LedgerOrganisationFilterSerializer(serializers.ModelSerializer):
     org_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = ledger_organisation
+        # model = ledger_organisation
+        model = Organisation
         fields = (
             "id",  # ledger org id
             "org_id",  # cols org id
@@ -273,7 +274,8 @@ class MyOrganisationsSerializer(serializers.ModelSerializer):
 
 class DetailsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ledger_organisation
+        # model = ledger_organisation
+        model = Organisation
         fields = (
             "id",
             "name",

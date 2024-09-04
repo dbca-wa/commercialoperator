@@ -4,9 +4,8 @@ from django.contrib.auth import get_user_model
 from django.forms import Form, ModelForm, ValidationError, EmailField
 
 from ledger_api_client.ledger_models import Address
-from commercialoperator.components.stubs.classes import (
-    LedgerOrganisation as Organisation,
-)  # ledger.accounts.models.Organisation
+
+from commercialoperator.components.organisations.models import Organisation
 
 
 User = get_user_model()
@@ -95,7 +94,8 @@ class OrganisationForm(OrganisationAdminForm):
 
     class Meta:
         model = Organisation
-        fields = ["name", "abn", "identification"]
+        # fields = ["name", "abn", "identification"]
+        fields = []
 
     def __init__(self, *args, **kwargs):
         super(OrganisationForm, self).__init__(*args, **kwargs)
