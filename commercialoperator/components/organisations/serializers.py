@@ -105,9 +105,7 @@ class DelegateSerializer(serializers.ModelSerializer):
 class OrganisationSerializer(serializers.ModelSerializer):
     address = OrganisationAddressSerializer(read_only=True)
     pins = serializers.SerializerMethodField(read_only=True)
-    # delegates = DelegateSerializer(many=True, read_only=True)
     delegates = serializers.SerializerMethodField(read_only=True)
-    # organisation = LedgerOrganisationSerializer()
     organisation = serializers.IntegerField(source="organisation_id")
     trading_name = serializers.SerializerMethodField(read_only=True)
     apply_application_discount = serializers.SerializerMethodField(read_only=True)

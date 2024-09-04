@@ -649,21 +649,23 @@ class Organisation(models.Model):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_name", "")
-        return ""
+        return None
 
     @property
     def abn(self):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_abn", "")
-        return ""
+        return None
 
     @property
     def address(self):
-        organisation_response = get_organisation(self.organisation_id)
+        organisation_id = self.organisation_id
+        # organisation_id = 1
+        organisation_response = get_organisation(organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("postal_address", "")
-        return ""
+        return None
 
     @property
     def phone_number(self):
@@ -671,14 +673,14 @@ class Organisation(models.Model):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("phone_number", "")
-        return ""
+        return None
 
     @property
     def email(self):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_email", "")
-        return ""
+        return None
 
     @property
     def first_five(self):

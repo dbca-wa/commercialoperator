@@ -1276,7 +1276,6 @@ class ProposalFilmingSerializer(BaseProposalSerializer):
         return obj.can_user_view
 
 class InternalFilmingProposalSerializer(BaseProposalSerializer):
-    #applicant = ApplicantSerializer()
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
@@ -1304,7 +1303,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
     filming_access=ProposalFilmingAccessSerializer()
     filming_equipment=ProposalFilmingEquipmentSerializer()
     filming_other_details=ProposalFilmingOtherDetailsSerializer()
-    #training_completed=serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -1323,7 +1321,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
                 'customer_status',
                 'processing_status',
                 'review_status',
-                #'hard_copy',
                 'applicant',
                 'org_applicant',
                 'proxy_applicant',
@@ -1358,7 +1355,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
                 'can_view_district_table',
                 'proposal_type',
                 'qaofficer_referrals',
-                # tab field models
                 'applicant_details',
                 'training_completed',
                 'can_edit_activities',
