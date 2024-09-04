@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework import serializers
+from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.ledger_models import Address as OrganisationAddress
@@ -12,6 +13,7 @@ from commercialoperator.components.organisations.models import (
     OrganisationAction,
     OrganisationRequestLogEntry,
     OrganisationLogEntry,
+    UserDelegation,
 )
 from commercialoperator.components.organisations.utils import (
     can_manage_org,
@@ -141,11 +143,11 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "last_event_application_fee_date",
         )
 
-    def to_representation(self, instance):
-        if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
-            # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
-            instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
-        return super().to_representation(instance)
+    # def to_representation(self, instance):
+    #     if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
+    #         # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
+    #         instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
+    #     return super().to_representation(instance)
 
     def get_apply_application_discount(self, obj):
         return obj.apply_application_discount
@@ -166,8 +168,18 @@ class OrganisationSerializer(serializers.ModelSerializer):
         """
         Default DelegateSerializer does not include whether the user is an organisation admin, so adding it here
         """
+
         delegates = []
-        for user in obj.delegates.all():
+        organisation_id = obj.organisation_id
+        # organisation_id = 9
+        delegates_all_ids = UserDelegation.objects.filter(
+            organisation_id=organisation_id
+        ).values_list("user_id", flat=True)
+
+        for user_id in delegates_all_ids:
+            user = retrieve_email_user(user_id)
+            if not user:
+                continue
             admin_qs = obj.contacts.filter(
                 organisation__organisation_id=obj.organisation_id,
                 email=user.email,
@@ -196,7 +208,10 @@ class OrganisationSerializer(serializers.ModelSerializer):
         return delegates
 
     def get_trading_name(self, obj):
-        return obj.organisation.trading_name
+        organisation_response = get_organisation(obj.organisation_id)
+        if organisation_response["status"] == status.HTTP_200_OK:
+            return organisation_response["data"]["organisation_trading_name"]
+        return None
 
     def get_pins(self, obj):
         try:
