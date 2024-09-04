@@ -77,6 +77,8 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
 
 
 class OrganisationSerializer(serializers.ModelSerializer):
+    """This serializer is used to serialize the organisation details coming from the ledger API."""
+
     id = serializers.IntegerField(source="organisation_id", read_only=True)
     pins = serializers.SerializerMethodField(read_only=True)
     delegates = serializers.SerializerMethodField(read_only=True)
@@ -142,12 +144,14 @@ class OrganisationSerializer(serializers.ModelSerializer):
 
 class OrganisationListSerializer(OrganisationSerializer):
     name = serializers.CharField(source="organisation_name", read_only=True)
+    org_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = LedgerOrganisation
         fields = (
             "id",
             "name",
+            "org_id",
             "organisation_id",
             "organisation_name",
             "organisation_trading_name",
@@ -158,3 +162,11 @@ class OrganisationListSerializer(OrganisationSerializer):
         )
         read_only_fields = fields
         extra_kwargs = {field: {"read_only": True} for field in fields}
+
+    def get_org_id(self, obj):
+        try:
+            organisation = Organisation.objects.get(organisation_id=obj.organisation_id)
+        except Organisation.DoesNotExist:
+            return None
+        else:
+            return organisation.id
