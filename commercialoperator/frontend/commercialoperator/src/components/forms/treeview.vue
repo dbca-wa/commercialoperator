@@ -15,7 +15,7 @@
             :open-direction="open_direction"
             :disabled="disabled"
             :open-on-focus="true"
-            limit="Infinity"
+            :limit="limit"
         >
             <template slot="option-label" slot-scope="{ node }">
                 <label class="col-sm-8 control-label">{{
@@ -80,12 +80,12 @@ export default {
         },
         // eslint-disable-next-line vue/require-default-prop
         value: {
-            type: Object,
+            type: Array,
             required: false,
         },
         // eslint-disable-next-line vue/require-default-prop
         options: {
-            type: Object,
+            type: Array,
             required: false,
         },
         flat: {
