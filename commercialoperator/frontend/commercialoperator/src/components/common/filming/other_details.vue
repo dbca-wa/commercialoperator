@@ -463,7 +463,6 @@ export default {
             dBody: 'dBody' + vm._uid,
             values: null,
             global_settings: [],
-            //mooring:[{'value':''}],
             datepickerOptions: {
                 format: 'DD/MM/YYYY',
                 showClear: true,
