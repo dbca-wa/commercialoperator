@@ -1,6 +1,6 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template lang="html">
     <div>
-        <!-- <pre>TreeSelect: {{ value }}</pre> -->
         <treeselect
             v-model="value"
             :options="options"
@@ -16,249 +16,223 @@
             :disabled="disabled"
             :open-on-focus="true"
             limit="Infinity"
-            >
-
+        >
             <template slot="option-label" slot-scope="{ node }">
-                <label class="col-sm-8 control-label">{{ node.raw.name }}</label>
+                <label class="col-sm-8 control-label">{{
+                    node.raw.name
+                }}</label>
                 <div v-if="node.raw.can_edit" class="option-label-container">
                     <span v-if="is_checked(node)">
-                        <a class="col-sm-4 control-label pull-right" @click.stop="edit_activities(node)">{{ edit_display_text(node) }}  <i class="fa fa-edit"></i></a>
+                        <a
+                            class="col-sm-4 control-label pull-right"
+                            @click.stop="edit_activities(node)"
+                            >{{ edit_display_text(node) }}
+                            <i class="fa fa-edit"></i
+                        ></a>
                     </span>
                     <span v-else>
-                        <p class="col-sm-4 control-label pull-right" style="color: grey;">{{ edit_display_text(node) }}  <i class="fa fa-edit"></i></p>
+                        <p
+                            class="col-sm-4 control-label pull-right"
+                            style="color: grey"
+                        >
+                            {{ edit_display_text(node) }}
+                            <i class="fa fa-edit"></i>
+                        </p>
                     </span>
                 </div>
             </template>
 
             <div slot="value-label" slot-scope="{ node }">
                 <div v-if="allow_edit">
-                    <a @click.stop="edit_activities(node)" :disabled="!is_checked(node)" :title="edit_display_text(node)"> {{node.label}} </a>
+                    <a
+                        :disabled="!is_checked(node)"
+                        :title="edit_display_text(node)"
+                        @click.stop="edit_activities(node)"
+                    >
+                        {{ node.label }}
+                    </a>
                 </div>
                 <div v-else>
-                    <a> {{node.label}} </a>
+                    <a> {{ node.label }} </a>
                 </div>
             </div>
-
         </treeselect>
     </div>
 </template>
 
 <script>
-import Vue from 'vue'
-import {
-  api_endpoints,
-  helpers
-}
-from '@/utils/hooks'
-
 /* hack because I have modified two methods in vue-treeselect.js --> renderLabelContainer, renderOptionContainer. TODO look to override instead
    sudo npm install --save @riophae/vue-treeselect
    import Treeselect from '@riophae/vue-treeselect'
 */
-import Treeselect from '@/third-party/vue-treeselect/dict/vue-treeselect.js'
-import '@/third-party/vue-treeselect/dict/vue-treeselect.css'
-
-import Profile from '@/components/user/profile.vue'
-//import setupResizeAndScrollEventListeners from '@riophae/vue-treeselect'
+import Treeselect from '@/third-party/vue-treeselect/dict/vue-treeselect.js';
+import '@/third-party/vue-treeselect/dict/vue-treeselect.css';
 
 export default {
-    name:'TreeSelect',
-    components:{
+    name: 'TreeSelect',
+    components: {
         Treeselect,
     },
-    props:{
-        proposal:{
+    props: {
+        proposal: {
             type: Object,
-            required:true
+            required: true,
         },
-        value:{
+        // eslint-disable-next-line vue/require-default-prop
+        value: {
             type: Object,
-            required:false
+            required: false,
         },
-        options:{
+        // eslint-disable-next-line vue/require-default-prop
+        options: {
             type: Object,
-            required:false
+            required: false,
         },
-        flat:{
+        flat: {
             type: Boolean,
-            default: false
+            default: false,
         },
-        always_open:{
+        // eslint-disable-next-line vue/prop-name-casing
+        always_open: {
             type: Boolean,
-            default: true
+            default: true,
         },
-        clearable:{
+        clearable: {
             type: Boolean,
-            default: false
+            default: false,
         },
-        multiple:{
+        multiple: {
             type: Boolean,
-            default: true
+            default: true,
         },
-        max_height:{
+        // eslint-disable-next-line vue/prop-name-casing
+        max_height: {
             type: Number,
-            default: 350
+            default: 350,
         },
-        default_expand_level:{
+        // eslint-disable-next-line vue/prop-name-casing
+        default_expand_level: {
             type: Number,
-            default: 0
+            default: 0,
         },
-        value_consists_of:{
+        // eslint-disable-next-line vue/prop-name-casing
+        value_consists_of: {
             type: String,
             default: 'LEAF_PRIORITY', // last leaf nodes get pushed to selected_items array
         },
-        open_direction:{
+        // eslint-disable-next-line vue/prop-name-casing
+        open_direction: {
             type: String,
-            default: 'bottom'
+            default: 'bottom',
         },
-        allow_edit:{
+        // eslint-disable-next-line vue/prop-name-casing
+        allow_edit: {
             type: Boolean,
-            default: false
+            default: false,
         },
-        disabled:{
+        disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
-        limit:{
+        limit: {
             type: Number,
-            default: Infinity
+            default: Infinity,
         },
-        // limit:{
-        //     type: Number,
-        //     default: 60
-        // },
-
     },
-
     data() {
-      return {
-        //_options: [],
-        normalizer(node) {
-            return {
-                id: node.last_leaf ? node.id : node.name,
-                //id: node.last_leaf ? node.node_id : node.name,
-                label: node.hasOwnProperty('label') ? node.label : node.name,
-                children: node.children,
-                isDisabled: node.is_disabled,
-                }
-            }
-        }
+        return {
+            normalizer(node) {
+                return {
+                    id: node.last_leaf ? node.id : node.name,
+                    // eslint-disable-next-line no-prototype-builtins
+                    label: node.hasOwnProperty('label')
+                        ? node.label
+                        : node.name,
+                    children: node.children,
+                    isDisabled: node.is_disabled,
+                };
+            },
+        };
     },
-    watch:{
-        value: function(){
+
+    computed: {},
+    watch: {
+        value: function () {
             /* allows two-way update of array value ( 'selected_access' )
-               Requires parent Prop: ' :value.sync="selected_access" ', eg. 
+               Requires parent Prop: ' :value.sync="selected_access" ', eg.
                <TreeSelect ref="selected_access" :proposal="proposal" :value.sync="selected_access" :options="land_access_options" :default_expand_level="1"></TreeSelect>
             */
 
-            this.$emit("update:value", this.value)
+            this.$emit('update:value', this.value);
         },
     },
 
-    computed: {
+    updated: function () {
+        this.mousedown_event_stop_propagation();
     },
 
-    methods:{
-        get_node_id:function(node){
+    mounted: function () {
+        if (!this.disabled) {
+            // eslint-disable-next-line vue/no-mutating-props
+            this.limit = 20;
+        }
+    },
+
+    methods: {
+        get_node_id: function (node) {
             //id: node.last_leaf ? node.id : (node.hasOwnProperty('node_id') : node.node_id ? node.name), // this is a nested if statement
             if (node.last_leaf) {
-                return node.id
+                return node.id;
+                // eslint-disable-next-line no-prototype-builtins
             } else if (node.hasOwnProperty('node_id')) {
-                return node.node_id
+                return node.node_id;
             } else {
-                return node.name
+                return node.name;
             }
         },
-        edit_activities_test:function(node){
+        edit_activities_test: function (node) {
             //alert("event: " + event + " park_id: " + node.raw.id + ", park_name: " + node.raw.label );
-            alert(" park_id: " + node.raw.id + ", park_name: " + node.raw.label );
+            alert(
+                ' park_id: ' + node.raw.id + ', park_name: ' + node.raw.label
+            );
         },
-        edit_display_text:function(node){
+        edit_display_text: function (node) {
+            // eslint-disable-next-line no-prototype-builtins
             if (node.raw.hasOwnProperty('sections')) {
                 return 'Edit sections and activities';
             } else {
                 return 'Edit access and activities';
             }
         },
-        edit_activities:function(node){
+        edit_activities: function (node) {
+            // eslint-disable-next-line no-prototype-builtins
             if (node.raw.hasOwnProperty('sections')) {
-                this.$parent.edit_sections(node)
+                this.$parent.edit_sections(node);
+                // eslint-disable-next-line no-prototype-builtins
             } else if (node.raw.hasOwnProperty('allowed_zone_activities')) {
-                this.$parent.edit_activities(node)
+                this.$parent.edit_activities(node);
             } else {
-                this.$parent.edit_activities(node)
+                this.$parent.edit_activities(node);
             }
         },
-        is_checked:function(node){
+        is_checked: function (node) {
             return this.value.includes(node.id);
         },
-        mousedown_event_stop_propagation:function(){
-            $('.option-label-container').on('mousedown', function(e) {
+        mousedown_event_stop_propagation: function () {
+            $('.option-label-container').on('mousedown', function (e) {
                 e.stopPropagation();
                 return false;
             });
         },
     },
-
-    updated: function() {
-        this.mousedown_event_stop_propagation()
-    },
-
-    mounted:function () {
-        if (!this.disabled) {
-            this.limit = 20
-        }
-    }
-}
+};
 </script>
 
-<style lang="css" scoped>
-    /*
-    .vue-treeselect__checkbox-container {
-        width: 50px;
-    }
-    */
-</style>
+<style lang="css" scoped></style>
 
-/*
-    data() {
-      return {
-        normalizer(node) {
-            return {
-                id: node.name,
-                label: node.name,
-                children: node.children,
-            }
-        },
-
-        /*
-        _selected_items: [],
-        _options: [],
-
-        selected_items: [3,5],
-        options: [ {
-          id: 1,
-          label: 'a',
-          children: [ {
-            id: 2,
-            label: 'aa',
-            can_edit: false,
-          }, {
-            id: 3,
-            label: 'ab',
-            can_edit: true,
-          } ],
-        }, {
-          id: 4,
-          label: 'b',
-          can_edit: false,
-        }, {
-          id: 5,
-          label: 'c',
-          can_edit: false,
-        } ],
-        */
-      }
-    },
-*/
-
+/* data() { return { normalizer(node) { return { id: node.name, label:
+node.name, children: node.children, } }, /* _selected_items: [], _options: [],
+selected_items: [3,5], options: [ { id: 1, label: 'a', children: [ { id: 2,
+label: 'aa', can_edit: false, }, { id: 3, label: 'ab', can_edit: true, } ], }, {
+id: 4, label: 'b', can_edit: false, }, { id: 5, label: 'c', can_edit: false, }
+], */ } }, */
