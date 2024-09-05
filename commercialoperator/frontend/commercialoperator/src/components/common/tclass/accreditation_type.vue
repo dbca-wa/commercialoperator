@@ -45,7 +45,7 @@
                             <FileField
                                 :id="
                                     'accreditation' +
-                                    accreditation_type +
+                                    accreditation.accreditation_type +
                                     proposal_id
                                 "
                                 ref="accreditation_file"
