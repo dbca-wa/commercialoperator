@@ -24,9 +24,9 @@
                 </div>
             </div>
         </div>
+        <!-- Note: I removed the :park_id="park_id", because it does not exist on this component  -->
         <editPark
             ref="edit_park"
-            :park_id="park_id"
             :district_proposal="district_proposal"
             :is_external="is_external"
             :can-edit-activities="canEditActivities"
