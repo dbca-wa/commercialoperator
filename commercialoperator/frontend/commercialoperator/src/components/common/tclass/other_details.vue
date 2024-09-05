@@ -447,7 +447,7 @@
                                         <FileField
                                             :id="'proposal' + proposal.id"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="true"
+                                            :is-repeatable="true"
                                             name="other_details"
                                             :readonly="!canEditActivities"
                                         ></FileField>

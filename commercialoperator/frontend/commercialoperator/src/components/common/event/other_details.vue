@@ -11,7 +11,7 @@
                             :href="'#' + lBody"
                             data-toggle="collapse"
                             data-parent="#otherInfo"
-                            expanded="true"
+                            :expanded="true"
                             :aria-controls="lBody"
                         >
                             <span
@@ -202,7 +202,7 @@
                             :href="'#' + oBody"
                             data-toggle="collapse"
                             data-parent="#userInfo"
-                            expanded="true"
+                            :expanded="true"
                             :aria-controls="oBody"
                         >
                             <span
@@ -246,7 +246,7 @@
                                         <FileField
                                             :id="'proposal' + proposal.id"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="true"
+                                            :is-repeatable="true"
                                             name="event_other_details"
                                             :readonly="!canEditActivities"
                                         ></FileField>
@@ -269,7 +269,7 @@
                             :href="'#' + mBody"
                             data-toggle="collapse"
                             data-parent="#userInfo"
-                            expanded="true"
+                            :expanded="true"
                             :aria-controls="mBody"
                         >
                             <span
@@ -319,7 +319,7 @@
                             :href="'#' + iBody"
                             data-toggle="collapse"
                             data-parent="#userInfo"
-                            expanded="true"
+                            :expanded="true"
                             :aria-controls="iBody"
                         >
                             <span
@@ -424,7 +424,7 @@
                             :href="'#' + dBody"
                             data-toggle="collapse"
                             data-parent="#userInfo"
-                            expanded="true"
+                            :expanded="true"
                             :aria-controls="dBody"
                         >
                             <span
