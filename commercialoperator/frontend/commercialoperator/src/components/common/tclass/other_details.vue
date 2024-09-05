@@ -348,7 +348,7 @@
                                             :id="'proposal' + proposal.id"
                                             ref="currency_doc"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="false"
+                                            :is-repeatable="false"
                                             name="currency_certificate"
                                             :readonly="!canEditActivities"
                                         ></FileField>
@@ -672,7 +672,7 @@
                                             :id="'proposal' + proposal.id"
                                             ref="deed_poll_doc"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="false"
+                                            :is-repeatable="false"
                                             name="deed_poll"
                                             :readonly="!canEditActivities"
                                         ></FileField>
