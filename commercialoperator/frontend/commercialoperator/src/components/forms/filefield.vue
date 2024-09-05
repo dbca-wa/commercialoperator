@@ -78,26 +78,39 @@ export default {
     name: 'FileFieldComponent',
     components: {},
     props: {
+        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
         proposal_id: null,
+        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
         required_doc_id: null,
+        // eslint-disable-next-line vue/require-default-prop
         name: String,
+        // eslint-disable-next-line vue/require-default-prop
         label: String,
+        // eslint-disable-next-line vue/require-default-prop
         id: String,
+        // eslint-disable-next-line vue/require-default-prop
         isRequired: String,
+        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
         comment_value: String,
+        // eslint-disable-next-line vue/prop-name-casing
         assessor_readonly: Boolean,
+        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
         help_text: String,
+        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
         help_text_assessor: String,
+        // eslint-disable-next-line vue/require-prop-types
         assessorMode: {
             default: function () {
                 return false;
             },
         },
+        // eslint-disable-next-line vue/require-prop-types
         value: {
             default: function () {
                 return null;
             },
         },
+        // eslint-disable-next-line vue/require-prop-types
         fileTypes: {
             default: function () {
                 var file_types =
@@ -113,6 +126,7 @@ export default {
         },
         isRepeatable: Boolean,
         readonly: Boolean,
+        // eslint-disable-next-line vue/require-default-prop
         docsUrl: String,
     },
     data: function () {
