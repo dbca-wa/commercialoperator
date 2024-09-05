@@ -333,7 +333,7 @@ class ProposalAssessmentAnswerSerializer(serializers.ModelSerializer):
                 )
 
 class ProposalAssessmentSerializer(serializers.ModelSerializer):
-    #checklist=ProposalAssessmentAnswerSerializer(many=True, read_only=True)
+    # checklist=ProposalAssessmentAnswerSerializer(many=True, read_only=True)
     checklist=serializers.SerializerMethodField()
 
     class Meta:
@@ -347,8 +347,8 @@ class ProposalAssessmentSerializer(serializers.ModelSerializer):
                 'checklist'
                 )
 
-    def get_checklist(self,obj):
-        qs= obj.checklist.order_by('question__order')
+    def get_checklist(self, obj):
+        qs = obj.checklist.order_by("question__order")
         return ProposalAssessmentAnswerSerializer(qs, many=True, read_only=True).data
 
 

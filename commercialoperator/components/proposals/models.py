@@ -2007,7 +2007,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         return self.__approver_group() in proposalapprovergroups
 
     def can_assess(self, user):
-        # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
         if self.processing_status in [
             "on_hold",
             "with_qa_officer",
@@ -2015,9 +2014,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             "with_referral",
             "with_assessor_requirements",
         ]:
-            return self.__assessor_group() in user.proposalassessorgroup_set.all()
+            return self.__assessor_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            )
         elif self.processing_status == "with_approver":
-            return self.__approver_group() in user.proposalapprovergroup_set.all()
+            return self.__approver_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            )
         else:
             return False
 
@@ -2028,9 +2031,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             self.processing_status == "with_assessor"
             or self.processing_status == "with_assessor_requirements"
         ):
-            return self.__assessor_group() in user.proposalassessorgroup_set.all()
+            return self.__assessor_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            )
         elif self.processing_status == "with_approver":
-            return self.__approver_group() in user.proposalapprovergroup_set.all()
+            return self.__approver_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            )
         else:
             return False
 
@@ -2039,7 +2046,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             self.processing_status == "with_assessor"
             or self.processing_status == "with_assessor_requirements"
         ):
-            return self.__assessor_group() in user.proposalassessorgroup_set.all()
+            return self.__assessor_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            )
         else:
             return False
 
@@ -2057,9 +2066,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 referral = None
             if referral:
                 return True
-            elif self.__assessor_group() in user.proposalassessorgroup_set.all():
+            elif self.__assessor_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            ):
                 return True
-            elif self.__approver_group() in user.proposalapprovergroup_set.all():
+            elif self.__approver_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            ):
                 return True
             else:
                 return False
@@ -2077,15 +2090,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         if self.processing_status in status_without_assessor:
             return False
         else:
-            if self.assigned_officer:
-                if self.assigned_officer == user:
-                    return (
-                        self.__assessor_group() in user.proposalassessorgroup_set.all()
+            if self.assigned_officer_id:
+                if self.assigned_officer_id == user.id:
+                    return self.__assessor_group() in retrieve_user_groups(
+                        "proposalassessorgroup", user.id
                     )
                 else:
                     return False
             else:
-                return self.__assessor_group() in user.proposalassessorgroup_set.all()
+                return self.__assessor_group() in retrieve_user_groups(
+                    "proposalassessorgroup", user.id
+                )
 
     def log_user_action(self, action, request):
         return ProposalUserAction.log_action(self, action, request.user)
