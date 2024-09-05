@@ -1238,6 +1238,7 @@ export default {
             var postFormStr = "<form method='POST' action='" + url + "'>";
 
             for (var key in postData) {
+                // eslint-disable-next-line no-prototype-builtins
                 if (postData.hasOwnProperty(key)) {
                     postFormStr +=
                         "<input type='hidden' name='" +
