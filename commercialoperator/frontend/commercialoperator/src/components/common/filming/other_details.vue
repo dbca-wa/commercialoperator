@@ -70,7 +70,7 @@
                                         <FileField
                                             :id="'proposal' + proposal.id"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="true"
+                                            :is-repeatable="true"
                                             name="filming_safety_details"
                                             :readonly="!canEditActivities"
                                         ></FileField>
@@ -136,7 +136,7 @@
                                         <FileField
                                             :id="'proposal' + proposal.id"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="true"
+                                            :is-repeatable="true"
                                             name="filming_other_details"
                                             :readonly="!canEditActivities"
                                         ></FileField>
@@ -313,7 +313,7 @@
                                             :id="'proposal' + proposal.id"
                                             ref="currency_doc"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="false"
+                                            :is-repeatable="false"
                                             name="currency_certificate"
                                             :readonly="!canEditActivities"
                                         ></FileField>
@@ -420,7 +420,7 @@
                                             :id="'proposal' + proposal.id"
                                             ref="deed_poll_doc"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="false"
+                                            :is-repeatable="false"
                                             name="deed_poll"
                                             :readonly="!canEditActivities"
                                         ></FileField>

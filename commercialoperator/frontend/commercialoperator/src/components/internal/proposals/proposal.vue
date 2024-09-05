@@ -46,7 +46,10 @@
                                 <th>Last Modified</th>
                                 <th></th>
                             </tr>
-                            <tr v-for="p in proposal.reversion_ids" :key="p">
+                            <tr
+                                v-for="p in proposal.reversion_ids"
+                                :key="p.cur_version_id"
+                            >
                                 <td>{{ p.created | formatDate }}</td>
                                 <td>
                                     <a
