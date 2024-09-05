@@ -14,7 +14,7 @@
             :normalizer="normalizer"
             :open-direction="open_direction"
             :disabled="disabled"
-            open-on-focus="true"
+            :open-on-focus="true"
             limit="Infinity"
             >
 
