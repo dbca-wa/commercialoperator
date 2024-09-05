@@ -12,7 +12,7 @@
                             :href="'#' + pBody"
                             data-toggle="collapse"
                             data-parent="#userInfo"
-                            expanded="true"
+                            :expanded="true"
                             :aria-controls="pBody"
                         >
                             <span
@@ -67,7 +67,7 @@
                                             :value.sync="selected_zone_ids"
                                             :options="marine_park_options"
                                             :default_expand_level="0"
-                                            allow_edit="true"
+                                            :allow_edit="true"
                                             :disabled="!canEditActivities"
                                         ></TreeSelect>
                                     </div>
@@ -96,7 +96,7 @@
                                             rd.id
                                         "
                                         :proposal_id="proposal.id"
-                                        is-repeatable="true"
+                                        :is-repeatable="true"
                                         :name="'req_doc' + rd.id"
                                         :required_doc_id="rd.id"
                                         label="Add Document"
