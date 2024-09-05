@@ -89,6 +89,10 @@ export default {
             type: String,
             required: true,
         },
+        readonly: {
+            type: Boolean,
+            default: false,
+        },
     },
     data: function () {
         return {
