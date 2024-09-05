@@ -204,11 +204,12 @@ export default {
         FileField2,
     },
     props: {
+        // Note: I'm commenting out the park_id prop because it doesn't seem to be initialized with a non-null value
         // eslint-disable-next-line vue/prop-name-casing
-        park_id: {
-            type: Number,
-            required: true,
-        },
+        // park_id: {
+        //     type: Number,
+        //     required: true,
+        // },
         // eslint-disable-next-line vue/prop-name-casing
         park_action: {
             type: String,
@@ -234,7 +235,6 @@ export default {
             isModalOpen: false,
             form: null,
             park: Object,
-            // Note: Don't know the underlying logic, so I'm just going to leave the duplicate keys as is
             // eslint-disable-next-line vue/no-dupe-keys
             park_id: Number,
             state: 'proposed_park',
@@ -253,6 +253,7 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            selected_park_id: null,
         };
     },
     computed: {
