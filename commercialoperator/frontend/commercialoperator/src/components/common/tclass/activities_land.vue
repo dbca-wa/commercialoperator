@@ -950,7 +950,10 @@ export default {
         checkAllowedActivitiesOriginal: function () {
             let trails = [];
             let vm = this;
-            trails = vm.trail_options[0].children;
+            if (vm.trail_options.length) {
+                // Note: Had to add this check to avoid throwing an error due to an empty list
+                trails = vm.trail_options[0].children;
+            }
             vm.trail_error_list = [];
 
             for (var i = 0; i < vm.selected_trails_activities.length; i++) {
@@ -1021,7 +1024,10 @@ export default {
         checkAllowedActivities: function () {
             let trails = [];
             let vm = this;
-            trails = vm.trail_options[0].children;
+            if (vm.trail_options.length) {
+                // Note: Had to add this check to avoid throwing an error due to an empty list
+                trails = vm.trail_options[0].children;
+            }
             vm.trail_error_list = [];
             let trails_list = [];
 
@@ -1154,7 +1160,10 @@ export default {
             let parks_list = [];
 
             var regions = [];
-            regions = vm.park_options[0].children;
+            if (vm.park_options.length) {
+                // Note: Had to add this check to avoid throwing an error due to an empty list
+                regions = vm.park_options[0].children;
+            }
             for (var x = 0; x < regions.length; x++) {
                 var districts = [];
                 districts = regions[x].children;
