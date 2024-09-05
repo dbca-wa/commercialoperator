@@ -170,3 +170,23 @@ class OrganisationListSerializer(OrganisationSerializer):
             return None
         else:
             return organisation.id
+
+
+class SegregationBaseSerializer(serializers.ModelSerializer):
+    """Base class for serializing the data of different models.
+        Provides common methods for the serializers.
+    """
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+
+        if not settings.DEBUG or not settings.DEV_EMAILUSER_REPLACEMENT_ID:
+            return ret
+
+        allowed_assessors = ret.get("allowed_assessors", None)
+        if allowed_assessors:
+            ret["allowed_assessors"] = [
+                dict(t) for t in {tuple(d.items()) for d in allowed_assessors}
+            ]
+
+        return ret

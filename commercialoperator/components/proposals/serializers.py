@@ -59,7 +59,7 @@ from commercialoperator.components.organisations.serializers import (
 )
 from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.components.users.serializers import UserAddressSerializer
-from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
+from commercialoperator.components.stubs.serializers import SegregationBaseSerializer, EmailUserRoSerializer
 from rest_framework import serializers
 
 
@@ -365,7 +365,7 @@ class ParksAndTrailSerializer(serializers.ModelSerializer):
                 )
 
 
-class BaseProposalSerializer(serializers.ModelSerializer):
+class BaseProposalSerializer(SegregationBaseSerializer):
     readonly = serializers.SerializerMethodField(read_only=True)
     documents_url = serializers.SerializerMethodField()
     proposal_type = serializers.SerializerMethodField()
