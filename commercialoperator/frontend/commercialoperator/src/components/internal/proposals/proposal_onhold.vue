@@ -54,6 +54,7 @@ import TextArea from '@/components/forms/text-area.vue';
 import FileField from '@/components/forms/file.vue';
 
 import { helpers, api_endpoints } from '@/utils/hooks.js';
+import { readonly } from 'vue';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'proposal-onhold',
@@ -73,6 +74,10 @@ export default {
         processing_status: {
             type: String,
             required: true,
+        },
+        readonly: {
+            type: Boolean,
+            default: false,
         },
     },
     data: function () {
