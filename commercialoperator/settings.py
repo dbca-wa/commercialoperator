@@ -250,6 +250,7 @@ CACHE_TIMEOUT_24_HOURS = 60 * 60 * 24
 CACHE_TIMEOUT_NEVER = None
 
 # Cache keys
+CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
 
 # Error messages
