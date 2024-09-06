@@ -1149,6 +1149,8 @@ export default {
                 ],
                 processing: true,
             },
+            // Note: Had to add this variable, it didn't exist. It is the model of the datatable component. What is it for?
+            filterOrgContactStatus: null,
         };
     },
     computed: {
