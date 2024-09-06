@@ -609,7 +609,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
-            # serializer = self.get_serializer(org)
 
             if is_internal(request) and "apply_application_discount" in request.data:
                 data = request.data
@@ -643,7 +642,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except serializers.ValidationError as e:
             print(e.get_full_details())
-            # raise serializers.ValidationError(str( e.get_full_details() ))
             raise
         except ValidationError as e:
             if hasattr(e, "error_dict"):
