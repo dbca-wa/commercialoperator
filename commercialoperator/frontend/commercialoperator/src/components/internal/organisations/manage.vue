@@ -2098,9 +2098,9 @@ export default {
                         }
                         swal.fire({
                             title: 'Error',
-                            text:
+                            html:
                                 'Organisation details cannot be saved because of the following error: ' +
-                                error.body,
+                                vm.parseErrorMessages(error),
                             icon: 'error',
                         });
                         vm.updatingDetails = false;
@@ -2184,12 +2184,19 @@ export default {
                             title: 'Error',
                             text:
                                 'Address details cannot be saved because of the following error: ' +
-                                error.body,
+                                error.body.message,
                             icon: 'error',
                         });
                         vm.updatingAddress = false;
                     }
                 );
+        },
+        parseErrorMessages(error) {
+            let error_msg = '<br/>';
+            for (let key in error.body) {
+                error_msg += key + ': ' + error.body[key] + '<br/>';
+            }
+            return error_msg;
         },
     },
 };
