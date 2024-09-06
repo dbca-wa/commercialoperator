@@ -826,16 +826,13 @@ class ProposalParkSerializer(BaseProposalSerializer):
         return obj.land_parks_exclude_free
 
 class InternalProposalSerializer(BaseProposalSerializer):
-    #applicant = ApplicantSerializer()
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    #submitter = serializers.CharField(source='submitter.get_full_name')
     submitter = EmailUserAppViewSerializer()
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
-    #
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
     can_edit_period = serializers.SerializerMethodField()
@@ -847,16 +844,12 @@ class InternalProposalSerializer(BaseProposalSerializer):
     application_type = serializers.CharField(source='application_type.name', read_only=True)
     region = serializers.CharField(source='region.name', read_only=True)
     district = serializers.CharField(source='district.name', read_only=True)
-    #tenure = serializers.CharField(source='tenure.name', read_only=True)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     reversion_ids = serializers.SerializerMethodField()
     assessor_assessment=ProposalAssessmentSerializer(read_only=True)
     referral_assessments=ProposalAssessmentSerializer(read_only=True, many=True)
     fee_invoice_url = serializers.SerializerMethodField()
     requirements_completed=serializers.SerializerMethodField()
-    #selected_trails_activities=serializers.SerializerMethodField()
-    #selected_parks_activities=serializers.SerializerMethodField()
-    #marine_parks_activities=serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -875,7 +868,6 @@ class InternalProposalSerializer(BaseProposalSerializer):
                 'customer_status',
                 'processing_status',
                 'review_status',
-                #'hard_copy',
                 'applicant',
                 'org_applicant',
                 'proxy_applicant',
@@ -909,7 +901,6 @@ class InternalProposalSerializer(BaseProposalSerializer):
                 'can_officer_process',
                 'proposal_type',
                 'qaofficer_referrals',
-                # tab field models
                 'applicant_details',
                 'other_details',
                 'activities_land',
@@ -918,16 +909,9 @@ class InternalProposalSerializer(BaseProposalSerializer):
                 'trail_activities',
                 'trail_section_activities',
                 'activities_marine',
-                # 'land_parks',
-                # 'marine_parks',
-                # 'trails',
                 'training_completed',
                 'can_edit_activities',
                 'can_edit_period',
-                #Following 3 are variable to store selected parks and activities at frontend
-                #'selected_parks_activities',
-                #'selected_trails_activities',
-                #'marine_parks_activities',
                 'reversion_ids',
                 'assessor_assessment',
                 'referral_assessments',
