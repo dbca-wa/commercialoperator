@@ -107,6 +107,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
     pins = serializers.SerializerMethodField(read_only=True)
     delegates = serializers.SerializerMethodField(read_only=True)
     organisation = serializers.IntegerField(source="organisation_id")
+    organisation_id = serializers.IntegerField()
     trading_name = serializers.SerializerMethodField(read_only=True)
     apply_application_discount = serializers.SerializerMethodField(read_only=True)
     application_discount = serializers.SerializerMethodField(read_only=True)
@@ -129,6 +130,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "address",
             "email",
             "organisation",
+            "organisation_id",
             "phone_number",
             "pins",
             "delegates",
