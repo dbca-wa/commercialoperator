@@ -1276,13 +1276,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Unlink',
                                     text:
                                         'You have successfully unlinked ' +
                                         name +
                                         '.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1293,18 +1294,20 @@ export default {
                             },
                             (error) => {
                                 if (error.status == 500) {
-                                    swal(
-                                        'Unlink',
-                                        'Last Organisation Admin can not be unlinked.',
-                                        'error'
-                                    );
+                                    swal.fire({
+                                        title: 'Unlink',
+                                        text: 'Last Organisation Admin can not be unlinked.',
+                                        icon: 'error',
+                                    });
                                 } else {
-                                    swal(
-                                        'Unlink',
-                                        'There was an error unlinking this user ' +
-                                            error,
-                                        'error'
-                                    );
+                                    swal.fire({
+                                        title: 'Unlink',
+                                        text:
+                                            'There was an error unlinking ' +
+                                            error.body +
+                                            '.',
+                                        icon: 'error',
+                                    });
                                 }
                             }
                         );
@@ -1322,13 +1325,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Relink User',
                                     text:
                                         'You have successfully relinked ' +
                                         name +
                                         '.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1337,12 +1341,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Relink User',
-                                    'There was an error relink ' + name + '.',
-                                    'error'
-                                );
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Relink User',
+                                    text:
+                                        'There was an error relinking ' +
+                                        error.body +
+                                        '.',
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'suspend') {
@@ -1359,13 +1367,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Suspend User',
                                     text:
                                         'You have successfully suspended ' +
                                         name +
                                         ' as a User.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1374,14 +1383,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Suspend User',
-                                    'There was an error suspending ' +
-                                        name +
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Suspend User',
+                                    text:
+                                        'There was an error suspending ' +
+                                        error.body +
                                         ' as a User.',
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'reinstate') {
@@ -1398,13 +1409,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Reinstate User',
                                     text:
                                         'You have successfully reinstated ' +
                                         name +
                                         '.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1413,14 +1425,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Reinstate User',
-                                    'There was an error reinstating ' +
-                                        name +
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Reinstate User',
+                                    text:
+                                        'There was an error reinstating ' +
+                                        error.body +
                                         '.',
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'make_admin_contact') {
@@ -1437,13 +1451,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Organisation Admin',
                                     text:
                                         'You have successfully made ' +
                                         name +
                                         ' an Organisation Admin.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1452,14 +1467,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Organisation Admin',
-                                    'There was an error making ' +
-                                        name +
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Organisation Admin',
+                                    text:
+                                        'There was an error making ' +
+                                        error.body +
                                         ' an Organisation Admin.',
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'make_user_contact') {
@@ -1476,13 +1493,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Organisation User',
                                     text:
                                         'You have successfully made ' +
                                         name +
                                         ' an Organisation User.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1492,16 +1510,18 @@ export default {
                                 );
                             },
                             (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
                                 console.log(error);
                                 var text = helpers.apiVueResourceError(error);
-                                swal(
-                                    'Company Admin',
-                                    'There was an error making ' +
-                                        name +
-                                        ' an Organisation User. ' +
+                                swal.fire({
+                                    title: 'Company Admin',
+                                    text:
+                                        'There was an error making ' +
+                                        error.body +
+                                        ' an Organisation User.' +
                                         text,
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'accept') {
@@ -1518,13 +1538,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Contact Accept',
                                     text:
                                         'You have successfully accepted ' +
                                         name +
                                         '.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1533,14 +1554,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Contact Accept',
-                                    'There was an error accepting ' +
-                                        name +
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Contact Accept',
+                                    text:
+                                        'There was an error accepting ' +
+                                        error.body +
                                         '.',
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'decline') {
@@ -1557,13 +1580,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Contact Decline',
                                     text:
                                         'You have successfully declined ' +
                                         name +
                                         '.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1572,14 +1596,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Contact Decline',
-                                    'There was an error declining ' +
-                                        name +
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Contact Decline',
+                                    text:
+                                        'There was an error declining ' +
+                                        error.body +
                                         '.',
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 } else if (action == 'accept_declined') {
@@ -1596,13 +1622,14 @@ export default {
                         )
                         .then(
                             () => {
-                                swal({
+                                // Note: This block is missing a response to retrieve the name from
+                                swal.fire({
                                     title: 'Contact Accept (Previously Declined)',
                                     text:
                                         'You have successfully accepted ' +
                                         name +
                                         '.',
-                                    type: 'success',
+                                    icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
@@ -1611,14 +1638,16 @@ export default {
                                     () => {}
                                 );
                             },
-                            () => {
-                                swal(
-                                    'Contact Accept (Previously Declined)',
-                                    'There was an error accepting ' +
-                                        name +
+                            (error) => {
+                                // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
+                                swal.fire({
+                                    title: 'Contact Accept (Previously Declined)',
+                                    text:
+                                        'There was an error accepting ' +
+                                        error.body +
                                         '.',
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 }
@@ -1635,7 +1664,7 @@ export default {
                     let name = $(e.target).data('name');
                     let email = $(e.target).data('email');
                     let id = $(e.target).data('id');
-                    swal({
+                    swal.fire({
                         title: 'Delete Contact',
                         text:
                             'Are you sure you want to remove ' +
@@ -1643,7 +1672,7 @@ export default {
                             '(' +
                             email +
                             ') as a contact  ?',
-                        type: 'error',
+                        icon: 'error',
                         showCancelButton: true,
                         confirmButtonText: 'Accept',
                     }).then(
@@ -1681,7 +1710,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Unlink',
                         text:
                             'Are you sure you want to unlink ' +
@@ -1720,7 +1749,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Reinstate User',
                         text:
                             'Are you sure you want to Reinstate  ' +
@@ -1759,7 +1788,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Relink User',
                         text:
                             'Are you sure you want to Relink  ' +
@@ -1798,7 +1827,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Suspend User',
                         text:
                             'Are you sure you want to Suspend  ' +
@@ -1837,7 +1866,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Organisation Admin',
                         text:
                             'Are you sure you want to make ' +
@@ -1876,7 +1905,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Organisation User',
                         text:
                             'Are you sure you want to make ' +
@@ -1915,7 +1944,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Contact Accept',
                         text:
                             'Are you sure you want to accept contact request ' +
@@ -1954,7 +1983,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Contact Decline',
                         text:
                             'Are you sure you want to decline the contact request for ' +
@@ -1993,7 +2022,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Contact Accept (Previously Declined)',
                         text:
                             'Are you sure you want to accept the previously declined contact request for ' +
@@ -2052,14 +2081,14 @@ export default {
                         if (vm.org.address == null) {
                             vm.org.address = {};
                         }
-                        swal(
-                            'Saved',
-                            'Organisation details have been saved',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Saved',
+                            text: 'Organisation details have been saved',
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        console.log('INTERNAL: ' + error);
+                        console.log('INTERNAL: ', error);
                         var text = helpers.apiVueResourceError(error);
                         if (typeof text == 'object') {
                             // eslint-disable-next-line no-prototype-builtins
@@ -2067,23 +2096,24 @@ export default {
                                 text = text.email[0];
                             }
                         }
-                        swal(
-                            'Error',
-                            'Organisation details have cannot be saved because of the following error: ' +
-                                text,
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Error',
+                            text:
+                                'Organisation details cannot be saved because of the following error: ' +
+                                error.body,
+                            icon: 'error',
+                        });
                         vm.updatingDetails = false;
                     }
                 );
         },
         addedContact: function () {
             let vm = this;
-            swal(
-                'Added',
-                'The contact has been successfully added.',
-                'success'
-            );
+            swal.fire({
+                title: 'Added',
+                text: 'The contact has been successfully added.',
+                icon: 'success',
+            });
             vm.$refs.contacts_datatable.vmDataTable.ajax.reload();
         },
         deleteContact: function (id) {
@@ -2101,22 +2131,23 @@ export default {
                 )
                 .then(
                     () => {
-                        swal(
-                            'Contact Deleted',
-                            'The contact was successfully deleted',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Contact Deleted',
+                            text: 'The contact has been successfully deleted.',
+                            icon: 'success',
+                        });
                         vm.$refs.contacts_datatable.vmDataTable.ajax.reload();
                     },
                     (error) => {
                         console.log(error);
-                        swal(
-                            'Contact Deleted',
-                            'The contact could not be deleted because of the following error : [' +
+                        swal.fire({
+                            title: 'Contact Deleted',
+                            text:
+                                'The contact could not be deleted because of the following error : [' +
                                 error.body +
                                 ']',
-                            'error'
-                        );
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -2138,17 +2169,24 @@ export default {
                     (response) => {
                         vm.updatingAddress = false;
                         vm.org = response.body;
-                        swal(
-                            'Saved',
-                            'Address details have been saved',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Saved',
+                            text: 'Address details have been saved',
+                            icon: 'success',
+                        });
                         if (vm.org.address == null) {
                             vm.org.address = {};
                         }
                     },
                     (error) => {
                         console.log(error);
+                        swal.fire({
+                            title: 'Error',
+                            text:
+                                'Address details cannot be saved because of the following error: ' +
+                                error.body,
+                            icon: 'error',
+                        });
                         vm.updatingAddress = false;
                     }
                 );
