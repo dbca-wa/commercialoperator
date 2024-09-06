@@ -78,7 +78,7 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
 
     def get_is_admin(self, obj):
         user = EmailUser.objects.get(id=self.context.get("user_id"))
-        return can_admin_org(obj, user)
+        return can_admin_org(obj, user.id)
 
     def get_is_consultant(self, obj):
         user = EmailUser.objects.get(id=self.context.get("user_id"))

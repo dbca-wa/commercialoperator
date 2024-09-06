@@ -688,14 +688,14 @@ class Organisation(models.Model):
             [
                 user.get_full_name()
                 for user in self.delegates.all()[:5]
-                if can_admin_org(self, user)
+                if can_admin_org(self, user.id)
             ]
         )
 
     @property
     def all_admin_emails(self):
         return [
-            user.email for user in self.delegates.all() if can_admin_org(self, user)
+            user.email for user in self.delegates.all() if can_admin_org(self, user.id)
         ]
 
 
