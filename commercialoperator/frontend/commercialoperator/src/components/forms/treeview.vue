@@ -14,7 +14,7 @@
             :open-direction="open_direction"
             :disabled="disabled"
             :open-on-focus="true"
-            :limit="limit"
+            :limit="localLimit"
         >
             <template slot="option-label" slot-scope="{ node }">
                 <label class="col-sm-8 control-label">{{
@@ -151,13 +151,15 @@ export default {
                     isDisabled: node.is_disabled,
                 };
             },
+            // Note: I changed from using the prop `value` (props should not be mutated) to using a `localValue` data property
             localValue: this.value,
+            // Note: I changed from using the prop `limit` (props should not be mutated) to using a `localLimit` data property
+            localLimit: this.limit,
         };
     },
 
     computed: {},
     watch: {
-        // Note: I changed from using the prop `value` (props should not be mutated) to using a `localValue` data property
         localValue: function (newValue) {
             /* allows two-way update of array value ( 'selected_access' )
                Requires parent Prop: ' :value.sync="selected_access" ', eg.
@@ -175,8 +177,7 @@ export default {
 
     mounted: function () {
         if (!this.disabled) {
-            // eslint-disable-next-line vue/no-mutating-props
-            this.limit = 20;
+            this.localLimit = 20;
         }
     },
 
