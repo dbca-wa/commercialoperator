@@ -1,4 +1,6 @@
 import traceback
+from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -8,7 +10,9 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import update_organisation_obj
 
+from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
 from commercialoperator.components.stubs.utils import (
     filter_organisation_list,
@@ -601,11 +605,31 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     def update_details(self, request, *args, **kwargs):
         try:
-            org = self.get_object()
-            instance = org.organisation
-            data = request.data
+            instance = self.get_object()
+            if not can_admin_org(instance, request.user.id):
+                return Response(
+                    status=status.HTTP_403_FORBIDDEN,
+                    data={
+                        "message": "You do not have permission to update this organisation."
+                    },
+                )
+            # Note: Calling this function doesn't update the ledger name, trading name, email entries.
+            response_ledger = update_organisation_obj(request.data)
+            response_ledger_status = response_ledger.get("status", None)
+            if not response_ledger_status == status.HTTP_200_OK:
+                return Response(
+                    status=response_ledger_status,
+                    data=response_ledger.get("message", None),
+                )
+
+            cache.delete(
+                settings.CACHE_KEY_LEDGER_ORGANISATION.format(
+                    instance.organisation_id
+                )
+            )
+
             serializer = DetailsSerializer(
-                instance, data=data, context={"request": request}
+                instance, data=request.data, context={"request": request}
             )
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
@@ -634,11 +658,11 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                 else:
                     data["charge_once_per_year"] = None
 
-                serializer = SaveDiscountSerializer(org, data=data)
+                serializer = SaveDiscountSerializer(instance, data=data)
                 serializer.is_valid(raise_exception=True)
                 instance = serializer.save()
 
-            serializer = self.get_serializer(org)
+            serializer = self.get_serializer(instance)
             return Response(serializer.data)
         except serializers.ValidationError as e:
             print(e.get_full_details())

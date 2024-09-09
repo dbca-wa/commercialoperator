@@ -288,25 +288,43 @@ class MyOrganisationsSerializer(serializers.ModelSerializer):
 
 
 class DetailsSerializer(serializers.ModelSerializer):
+    # Note: Below four fields are commented out because they do not exist on the model
+    # name = serializers.CharField(
+    #     max_length=255,
+    #     default="",
+    # )
+    # trading_name = serializers.CharField(
+    #     source="ledger_organisation_trading_name",
+    #     required=False,
+    #     allow_blank=True,
+    #     allow_null=True,
+    # )
+    # email = serializers.EmailField(
+    #     required=False,
+    #     allow_blank=True,
+    #     allow_null=True,
+    # )
+    # abn = serializers.CharField(
+    #     max_length=11,
+    #     required=False,
+    #     allow_blank=True,
+    #     allow_null=True,
+    # )
+
     class Meta:
         # model = ledger_organisation
         model = Organisation
         fields = (
             "id",
             "name",
-            "trading_name",
+            # "trading_name", # Commented out because it does not exist on model
             "email",
             "abn",
-            #            'apply_application_discount',
-            #            'application_discount',
-            #            'apply_licence_discount',
-            #            'licence_discount',
         )
 
     def validate(self, data):
         request = self.context["request"]
-        # user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
-        new_abn = data["abn"]
+        new_abn = data.get("abn", None)
         obj_id = self.instance.id
         if new_abn and obj_id and new_abn != self.instance.abn:
             if not is_commercialoperator_admin(request):
@@ -314,8 +332,12 @@ class DetailsSerializer(serializers.ModelSerializer):
                     "You are not authorised to change the ABN"
                 )
             else:
+                # Note: No abn field on Organisation model yet
+                raise NotImplementedError(
+                    "ABN change is not implemented yet."
+                )
                 existance = (
-                    ledger_organisation.objects.filter(abn=new_abn)
+                    Organisation.objects.filter(abn=new_abn)
                     .exclude(id=obj_id)
                     .exists()
                 )
