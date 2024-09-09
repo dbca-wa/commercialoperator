@@ -5,9 +5,9 @@ from django.core.validators import MinValueValidator
 
 from rest_framework import status
 
-from commercialoperator.components.stubs.classes import (
-    LedgerOrganisation as ledger_organisation,
-)  # ledger.accounts.models.Organisation
+# from commercialoperator.components.stubs.models import (
+#     LedgerOrganisation as ledger_organisation,
+# )  # ledger.accounts.models.Organisation
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import get_organisation
 from commercialoperator.components.main.models import (
@@ -39,19 +39,15 @@ from commercialoperator.components.stubs.utils import retrieve_members
 
 
 class Organisation(models.Model):
-    # organisation = models.ForeignKey(ledger_organisation, on_delete=models.PROTECT)
     organisation_id = models.IntegerField(
         unique=True, verbose_name="Ledger Organisation ID"
     )
-    # TODO: business logic related to delegate changes.
     delegates = models.ManyToManyField(
         EmailUser,
         blank=True,
         through="UserDelegation",
         related_name="commercialoperator_organisations",
     )
-    # pin_one = models.CharField(max_length=50,blank=True)
-    # pin_two = models.CharField(max_length=50,blank=True)
     admin_pin_one = models.CharField(max_length=50, blank=True)
     admin_pin_two = models.CharField(max_length=50, blank=True)
     user_pin_one = models.CharField(max_length=50, blank=True)
@@ -649,21 +645,23 @@ class Organisation(models.Model):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_name", "")
-        return ""
+        return None
 
     @property
     def abn(self):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_abn", "")
-        return ""
+        return None
 
     @property
     def address(self):
-        organisation_response = get_organisation(self.organisation_id)
+        organisation_id = self.organisation_id
+        # organisation_id = 1
+        organisation_response = get_organisation(organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("postal_address", "")
-        return ""
+        return None
 
     @property
     def phone_number(self):
@@ -671,14 +669,14 @@ class Organisation(models.Model):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("phone_number", "")
-        return ""
+        return None
 
     @property
     def email(self):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_email", "")
-        return ""
+        return None
 
     @property
     def first_five(self):
@@ -686,14 +684,14 @@ class Organisation(models.Model):
             [
                 user.get_full_name()
                 for user in self.delegates.all()[:5]
-                if can_admin_org(self, user)
+                if can_admin_org(self, user.id)
             ]
         )
 
     @property
     def all_admin_emails(self):
         return [
-            user.email for user in self.delegates.all() if can_admin_org(self, user)
+            user.email for user in self.delegates.all() if can_admin_org(self, user.id)
         ]
 
 
@@ -1112,7 +1110,7 @@ class OrganisationRequestLogEntry(CommunicationsLogEntry):
 
 import reversion
 
-reversion.register(ledger_organisation, follow=["organisation_set"])
+# reversion.register(ledger_organisation, follow=["organisation_set"])
 reversion.register(
     Organisation,
     follow=[

@@ -1,22 +1,45 @@
 <template lang="html">
     <div id="approvalCancellation">
-        <modal transition="modal fade" @ok="ok()" @cancel="cancel()" :title="title" large>
+        <modal
+            transition="modal fade"
+            :title="title"
+            large
+            @ok="ok()"
+            @cancel="cancel()"
+        >
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="approvalForm">
-                        <alert :show.sync="showError" type="danger"><strong>{{errorString}}</strong></alert>
+                        <alert :show.sync="showError" type="danger"
+                            ><strong>{{ errorString }}</strong></alert
+                        >
                         <div class="col-sm-12">
                             <div class="form-group">
                                 <div class="row">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">From Date</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >From Date</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <div class="input-group date" ref="from_date" style="width: 70%;">
-                                            <input type="text" class="form-control" name="from_date" placeholder="DD/MM/YYYY" v-model="approval.from_date">
+                                        <div
+                                            ref="from_date"
+                                            class="input-group date"
+                                            style="width: 70%"
+                                        >
+                                            <input
+                                                v-model="approval.from_date"
+                                                type="text"
+                                                class="form-control"
+                                                name="from_date"
+                                                placeholder="DD/MM/YYYY"
+                                            />
                                             <span class="input-group-addon">
-                                                <span class="glyphicon glyphicon-calendar"></span>
+                                                <span
+                                                    class="glyphicon glyphicon-calendar"
+                                                ></span>
                                             </span>
                                         </div>
                                     </div>
@@ -26,40 +49,81 @@
                             <div class="form-group">
                                 <div class="row">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">To Date</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >To Date</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <div class="input-group date" ref="to_date" style="width: 70%;">
-                                            <input type="text" class="form-control" name="to_date" placeholder="DD/MM/YYYY" v-model="approval.to_date">
+                                        <div
+                                            ref="to_date"
+                                            class="input-group date"
+                                            style="width: 70%"
+                                        >
+                                            <input
+                                                v-model="approval.to_date"
+                                                type="text"
+                                                class="form-control"
+                                                name="to_date"
+                                                placeholder="DD/MM/YYYY"
+                                            />
                                             <span class="input-group-addon">
-                                                <span class="glyphicon glyphicon-calendar"></span>
+                                                <span
+                                                    class="glyphicon glyphicon-calendar"
+                                                ></span>
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="form-group">
                                 <div class="row">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">Suspension Details</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Suspension Details</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <textarea name="suspension_details" class="form-control" style="width:70%;" v-model="approval.suspension_details"></textarea>
+                                        <textarea
+                                            v-model="
+                                                approval.suspension_details
+                                            "
+                                            name="suspension_details"
+                                            class="form-control"
+                                            style="width: 70%"
+                                        ></textarea>
                                     </div>
                                 </div>
                             </div>
-                           
                         </div>
                     </form>
                 </div>
             </div>
             <div slot="footer">
-                <button type="button" v-if="issuingApproval" disabled class="btn btn-default" @click="ok"><i class="fa fa-spinner fa-spin"></i> Processing</button>
-                <button type="button" v-else class="btn btn-default" @click="ok">Ok</button>
-                <button type="button" class="btn btn-default" @click="cancel">Cancel</button>
+                <button
+                    v-if="issuingApproval"
+                    type="button"
+                    disabled
+                    class="btn btn-default"
+                    @click="ok"
+                >
+                    <i class="fa fa-spinner fa-spin"></i> Processing
+                </button>
+                <button
+                    v-else
+                    type="button"
+                    class="btn btn-default"
+                    @click="ok"
+                >
+                    Ok
+                </button>
+                <button type="button" class="btn btn-default" @click="cancel">
+                    Cancel
+                </button>
             </div>
         </modal>
     </div>
@@ -67,26 +131,20 @@
 
 <script>
 //import $ from 'jquery'
-import modal from '@vue-utils/bootstrap-modal.vue'
-import alert from '@vue-utils/alert.vue'
-import {helpers,api_endpoints} from "@/utils/hooks.js"
+import modal from '@vue-utils/bootstrap-modal.vue';
+import alert from '@vue-utils/alert.vue';
+import { helpers, api_endpoints } from '@/utils/hooks.js';
 export default {
-    name:'Suspend-Approval',
-    components:{
+    name: 'SuspendApproval',
+    components: {
         modal,
-        alert
+        alert,
     },
-    props:{
-        approval_id: {
-            type: Number,
-            required: true
-        },
-    },
-    data:function () {
-        let vm = this;
+    props: {},
+    data: function () {
         return {
-            isModalOpen:false,
-            form:null,
+            isModalOpen: false,
+            form: null,
             approval: {},
             approval_id: Number,
             state: 'proposed_approval',
@@ -95,37 +153,44 @@ export default {
             errors: false,
             errorString: '',
             successString: '',
-            success:false,
-            datepickerOptions:{
+            success: false,
+            datepickerOptions: {
                 format: 'DD/MM/YYYY',
-                showClear:true,
-                useCurrent:false,
-                keepInvalid:true,
-                allowInputToggle:true
+                showClear: true,
+                useCurrent: false,
+                keepInvalid: true,
+                allowInputToggle: true,
             },
-        }
+        };
     },
     computed: {
-        showError: function() {
+        showError: function () {
             var vm = this;
             return vm.errors;
         },
-        title: function(){
+        title: function () {
             return 'Suspend Licence';
-        }
+        },
     },
-    methods:{
-        ok:function () {
-            let vm =this;
-            if($(vm.form).valid()){
+    mounted: function () {
+        let vm = this;
+        vm.form = document.forms.approvalForm;
+        vm.addFormValidations();
+        this.$nextTick(() => {
+            vm.eventListeners();
+        });
+    },
+    methods: {
+        ok: function () {
+            let vm = this;
+            if ($(vm.form).valid()) {
                 vm.sendData();
-               
             }
         },
-        cancel:function () {
-            this.close()
+        cancel: function () {
+            this.close();
         },
-        close:function () {
+        close: function () {
             this.isModalOpen = false;
             this.approval = {};
             //this.approval.from_date = ""
@@ -136,109 +201,112 @@ export default {
             $(this.$refs.to_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
-        fetchContact: function(id){
+        fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then((response) => {
-                vm.contact = response.body; vm.isModalOpen = true;
-            },(error) => {
-                console.log(error);
-            } );
+            vm.$http.get(api_endpoints.contact(id)).then(
+                (response) => {
+                    vm.contact = response.body;
+                    vm.isModalOpen = true;
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
         },
-        sendData:function(){
+        sendData: function () {
             let vm = this;
             vm.errors = false;
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
-            
-            vm.$http.post(helpers.add_endpoint_json(api_endpoints.approvals,vm.approval_id+'/approval_suspension'),JSON.stringify(approval),{
-                        emulateJSON:true,
-                    }).then((response)=>{
+
+            vm.$http
+                .post(
+                    helpers.add_endpoint_json(
+                        api_endpoints.approvals,
+                        vm.approval_id + '/approval_suspension'
+                    ),
+                    JSON.stringify(approval),
+                    {
+                        emulateJSON: true,
+                    }
+                )
+                .then(
+                    (response) => {
                         vm.issuingApproval = false;
-                        vm.approval={};
+                        vm.approval = {};
                         vm.close();
                         swal(
-                             'Suspend',
-                             'An email has been sent to applicant about suspension of this licence',
-                             'success'
+                            'Suspend',
+                            'An email has been sent to applicant about suspension of this licence',
+                            'success'
                         );
-                        vm.$emit('refreshFromResponse',response);
-                       
-
-                    },(error)=>{
+                        vm.$emit('refreshFromResponse', response);
+                    },
+                    (error) => {
                         vm.errors = true;
                         vm.issuingApproval = false;
                         vm.errorString = helpers.apiVueResourceError(error);
-                        //vm.approval={};
-                        //vm.close();
-                    });
-                        
-            
+                    }
+                );
         },
-        addFormValidations: function() {
+        addFormValidations: function () {
             let vm = this;
             vm.validation_form = $(vm.form).validate({
                 rules: {
-                    from_date:"required",                    
-                    suspension_details:"required",
+                    from_date: 'required',
+                    suspension_details: 'required',
                 },
                 messages: {
-                    suspension_details:"Field is required",
+                    suspension_details: 'Field is required',
                 },
-                showErrors: function(errorMap, errorList) {
-                    $.each(this.validElements(), function(index, element) {
+                showErrors: function (errorMap, errorList) {
+                    $.each(this.validElements(), function (index, element) {
                         var $element = $(element);
-                        $element.attr("data-original-title", "").parents('.form-group').removeClass('has-error');
+                        $element
+                            .attr('data-original-title', '')
+                            .parents('.form-group')
+                            .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $("." + this.settings.validClass).tooltip("destroy");
+                    $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
                         $(error.element)
                             .tooltip({
-                                trigger: "focus"
+                                trigger: 'focus',
                             })
-                            .attr("data-original-title", error.message)
-                            .parents('.form-group').addClass('has-error');
+                            .attr('data-original-title', error.message)
+                            .parents('.form-group')
+                            .addClass('has-error');
                     }
-                }
+                },
             });
-       },
-       eventListeners:function () {
+        },
+        eventListeners: function () {
             let vm = this;
             // Initialise Date Picker
-            
+
             $(vm.$refs.from_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.from_date).on('dp.change', function(e){
+            $(vm.$refs.from_date).on('dp.change', function (e) {
                 if ($(vm.$refs.from_date).data('DateTimePicker').date()) {
-                    vm.approval.from_date =  e.date.format('DD/MM/YYYY');
+                    vm.approval.from_date = e.date.format('DD/MM/YYYY');
+                } else if ($(vm.$refs.from_date).data('date') === '') {
+                    vm.approval.from_date = '';
                 }
-                else if ($(vm.$refs.from_date).data('date') === "") {
-                    vm.approval.from_date = "";
-                }
-             });
+            });
 
             $(vm.$refs.to_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.to_date).on('dp.change', function(e){
+            $(vm.$refs.to_date).on('dp.change', function (e) {
                 if ($(vm.$refs.to_date).data('DateTimePicker').date()) {
-                    vm.approval.to_date =  e.date.format('DD/MM/YYYY');
-                }
-                else if ($(vm.$refs.to_date).data('date') === "") {
+                    vm.approval.to_date = e.date.format('DD/MM/YYYY');
+                } else if ($(vm.$refs.to_date).data('date') === '') {
                     vm.approval.to_date = null;
                 }
-             });
-       }
-   },
-   mounted:function () {
-        let vm =this;
-        vm.form = document.forms.approvalForm;
-        vm.addFormValidations();
-        this.$nextTick(()=>{
-            vm.eventListeners();
-        });
-   }
-}
+            });
+        },
+    },
+};
 </script>
 
-<style lang="css">
-</style>
+<style lang="css"></style>

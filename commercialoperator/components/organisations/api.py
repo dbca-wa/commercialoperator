@@ -1,4 +1,6 @@
 import traceback
+from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -8,7 +10,14 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from ledger_api_client.utils import update_organisation_obj
+
+from commercialoperator.components.organisations.utils import can_admin_org
+from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
+from commercialoperator.components.stubs.utils import (
+    filter_organisation_list,
+    retrieve_email_user,
+)
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
     Organisation,
@@ -17,7 +26,7 @@ from commercialoperator.components.organisations.models import (
     OrganisationRequestUserAction,
     OrganisationContact,
     OrganisationAccessGroup,
-    ledger_organisation,
+    # ledger_organisation,
 )
 
 from commercialoperator.components.organisations.serializers import (
@@ -596,15 +605,34 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     def update_details(self, request, *args, **kwargs):
         try:
-            org = self.get_object()
-            instance = org.organisation
-            data = request.data
+            instance = self.get_object()
+            if not can_admin_org(instance, request.user.id):
+                return Response(
+                    status=status.HTTP_403_FORBIDDEN,
+                    data={
+                        "message": "You do not have permission to update this organisation."
+                    },
+                )
+            # Note: Calling this function doesn't update the ledger name, trading name, email entries.
+            response_ledger = update_organisation_obj(request.data)
+            response_ledger_status = response_ledger.get("status", None)
+            if not response_ledger_status == status.HTTP_200_OK:
+                return Response(
+                    status=response_ledger_status,
+                    data=response_ledger.get("message", None),
+                )
+
+            cache.delete(
+                settings.CACHE_KEY_LEDGER_ORGANISATION.format(
+                    instance.organisation_id
+                )
+            )
+
             serializer = DetailsSerializer(
-                instance, data=data, context={"request": request}
+                instance, data=request.data, context={"request": request}
             )
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
-            # serializer = self.get_serializer(org)
 
             if is_internal(request) and "apply_application_discount" in request.data:
                 data = request.data
@@ -630,15 +658,14 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                 else:
                     data["charge_once_per_year"] = None
 
-                serializer = SaveDiscountSerializer(org, data=data)
+                serializer = SaveDiscountSerializer(instance, data=data)
                 serializer.is_valid(raise_exception=True)
                 instance = serializer.save()
 
-            serializer = self.get_serializer(org)
+            serializer = self.get_serializer(instance)
             return Response(serializer.data)
         except serializers.ValidationError as e:
             print(e.get_full_details())
-            # raise serializers.ValidationError(str( e.get_full_details() ))
             raise
         except ValidationError as e:
             if hasattr(e, "error_dict"):
@@ -657,23 +684,9 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     def update_address(self, request, *args, **kwargs):
         try:
-            org = self.get_object()
-            instance = org.organisation
-            serializer = OrganisationAddressSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            address, created = OrganisationAddress.objects.get_or_create(
-                line1=serializer.validated_data["line1"],
-                locality=serializer.validated_data["locality"],
-                state=serializer.validated_data["state"],
-                country=serializer.validated_data["country"],
-                postcode=serializer.validated_data["postcode"],
-                organisation=instance,
-            )
-            instance.postal_address = address
-            instance.save()
-            # send_organisation_address_updated_email_notification(request.user, instance, org, request)
-            serializer = self.get_serializer(org)
-            return Response(serializer.data)
+            instance = self.get_object()
+            request.data["organisation_id"] = instance.organisation_id
+            return self.update_details(request, *args, **kwargs)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
@@ -694,70 +707,35 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         pass
 
 
-#        try:
-#            instance = self.get_object()
-#            instance.organisation.upload_identification(request)
-#            with transaction.atomic():
-#                instance.save()
-#                instance.log_user_action(OrganisationAction.ACTION_ID_UPDATE.format(
-#                '{} ({})'.format(instance.name, instance.abn)), request)
-#
-#            _applications = Application.objects.filter(org_applicant=instance.organisation.id)
-#            # Notify internal users new ID uploaded.
-#            if _applications:
-#                emails = set()
-#                for _application in _applications:
-#                    # Officer assigned to the application
-#                    if _application.assigned_officer_id:
-#                        emails.add(EmailUser.objects.get(id=_application.assigned_officer_id).email)
-#                    # Officer belonging to a group assigned to the application
-#                    if ApplicationRequest.objects.filter(application_id=_application.id).exists():
-#                        _requests = ApplicationRequest.objects.filter(application_id=_application.id)
-#                        for _request in _requests:
-#                            if Assessment.objects.filter(id=_request.id).exists():
-#                                _group = Assessment.objects.filter(id=_request.id).first()
-#                                if _group.assessor_group_id:
-#                                    _group_type = ApplicationGroupType.objects\
-#                                                .filter(id=_group.assessor_group_id).first()
-#                                    _group_emails = _group_type.members.values_list('email', flat=True)
-#                                    for _email in _group_emails:
-#                                        emails.add(EmailUser.objects.get(email=_email).email)
-#                contact = OrganisationContact.objects.get(organisation=instance).email
-#                contact_email = EmailUser.objects.filter(email=request.user).first()
-#                if EmailUser.objects.filter(email=contact).first():
-#                    contact_email = EmailUser.objects.filter(email=contact).first()
-#                send_organisation_id_upload_email_notification(emails, instance, contact_email, request)
-#
-#            serializer = OrganisationSerializer(instance, partial=True)
-#            return Response(serializer.data)
-#        except serializers.ValidationError:
-#            print(traceback.print_exc())
-#            raise
-#        except ValidationError as e:
-#            print(traceback.print_exc())
-#            raise serializers.ValidationError(repr(e.error_dict))
-#        except Exception as e:
-#            print(traceback.print_exc())
-#            raise serializers.ValidationError(str(e))
-
-from rest_framework import filters
-
-
 class OrganisationListFilterView(generics.ListAPIView):
     """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
 
-    # queryset = Organisation.objects.all()
-    queryset = ledger_organisation.objects.none()
+    queryset = Organisation.objects.none()
     serializer_class = LedgerOrganisationFilterSerializer
-    filter_backends = (filters.SearchFilter,)
+    # filter_backends = (filters.SearchFilter,)
+    filter_backends = (LedgerOrganisationFilterBackend,)
     search_fields = (
-        "name",
-        "trading_name",
+        # "name",
+        # "trading_name",
+        "organisation_name",
+        "organisation_trading_name",
     )
 
     def get_queryset(self):
         org_list = Organisation.objects.all().values_list("organisation_id", flat=True)
-        return ledger_organisation.objects.filter(id__in=org_list)
+        return Organisation.objects.filter(id__in=org_list)
+
+    def list(self, request, *args, **kwargs):
+        from commercialoperator.components.stubs.serializers import (
+            OrganisationListSerializer,
+        )
+
+        organisations = filter_organisation_list(self, request, *args, **kwargs)
+        serializer = OrganisationListSerializer(
+            organisations, many=True, context={"request": request}
+        )
+
+        return Response(serializer.data)
 
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):

@@ -505,8 +505,8 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         request_user_id = request.user.id
         # request_user_id = 70348 # This is an existing user id for testing
         # Query the through-table on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
-        request_user_referralrecipientgroup_set = ReferralRecipientGroup.objects.filter(
-            referralrecipientgroup_members__emailuser__id__in=[request_user_id]
+        request_user_referralrecipientgroup_set = retrieve_user_groups(
+            "ReferralRecipientGroup", request_user_id
         )
 
         qs = (
@@ -1698,6 +1698,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     )
     def internal_proposal(self, request, *args, **kwargs):
         instance = self.get_object()
+        # instance.submitter_id = 1
+
         serializer = InternalProposalSerializer(instance, context={"request": request})
         if instance.application_type.name == ApplicationType.TCLASS:
             serializer = InternalProposalSerializer(
@@ -1712,41 +1714,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 instance, context={"request": request}
             )
         return Response(serializer.data)
-
-    #    @action(methods=['GET',])
-    #    def proposal_parks(self, request, *args, **kwargs):
-    #        instance = self.get_object()
-    #        serializer = ProposalParkSerializer(instance,context={'request':request})
-    #        return Response(serializer.data)
-
-    #    @action(methods=['post'])
-    #    @renderer_classes((JSONRenderer,))
-    #    def _submit(self, request, *args, **kwargs):
-    #        try:
-    #            instance = self.get_object()
-    #            save_proponent_data(instance,request,self)
-    #            missing_fields = missing_required_fields(instance)
-    #
-    #            if False: #missing_fields:
-    #            #if missing_fields:
-    #                return Response({'missing_fields': missing_fields})
-    #            else:
-    #                #raise serializers.ValidationError(repr({'abcde': 123, 'missing_fields':True}))
-    #                instance.submit(request,self)
-    #                serializer = self.get_serializer(instance)
-    #                return Response(serializer.data)
-    #        except serializers.ValidationError:
-    #            print(traceback.print_exc())
-    #            raise
-    #        except ValidationError as e:
-    #            if hasattr(e,'error_dict'):
-    #                raise serializers.ValidationError(repr(e.error_dict))
-    #            else:
-    #                if hasattr(e,'message'):
-    # raise serializers.ValidationError(e.message)
-    #        except Exception as e:
-    #            print(traceback.print_exc())
-    #            raise serializers.ValidationError(str(e))
 
     @action(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
@@ -1771,29 +1738,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
-
-    #    @action(methods=['post'])
-    #    @renderer_classes((JSONRenderer,))
-    #    def update_files(self, request, *args, **kwargs):
-    #        try:
-    #            instance = self.get_object()
-    #            instance.update(request,self)
-    #            instance.save()
-    #            serializer = self.get_serializer(instance)
-    #            return Response(serializer.data)
-    #            #return redirect(reverse('external'))
-    #        except serializers.ValidationError:
-    #            print(traceback.print_exc())
-    #            raise
-    #        except ValidationError as e:
-    #            if hasattr(e,'error_dict'):
-    #                raise serializers.ValidationError(repr(e.error_dict))
-    #            else:
-    #                if hasattr(e,'message'):
-    # raise serializers.ValidationError(e.message)
-    #        except Exception as e:
-    #            print(traceback.print_exc())
-    #            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[

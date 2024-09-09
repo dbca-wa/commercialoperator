@@ -1,23 +1,27 @@
 import string
 import random
 
+from commercialoperator.components.stubs.utils import retrieve_group_members
+
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 def can_manage_org(organisation, user):
     from commercialoperator.components.organisations.models import (
         OrganisationAccessGroup,
         UserDelegation,
     )
-    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
     try:
         UserDelegation.objects.get(organisation=organisation, user=user)
-        return can_admin_org(organisation, user)
+        return can_admin_org(organisation, user.id)
     except UserDelegation.DoesNotExist:
         pass
     try:
         group = OrganisationAccessGroup.objects.first()
         if group:
-            group.members.get(id=user.id)
+            # group.members.get(id=user.id)
+            if not user.id in retrieve_group_members(group):
+                raise EmailUser.DoesNotExist
         return True
     except EmailUser.DoesNotExist:
         pass
@@ -45,18 +49,26 @@ def is_last_admin(organisation, user):
     return _last_admin
 
 
-def can_admin_org(organisation, user):
+def can_admin_org(organisation, user_id):
     from commercialoperator.components.organisations.models import (
         OrganisationContact,
     )
 
-    organisation_id = organisation.get("organisation_id", None)
+    try:
+        emailuser = EmailUser.objects.get(id=user_id)
+    except EmailUser.DoesNotExist:
+        return False
+
+    if emailuser.is_superuser:
+        return True
+
+    organisation_id = getattr(organisation, "id", None)
     if not organisation_id:
         return False
 
     try:
         org_contact = OrganisationContact.objects.get(
-            organisation_id=organisation_id, email=user.email
+            organisation_id=organisation_id, email=emailuser.email
         )
 
         return org_contact.can_edit

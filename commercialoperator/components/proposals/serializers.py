@@ -59,7 +59,7 @@ from commercialoperator.components.organisations.serializers import (
 )
 from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.components.users.serializers import UserAddressSerializer
-from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
+from commercialoperator.components.stubs.serializers import SegregationBaseSerializer, EmailUserRoSerializer
 from rest_framework import serializers
 
 
@@ -80,24 +80,57 @@ class ProposalTypeSerializer(serializers.ModelSerializer):
 class EmailUserSerializer(EmailUserRoSerializer):
     pass
 
-class EmailUserAppViewSerializer(serializers.ModelSerializer):
-    residential_address = UserAddressSerializer()
-    #identification = DocumentSerializer()
+class EmailUserAppViewBaseSerializer(EmailUserSerializer):
+    dob = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
+    mobile_number = serializers.SerializerMethodField()
+
+    def get_dob(self,obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.dob.strftime('%d/%m/%Y') if emailuser.dob else None
+
+    def get_email(self,obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.email if emailuser else None
+
+    def get_phone_number(self,obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.phone_number if emailuser else None
+
+    def get_mobile_number(self,obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.mobile_number if emailuser else None
+
+
+class EmailUserAppViewSerializer(EmailUserAppViewBaseSerializer):
+    residential_address = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailUser
-        fields = ('id',
-                  'email',
-                  'first_name',
-                  'last_name',
-                  'dob',
-                  'title',
-                  'organisation',
-                  'residential_address',
-                  #'identification',
-                  'email',
-                  'phone_number',
-                  'mobile_number',)
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "title",
+            "organisation",
+            "residential_address",
+            "dob",
+            "email",
+            "phone_number",
+            "mobile_number",
+        )
+
+    def get_residential_address(self, obj):
+        emailuser = retrieve_email_user(obj)
+        return (
+            UserAddressSerializer(emailuser.residential_address).data
+            if emailuser.residential_address
+            else None
+        )
+
 
 class ProposalApplicantDetailsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -300,7 +333,7 @@ class ProposalAssessmentAnswerSerializer(serializers.ModelSerializer):
                 )
 
 class ProposalAssessmentSerializer(serializers.ModelSerializer):
-    #checklist=ProposalAssessmentAnswerSerializer(many=True, read_only=True)
+    # checklist=ProposalAssessmentAnswerSerializer(many=True, read_only=True)
     checklist=serializers.SerializerMethodField()
 
     class Meta:
@@ -314,8 +347,8 @@ class ProposalAssessmentSerializer(serializers.ModelSerializer):
                 'checklist'
                 )
 
-    def get_checklist(self,obj):
-        qs= obj.checklist.order_by('question__order')
+    def get_checklist(self, obj):
+        qs = obj.checklist.order_by("question__order")
         return ProposalAssessmentAnswerSerializer(qs, many=True, read_only=True).data
 
 
@@ -332,24 +365,14 @@ class ParksAndTrailSerializer(serializers.ModelSerializer):
                 )
 
 
-class BaseProposalSerializer(serializers.ModelSerializer):
-    #org_applicant = OrganisationSerializer()
+class BaseProposalSerializer(SegregationBaseSerializer):
     readonly = serializers.SerializerMethodField(read_only=True)
     documents_url = serializers.SerializerMethodField()
     proposal_type = serializers.SerializerMethodField()
     allowed_assessors = EmailUserSerializer(many=True)
-    #qaofficer_referral = QAOfficerReferralSerializer(required=False)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
-
-    #applicant_details = ProposalApplicantDetailsSerializer(required=False)
     activities_land = ProposalActivitiesLandSerializer(required=False)
     activities_marine = ProposalActivitiesMarineSerializer(required=False)
-    #land_parks=ProposalParkSerializer(many=True)
-    #marine_parks=ProposalParkSerializer(many=True)
-    #trails=ProposalTrailSerializer(many=True)
-
-#    other_details=ProposalOtherDetailsSerializer()
-#    filming_other_details=ProposalFilmingOtherDetailsSerializer()
     other_details = serializers.SerializerMethodField()
 
     get_history = serializers.ReadOnlyField()
@@ -361,132 +384,143 @@ class BaseProposalSerializer(serializers.ModelSerializer):
     trail_section_activities = serializers.SerializerMethodField()
     allow_full_discount = serializers.SerializerMethodField()
 
-#    def __init__(self, *args, **kwargs):
-#        user = kwargs['context']['request'].user
-#
-#        super(BaseProposalSerializer, self).__init__(*args, **kwargs)
-#        self.fields['parent'].queryset = self.get_request(user)
-
     class Meta:
         model = Proposal
         fields = (
-                'id',
-                'application_type',
-                'proposal_type',
-                'activity',
-                'approval_level',
-                'title',
-                'region',
-                'district',
-                'tenure',
-                #'assessor_data',
-                'data',
-                'schema',
-                'customer_status',
-                'processing_status',
-                'review_status',
-                #'hard_copy',
-                'applicant_type',
-                'applicant',
-                'org_applicant',
-                'proxy_applicant',
-                'submitter',
-                'assigned_officer',
-                'previous_application',
-                'get_history',
-                'lodgement_date',
-                'modified_date',
-                'documents',
-                'requirements',
-                'readonly',
-                'can_user_edit',
-                'can_user_view',
-                'documents_url',
-                'reference',
-                'lodgement_number',
-                'lodgement_sequence',
-                'can_officer_process',
-                'allowed_assessors',
-                'proposal_type',
-                'is_qa_officer',
-                'qaofficer_referrals',
-                'pending_amendment_request',
-                'is_amendment_proposal',
+            "id",
+            "application_type",
+            "proposal_type",
+            "activity",
+            "approval_level",
+            "title",
+            "region",
+            "district",
+            "tenure",
+            "data",
+            "schema",
+            "customer_status",
+            "processing_status",
+            "review_status",
+            "applicant_type",
+            "applicant",
+            "org_applicant",
+            "proxy_applicant",
+            "submitter",
+            "assigned_officer",
+            "previous_application",
+            "get_history",
+            "lodgement_date",
+            "modified_date",
+            "documents",
+            "requirements",
+            "readonly",
+            "can_user_edit",
+            "can_user_view",
+            "documents_url",
+            "reference",
+            "lodgement_number",
+            "lodgement_sequence",
+            "can_officer_process",
+            "allowed_assessors",
+            "proposal_type",
+            "is_qa_officer",
+            "qaofficer_referrals",
+            "pending_amendment_request",
+            "is_amendment_proposal",
+            # tab field models
+            "applicant_details",
+            "other_details",
+            "activities_land",
+            "activities_marine",
+            "land_access",
+            "land_activities",
+            "trail_activities",
+            "trail_section_activities",
+            "training_completed",
+            "applicant_training_completed",
+            "fee_invoice_url",
+            "fee_paid",
+            "allow_full_discount",
+        )
+        read_only_fields = ("documents",)
 
-                # tab field models
-                'applicant_details',
-                'other_details',
-                #'filming_other_details',
-                #'test_details',
-                'activities_land',
-                'activities_marine',
-                'land_access',
-                'land_activities',
-                'trail_activities',
-                'trail_section_activities',
-                # 'land_parks',
-                # 'marine_parks',
-                # 'trails',
-                'training_completed',
-                'applicant_training_completed',
-                'fee_invoice_url',
-                'fee_paid',
-                'allow_full_discount',
-
-                )
-        read_only_fields=('documents',)
-
-    def get_other_details(self,obj):
-        if obj.application_type.name==ApplicationType.TCLASS:
+    def get_other_details(self, obj):
+        if obj.application_type.name == ApplicationType.TCLASS:
             return ProposalOtherDetailsSerializer(obj.other_details).data
 
-        elif obj.application_type.name==ApplicationType.FILMING:
+        elif obj.application_type.name == ApplicationType.FILMING:
             return ProposalFilmingOtherDetailsSerializer(obj.filming_other_details).data
 
-        elif obj.application_type.name==ApplicationType.EVENT:
+        elif obj.application_type.name == ApplicationType.EVENT:
             return ProposalEventOtherDetailsSerializer(obj.event_other_details).data
 
         return None
 
-    def get_documents_url(self,obj):
-        return '/media/{}/proposals/{}/documents/'.format(settings.MEDIA_APP_DIR, obj.id)
+    def get_documents_url(self, obj):
+        return "/media/{}/proposals/{}/documents/".format(
+            settings.MEDIA_APP_DIR, obj.id
+        )
 
-    def get_readonly(self,obj):
+    def get_readonly(self, obj):
         return False
 
-    def get_processing_status(self,obj):
+    def get_processing_status(self, obj):
         return obj.get_processing_status_display()
 
-    def get_review_status(self,obj):
+    def get_review_status(self, obj):
         return obj.get_review_status_display()
 
-    def get_customer_status(self,obj):
+    def get_customer_status(self, obj):
         return obj.get_customer_status_display()
 
-    def get_proposal_type(self,obj):
+    def get_proposal_type(self, obj):
         return obj.get_proposal_type_display()
 
-    def get_is_qa_officer(self,obj):
-        request = self.context['request']
+    def get_is_qa_officer(self, obj):
+        request = self.context["request"]
         return request.user.email in obj.qa_officers()
 
-    def get_fee_invoice_url(self,obj):
-        return '/cols/payments/invoice-pdf/{}'.format(obj.fee_invoice_reference) if obj.fee_paid else None
+    def get_fee_invoice_url(self, obj):
+        return (
+            "/cols/payments/invoice-pdf/{}".format(obj.fee_invoice_reference)
+            if obj.fee_paid
+            else None
+        )
 
-    def get_land_access(self,obj):
-        return obj.land_parks.filter(access_types__isnull=False).values_list('access_types__access_type_id', flat=True).distinct()
+    def get_land_access(self, obj):
+        return (
+            obj.land_parks.filter(access_types__isnull=False)
+            .values_list("access_types__access_type_id", flat=True)
+            .distinct()
+        )
 
-    def get_land_activities(self,obj):
-        return obj.land_parks.filter(activities__isnull=False).values_list('activities__activity_id', flat=True).distinct()
+    def get_land_activities(self, obj):
+        return (
+            obj.land_parks.filter(activities__isnull=False)
+            .values_list("activities__activity_id", flat=True)
+            .distinct()
+        )
 
-    def get_trail_activities(self,obj):
-        return ProposalTrailSectionActivity.objects.filter(trail_section__proposal_trail__proposal=obj.id).values_list('activity',flat=True).distinct()
+    def get_trail_activities(self, obj):
+        return (
+            ProposalTrailSectionActivity.objects.filter(
+                trail_section__proposal_trail__proposal=obj.id
+            )
+            .values_list("activity", flat=True)
+            .distinct()
+        )
 
-    def get_trail_section_activities(self,obj):
-        return obj.trails.all().values_list('trail_id', flat=True)
+    def get_trail_section_activities(self, obj):
+        return obj.trails.all().values_list("trail_id", flat=True)
 
-    def get_allow_full_discount(self,obj):
-        return True if obj.application_type.name==ApplicationType.TCLASS and obj.allow_full_discount else False
+    def get_allow_full_discount(self, obj):
+        return (
+            True
+            if obj.application_type.name == ApplicationType.TCLASS
+            and obj.allow_full_discount
+            else False
+        )
+
 
 # Not used anymore
 class DTProposalSerializer(BaseProposalSerializer):
@@ -617,10 +651,11 @@ class ListProposalSerializer(BaseProposalSerializer):
         if obj.can_officer_process:
             '''if (obj.assigned_officer and obj.assigned_officer == user) or (user in obj.allowed_assessors):
                 return True'''
-            if obj.assigned_officer:
-                if obj.assigned_officer == user:
+            if obj.assigned_officer_id:
+                assigned_officer = retrieve_email_user(obj.assigned_approver_id)
+                if assigned_officer == user:
                     return True
-            elif user in obj.allowed_assessors:
+            elif user.id in obj.allowed_assessors:
                 return True
         return False
 
@@ -791,16 +826,13 @@ class ProposalParkSerializer(BaseProposalSerializer):
         return obj.land_parks_exclude_free
 
 class InternalProposalSerializer(BaseProposalSerializer):
-    #applicant = ApplicantSerializer()
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    #submitter = serializers.CharField(source='submitter.get_full_name')
     submitter = EmailUserAppViewSerializer()
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
-    #
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
     can_edit_period = serializers.SerializerMethodField()
@@ -812,16 +844,12 @@ class InternalProposalSerializer(BaseProposalSerializer):
     application_type = serializers.CharField(source='application_type.name', read_only=True)
     region = serializers.CharField(source='region.name', read_only=True)
     district = serializers.CharField(source='district.name', read_only=True)
-    #tenure = serializers.CharField(source='tenure.name', read_only=True)
     qaofficer_referrals = QAOfficerReferralSerializer(many=True)
     reversion_ids = serializers.SerializerMethodField()
     assessor_assessment=ProposalAssessmentSerializer(read_only=True)
     referral_assessments=ProposalAssessmentSerializer(read_only=True, many=True)
     fee_invoice_url = serializers.SerializerMethodField()
     requirements_completed=serializers.SerializerMethodField()
-    #selected_trails_activities=serializers.SerializerMethodField()
-    #selected_parks_activities=serializers.SerializerMethodField()
-    #marine_parks_activities=serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -840,7 +868,6 @@ class InternalProposalSerializer(BaseProposalSerializer):
                 'customer_status',
                 'processing_status',
                 'review_status',
-                #'hard_copy',
                 'applicant',
                 'org_applicant',
                 'proxy_applicant',
@@ -874,7 +901,6 @@ class InternalProposalSerializer(BaseProposalSerializer):
                 'can_officer_process',
                 'proposal_type',
                 'qaofficer_referrals',
-                # tab field models
                 'applicant_details',
                 'other_details',
                 'activities_land',
@@ -883,16 +909,9 @@ class InternalProposalSerializer(BaseProposalSerializer):
                 'trail_activities',
                 'trail_section_activities',
                 'activities_marine',
-                # 'land_parks',
-                # 'marine_parks',
-                # 'trails',
                 'training_completed',
                 'can_edit_activities',
                 'can_edit_period',
-                #Following 3 are variable to store selected parks and activities at frontend
-                #'selected_parks_activities',
-                #'selected_trails_activities',
-                #'marine_parks_activities',
                 'reversion_ids',
                 'assessor_assessment',
                 'referral_assessments',
@@ -1275,13 +1294,12 @@ class ProposalFilmingSerializer(BaseProposalSerializer):
         return obj.can_user_view
 
 class InternalFilmingProposalSerializer(BaseProposalSerializer):
-    #applicant = ApplicantSerializer()
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    submitter = EmailUserAppViewSerializer()
+    submitter = EmailUserAppViewSerializer(source='submitter_id')
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
@@ -1303,7 +1321,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
     filming_access=ProposalFilmingAccessSerializer()
     filming_equipment=ProposalFilmingEquipmentSerializer()
     filming_other_details=ProposalFilmingOtherDetailsSerializer()
-    #training_completed=serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -1322,7 +1339,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
                 'customer_status',
                 'processing_status',
                 'review_status',
-                #'hard_copy',
                 'applicant',
                 'org_applicant',
                 'proxy_applicant',
@@ -1357,7 +1373,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
                 'can_view_district_table',
                 'proposal_type',
                 'qaofficer_referrals',
-                # tab field models
                 'applicant_details',
                 'training_completed',
                 'can_edit_activities',

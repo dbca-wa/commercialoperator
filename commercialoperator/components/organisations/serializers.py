@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework import serializers
+from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.ledger_models import Address as OrganisationAddress
@@ -12,7 +13,7 @@ from commercialoperator.components.organisations.models import (
     OrganisationAction,
     OrganisationRequestLogEntry,
     OrganisationLogEntry,
-    ledger_organisation,
+    UserDelegation,
 )
 from commercialoperator.components.organisations.utils import (
     can_manage_org,
@@ -30,7 +31,8 @@ from commercialoperator.helpers import is_commercialoperator_admin
 
 class LedgerOrganisationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ledger_organisation
+        # model = ledger_organisation
+        model = Organisation
         fields = "__all__"
 
 
@@ -40,7 +42,8 @@ class LedgerOrganisationFilterSerializer(serializers.ModelSerializer):
     org_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = ledger_organisation
+        # model = ledger_organisation
+        model = Organisation
         fields = (
             "id",  # ledger org id
             "org_id",  # cols org id
@@ -102,10 +105,9 @@ class DelegateSerializer(serializers.ModelSerializer):
 class OrganisationSerializer(serializers.ModelSerializer):
     address = OrganisationAddressSerializer(read_only=True)
     pins = serializers.SerializerMethodField(read_only=True)
-    # delegates = DelegateSerializer(many=True, read_only=True)
     delegates = serializers.SerializerMethodField(read_only=True)
-    # organisation = LedgerOrganisationSerializer()
     organisation = serializers.IntegerField(source="organisation_id")
+    organisation_id = serializers.IntegerField()
     trading_name = serializers.SerializerMethodField(read_only=True)
     apply_application_discount = serializers.SerializerMethodField(read_only=True)
     application_discount = serializers.SerializerMethodField(read_only=True)
@@ -128,6 +130,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "address",
             "email",
             "organisation",
+            "organisation_id",
             "phone_number",
             "pins",
             "delegates",
@@ -140,11 +143,11 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "last_event_application_fee_date",
         )
 
-    def to_representation(self, instance):
-        if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
-            # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
-            instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
-        return super().to_representation(instance)
+    # def to_representation(self, instance):
+    #     if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
+    #         # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
+    #         instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
+    #     return super().to_representation(instance)
 
     def get_apply_application_discount(self, obj):
         return obj.apply_application_discount
@@ -165,8 +168,18 @@ class OrganisationSerializer(serializers.ModelSerializer):
         """
         Default DelegateSerializer does not include whether the user is an organisation admin, so adding it here
         """
+
         delegates = []
-        for user in obj.delegates.all():
+        organisation_id = obj.organisation_id
+        # organisation_id = 9
+        delegates_all_ids = UserDelegation.objects.filter(
+            organisation_id=organisation_id
+        ).values_list("user_id", flat=True)
+
+        for user_id in delegates_all_ids:
+            user = retrieve_email_user(user_id)
+            if not user:
+                continue
             admin_qs = obj.contacts.filter(
                 organisation__organisation_id=obj.organisation_id,
                 email=user.email,
@@ -195,7 +208,10 @@ class OrganisationSerializer(serializers.ModelSerializer):
         return delegates
 
     def get_trading_name(self, obj):
-        return obj.organisation.trading_name
+        organisation_response = get_organisation(obj.organisation_id)
+        if organisation_response["status"] == status.HTTP_200_OK:
+            return organisation_response["data"]["organisation_trading_name"]
+        return None
 
     def get_pins(self, obj):
         try:
@@ -272,24 +288,43 @@ class MyOrganisationsSerializer(serializers.ModelSerializer):
 
 
 class DetailsSerializer(serializers.ModelSerializer):
+    # Note: Below four fields are commented out because they do not exist on the model
+    # name = serializers.CharField(
+    #     max_length=255,
+    #     default="",
+    # )
+    # trading_name = serializers.CharField(
+    #     source="ledger_organisation_trading_name",
+    #     required=False,
+    #     allow_blank=True,
+    #     allow_null=True,
+    # )
+    # email = serializers.EmailField(
+    #     required=False,
+    #     allow_blank=True,
+    #     allow_null=True,
+    # )
+    # abn = serializers.CharField(
+    #     max_length=11,
+    #     required=False,
+    #     allow_blank=True,
+    #     allow_null=True,
+    # )
+
     class Meta:
-        model = ledger_organisation
+        # model = ledger_organisation
+        model = Organisation
         fields = (
             "id",
             "name",
-            "trading_name",
+            # "trading_name", # Commented out because it does not exist on model
             "email",
             "abn",
-            #            'apply_application_discount',
-            #            'application_discount',
-            #            'apply_licence_discount',
-            #            'licence_discount',
         )
 
     def validate(self, data):
         request = self.context["request"]
-        # user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
-        new_abn = data["abn"]
+        new_abn = data.get("abn", None)
         obj_id = self.instance.id
         if new_abn and obj_id and new_abn != self.instance.abn:
             if not is_commercialoperator_admin(request):
@@ -297,8 +332,12 @@ class DetailsSerializer(serializers.ModelSerializer):
                     "You are not authorised to change the ABN"
                 )
             else:
+                # Note: No abn field on Organisation model yet
+                raise NotImplementedError(
+                    "ABN change is not implemented yet."
+                )
                 existance = (
-                    ledger_organisation.objects.filter(abn=new_abn)
+                    Organisation.objects.filter(abn=new_abn)
                     .exclude(id=obj_id)
                     .exists()
                 )

@@ -238,6 +238,7 @@ LOGGING['loggers']['commercialoperator'] = {
         }
 
 DEV_EMAILUSER_REPLACEMENT_ID = env("DEV_EMAILUSER_REPLACEMENT_ID", None)
+DEV_ORGANISATION_REPLACEMENT_ID = env("DEV_ORGANISATION_REPLACEMENT_ID", None)
 
 # Cache timeouts
 CACHE_TIMEOUT_5_SECONDS = 5
@@ -249,6 +250,7 @@ CACHE_TIMEOUT_24_HOURS = 60 * 60 * 24
 CACHE_TIMEOUT_NEVER = None
 
 # Cache keys
+CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
 
 # Error messages
