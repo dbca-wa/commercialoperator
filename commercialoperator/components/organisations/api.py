@@ -684,22 +684,9 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     def update_address(self, request, *args, **kwargs):
         try:
-            org = self.get_object()
-            instance = org.organisation
-            serializer = OrganisationAddressSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            address, created = OrganisationAddress.objects.get_or_create(
-                line1=serializer.validated_data["line1"],
-                locality=serializer.validated_data["locality"],
-                state=serializer.validated_data["state"],
-                country=serializer.validated_data["country"],
-                postcode=serializer.validated_data["postcode"],
-                organisation=instance,
-            )
-            instance.postal_address = address
-            instance.save()
-            serializer = self.get_serializer(org)
-            return Response(serializer.data)
+            instance = self.get_object()
+            request.data["organisation_id"] = instance.organisation_id
+            return self.update_details(request, *args, **kwargs)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
