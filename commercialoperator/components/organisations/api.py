@@ -698,7 +698,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             )
             instance.postal_address = address
             instance.save()
-            # send_organisation_address_updated_email_notification(request.user, instance, org, request)
             serializer = self.get_serializer(org)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -719,55 +718,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     def upload_id(self, request, *args, **kwargs):
         pass
-
-
-#        try:
-#            instance = self.get_object()
-#            instance.organisation.upload_identification(request)
-#            with transaction.atomic():
-#                instance.save()
-#                instance.log_user_action(OrganisationAction.ACTION_ID_UPDATE.format(
-#                '{} ({})'.format(instance.name, instance.abn)), request)
-#
-#            _applications = Application.objects.filter(org_applicant=instance.organisation.id)
-#            # Notify internal users new ID uploaded.
-#            if _applications:
-#                emails = set()
-#                for _application in _applications:
-#                    # Officer assigned to the application
-#                    if _application.assigned_officer_id:
-#                        emails.add(EmailUser.objects.get(id=_application.assigned_officer_id).email)
-#                    # Officer belonging to a group assigned to the application
-#                    if ApplicationRequest.objects.filter(application_id=_application.id).exists():
-#                        _requests = ApplicationRequest.objects.filter(application_id=_application.id)
-#                        for _request in _requests:
-#                            if Assessment.objects.filter(id=_request.id).exists():
-#                                _group = Assessment.objects.filter(id=_request.id).first()
-#                                if _group.assessor_group_id:
-#                                    _group_type = ApplicationGroupType.objects\
-#                                                .filter(id=_group.assessor_group_id).first()
-#                                    _group_emails = _group_type.members.values_list('email', flat=True)
-#                                    for _email in _group_emails:
-#                                        emails.add(EmailUser.objects.get(email=_email).email)
-#                contact = OrganisationContact.objects.get(organisation=instance).email
-#                contact_email = EmailUser.objects.filter(email=request.user).first()
-#                if EmailUser.objects.filter(email=contact).first():
-#                    contact_email = EmailUser.objects.filter(email=contact).first()
-#                send_organisation_id_upload_email_notification(emails, instance, contact_email, request)
-#
-#            serializer = OrganisationSerializer(instance, partial=True)
-#            return Response(serializer.data)
-#        except serializers.ValidationError:
-#            print(traceback.print_exc())
-#            raise
-#        except ValidationError as e:
-#            print(traceback.print_exc())
-#            raise serializers.ValidationError(repr(e.error_dict))
-#        except Exception as e:
-#            print(traceback.print_exc())
-#            raise serializers.ValidationError(str(e))
-
-from rest_framework import filters
 
 
 class OrganisationListFilterView(generics.ListAPIView):
