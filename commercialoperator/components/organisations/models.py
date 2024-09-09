@@ -39,19 +39,15 @@ from commercialoperator.components.stubs.utils import retrieve_members
 
 
 class Organisation(models.Model):
-    # organisation = models.ForeignKey(ledger_organisation, on_delete=models.PROTECT)
     organisation_id = models.IntegerField(
         unique=True, verbose_name="Ledger Organisation ID"
     )
-    # TODO: business logic related to delegate changes.
     delegates = models.ManyToManyField(
         EmailUser,
         blank=True,
         through="UserDelegation",
         related_name="commercialoperator_organisations",
     )
-    # pin_one = models.CharField(max_length=50,blank=True)
-    # pin_two = models.CharField(max_length=50,blank=True)
     admin_pin_one = models.CharField(max_length=50, blank=True)
     admin_pin_two = models.CharField(max_length=50, blank=True)
     user_pin_one = models.CharField(max_length=50, blank=True)
