@@ -1,10 +1,9 @@
-<!-- eslint-disable vue/attributes-order -->
 <template lang="html">
     <div id="DataTable">
         <table
+            :id="id"
             class="hover table border table-striped table-bordered dt-responsive nowrap"
             cellspacing="0"
-            :id="id"
             width="100%"
         >
             <thead>
