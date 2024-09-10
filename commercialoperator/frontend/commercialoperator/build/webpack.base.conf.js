@@ -1,7 +1,7 @@
 var path = require('path');
 var utils = require('./utils');
 var config = require('../config');
-var vueLoaderConfig = require('./vue-loader.conf');
+// var vueLoaderConfig = require('./vue-loader.conf');
 var webpack = require('webpack');
 
 function resolve(dir) {
@@ -44,11 +44,11 @@ module.exports = {
           formatter: require('eslint-friendly-formatter')
         }
       },*/
-            {
-                test: /\.vue$/,
-                loader: 'vue-loader',
-                options: vueLoaderConfig,
-            },
+            // {
+            //     test: /\.vue$/,
+            //     loader: 'vue-loader',
+            //     options: vueLoaderConfig,
+            // },
             {
                 test: /bootstrap.+\.(js)$/,
                 loader: 'imports-loader?jQuery=jquery,$=jquery,this=>window',
