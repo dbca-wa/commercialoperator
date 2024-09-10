@@ -412,9 +412,9 @@ export default {
         addEventListeners: function () {
             let vm = this;
             // Initialise Proposal Date Filters
-            $(vm.$refs.complianceDateToPicker).datetimepicker(
-                vm.datepickerOptions
-            );
+            // $(vm.$refs.complianceDateToPicker).datetimepicker(
+            //     vm.datepickerOptions
+            // );
             $(vm.$refs.complianceDateToPicker).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.complianceDateToPicker)

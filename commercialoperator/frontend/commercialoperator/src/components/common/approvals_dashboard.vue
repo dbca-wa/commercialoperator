@@ -702,7 +702,7 @@ export default {
         addEventListeners: function () {
             let vm = this;
             // Initialise Date Filters
-            $(vm.$refs.startDateToPicker).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.startDateToPicker).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.startDateToPicker).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.startDateToPicker).data('DateTimePicker').date()
@@ -712,9 +712,9 @@ export default {
                     vm.filterStartTo = '';
                 }
             });
-            $(vm.$refs.startDateFromPicker).datetimepicker(
-                vm.datepickerOptions
-            );
+            // $(vm.$refs.startDateFromPicker).datetimepicker(
+            //     vm.datepickerOptions
+            // );
             $(vm.$refs.startDateFromPicker).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.startDateFromPicker)
@@ -730,7 +730,7 @@ export default {
                 }
             });
 
-            $(vm.$refs.expiryDateToPicker).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.expiryDateToPicker).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.expiryDateToPicker).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.expiryDateToPicker).data('DateTimePicker').date()
@@ -740,9 +740,9 @@ export default {
                     vm.filterExpiryTo = '';
                 }
             });
-            $(vm.$refs.expiryDateFromPicker).datetimepicker(
-                vm.datepickerOptions
-            );
+            // $(vm.$refs.expiryDateFromPicker).datetimepicker(
+            //     vm.datepickerOptions
+            // );
             $(vm.$refs.expiryDateFromPicker).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.expiryDateFromPicker)

@@ -211,14 +211,12 @@
     </div>
 </template>
 <script>
-import Proposal from '../../form.vue'
 import ProposalTClass from '@/components/form_tclass.vue'
 import Vue from 'vue'
 import datatable from '@vue-utils/datatable.vue'
 import CommsLogs from '@common-utils/comms_logs.vue'
 import Requirements from '@/components/internal/proposals/proposal_requirements.vue'
 import Assessment from '@/components/common/tclass/assessment.vue'
-import ResponsiveDatatablesHelper from "@/utils/responsive_datatable_helper.js"
 import ProposalFilming from '@/components/form_filming.vue'
 import ProposalEvent from '@/components/form_event.vue'
 import ProposedDecline from './district_proposal_proposed_decline.vue'
@@ -306,7 +304,6 @@ export default {
         }
     },
     components: {
-        Proposal,
         datatable,
         CommsLogs,
         ProposalTClass,

@@ -315,7 +315,7 @@ export default {
         addEventListeners: function(){
             let vm = this;
             // Initialise Proposal Date Filters
-            $(vm.$refs.proposalDateToPicker).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.proposalDateToPicker).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.proposalDateToPicker).on('dp.change', function(e){
                 if ($(vm.$refs.proposalDateToPicker).data('DateTimePicker').date()) {
                     vm.filterProposalLodgedTo =  e.date.format('DD/MM/YYYY');
@@ -324,7 +324,7 @@ export default {
                     vm.filterProposaLodgedTo = "";
                 }
              });
-            $(vm.$refs.proposalDateFromPicker).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.proposalDateFromPicker).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.proposalDateFromPicker).on('dp.change',function (e) {
                 if ($(vm.$refs.proposalDateFromPicker).data('DateTimePicker').date()) {
                     vm.filterProposalLodgedFrom = e.date.format('DD/MM/YYYY');
