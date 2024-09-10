@@ -193,7 +193,6 @@
             ref="approval_surrender"
             @refreshFromResponse="refreshFromResponse"
         ></ApprovalSurrender>
-        <!--<EClassLicence ref="eclass_licence" :processing_status="proposal.processing_status" :proposal_id="proposal.id"></EClassLicence>-->
         <EClassLicence ref="eclass_licence"></EClassLicence>
     </div>
 </template>
@@ -473,7 +472,6 @@ export default {
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.is_external) {
-                                //if(vm.check_assessor(full)){
                                 if (full.is_approver) {
                                     if (!full.is_lawful_authority) {
                                         if (full.can_reissue) {
@@ -482,9 +480,6 @@ export default {
                                     }
                                 }
                                 if (full.is_assessor) {
-                                    // if(full.can_reissue){
-                                    //     links +=  `<a href='#${full.id}' data-reissue-approval='${full.current_proposal}'>Reissue</a><br/>`;
-                                    // }
                                     if (full.is_lawful_authority) {
                                         if (full.can_reissue_lawful_authority) {
                                             links += `<a href='#${full.id}' data-reissue-approval='${full.current_proposal}'>Reissue</a><br/>`;
@@ -513,8 +508,6 @@ export default {
                                             links += `<a href='#${full.id}' data-cancel-approval='${full.id}'>Cancel</a><br/>`;
                                             links += `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                         }
-                                        // links +=  `<a href='#${full.id}' data-cancel-approval='${full.id}'>Cancel</a><br/>`;
-                                        // links +=  `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                     }
                                     if (
                                         full.status == 'Current' &&
@@ -529,8 +522,6 @@ export default {
                                         } else {
                                             links += `<a href='#${full.id}' data-suspend-approval='${full.id}'>Suspend</a><br/>`;
                                         }
-
-                                        // links +=  `<a href='#${full.id}' data-suspend-approval='${full.id}'>Suspend</a><br/>`;
                                     }
                                     if (full.can_reinstate) {
                                         links += `<a href='#${full.id}' data-reinstate-approval='${full.id}'>Reinstate</a><br/>`;
@@ -559,7 +550,6 @@ export default {
                                         } else {
                                             links += `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                         }
-                                        // links +=  `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
 
                                         if (full.can_amend) {
                                             links += `<a href='#${full.id}' data-amend-approval='${full.current_proposal}'>Amend</a><br/>`;
@@ -590,7 +580,6 @@ export default {
     },
     computed: {
         status: function () {
-            //return this.is_external ? this.external_status : this.internal_status;
             return [];
         },
         is_external: function () {
@@ -605,7 +594,6 @@ export default {
     },
     watch: {
         filterProposalSubmitter: function () {
-            //this.$refs.proposal_datatable.vmDataTable.draw();
             let vm = this;
             if (vm.filterProposalSubmitter != 'All') {
                 vm.$refs.proposal_datatable.vmDataTable
@@ -679,7 +667,6 @@ export default {
     },
     methods: {
         createEClassLicence: function () {
-            //this.save_wo();
             this.$refs.eclass_licence.isModalOpen = true;
         },
 
@@ -696,7 +683,6 @@ export default {
                     console.log(error);
                 }
             );
-            //console.log(vm.regions);
         },
 
         addEventListeners: function () {
@@ -939,7 +925,6 @@ export default {
                 text: 'Are you sure you want to reissue this licence?',
                 type: 'warning',
                 confirmButtonText: 'Reissue licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     vm.$http
@@ -980,8 +965,6 @@ export default {
             let data = { status: status };
             swal({
                 title: 'Renew Licence',
-                //text: "Are you sure you want to extend this licence?",
-                //type: "warning",
                 text: "<input type='email' class='form-control' name='email' id='email'/>",
                 type: 'input',
                 showCancelButton: true,
@@ -1033,7 +1016,6 @@ export default {
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Reinstate licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     vm.$http
@@ -1075,12 +1057,10 @@ export default {
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Renew licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     swal({
                         title: 'Loading...',
-                        //text: "Loading...",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         onOpen: () => {
@@ -1128,12 +1108,10 @@ export default {
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Amend licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     swal({
                         title: 'Loading...',
-                        //text: "Loading...",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         onOpen: () => {

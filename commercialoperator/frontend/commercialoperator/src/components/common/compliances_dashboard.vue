@@ -106,8 +106,8 @@
                             <datatable
                                 :id="datatable_id"
                                 ref="proposal_datatable"
-                                :dtOptions="proposal_options"
-                                :dtHeaders="proposal_headers"
+                                :dt-options="proposal_options"
+                                :dt-headers="proposal_headers"
                             />
                         </div>
                     </div>
@@ -228,7 +228,6 @@ export default {
                     {
                         data: 'id',
                         mRender: function (data, type, full) {
-                            //return `C${data}`;
                             return full.reference;
                         },
                         name: 'id, lodgement_number',
@@ -269,7 +268,6 @@ export default {
                     {
                         data: 'assigned_to',
                         name: 'assigned_to__first_name, assigned_to__last_name, assigned_to__email',
-                        // visible: false
                     },
                     {
                         data: 'compliance_licence_name',
@@ -320,10 +318,6 @@ export default {
         };
     },
     computed: {
-        /* status: function(){
-            return this.is_external ? this.external_status : this.internal_status;
-            //return [];
-        }, */
         is_external: function () {
             return this.level == 'external';
         },
@@ -405,16 +399,10 @@ export default {
                     console.log(error);
                 }
             );
-
-            //console.log(vm.regions);
         },
 
         addEventListeners: function () {
             let vm = this;
-            // Initialise Proposal Date Filters
-            // $(vm.$refs.complianceDateToPicker).datetimepicker(
-            //     vm.datepickerOptions
-            // );
             $(vm.$refs.complianceDateToPicker).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.complianceDateToPicker)
