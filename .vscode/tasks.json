@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
       {
-        "label": "node: start",
+        "label": "node: serve",
         "path": "/commercialoperator/frontend/commercialoperator",
         "options": {
           "env": {
@@ -10,7 +10,7 @@
           }
         },
         "type": "npm",
-        "script": "start",
+        "script": "serve",
         "isBackground": true,
         "problemMatcher": [
           {

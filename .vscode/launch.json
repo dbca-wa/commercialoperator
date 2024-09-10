@@ -35,7 +35,7 @@
               "${workspaceFolder}/commercialoperator/frontend/commercialoperator/src/**/*.vue",
               "${workspaceFolder}/commercialoperator/frontend/commercialoperator/src/**/*.html"
             ],
-            "preLaunchTask": "node: start"
+            "preLaunchTask": "node: serve"
         }
     ]
 }
