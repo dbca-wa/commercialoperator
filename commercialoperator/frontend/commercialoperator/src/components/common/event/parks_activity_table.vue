@@ -127,7 +127,7 @@ export default {
                     //     },
                     // },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let links = '';
                         //     if(!vm.proposal.readonly){

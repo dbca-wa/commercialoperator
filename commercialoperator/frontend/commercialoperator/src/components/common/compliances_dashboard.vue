@@ -278,7 +278,7 @@ export default {
                         name: '',
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.is_external) {

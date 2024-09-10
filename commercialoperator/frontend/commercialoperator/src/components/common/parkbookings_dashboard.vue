@@ -234,7 +234,7 @@ export default {
 
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let visitors = '';
                             visitors += 'A: ' + full.no_adults + '; C: ' + full.no_children + '; F: ' + full.no_free_of_charge + '<br>';
@@ -247,7 +247,7 @@ export default {
                         orderable: true
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let links = '';
                             if (full.payment_status.toLowerCase()=='paid' || full.payment_method.toUpperCase()=='BPAY' || (full.payment_method.toLowerCase()=='monthly invoicing' && full.invoice_reference !== null)){
@@ -281,7 +281,7 @@ export default {
                         orderable: false
                     },
                     {
-                        data: "",
+                        data: "id",
                         mRender:function (data,type,full) {
                             let links = '';
                             if(vm.is_payment_admin){

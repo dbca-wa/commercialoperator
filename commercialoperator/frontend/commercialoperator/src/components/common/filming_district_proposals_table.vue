@@ -74,7 +74,7 @@ export default {
                         data: "assigned_officer",
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let links = '';
                             

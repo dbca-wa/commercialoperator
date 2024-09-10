@@ -379,7 +379,7 @@ export default {
                         orderable: true,
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (
@@ -406,7 +406,7 @@ export default {
                         orderable: false,
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (vm.is_payment_admin) {

@@ -175,7 +175,7 @@ export default {
                         name: "proposal__lodgement_date",
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let links = '';
                             links +=  full.district_assessor_can_assess ? `<a href='/internal/proposal/${full.proposal}/district_proposal/${full.id}'>Process</a><br/>`: `<a href='/internal/proposal/${full.proposal}/district_proposal/${full.id}'>View</a><br/>`;

@@ -216,7 +216,7 @@ export default {
                         name: "assigned_officer__first_name, assigned_officer__last_name",
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let links = '';
                             if (!vm.is_external){

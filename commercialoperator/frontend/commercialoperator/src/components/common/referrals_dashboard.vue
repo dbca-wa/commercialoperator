@@ -207,7 +207,7 @@ export default {
                         orderable: false,
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender:function (data,type,full) {
                             let links = '';
                             links +=  full.can_user_process ? `<a href='/internal/proposal/${full.proposal}/referral/${full.id}'>Process</a><br/>`: `<a href='/internal/proposal/${full.proposal}/referral/${full.id}'>View</a><br/>`;

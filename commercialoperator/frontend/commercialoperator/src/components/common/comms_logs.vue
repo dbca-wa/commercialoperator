@@ -135,7 +135,7 @@ export default {
                     {
                         title: 'Type',
                         //data: 'type'
-                        data: '',
+                        data: 'id',
                         mRender:function(data,type,full){
                            return vm.is_user_log  ? full.log_type: full.type;
                         },
