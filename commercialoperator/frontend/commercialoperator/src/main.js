@@ -19,7 +19,7 @@ import 'datatables.net-bs';
 import 'datatables.net-buttons';
 import 'datatables.net-responsive';
 // import 'datatables.net-buttons-bs';
-// import 'datatables.net-responsive-bs';
+import 'datatables.net-responsive-bs';
 import 'datatables.net-buttons/js/dataTables.buttons.js';
 import 'datatables.net-buttons/js/buttons.html5.js';
 
@@ -39,9 +39,6 @@ import '@/../node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.
 // eslint-disable-next-line no-unused-vars
 // import hooks from './packages';
 import api_endpoints from './api';
-
-// require('../node_modules/bootstrap/dist/css/bootstrap.css');
-// require('../node_modules/font-awesome/css/font-awesome.min.css');
 
 require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css');
 require('@/../node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css');
