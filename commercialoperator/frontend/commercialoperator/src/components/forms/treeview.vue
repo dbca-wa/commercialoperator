@@ -1,6 +1,6 @@
 <template lang="html">
     <div>
-        <treeselect
+        <!-- <treeselect
             v-model="localValue"
             :options="options"
             :open-on-click="true"
@@ -55,7 +55,7 @@
                     <a> {{ node.label }} </a>
                 </div>
             </div>
-        </treeselect>
+        </treeselect> -->
     </div>
 </template>
 
@@ -64,13 +64,13 @@
    sudo npm install --save @riophae/vue-treeselect
    import Treeselect from '@riophae/vue-treeselect'
 */
-import Treeselect from '@/third-party/vue-treeselect/dict/vue-treeselect.js';
+// import Treeselect from '@/third-party/vue-treeselect/dict/vue-treeselect.js';
 import '@/third-party/vue-treeselect/dict/vue-treeselect.css';
 
 export default {
     name: 'TreeSelect',
     components: {
-        Treeselect,
+        // Treeselect,
     },
     props: {
         proposal: {
