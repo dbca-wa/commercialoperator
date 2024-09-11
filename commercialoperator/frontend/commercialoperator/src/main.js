@@ -8,12 +8,6 @@ import 'bootstrap';
 import helpers from '@/utils/helpers';
 import { extendMoment } from 'moment-range';
 
-// require('datatables.net');
-// require('datatables.net-bs')();
-// require('datatables.net-responsive-bs')(window, $);
-// require('datatables.net-buttons/js/dataTables.buttons.js')(window, $);
-// require('datatables.net-buttons/js/buttons.html5.js')(window, $, jsZip);
-
 import 'datatables.net';
 import 'datatables.net-bs';
 import 'datatables.net-buttons';
