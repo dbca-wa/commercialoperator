@@ -121,7 +121,6 @@
     </div>
 </template>
 <script>
-import 'babel-polyfill';
 import datatable from '@/utils/vue/datatable.vue';
 import Vue from 'vue';
 require('select2/dist/css/select2.min.css');
