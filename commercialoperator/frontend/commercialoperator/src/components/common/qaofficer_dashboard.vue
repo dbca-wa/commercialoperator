@@ -56,7 +56,7 @@
                             >
                                 <input
                                     v-model="filterProposalLodgedFrom"
-                                    type="text"
+                                    type="date"
                                     class="form-control"
                                     placeholder="DD/MM/YYYY"
                                 />
@@ -75,7 +75,7 @@
                             >
                                 <input
                                     v-model="filterProposalLodgedTo"
-                                    type="text"
+                                    type="date"
                                     class="form-control"
                                     placeholder="DD/MM/YYYY"
                                 />
@@ -125,7 +125,7 @@ import datatable from '@/utils/vue/datatable.vue';
 import Vue from 'vue';
 require('select2/dist/css/select2.min.css');
 require('select2-bootstrap-theme/dist/select2-bootstrap.min.css');
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -214,18 +214,16 @@ export default {
                         d.date_from =
                             vm.filterProposalLodgedFrom != '' &&
                             vm.filterProposalLodgedFrom != null
-                                ? moment(
-                                      vm.filterProposalLodgedFrom,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterProposalLodgedFrom).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                         d.date_to =
                             vm.filterProposalLodgedTo != '' &&
                             vm.filterProposalLodgedTo != null
-                                ? moment(
-                                      vm.filterProposalLodgedTo,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterProposalLodgedTo).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                     },
                 },
@@ -340,10 +338,16 @@ export default {
             }
         },
         filterProposalLodgedFrom: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterProposalLodgedTo: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
     },
 
@@ -414,43 +418,6 @@ export default {
         },
         addEventListeners: function () {
             let vm = this;
-            // Initialise Proposal Date Filters
-            $(vm.$refs.proposalDateToPicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.proposalDateToPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.proposalDateToPicker)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.filterProposalLodgedTo = e.date.format('DD/MM/YYYY');
-                } else if (
-                    $(vm.$refs.proposalDateToPicker).data('date') === ''
-                ) {
-                    vm.filterProposaLodgedTo = '';
-                }
-            });
-            $(vm.$refs.proposalDateFromPicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.proposalDateFromPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.proposalDateFromPicker)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.filterProposalLodgedFrom = e.date.format('DD/MM/YYYY');
-                    $(vm.$refs.proposalDateToPicker)
-                        .data('DateTimePicker')
-                        .minDate(e.date);
-                } else if (
-                    $(vm.$refs.proposalDateFromPicker).data('date') === ''
-                ) {
-                    vm.filterProposalLodgedFrom = '';
-                }
-            });
-            // End Proposal Date Filters
             // External Discard listener
             vm.$refs.proposal_datatable.vmDataTable.on(
                 'click',
