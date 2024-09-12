@@ -5,6 +5,7 @@ module.exports = {
             try {
                 const obj = JSON.parse(resp.responseText);
                 error_str = obj.non_field_errors[0].replace(/[[\]"]/g, '');
+                // eslint-disable-next-line no-unused-vars
             } catch (e) {
                 error_str = resp.responseText.replace(/[[\]"]/g, '');
             }
@@ -131,5 +132,15 @@ module.exports = {
                 e.preventDefault();
                 return true;
             });
+    },
+    enablePopovers: function () {
+        let popoverTriggerList = [].slice.call(
+            document.querySelectorAll('[data-bs-toggle="popover"]')
+        );
+        // eslint-disable-next-line no-unused-vars
+        let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            // eslint-disable-next-line no-unused-vars
+            let popover = new bootstrap.Popover(popoverTriggerEl);
+        });
     },
 };
