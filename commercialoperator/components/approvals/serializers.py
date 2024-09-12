@@ -126,7 +126,9 @@ class ApprovalSerializer(serializers.ModelSerializer):
     applicant = serializers.SerializerMethodField(read_only=True)
     applicant_type = serializers.SerializerMethodField(read_only=True)
     applicant_id = serializers.SerializerMethodField(read_only=True)
-    licence_document = serializers.CharField(source="licence_document._file.url")
+    licence_document = serializers.CharField(
+        source="licence_document._file.url", allow_null=True
+    )
     renewal_document = serializers.SerializerMethodField(read_only=True)
     renewal_sent = serializers.SerializerMethodField(read_only=True)
     status = serializers.CharField(source="get_status_display")
