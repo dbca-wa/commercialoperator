@@ -71,7 +71,7 @@
                                 >
                                     <input
                                         v-model="filterStartFrom"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -92,7 +92,7 @@
                                 >
                                     <input
                                         v-model="filterStartTo"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -113,7 +113,7 @@
                                 >
                                     <input
                                         v-model="filterExpiryFrom"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -134,7 +134,7 @@
                                 >
                                     <input
                                         v-model="filterExpiryTo"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -292,31 +292,24 @@ export default {
                         d.start_date_from =
                             vm.filterStartFrom != '' &&
                             vm.filterStartFrom != null
-                                ? moment(
-                                      vm.filterStartFrom,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterStartFrom).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                         d.start_date_to =
                             vm.filterStartTo != '' && vm.filterStartTo != null
-                                ? moment(vm.filterStartTo, 'DD/MM/YYYY').format(
-                                      'YYYY-MM-DD'
-                                  )
+                                ? moment(vm.filterStartTo).format('YYYY-MM-DD')
                                 : '';
                         d.expiry_date_from =
                             vm.filterExpiryFrom != '' &&
                             vm.filterExpiryFrom != null
-                                ? moment(
-                                      vm.filterExpiryFrom,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterExpiryFrom).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                         d.expiry_date_to =
                             vm.filterExpiryTo != '' && vm.filterExpiryTo != null
-                                ? moment(
-                                      vm.filterExpiryTo,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterExpiryTo).format('YYYY-MM-DD')
                                 : '';
                     },
                 },
@@ -622,16 +615,28 @@ export default {
             }
         },
         filterStartFrom: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterStartTo: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterExpiryFrom: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterExpiryTo: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterApplicationType: function () {
             let vm = this;
