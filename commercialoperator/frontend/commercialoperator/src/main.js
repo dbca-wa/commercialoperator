@@ -11,8 +11,8 @@ import { extendMoment } from 'moment-range';
 import 'datatables.net';
 import 'datatables.net-bs';
 import 'datatables.net-buttons';
+import 'datatables.net-buttons-bs';
 import 'datatables.net-responsive';
-// import 'datatables.net-buttons-bs'; // This one causes compile error
 import 'datatables.net-responsive-bs';
 import 'datatables.net-buttons/js/dataTables.buttons.js';
 import 'datatables.net-buttons/js/buttons.html5.js';
