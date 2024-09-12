@@ -111,6 +111,9 @@ uwsgi*.ini
 #commercialoperator/static/commercialoperator_vue/static/fonts/*
 #commercialoperator/static/commercialoperator_vue/static/img/*
 
+# npm build files
+commercialoperator/static/commercialoperator_vue/*
+
 *.csv
 *.xls*
 .DAV

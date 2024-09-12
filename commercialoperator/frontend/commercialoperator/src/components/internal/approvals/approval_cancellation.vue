@@ -166,7 +166,7 @@ export default {
             this.approval = {};
             this.errors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.cancellation_date).data('DateTimePicker').clear();
+            // $(this.$refs.cancellation_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {
@@ -252,7 +252,7 @@ export default {
             let vm = this;
             // Initialise Date Picker
 
-            $(vm.$refs.cancellation_date).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.cancellation_date).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.cancellation_date).on('dp.change', function (e) {
                 if (
                     $(vm.$refs.cancellation_date).data('DateTimePicker').date()

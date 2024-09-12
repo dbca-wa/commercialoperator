@@ -70,7 +70,7 @@
                             >
                                 <input
                                     v-model="filterComplianceDueFrom"
-                                    type="text"
+                                    type="date"
                                     class="form-control"
                                     placeholder="DD/MM/YYYY"
                                 />
@@ -89,7 +89,7 @@
                             >
                                 <input
                                     v-model="filterComplianceDueTo"
-                                    type="text"
+                                    type="date"
                                     class="form-control"
                                     placeholder="DD/MM/YYYY"
                                 />
@@ -106,8 +106,8 @@
                             <datatable
                                 :id="datatable_id"
                                 ref="proposal_datatable"
-                                :dtOptions="proposal_options"
-                                :dtHeaders="proposal_headers"
+                                :dt-options="proposal_options"
+                                :dt-headers="proposal_headers"
                             />
                         </div>
                     </div>
@@ -119,7 +119,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import Vue from 'vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -207,18 +207,16 @@ export default {
                         d.date_from =
                             vm.filterComplianceDueFrom != '' &&
                             vm.filterComplianceDueFrom != null
-                                ? moment(
-                                      vm.filterComplianceDueFrom,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterComplianceDueFrom).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                         d.date_to =
                             vm.filterComplianceDueTo != '' &&
                             vm.filterComplianceDueTo != null
-                                ? moment(
-                                      vm.filterComplianceDueTo,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterComplianceDueTo).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                     },
                 },
@@ -228,7 +226,6 @@ export default {
                     {
                         data: 'id',
                         mRender: function (data, type, full) {
-                            //return `C${data}`;
                             return full.reference;
                         },
                         name: 'id, lodgement_number',
@@ -269,7 +266,6 @@ export default {
                     {
                         data: 'assigned_to',
                         name: 'assigned_to__first_name, assigned_to__last_name, assigned_to__email',
-                        // visible: false
                     },
                     {
                         data: 'compliance_licence_name',
@@ -278,7 +274,7 @@ export default {
                         name: '',
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.is_external) {
@@ -320,10 +316,6 @@ export default {
         };
     },
     computed: {
-        /* status: function(){
-            return this.is_external ? this.external_status : this.internal_status;
-            //return [];
-        }, */
         is_external: function () {
             return this.level == 'external';
         },
@@ -347,10 +339,16 @@ export default {
             this.$refs.proposal_datatable.vmDataTable.draw();
         },
         filterComplianceDueFrom: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterComplianceDueTo: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterApplicationType: function () {
             let vm = this;
@@ -405,50 +403,9 @@ export default {
                     console.log(error);
                 }
             );
-
-            //console.log(vm.regions);
         },
 
-        addEventListeners: function () {
-            let vm = this;
-            // Initialise Proposal Date Filters
-            $(vm.$refs.complianceDateToPicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.complianceDateToPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.complianceDateToPicker)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.filterComplianceDueTo = e.date.format('DD/MM/YYYY');
-                } else if (
-                    $(vm.$refs.complianceDateToPicker).data('date') === ''
-                ) {
-                    vm.filterProposaLodgedTo = '';
-                }
-            });
-            $(vm.$refs.complianceDateFromPicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.complianceDateFromPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.complianceDateFromPicker)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.filterComplianceDueFrom = e.date.format('DD/MM/YYYY');
-                    $(vm.$refs.complianceDateToPicker)
-                        .data('DateTimePicker')
-                        .minDate(e.date);
-                } else if (
-                    $(vm.$refs.complianceDateFromPicker).data('date') === ''
-                ) {
-                    vm.filterComplianceDueFrom = '';
-                }
-            });
-            // End Proposal Date Filters
-        },
+        addEventListeners: function () {},
         initialiseSearch: function () {
             this.dateSearch();
         },

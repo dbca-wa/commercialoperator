@@ -100,7 +100,7 @@
                                         >
                                             <input
                                                 v-model="vehicle.rego_expiry"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="rego_expiry"
                                                 placeholder="DD/MM/YYYY"
@@ -254,7 +254,7 @@ export default {
             this.vehicle = {};
             this.errors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.rego_expiry).data('DateTimePicker').clear();
+            $(this.$refs.rego_expiry).val('');
             this.$refs.capacity = '';
             this.$refs.license = '';
             this.$refs.rego = '';
@@ -383,17 +383,7 @@ export default {
                 },
             });
         },
-        eventListeners: function () {
-            let vm = this;
-            $(vm.$refs.rego_expiry).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.rego_expiry).on('dp.change', function (e) {
-                if ($(vm.$refs.rego_expiry).data('DateTimePicker').date()) {
-                    vm.vehicle.rego_expiry = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.rego_expiry).data('date') === '') {
-                    vm.vehicle.rego_expiry = null;
-                }
-            });
-        },
+        eventListeners: function () {},
     },
 };
 </script>

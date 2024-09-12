@@ -71,7 +71,7 @@
                                 >
                                     <input
                                         v-model="filterStartFrom"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -92,7 +92,7 @@
                                 >
                                     <input
                                         v-model="filterStartTo"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -113,7 +113,7 @@
                                 >
                                     <input
                                         v-model="filterExpiryFrom"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -134,7 +134,7 @@
                                 >
                                     <input
                                         v-model="filterExpiryTo"
-                                        type="text"
+                                        type="date"
                                         class="form-control"
                                         placeholder="DD/MM/YYYY"
                                     />
@@ -193,7 +193,6 @@
             ref="approval_surrender"
             @refreshFromResponse="refreshFromResponse"
         ></ApprovalSurrender>
-        <!--<EClassLicence ref="eclass_licence" :processing_status="proposal.processing_status" :proposal_id="proposal.id"></EClassLicence>-->
         <EClassLicence ref="eclass_licence"></EClassLicence>
     </div>
 </template>
@@ -293,31 +292,24 @@ export default {
                         d.start_date_from =
                             vm.filterStartFrom != '' &&
                             vm.filterStartFrom != null
-                                ? moment(
-                                      vm.filterStartFrom,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterStartFrom).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                         d.start_date_to =
                             vm.filterStartTo != '' && vm.filterStartTo != null
-                                ? moment(vm.filterStartTo, 'DD/MM/YYYY').format(
-                                      'YYYY-MM-DD'
-                                  )
+                                ? moment(vm.filterStartTo).format('YYYY-MM-DD')
                                 : '';
                         d.expiry_date_from =
                             vm.filterExpiryFrom != '' &&
                             vm.filterExpiryFrom != null
-                                ? moment(
-                                      vm.filterExpiryFrom,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterExpiryFrom).format(
+                                      'YYYY-MM-DD'
+                                  )
                                 : '';
                         d.expiry_date_to =
                             vm.filterExpiryTo != '' && vm.filterExpiryTo != null
-                                ? moment(
-                                      vm.filterExpiryTo,
-                                      'DD/MM/YYYY'
-                                  ).format('YYYY-MM-DD')
+                                ? moment(vm.filterExpiryTo).format('YYYY-MM-DD')
                                 : '';
                     },
                 },
@@ -469,11 +461,10 @@ export default {
                         name: '',
                     },
                     {
-                        data: '',
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.is_external) {
-                                //if(vm.check_assessor(full)){
                                 if (full.is_approver) {
                                     if (!full.is_lawful_authority) {
                                         if (full.can_reissue) {
@@ -482,9 +473,6 @@ export default {
                                     }
                                 }
                                 if (full.is_assessor) {
-                                    // if(full.can_reissue){
-                                    //     links +=  `<a href='#${full.id}' data-reissue-approval='${full.current_proposal}'>Reissue</a><br/>`;
-                                    // }
                                     if (full.is_lawful_authority) {
                                         if (full.can_reissue_lawful_authority) {
                                             links += `<a href='#${full.id}' data-reissue-approval='${full.current_proposal}'>Reissue</a><br/>`;
@@ -513,8 +501,6 @@ export default {
                                             links += `<a href='#${full.id}' data-cancel-approval='${full.id}'>Cancel</a><br/>`;
                                             links += `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                         }
-                                        // links +=  `<a href='#${full.id}' data-cancel-approval='${full.id}'>Cancel</a><br/>`;
-                                        // links +=  `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                     }
                                     if (
                                         full.status == 'Current' &&
@@ -529,8 +515,6 @@ export default {
                                         } else {
                                             links += `<a href='#${full.id}' data-suspend-approval='${full.id}'>Suspend</a><br/>`;
                                         }
-
-                                        // links +=  `<a href='#${full.id}' data-suspend-approval='${full.id}'>Suspend</a><br/>`;
                                     }
                                     if (full.can_reinstate) {
                                         links += `<a href='#${full.id}' data-reinstate-approval='${full.id}'>Reinstate</a><br/>`;
@@ -559,7 +543,6 @@ export default {
                                         } else {
                                             links += `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                         }
-                                        // links +=  `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
 
                                         if (full.can_amend) {
                                             links += `<a href='#${full.id}' data-amend-approval='${full.current_proposal}'>Amend</a><br/>`;
@@ -590,7 +573,6 @@ export default {
     },
     computed: {
         status: function () {
-            //return this.is_external ? this.external_status : this.internal_status;
             return [];
         },
         is_external: function () {
@@ -605,7 +587,6 @@ export default {
     },
     watch: {
         filterProposalSubmitter: function () {
-            //this.$refs.proposal_datatable.vmDataTable.draw();
             let vm = this;
             if (vm.filterProposalSubmitter != 'All') {
                 vm.$refs.proposal_datatable.vmDataTable
@@ -634,16 +615,28 @@ export default {
             }
         },
         filterStartFrom: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterStartTo: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterExpiryFrom: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterExpiryTo: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+            this.$refs.proposal_datatable.vmDataTable.ajax.reload(
+                helpers.enablePopovers,
+                false
+            );
         },
         filterApplicationType: function () {
             let vm = this;
@@ -679,7 +672,6 @@ export default {
     },
     methods: {
         createEClassLicence: function () {
-            //this.save_wo();
             this.$refs.eclass_licence.isModalOpen = true;
         },
 
@@ -696,68 +688,10 @@ export default {
                     console.log(error);
                 }
             );
-            //console.log(vm.regions);
         },
 
         addEventListeners: function () {
             let vm = this;
-            // Initialise Date Filters
-            $(vm.$refs.startDateToPicker).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.startDateToPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.startDateToPicker).data('DateTimePicker').date()
-                ) {
-                    vm.filterStartTo = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.startDateToPicker).data('date') === '') {
-                    vm.filterStartTo = '';
-                }
-            });
-            $(vm.$refs.startDateFromPicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.startDateFromPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.startDateFromPicker)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.filterStartFrom = e.date.format('DD/MM/YYYY');
-                    //$(vm.$refs.expiryDateToPicker).data("DateTimePicker").minDate(e.date);
-                } else if (
-                    $(vm.$refs.startDateFromPicker).data('date') === ''
-                ) {
-                    vm.filterStartFrom = '';
-                }
-            });
-
-            $(vm.$refs.expiryDateToPicker).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.expiryDateToPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.expiryDateToPicker).data('DateTimePicker').date()
-                ) {
-                    vm.filterExpiryTo = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.expiryDateToPicker).data('date') === '') {
-                    vm.filterExpiryTo = '';
-                }
-            });
-            $(vm.$refs.expiryDateFromPicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.expiryDateFromPicker).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.expiryDateFromPicker)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.filterExpiryFrom = e.date.format('DD/MM/YYYY');
-                    //$(vm.$refs.expiryDateToPicker).data("DateTimePicker").minDate(e.date);
-                } else if (
-                    $(vm.$refs.expiryDateFromPicker).data('date') === ''
-                ) {
-                    vm.filterExpiryFrom = '';
-                }
-            });
-
             // End Proposal Date Filters
             // Internal Reissue listener
             vm.$refs.proposal_datatable.vmDataTable.on(
@@ -939,7 +873,6 @@ export default {
                 text: 'Are you sure you want to reissue this licence?',
                 type: 'warning',
                 confirmButtonText: 'Reissue licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     vm.$http
@@ -980,8 +913,6 @@ export default {
             let data = { status: status };
             swal({
                 title: 'Renew Licence',
-                //text: "Are you sure you want to extend this licence?",
-                //type: "warning",
                 text: "<input type='email' class='form-control' name='email' id='email'/>",
                 type: 'input',
                 showCancelButton: true,
@@ -1033,7 +964,6 @@ export default {
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Reinstate licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     vm.$http
@@ -1075,12 +1005,10 @@ export default {
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Renew licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     swal({
                         title: 'Loading...',
-                        //text: "Loading...",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         onOpen: () => {
@@ -1128,12 +1056,10 @@ export default {
                 type: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Amend licence',
-                //confirmButtonColor:'#d9534f'
             }).then(
                 () => {
                     swal({
                         title: 'Loading...',
-                        //text: "Loading...",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         onOpen: () => {

@@ -162,7 +162,7 @@
                                                     proposal.other_details
                                                         .nominated_start_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="nominated_start_date"
                                                 placeholder="DD/MM/YYYY"
@@ -371,7 +371,7 @@
                                                     proposal.other_details
                                                         .insurance_expiry
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="insurance_expiry"
                                                 placeholder="DD/MM/YYYY"
@@ -975,62 +975,15 @@ export default {
                 date.getMonth(),
                 date.getDate()
             );
+            today = moment(today).format('YYYY-MM-DD');
 
-            $(vm.$refs.accreditation_expiry).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.accreditation_expiry).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.accreditation_expiry)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.proposal.other_details.accreditation_expiry =
-                        e.date.format('DD/MM/YYYY');
-                } else if (
-                    $(vm.$refs.accreditation_expiry).data('date') === ''
-                ) {
-                    vm.proposal.other_details.accreditation_expiry = '';
-                }
-            });
-            //Nominated start date listener
-            $(vm.$refs.nominated_start_date).datetimepicker(
-                vm.datepickerOptions
-            );
             //Set minimum date on datetimepicker so that nominated
             //start date cannot be selected prior to today
-            $(vm.$refs.nominated_start_date)
-                .data('DateTimePicker')
-                .minDate(today);
-            $(vm.$refs.nominated_start_date).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.nominated_start_date)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.proposal.other_details.nominated_start_date =
-                        e.date.format('DD/MM/YYYY');
-                } else if (
-                    $(vm.$refs.nominated_start_date).data('date') === ''
-                ) {
-                    vm.proposal.other_details.nominated_start_date = '';
-                }
-            });
-            //Insurance expiry date listener
-            $(vm.$refs.insurance_expiry).datetimepicker(vm.datepickerOptions);
+            $(vm.$refs.nominated_start_date).attr('min', today);
             //Set minimum date on datetimepicker so that
             //insurance expiry date cannot be selected prior to today
-            $(vm.$refs.insurance_expiry).data('DateTimePicker').minDate(today);
-            $(vm.$refs.insurance_expiry).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.insurance_expiry).data('DateTimePicker').date()
-                ) {
-                    vm.proposal.other_details.insurance_expiry =
-                        e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.insurance_expiry).data('date') === '') {
-                    vm.proposal.other_details.insurance_expiry = '';
-                }
-            });
+            $(vm.$refs.insurance_expiry).attr('min', today);
+
             // Intialise select2
             $(vm.$refs.preferred_licence_period)
                 .select2({

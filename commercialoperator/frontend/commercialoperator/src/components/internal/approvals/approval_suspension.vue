@@ -197,8 +197,8 @@ export default {
             //this.approval.to_date = ""
             this.errors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.from_date).data('DateTimePicker').clear();
-            $(this.$refs.to_date).data('DateTimePicker').clear();
+            // $(this.$refs.from_date).data('DateTimePicker').clear();
+            // $(this.$refs.to_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {
@@ -287,7 +287,7 @@ export default {
             let vm = this;
             // Initialise Date Picker
 
-            $(vm.$refs.from_date).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.from_date).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.from_date).on('dp.change', function (e) {
                 if ($(vm.$refs.from_date).data('DateTimePicker').date()) {
                     vm.approval.from_date = e.date.format('DD/MM/YYYY');
@@ -296,7 +296,7 @@ export default {
                 }
             });
 
-            $(vm.$refs.to_date).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.to_date).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.to_date).on('dp.change', function (e) {
                 if ($(vm.$refs.to_date).data('DateTimePicker').date()) {
                     vm.approval.to_date = e.date.format('DD/MM/YYYY');

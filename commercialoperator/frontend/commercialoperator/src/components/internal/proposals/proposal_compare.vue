@@ -42,7 +42,6 @@
     </div>
 </template>
 <script>
-import Proposal from '../../form.vue'
 import Vue from 'vue'
 import ProposedDecline from './proposal_proposed_decline.vue'
 import AmendmentRequest from './amendment_request.vue'
@@ -52,7 +51,6 @@ import ProposedApproval from './proposed_issuance.vue'
 import ApprovalScreen from './proposal_approval.vue'
 import CommsLogs from '@common-utils/comms_logs.vue'
 import MoreReferrals from '@common-utils/more_referrals.vue'
-import ResponsiveDatatablesHelper from "@/utils/responsive_datatable_helper.js"
 import ProposalTClass from '@/components/form_tclass.vue'
 import ProposalFilming from '@/components/form_filming.vue'
 import ProposalEvent from '@/components/form_event.vue'
@@ -132,7 +130,6 @@ export default {
         }
     },
     components: {
-        Proposal,
         ProposalTClass,
         datatable,
         ProposedDecline,
