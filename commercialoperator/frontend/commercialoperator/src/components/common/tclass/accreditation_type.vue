@@ -21,7 +21,7 @@
                             >
                                 <input
                                     v-model="accreditation.accreditation_expiry"
-                                    type="text"
+                                    type="date"
                                     class="form-control"
                                     name="accreditation_expiry"
                                     placeholder="DD/MM/YYYY"
@@ -154,26 +154,7 @@ export default {
     },
 
     methods: {
-        eventListeners: function () {
-            let vm = this;
-            $(vm.$refs.accreditation_expiry).datetimepicker(
-                vm.datepickerOptions
-            );
-            $(vm.$refs.accreditation_expiry).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.accreditation_expiry)
-                        .data('DateTimePicker')
-                        .date()
-                ) {
-                    vm.accreditation.accreditation_expiry =
-                        e.date.format('DD/MM/YYYY');
-                } else if (
-                    $(vm.$refs.accreditation_expiry).data('date') === ''
-                ) {
-                    vm.accreditation.accreditation_expiry = null;
-                }
-            });
-        },
+        eventListeners: function () {},
     },
 };
 </script>

@@ -337,7 +337,7 @@
                                                         .filming_other_details
                                                         .insurance_expiry
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="insurance_expiry"
                                                 placeholder="DD/MM/YYYY"
@@ -537,22 +537,11 @@ export default {
                 date.getMonth(),
                 date.getDate()
             );
+            today = moment(today).format('YYYY-MM-DD');
 
-            //Insurance expiry date listener
-            $(vm.$refs.insurance_expiry).datetimepicker(vm.datepickerOptions);
             //Set minimum date on datetimepicker so that
             //insurance expiry date cannot be selected prior to today
-            $(vm.$refs.insurance_expiry).data('DateTimePicker').minDate(today);
-            $(vm.$refs.insurance_expiry).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.insurance_expiry).data('DateTimePicker').date()
-                ) {
-                    vm.proposal.filming_other_details.insurance_expiry =
-                        e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.insurance_expiry).data('date') === '') {
-                    vm.proposal.filming_other_details.insurance_expiry = '';
-                }
-            });
+            $(vm.$refs.insurance_expiry).attr('min', today);
         },
     },
 };

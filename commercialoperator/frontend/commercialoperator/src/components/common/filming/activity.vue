@@ -371,37 +371,15 @@ require("select2-bootstrap-theme/dist/select2-bootstrap.min.css");
 
                 var date= new Date()
                 var today= new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                today = moment(today).format('DD/MM/YYYY');
 
-                $(vm.$refs.commencement_date).datetimepicker(vm.datepickerOptions);
                 //Set minimum date on datetimepicker so that nominated
                 //start date cannot be selected prior to today
-                $(vm.$refs.commencement_date).data("DateTimePicker").minDate(today);
-                $(vm.$refs.commencement_date).on('dp.change', function(e){
-                    if ($(vm.$refs.commencement_date).data('DateTimePicker').date()) {
-                        
+                $(vm.$refs.commencement_date).attr('min', today);
 
-                        vm.proposal.filming_activity.commencement_date =  e.date.format('DD/MM/YYYY');
-                    }
-                    else if ($(vm.$refs.commencement_date).data('date') === "") {
-                        vm.proposal.filming_activity.commencement_date = "";
-                    }
-                 });
-
-                $(vm.$refs.completion_date).datetimepicker(vm.datepickerOptions);
                 //Set minimum date on datetimepicker so that nominated
                 //start date cannot be selected prior to today
-                $(vm.$refs.completion_date).data("DateTimePicker").minDate(today);
-                $(vm.$refs.completion_date).on('dp.change', function(e){
-                    if ($(vm.$refs.completion_date).data('DateTimePicker').date()) {
-                        
-
-                        vm.proposal.filming_activity.completion_date =  e.date.format('DD/MM/YYYY');
-                    }
-                    else if ($(vm.$refs.completion_date).data('date') === "") {
-                        vm.proposal.filming_activity.completion_date = "";
-                    }
-                 });
-
+                $(vm.$refs.completion_date).attr('min', today);
             },
         },
         mounted: function(){

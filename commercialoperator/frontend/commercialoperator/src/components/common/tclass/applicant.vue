@@ -479,6 +479,7 @@ export default {
                 columns: [
                     {
                         title: 'Name',
+                        data: 'id',
                         mRender: function (data, type, full) {
                             return full.first_name + ' ' + full.last_name;
                         },

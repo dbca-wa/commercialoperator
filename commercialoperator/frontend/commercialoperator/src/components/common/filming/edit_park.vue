@@ -80,7 +80,7 @@
                                         >
                                             <input
                                                 v-model="park.from_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="from_date"
                                                 placeholder="DD/MM/YYYY"
@@ -111,7 +111,7 @@
                                         >
                                             <input
                                                 v-model="park.to_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="to_date"
                                                 placeholder="DD/MM/YYYY"
@@ -310,8 +310,6 @@ export default {
             this.errors = false;
             $('.has-error').removeClass('has-error');
             $(this.$refs.filming_park).val(null).trigger('change');
-            $(this.$refs.from_date).data('DateTimePicker').clear();
-            $(this.$refs.to_date).data('DateTimePicker').clear();
             this.$refs.feature_of_interest = '';
             this.$refs.park = '';
             this.validation_form.resetForm();
@@ -564,23 +562,6 @@ export default {
                     var selected = $(e.currentTarget);
                     vm.selected_park_id = selected.val();
                 });
-
-            $(vm.$refs.from_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.from_date).on('dp.change', function (e) {
-                if ($(vm.$refs.from_date).data('DateTimePicker').date()) {
-                    vm.park.from_date = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.from_date).data('date') === '') {
-                    vm.park.from_date = null;
-                }
-            });
-            $(vm.$refs.to_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.to_date).on('dp.change', function (e) {
-                if ($(vm.$refs.to_date).data('DateTimePicker').date()) {
-                    vm.park.to_date = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.to_date).data('date') === '') {
-                    vm.park.to_date = null;
-                }
-            });
         },
     },
 };

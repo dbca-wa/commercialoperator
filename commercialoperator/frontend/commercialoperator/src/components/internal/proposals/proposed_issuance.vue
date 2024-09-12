@@ -229,8 +229,8 @@ export default {
             this.toDateError = false;
             this.startDateError = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.due_date).data('DateTimePicker').clear();
-            $(this.$refs.start_date).data('DateTimePicker').clear();
+            $(this.$refs.due_date).val('');
+            $(this.$refs.start_date).val('');
             this.validation_form.resetForm();
         },
         fetchContact: function(id){
@@ -323,7 +323,6 @@ export default {
        eventListeners:function () {
             let vm = this;
             // Initialise Date Picker
-            $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.due_date).on('dp.change', function(e){
                 if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
                     if ($(vm.$refs.due_date).data('DateTimePicker').date() < $(vm.$refs.start_date).data('DateTimePicker').date()){
@@ -342,7 +341,7 @@ export default {
                     vm.approval.expiry_date = "";
                 }
              });
-            $(vm.$refs.start_date).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.start_date).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.start_date).on('dp.change', function(e){
                 if ($(vm.$refs.start_date).data('DateTimePicker').date()) {
 
