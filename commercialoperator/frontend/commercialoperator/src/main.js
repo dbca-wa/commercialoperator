@@ -30,8 +30,6 @@ import 'select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
 import '@/../node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css';
 import '@/../node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css';
 
-// eslint-disable-next-line no-unused-vars
-// import hooks from './packages';
 import api_endpoints from './api';
 
 require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css');
