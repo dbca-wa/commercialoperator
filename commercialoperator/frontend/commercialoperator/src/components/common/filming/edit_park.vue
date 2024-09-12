@@ -205,7 +205,6 @@ export default {
     },
     props: {
         // Note: I'm commenting out the park_id prop because it doesn't seem to be initialized with a non-null value
-        // eslint-disable-next-line vue/prop-name-casing
         // park_id: {
         //     type: Number,
         //     required: true,
@@ -235,7 +234,6 @@ export default {
             isModalOpen: false,
             form: null,
             park: Object,
-            // eslint-disable-next-line vue/no-dupe-keys
             park_id: Number,
             state: 'proposed_park',
             issuingPark: false,
