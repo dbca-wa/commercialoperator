@@ -1064,6 +1064,7 @@ export default {
                 },
                 columns: [
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             if (full.is_admin) {
                                 return (
@@ -1082,6 +1083,7 @@ export default {
                     { data: 'fax_number' },
                     { data: 'email' },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             let name = full.first_name + ' ' + full.last_name;
@@ -1113,6 +1115,7 @@ export default {
                 },
                 columns: [
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             return full.first_name + ' ' + full.last_name;
                         },
@@ -1121,6 +1124,7 @@ export default {
                     { data: 'email' },
                     { data: 'user_status' },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (vm.is_commercialoperator_admin) {
