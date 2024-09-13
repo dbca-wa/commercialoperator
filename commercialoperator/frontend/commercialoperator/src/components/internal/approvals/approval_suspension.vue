@@ -150,7 +150,7 @@ export default {
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -166,7 +166,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
             return 'Suspend Licence';
@@ -195,7 +195,7 @@ export default {
             this.approval = {};
             //this.approval.from_date = ""
             //this.approval.to_date = ""
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             // $(this.$refs.from_date).data('DateTimePicker').clear();
             // $(this.$refs.to_date).data('DateTimePicker').clear();
@@ -243,7 +243,7 @@ export default {
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.issuingApproval = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     }

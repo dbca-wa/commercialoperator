@@ -65,7 +65,7 @@ export default {
             form:null,
             decline: {},
             decliningProposal: false,
-            errors: false,
+            hasErrors: false,
             validation_form: null,
             errorString: '',
             successString: '',
@@ -75,7 +75,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function(){
             return this.processing_status == 'With Approver' ? 'Decline': 'Proposed Decline';
@@ -94,7 +94,7 @@ export default {
         close:function () {
             this.isModalOpen = false;
             this.decline = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             this.validation_form.resetForm();
         },
@@ -121,7 +121,7 @@ export default {
                         vm.$emit('refreshFromResponse',response);
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after propose decline.
                     },(error)=>{
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.decliningProposal = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     });
@@ -134,7 +134,7 @@ export default {
                         vm.close();
                         vm.$emit('refreshFromResponse',response);
                     },(error)=>{
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.decliningProposal = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     });

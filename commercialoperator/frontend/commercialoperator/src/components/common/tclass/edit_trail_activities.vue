@@ -82,7 +82,7 @@ export default {
             trail_activities:[],
             issuingVehicle: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success:false,
@@ -92,7 +92,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function(){
             return this.trail && this.trail.name ? 'Edit Sections and Activities for '+this.trail.name : 'Edit Sections and Activities';
@@ -170,7 +170,7 @@ export default {
             this.trail={};
             this.trail.sections={};
             this.trail_id = null;
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             //this.validation_form.resetForm();
         },

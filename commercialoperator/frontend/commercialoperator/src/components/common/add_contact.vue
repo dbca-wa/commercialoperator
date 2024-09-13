@@ -82,7 +82,7 @@ export default {
             isModalOpen:false,
             form:null,
             contact: {},
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success:false,
@@ -91,7 +91,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         }
     },
     methods:{
@@ -113,7 +113,7 @@ export default {
         close:function () {
             this.isModalOpen = false;
             this.contact = {};
-            this.errors = false;
+            this.hasErrors = false;
             this.form.reset();
         },
         fetchContact: function(id){
@@ -139,7 +139,7 @@ export default {
                         vm.close();
                     },(error)=>{
                         console.log(error);
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.errorString = helpers.apiVueResourceError(error);
                         //vm.$parent.loading.splice('processing contact',1);
                     });
@@ -155,7 +155,7 @@ export default {
                         vm.$parent.addedContact();
                     },(error)=>{
                         console.log(error);
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.errorString = helpers.apiVueResourceError(error);
                         //vm.$parent.loading.splice('processing contact',1);
                     });

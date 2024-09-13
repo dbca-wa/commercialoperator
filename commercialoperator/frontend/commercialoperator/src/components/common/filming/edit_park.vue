@@ -239,7 +239,7 @@ export default {
             issuingPark: false,
             all_parks: [],
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -257,7 +257,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
             return this.park_action == 'add'
@@ -305,7 +305,7 @@ export default {
             this.isModalOpen = false;
             this.park = {};
             this.$refs.filefield.reset_files();
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             $(this.$refs.filming_park).val(null).trigger('change');
             this.$refs.feature_of_interest = '';
@@ -476,7 +476,7 @@ export default {
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingPark = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -506,7 +506,7 @@ export default {
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingPark = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }

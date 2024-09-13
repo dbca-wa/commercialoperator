@@ -85,7 +85,7 @@ export default {
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -94,7 +94,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
             return 'Extend Licence';
@@ -121,7 +121,7 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.approval = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             //$(this.$refs.cancellation_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
@@ -155,7 +155,7 @@ export default {
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.issuingApproval = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     }

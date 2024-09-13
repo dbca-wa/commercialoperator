@@ -84,7 +84,7 @@ export default {
             vehicle_access_id: null,
             issuingVehicle: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success:false,
@@ -101,7 +101,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function(){
             return this.park_name ? 'Edit Access and Activities for '+this.park_name : 'Edit Access and Activities';
@@ -133,7 +133,7 @@ export default {
             this.park_id = null;
             this.park_access=[];
             this.park_activities=[];
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             this.validation_form.resetForm();
         },

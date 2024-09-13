@@ -128,7 +128,7 @@ export default {
             state: 'proposed_approval',
             addingComms: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success:false,
@@ -150,7 +150,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function(){
             return this.processing_status == 'With Approver' ? 'Issue Comms' : 'Propose to issue licence';
@@ -199,7 +199,7 @@ export default {
             let vm = this;
             this.isModalOpen = false;
             this.comms = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             this.validation_form.resetForm();
             let file_length = vm.files.length;
@@ -222,7 +222,7 @@ export default {
                     vm.close();
                     //vm.$emit('refreshFromResponse',response);
                 },(error)=>{
-                    vm.errors = true;
+                    vm.hasErrors = true;
                     vm.addingComms = false;
                     vm.errorString = helpers.apiVueResourceError(error);
                 });

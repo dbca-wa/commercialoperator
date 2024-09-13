@@ -192,7 +192,7 @@ export default {
             updatingRequirement: false,
             validation_form: null,
             type: '1',
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success:false,

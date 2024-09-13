@@ -61,7 +61,7 @@ export default {
                 compliance: vm.compliance_id 
             },
             reason_choices: {},
-            errors: false,
+            hasErrors: false,
             errorString: '',
             validation_form: null,
         }
@@ -69,7 +69,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         }
     },
     methods:{
@@ -90,7 +90,7 @@ export default {
                 reason: '',
                 compliance: this.compliance_id
             };
-            this.errors = false;
+            this.hasErrors = false;
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
             
@@ -128,7 +128,7 @@ export default {
                      
                     },(error)=>{
                         console.log(error);
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.errorString = helpers.apiVueResourceError(error);
                         vm.amendingcompliance = true;
                         

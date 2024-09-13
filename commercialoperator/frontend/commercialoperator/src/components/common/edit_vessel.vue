@@ -182,7 +182,7 @@ export default {
             state: 'proposed_vessel',
             issuingVessel: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -199,7 +199,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
             return this.vessel_action == 'add'
@@ -229,7 +229,7 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.vessel = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             this.validation_form.resetForm();
         },
@@ -295,7 +295,7 @@ export default {
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingVessel = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -324,7 +324,7 @@ export default {
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingVessel = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }

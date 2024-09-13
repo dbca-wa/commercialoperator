@@ -137,7 +137,7 @@ export default {
             park_activities:[],
             selected_activities:[],
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success:false,
@@ -154,7 +154,7 @@ export default {
     computed: {
         showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function(){
             return this.park_action == 'add' ? 'Add a new Park or Reserve' : 'Edit a Park or Reserve';
@@ -182,7 +182,7 @@ export default {
             this.isModalOpen = false;
             this.park = {};
             //this.$refs.filefield.reset_files();
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             //this.$refs.activities_select=[];
             $(this.$refs.activities_select).val(null).trigger('change');
@@ -312,7 +312,7 @@ export default {
                         );
                         vm.$emit('refreshFromResponse',response);
                     },(error)=>{
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.issuingPark = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     });
@@ -331,7 +331,7 @@ export default {
                         );
                         vm.$emit('refreshFromResponse',response);
                     },(error)=>{
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.issuingPark = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     });

@@ -109,7 +109,7 @@ from '@/utils/hooks'
                 answer_two:"answer_two",
                 answer_three: "answer_three",
                 answer_four:"answer_four",
-                errors: false,
+                hasErrors: false,
                 errorString: '',
             }
         },
@@ -127,7 +127,7 @@ from '@/utils/hooks'
             },
             showError: function() {
                 var vm = this;
-                return vm.errors;
+                return vm.hasErrors;
             },
             allAnswered: function(){
                return this.checkAllAnswered() 
@@ -195,7 +195,7 @@ from '@/utils/hooks'
                 }
                 else{
                     vm.errorString='Please answer all the questions.'
-                    vm.errors=true;
+                    vm.hasErrors=true;
 
                 }
             },

@@ -200,7 +200,7 @@ export default {
         amendment_request: [],
         hasAmendmentRequest: false,
         isFinalised: false,
-        errors: false,
+        hasErrors: false,
         errorString: '',
         pdBody: 'pdBody'+vm._uid,
         oBody: 'oBody'+vm._uid,
@@ -239,7 +239,7 @@ export default {
   computed: {
     showError: function() {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
     isLoading: function () {
       return this.loading.length > 0;
@@ -304,7 +304,7 @@ export default {
     close:function () {
             let vm = this;           
             this.compliance = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             this.validation_form.resetForm();
             let file_length = vm.files.length;
@@ -370,7 +370,7 @@ export default {
                     vm.refreshFromResponse(response);                   
                     vm.compliance = response.body;       
                 },(error)=>{
-                    vm.errors = true;
+                    vm.hasErrors = true;
                     vm.errorString = helpers.apiVueResourceError(error);
                 });              
         }
@@ -399,7 +399,7 @@ export default {
                 });
                         
                 },(error)=>{
-                    vm.errors = true;
+                    vm.hasErrors = true;
                     vm.addingCompliance = false;
                     vm.errorString = helpers.apiVueResourceError(error);
                 });     
@@ -408,12 +408,12 @@ export default {
     pay_and_submit:function(){
         let vm = this;
         if($(vm.form).valid()){
-            vm.errors = false;
+            vm.hasErrors = false;
             vm.errorString='';
             let data = new FormData(vm.form);
             vm.addingComms = true;
             if(vm.compliance && !vm.compliance.documents.length>0 && vm.files.length>0 && vm.files[0].file==null){
-                vm.errors= true;
+                vm.hasErrors= true;
                 vm.errorString='Please upload at least one document prior to submitting.'
             }            
             else{
@@ -436,7 +436,7 @@ export default {
                             vm.post_and_redirect(vm.compliance_fee_url, {'csrfmiddlewaretoken' : vm.csrf_token});
                                 
                         },(error)=>{
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.addingCompliance = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         });     
