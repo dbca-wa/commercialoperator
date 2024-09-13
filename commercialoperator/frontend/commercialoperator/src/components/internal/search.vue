@@ -383,7 +383,7 @@ export default {
             selected_organisation: '',
             organisations: null,
             results: [],
-            errors: false,
+            hasErrors: false,
             errorString: '',
             messages: false,
             messageString: '',
@@ -446,7 +446,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         showMessage: function () {
             var vm = this;
@@ -599,7 +599,7 @@ export default {
                     .then(
                         (res) => {
                             console.log(res);
-                            vm.errors = false;
+                            vm.hasErrors = false;
                             vm.errorString = '';
                             vm.$router.push({
                                 path:
@@ -611,7 +611,7 @@ export default {
                         },
                         (error) => {
                             console.log(error);
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
                     );
