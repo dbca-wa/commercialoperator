@@ -2,6 +2,7 @@ import json
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db import models, transaction
+from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -968,11 +969,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def invoice(self):
         """specific to application fee invoices"""
-        return (
-            Invoice.objects.get(reference=self.fee_invoice_reference)
-            if self.fee_invoice_reference
-            else None
-        )
+
+        if not self.fee_invoice_reference:
+            return None
+
+        try:
+            return Invoice.objects.get(reference=self.fee_invoice_reference)
+        except Invoice.DoesNotExist:
+            return None
 
     @property
     def fee_paid(self):
@@ -1148,15 +1152,20 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 | Q(revision_id=current_revision_id)
             )
         )
-        version_ids = [[i.id, i.revision.date_created] for i in versions]
-        return [
-            dict(
-                cur_version_id=version_ids[0][0],
-                prev_version_id=version_ids[i + 1][0],
-                created=version_ids[i][1],
-            )
-            for i in range(len(version_ids) - 1)
-        ]
+        try:
+            version_ids = [[i.id, i.revision.date_created] for i in versions]
+        except ProgrammingError:
+            logger.error("Error getting reversion_ids")
+            return []
+        else:
+            return [
+                dict(
+                    cur_version_id=version_ids[0][0],
+                    prev_version_id=version_ids[i + 1][0],
+                    created=version_ids[i][1],
+                )
+                for i in range(len(version_ids) - 1)
+            ]
 
     @property
     def applicant(self):

@@ -1672,10 +1672,19 @@ export default {
             );
             vm.$http.post(vm.proposal_form_url, formData).then(
                 () => {
-                    swal('Saved', 'Your application has been saved', 'success');
+                    swal.fire({
+                        title: 'Saved',
+                        text: 'Your application has been saved',
+                        icon: 'success',
+                    });
                     vm.savingProposal = false;
                 },
-                () => {
+                (e) => {
+                    swal.fire({
+                        title: 'Error',
+                        text: helpers.apiVueResourceError(e),
+                        icon: 'error',
+                    });
                     vm.savingProposal = false;
                 }
             );

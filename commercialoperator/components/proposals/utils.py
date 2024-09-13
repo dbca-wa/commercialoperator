@@ -1714,13 +1714,8 @@ def save_assessor_data_tclass(instance, request, viewset):
     serializer.is_valid(raise_exception=True)
     viewset.perform_update(serializer)
     # Save activities
-    try:
-        schema = request.data.get("schema")
-    except:
-        schema = request.POST.get("schema")
     import json
 
-    sc = json.loads(schema)
     assessor_save = True
     try:
         select_parks_activities = json.loads(
