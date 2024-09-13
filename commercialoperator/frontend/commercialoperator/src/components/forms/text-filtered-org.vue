@@ -60,7 +60,7 @@
                 />
             </template>
             <template v-else>
-                <v-select
+                <VueSelect
                     label="name"
                     name="name"
                     :filterable="false"
@@ -95,7 +95,7 @@
                             </span>
                         </div>
                     </template>
-                </v-select>
+                </VueSelect>
             </template>
         </div>
         <Comment
@@ -113,13 +113,10 @@ import Comment from './comment.vue';
 import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
 
-import Vue from 'vue';
-import vSelect from 'vue-select';
-// eslint-disable-next-line vue/component-definition-name-casing
-Vue.component('v-select', vSelect);
+import { VueSelect } from 'vue-select';
 
 export default {
-    components: { Comment, HelpText, HelpTextUrl },
+    components: { Comment, HelpText, HelpTextUrl, VueSelect },
     props: [
         // eslint-disable-next-line vue/require-prop-types
         'url',
@@ -182,6 +179,8 @@ export default {
 </script>
 
 <style lang="css">
+@import 'vue-select/dist/vue-select.css';
+
 input {
     box-shadow: none;
 }
