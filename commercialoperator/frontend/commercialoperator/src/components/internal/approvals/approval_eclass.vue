@@ -75,9 +75,6 @@
                                             label="Reserved Licence Lodgement Number"
                                             :is-required="false"
                                         />
-                                        <!-- <FileField :document_url="document_url" :proposal_id="proposal_id" isRepeatable="true" name="eclass_file" label="Licence" id="id_file" @refreshFromResponse="refreshFromResponse"/> -->
-                                        <!-- <RadioField :proposal_id="proposal_id" :readonly="readonly" name="applicant_type2" label="Applicant Type" id="id_applicant_type2" :options="radio_options" :conditions="radio_conditions"/> -->
-
                                         <div class="form-group">
                                             <div class="row">
                                                 <div class="col-sm-3">
@@ -267,11 +264,9 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.eclassForm;
-        //vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListerners();
         });
-        //console.log(validate);
     },
     methods: {
         set_url: function () {
@@ -351,7 +346,6 @@ export default {
         ok: function () {
             let vm = this;
             if ($(vm.form).valid()) {
-                //vm.sendData();
                 vm.save();
             }
         },
