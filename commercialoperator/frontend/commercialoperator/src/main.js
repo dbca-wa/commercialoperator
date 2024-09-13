@@ -31,6 +31,7 @@ import '@/../node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css';
 import '@/../node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css';
 
 import api_endpoints from './api';
+import VeeValidate from 'vee-validate';
 
 require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css');
 require('@/../node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css');
@@ -40,6 +41,7 @@ extendMoment(moment);
 Vue.config.devtools = true;
 Vue.config.productionTip = false;
 Vue.use(resource);
+Vue.use(VeeValidate);
 
 // Add CSRF Token to every request
 Vue.http.interceptors.push(function (request, next) {

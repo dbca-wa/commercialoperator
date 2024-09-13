@@ -61,7 +61,7 @@
             </template>
             <template v-else>
                 <VueSelect
-                    v-validate="'required|fullname'"
+                    v-validate="'required'"
                     label="name"
                     name="fullname"
                     :filterable="false"
@@ -97,6 +97,9 @@
                         </div>
                     </template>
                 </VueSelect>
+                <small v-show="errors.has('fullname')" style="color: red">{{
+                    errors.first('fullname')
+                }}</small>
             </template>
         </div>
         <Comment
