@@ -1437,25 +1437,17 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
             raise
 
 
+@transaction.atomic
 def save_assessor_data(instance, request, viewset):
-    with transaction.atomic():
-        try:
-            # lookable_fields = ['isTitleColumnForDashboard','isActivityColumnForDashboard','isRegionColumnForDashboard']
-            # extracted_fields,special_fields,assessor_data,comment_data = create_data_from_form(
-            #     instance.schema, request.POST, request.FILES,special_fields=lookable_fields,assessor_data=True)
-            # data = {
-            #     'data': extracted_fields,
-            #     'assessor_data': assessor_data,
-            #     'comment_data': comment_data,
-            # }
-            if instance.application_type.name == ApplicationType.FILMING:
-                save_assessor_data_filming(instance, request, viewset)
-            if instance.application_type.name == ApplicationType.TCLASS:
-                save_assessor_data_tclass(instance, request, viewset)
-            if instance.application_type.name == ApplicationType.EVENT:
-                save_assessor_data_event(instance, request, viewset)
-        except:
-            raise
+    try:
+        if instance.application_type.name == ApplicationType.FILMING:
+            save_assessor_data_filming(instance, request, viewset)
+        if instance.application_type.name == ApplicationType.TCLASS:
+            save_assessor_data_tclass(instance, request, viewset)
+        if instance.application_type.name == ApplicationType.EVENT:
+            save_assessor_data_event(instance, request, viewset)
+    except:
+        raise
 
 
 def proposal_submit(proposal, request):
@@ -1557,263 +1549,232 @@ def is_payment_officer(user):
     return False
 
 
+@transaction.atomic
 def save_assessor_data_filming(instance, request, viewset):
-    with transaction.atomic():
+    try:
+        schema = request.data.get("schema")
+    except:
+        schema = request.POST.get("schema")
+    import json
+
+    sc = json.loads(schema)
+    filming_activity_data = sc["filming_activity"]
+    filming_access_data = sc["filming_access"]
+    filming_equipment_data = sc["filming_equipment"]
+    filming_other_details_data = sc["filming_other_details"]
+
+    # save Filming activity data
+    serializer = ProposalFilmingActivitySerializer(
+        instance.filming_activity, data=filming_activity_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    # save Filming access data
+    serializer = ProposalFilmingAccessSerializer(
+        instance.filming_access, data=filming_access_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    # save Filming equipment data
+    serializer = ProposalFilmingEquipmentSerializer(
+        instance.filming_equipment, data=filming_equipment_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    # save Filming other details data
+    serializer = ProposalFilmingOtherDetailsSerializer(
+        instance.filming_other_details, data=filming_other_details_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    # To allow update following 'Back to assessor', to start_date and expiry date for activity
+    for district_proposal in instance.district_proposals.all():
+        if district_proposal.proposed_issuance_approval:
+            if instance.filming_activity.commencement_date:
+                district_proposal.proposed_issuance_approval["start_date"] = (
+                    instance.filming_activity.commencement_date.strftime("%d/%m/%Y")
+                )
+                district_proposal.save()
+            if instance.filming_activity.completion_date:
+                district_proposal.proposed_issuance_approval["expiry_date"] = (
+                    instance.filming_activity.completion_date.strftime("%d/%m/%Y")
+                )
+                district_proposal.save()
+
+    serializer = SaveInternalFilmingProposalSerializer(instance, sc, partial=True)
+    serializer.is_valid(raise_exception=True)
+    viewset.perform_update(serializer)
+
+    for f in request.FILES:
         try:
-            # data={}
-            try:
-                schema = request.data.get("schema")
-            except:
-                schema = request.POST.get("schema")
-            import json
-
-            sc = json.loads(schema)
-            filming_activity_data = sc["filming_activity"]
-            filming_access_data = sc["filming_access"]
-            filming_equipment_data = sc["filming_equipment"]
-            filming_other_details_data = sc["filming_other_details"]
-
-            # save Filming activity data
-            serializer = ProposalFilmingActivitySerializer(
-                instance.filming_activity, data=filming_activity_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            # save Filming access data
-            serializer = ProposalFilmingAccessSerializer(
-                instance.filming_access, data=filming_access_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            # save Filming equipment data
-            serializer = ProposalFilmingEquipmentSerializer(
-                instance.filming_equipment, data=filming_equipment_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            # save Filming other details data
-            serializer = ProposalFilmingOtherDetailsSerializer(
-                instance.filming_other_details, data=filming_other_details_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            # To allow update following 'Back to assessor', to start_date and expiry date for activity
-            for district_proposal in instance.district_proposals.all():
-                if district_proposal.proposed_issuance_approval:
-                    if instance.filming_activity.commencement_date:
-                        district_proposal.proposed_issuance_approval["start_date"] = (
-                            instance.filming_activity.commencement_date.strftime(
-                                "%d/%m/%Y"
-                            )
-                        )
-                        district_proposal.save()
-                    if instance.filming_activity.completion_date:
-                        district_proposal.proposed_issuance_approval["expiry_date"] = (
-                            instance.filming_activity.completion_date.strftime(
-                                "%d/%m/%Y"
-                            )
-                        )
-                        district_proposal.save()
-
-            serializer = SaveInternalFilmingProposalSerializer(
-                instance, sc, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            viewset.perform_update(serializer)
-
-            for f in request.FILES:
-                try:
-                    # document = instance.documents.get(name=str(request.FILES[f]))
-                    document = instance.documents.get(input_name=f)
-                except ProposalDocument.DoesNotExist:
-                    document = instance.documents.get_or_create(input_name=f)[0]
-                document.name = str(request.FILES[f])
-                if document._file and os.path.isfile(document._file.path):
-                    os.remove(document._file.path)
-                document._file = request.FILES[f]
-                document.save()
-            # End Save Documents
-        except:
-            raise
+            document = instance.documents.get(input_name=f)
+        except ProposalDocument.DoesNotExist:
+            document = instance.documents.get_or_create(input_name=f)[0]
+        document.name = str(request.FILES[f])
+        if document._file and os.path.isfile(document._file.path):
+            os.remove(document._file.path)
+        document._file = request.FILES[f]
+        document.save()
+    # End Save Documents
 
 
+@transaction.atomic
 def save_assessor_data_event(instance, request, viewset):
-    with transaction.atomic():
+    try:
+        schema = request.data.get("schema")
+    except:
+        schema = request.POST.get("schema")
+    import json
+
+    sc = json.loads(schema)
+    event_activity_data = sc["event_activity"]
+    event_vehicles_vessels_data = sc["event_vehicles_vessels"]
+    event_management_data = sc["event_management"]
+    events_other_details_data = sc["event_other_details"]
+    try:
+        select_trails_activities = json.loads(
+            request.data.get("selected_trails_activities")
+        )
+    except:
+        select_trails_activities = json.loads(
+            request.POST.get("selected_trails_activities", None)
+        )
+
+    # save Event Activity tab data
+    serializer = ProposalEventActivitiesSerializer(
+        instance.event_activity, data=event_activity_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    # save Event Vehicle Vessels data
+    serializer = ProposalEventVehiclesVesselsSerializer(
+        instance.event_vehicles_vessels, data=event_vehicles_vessels_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    # save Event Management data
+    serializer = ProposalEventManagementSerializer(
+        instance.event_management, data=event_management_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    # save Event other details data
+    serializer = ProposalEventOtherDetailsSerializer(
+        instance.event_other_details, data=events_other_details_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    if select_trails_activities or len(select_trails_activities) == 0:
         try:
-            # data={}
-            try:
-                schema = request.data.get("schema")
-            except:
-                schema = request.POST.get("schema")
-            import json
 
-            sc = json.loads(schema)
-            event_activity_data = sc["event_activity"]
-            event_vehicles_vessels_data = sc["event_vehicles_vessels"]
-            # filming_access_data=sc['filming_access']
-            event_management_data = sc["event_management"]
-            events_other_details_data = sc["event_other_details"]
-            try:
-                select_trails_activities = json.loads(
-                    request.data.get("selected_trails_activities")
-                )
-            except:
-                select_trails_activities = json.loads(
-                    request.POST.get("selected_trails_activities", None)
-                )
-
-            # print select_trails_activities
-            # save Event Activity tab data
-            serializer = ProposalEventActivitiesSerializer(
-                instance.event_activity, data=event_activity_data
+            save_trail_section_activity_data(
+                instance, select_trails_activities, request
             )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # save Event Vehicle Vessels data
-            serializer = ProposalEventVehiclesVesselsSerializer(
-                instance.event_vehicles_vessels, data=event_vehicles_vessels_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # save Event Management data
-            serializer = ProposalEventManagementSerializer(
-                instance.event_management, data=event_management_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # save Event other details data
-            serializer = ProposalEventOtherDetailsSerializer(
-                instance.event_other_details, data=events_other_details_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
 
-            if select_trails_activities or len(select_trails_activities) == 0:
-                try:
-
-                    save_trail_section_activity_data(
-                        instance, select_trails_activities, request
-                    )
-
-                except:
-                    raise
-
-            # To allow update following 'Back to assessor', to start_date and expiry date for activity
-            if instance.proposed_issuance_approval:
-                if instance.event_activity.commencement_date:
-                    instance.proposed_issuance_approval["start_date"] = (
-                        instance.event_activity.commencement_date.strftime("%d/%m/%Y")
-                    )
-                if instance.event_activity.completion_date:
-                    instance.proposed_issuance_approval["expiry_date"] = (
-                        instance.event_activity.completion_date.strftime("%d/%m/%Y")
-                    )
-
-            serializer = SaveInternalEventProposalSerializer(instance, sc, partial=True)
-            serializer.is_valid(raise_exception=True)
-            viewset.perform_update(serializer)
-
-            for f in request.FILES:
-                try:
-                    # document = instance.documents.get(name=str(request.FILES[f]))
-                    document = instance.documents.get(input_name=f)
-                except ProposalDocument.DoesNotExist:
-                    document = instance.documents.get_or_create(input_name=f)[0]
-                document.name = str(request.FILES[f])
-                if document._file and os.path.isfile(document._file.path):
-                    os.remove(document._file.path)
-                document._file = request.FILES[f]
-                document.save()
-            # End Save Documents
         except:
             raise
 
+    # To allow update following 'Back to assessor', to start_date and expiry date for activity
+    if instance.proposed_issuance_approval:
+        if instance.event_activity.commencement_date:
+            instance.proposed_issuance_approval["start_date"] = (
+                instance.event_activity.commencement_date.strftime("%d/%m/%Y")
+            )
+        if instance.event_activity.completion_date:
+            instance.proposed_issuance_approval["expiry_date"] = (
+                instance.event_activity.completion_date.strftime("%d/%m/%Y")
+            )
 
+    serializer = SaveInternalEventProposalSerializer(instance, sc, partial=True)
+    serializer.is_valid(raise_exception=True)
+    viewset.perform_update(serializer)
+
+    for f in request.FILES:
+        try:
+            document = instance.documents.get(input_name=f)
+        except ProposalDocument.DoesNotExist:
+            document = instance.documents.get_or_create(input_name=f)[0]
+        document.name = str(request.FILES[f])
+        if document._file and os.path.isfile(document._file.path):
+            os.remove(document._file.path)
+        document._file = request.FILES[f]
+        document.save()
+    # End Save Documents
+
+
+@transaction.atomic
 def save_assessor_data_tclass(instance, request, viewset):
-    with transaction.atomic():
-        try:
-            data = {}
-            serializer = SaveProposalSerializer(instance, data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            viewset.perform_update(serializer)
-            # Save activities
-            try:
-                schema = request.data.get("schema")
-            except:
-                schema = request.POST.get("schema")
-            import json
+    data = {}
+    serializer = SaveProposalSerializer(instance, data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    viewset.perform_update(serializer)
+    # Save activities
+    try:
+        schema = request.data.get("schema")
+    except:
+        schema = request.POST.get("schema")
+    import json
 
-            sc = json.loads(schema)
-            assessor_save = True
-            # select_parks_activities=sc['selected_parks_activities']
-            # select_trails_activities=sc['selected_trails_activities']
-            try:
-                select_parks_activities = json.loads(
-                    request.data.get("selected_parks_activities")
-                )
-                select_trails_activities = json.loads(
-                    request.data.get("selected_trails_activities")
-                )
-                marine_parks_activities = json.loads(
-                    request.data.get("marine_parks_activities")
-                )
-            except:
-                select_parks_activities = request.POST.get(
-                    "selected_parks_activities", None
-                )
-                if select_parks_activities:
-                    select_parks_activities = json.loads(select_parks_activities)
-                select_trails_activities = request.POST.get(
-                    "selected_trails_activities", None
-                )
-                if select_trails_activities:
-                    select_trails_activities = json.loads(select_trails_activities)
-                marine_parks_activities = request.POST.get(
-                    "marine_parks_activities", None
-                )
-                if marine_parks_activities:
-                    marine_parks_activities = json.loads(marine_parks_activities)
-            # print select_parks_activities, selected_trails_activities
-            if select_parks_activities or len(select_parks_activities) == 0:
-                try:
-                    save_park_activity_data(
-                        instance, select_parks_activities, request, assessor_save
-                    )
-                except:
-                    raise
-            if select_trails_activities or len(select_trails_activities) == 0:
-                try:
-                    save_trail_section_activity_data(
-                        instance, select_trails_activities, request
-                    )
-                except:
-                    raise
-            if marine_parks_activities or len(marine_parks_activities) == 0:
-                try:
-                    save_park_zone_activity_data(
-                        instance, marine_parks_activities, request, assessor_save
-                    )
-                except:
-                    raise
-            # Save Documents
-            for f in request.FILES:
-                try:
-                    # document = instance.documents.get(name=str(request.FILES[f]))
-                    document = instance.documents.get(input_name=f)
-                except ProposalDocument.DoesNotExist:
-                    document = instance.documents.get_or_create(input_name=f)[0]
-                document.name = str(request.FILES[f])
-                if document._file and os.path.isfile(document._file.path):
-                    os.remove(document._file.path)
-                document._file = request.FILES[f]
-                document.save()
-            # End Save Documents
+    sc = json.loads(schema)
+    assessor_save = True
+    try:
+        select_parks_activities = json.loads(
+            request.data.get("selected_parks_activities")
+        )
+        select_trails_activities = json.loads(
+            request.data.get("selected_trails_activities")
+        )
+        marine_parks_activities = json.loads(
+            request.data.get("marine_parks_activities")
+        )
+    except:
+        select_parks_activities = request.POST.get("selected_parks_activities", None)
+        if select_parks_activities:
+            select_parks_activities = json.loads(select_parks_activities)
+        select_trails_activities = request.POST.get("selected_trails_activities", None)
+        if select_trails_activities:
+            select_trails_activities = json.loads(select_trails_activities)
+        marine_parks_activities = request.POST.get("marine_parks_activities", None)
+        if marine_parks_activities:
+            marine_parks_activities = json.loads(marine_parks_activities)
+    if select_parks_activities or len(select_parks_activities) == 0:
+        try:
+            save_park_activity_data(
+                instance, select_parks_activities, request, assessor_save
+            )
         except:
             raise
+    if select_trails_activities or len(select_trails_activities) == 0:
+        try:
+            save_trail_section_activity_data(
+                instance, select_trails_activities, request
+            )
+        except:
+            raise
+    if marine_parks_activities or len(marine_parks_activities) == 0:
+        try:
+            save_park_zone_activity_data(
+                instance, marine_parks_activities, request, assessor_save
+            )
+        except:
+            raise
+    # Save Documents
+    for f in request.FILES:
+        try:
+            document = instance.documents.get(input_name=f)
+        except ProposalDocument.DoesNotExist:
+            document = instance.documents.get_or_create(input_name=f)[0]
+        document.name = str(request.FILES[f])
+        if document._file and os.path.isfile(document._file.path):
+            os.remove(document._file.path)
+        document._file = request.FILES[f]
+        document.save()
+    # End Save Documents
 
 
 from commercialoperator.components.proposals.models import (
