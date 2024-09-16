@@ -160,6 +160,8 @@ export default {
             addressBody: 'addressBody' + vm._uid,
             contactsBody: 'contactsBody' + vm._uid,
             panelClickersInitialised: false,
+            // Note: added localAssesment to prevent mutating the original assessment object
+            localAssessment: JSON.parse(JSON.stringify(this.assessment)),
         };
     },
     computed: {
@@ -167,6 +169,14 @@ export default {
             return !this.hasReferralMode && !this.hasAssessorMode
                 ? true
                 : false;
+        },
+    },
+    watch: {
+        assessment: {
+            handler(newVal) {
+                this.localAssessment = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -189,7 +199,7 @@ export default {
     methods: {
         update: function () {
             let vm = this;
-            let assessment = JSON.parse(JSON.stringify(vm.assessment));
+            let assessment = JSON.parse(JSON.stringify(vm.localAssessment));
             vm.$http
                 .post(
                     helpers.add_endpoint_json(
@@ -203,20 +213,20 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.assessment = helpers.copyObject(response.body);
-                        swal(
-                            'Checklist update',
-                            'Checklist has been updated',
-                            'success'
-                        );
+                        vm.localAssessment = helpers.copyObject(response.body);
+                        swal.fire({
+                            title: 'Checklist update',
+                            text: 'Checklist has been updated',
+                            icon: 'success',
+                        });
                     },
                     (error) => {
                         vm.errorString = helpers.apiVueResourceError(error);
-                        swal(
-                            'Checklist Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal({
+                            title: 'Checklist Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
