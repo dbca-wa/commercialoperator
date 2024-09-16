@@ -137,9 +137,6 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
             http://localhost:8000/api/approval_paginated/approvals_external/?format=datatables&draw=1&length=2
         """
 
-        # qs = self.queryset().order_by('lodgement_number', '-issue_date').distinct('lodgement_number')
-        # qs = ProposalFilterBackend().filter_queryset(self.request, qs, self)
-
         ids = (
             self.get_queryset()
             .order_by("lodgement_number", "-issue_date")

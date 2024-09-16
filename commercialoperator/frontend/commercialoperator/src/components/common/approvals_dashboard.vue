@@ -369,7 +369,6 @@ export default {
                             }
                         },
                         createdCell: helpers.dtPopoverCellFn,
-                        //name: "id, lodgement_number",
                         name: 'lodgement_number',
                     },
                     {
@@ -392,6 +391,8 @@ export default {
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
+                        searchable: false,
                     },
                     { data: 'status' },
                     {
@@ -420,7 +421,6 @@ export default {
                             var result = '';
                             var popTemplate = '';
                             if (!full.migrated) {
-                                // return `<a href="${data}" target="_blank"><i style="color:red" class="fa fa-file-pdf-o"></i></a>`;
                                 result = `<a href="${data}" target="_blank"><i style="color:red" class="fa fa-file-pdf-o"></i></a>`;
                             } else if (full.migrated) {
                                 var icon =
