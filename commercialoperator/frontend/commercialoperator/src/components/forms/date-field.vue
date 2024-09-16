@@ -49,7 +49,7 @@
             </template>
             <div class="input-group date">
                 <input
-                    type="text"
+                    type="date"
                     :readonly="readonly"
                     :name="name"
                     class="form-control"

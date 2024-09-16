@@ -326,20 +326,21 @@ export default {
                 .then(
                     (res) => {
                         vm.proposal = res.body;
-                        swal(
-                            'New E Class Licence Created',
-                            'New E Class Licence Created: ' +
+                        swal.fire({
+                            title: 'New E Class Licence Created',
+                            text:
+                                'New E Class Licence Created: ' +
                                 res.body['approval'],
-                            'success'
-                        );
+                            icon: 'success',
+                        });
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
-                        swal(
-                            'Submit Error',
-                            helpers.apiVueResourceError(err),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Submit Error',
+                            text: helpers.apiVueResourceError(err),
+                            icon: 'error',
+                        });
                     }
                 );
         },

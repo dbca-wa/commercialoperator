@@ -383,8 +383,6 @@ class ApprovalViewSet(viewsets.ModelViewSet):
 
         try:
             with transaction.atomic():
-                # keys = request.data.keys()
-                # file_keys = [key for key in keys if 'file-upload' in i]
                 org_applicant = None
                 proxy_applicant = None
 
@@ -398,7 +396,6 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                         org_applicant = Organisation.objects.get(
                             organisation_id=request.data.get("holder-selected")
                         )
-                        # org_applicant = ledger_org.objects.get(id=request.data.get('holder-selected'))
                     else:
                         proxy_applicant = EmailUser.objects.get(
                             id=request.data.get("holder-selected")
@@ -423,17 +420,17 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                         )
 
                 start_date = (
-                    datetime.strptime(request.data.get("start_date"), "%d/%m/%Y")
+                    datetime.strptime(request.data.get("start_date"), "%Y-%m-%d")
                     if request.data.get("start_date")
                     else raiser("Start Date is required")
                 )
                 issue_date = (
-                    datetime.strptime(request.data.get("issue_date"), "%d/%m/%Y")
+                    datetime.strptime(request.data.get("issue_date"), "%Y-%m-%d")
                     if request.data.get("issue_date")
                     else raiser("Issue Date is required")
                 )
                 expiry_date = (
-                    datetime.strptime(request.data.get("expiry_date"), "%d/%m/%Y")
+                    datetime.strptime(request.data.get("expiry_date"), "%Y-%m-%d")
                     if request.data.get("expiry_date")
                     else raiser("Expiry Date is required")
                 )
