@@ -116,6 +116,7 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.stubs.utils import (
+    retrieve_delegate_organisation_ids,
     retrieve_group_members,
     retrieve_user_groups,
 )
@@ -770,15 +771,17 @@ class ProposalViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
-            # return Proposal.objects.filter(region__isnull=False)
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = [org.id for org in retrieve_delegate_organisation_ids(user)]
+            # user_orgs = [1] # This is an existing org id for testing
+            user_id = user.id
+            # user_id = 394315 # This is an existing user id for testing
             queryset = Proposal.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter=user)
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user_id)
             ).exclude(migrated=True)
-            # queryset =  Proposal.objects.filter(region__isnull=False).filter( Q(applicant_id__in = user_orgs) | Q(submitter = user) )
+
             return queryset.exclude(application_type=self.excluded_type)
-        # logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+
         return Proposal.objects.none()
 
     def get_object(self):
@@ -789,7 +792,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # because current queryset excludes migrated licences
             obj = get_object_or_404(Proposal, id=self.kwargs["id"])
-            if self.request.user != obj.submitter:
+            if self.request.user.id != obj.submitter_id:
                 raise
         return obj
 
