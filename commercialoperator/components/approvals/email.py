@@ -382,12 +382,15 @@ def send_approval_reinstate_email_notification(approval, request):
             all_ccs = [cc_list]
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
-    _log_approval_email(msg, approval, sender=sender)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender)
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
+    _log_approval_email(msg, approval, sender=sender)    
     if approval.org_applicant:
-        _log_org_email(msg, approval.org_applicant, proposal.submitter, sender=sender)
+        _log_org_email(msg, approval.org_applicant, proposal_submitter, sender=sender)
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender)
 
 
 def _log_approval_email(email_message, approval, sender=None):
