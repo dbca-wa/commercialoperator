@@ -230,8 +230,10 @@ def send_approval_surrender_email_notification(approval, request=None):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -240,12 +242,16 @@ def send_approval_surrender_email_notification(approval, request=None):
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    if approval.org_applicant:
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
+    if approval.org_applicant_id:
         _log_org_email(
-            msg, approval.org_applicant, proposal.submitter, sender=sender_user
+            msg, approval.org_applicant, proposal_submitter, sender=sender_user
         )
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender_user)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender_user)
 
 
 # approval renewal notice
@@ -386,7 +392,7 @@ def send_approval_reinstate_email_notification(approval, request):
     proposal_submitter = retrieve_email_user(proposal.submitter_id)
     approval_submitter = retrieve_email_user(approval.submitter_id)
 
-    _log_approval_email(msg, approval, sender=sender)    
+    _log_approval_email(msg, approval, sender=sender)
     if approval.org_applicant:
         _log_org_email(msg, approval.org_applicant, proposal_submitter, sender=sender)
     else:

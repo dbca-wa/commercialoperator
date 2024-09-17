@@ -185,15 +185,16 @@ def retrieve_delegate_organisation_ids(email_user_id):
 
     return organisation_ids
 
+
 def retrieve_organisation_delegate_ids(organisation_id):
     from commercialoperator.components.organisations.models import (
         Organisation,
         UserDelegation,
     )
 
-    delegate_ids = UserDelegation.objects.filter(organisation_id=organisation_id).values_list(
-        "user_id", flat=True
-    )
+    delegate_ids = UserDelegation.objects.filter(
+        organisation_id=organisation_id
+    ).values_list("user_id", flat=True)
 
     return delegate_ids
 

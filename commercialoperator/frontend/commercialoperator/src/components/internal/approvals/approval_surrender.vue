@@ -33,7 +33,7 @@
                                                 v-model="
                                                     approval.surrender_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="surrender_date"
                                                 placeholder="DD/MM/YYYY"
@@ -163,7 +163,6 @@ export default {
             this.approval = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            // $(this.$refs.surrender_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {
@@ -199,11 +198,11 @@ export default {
                     (response) => {
                         vm.issuingApproval = false;
                         vm.close();
-                        swal(
-                            'Surrender',
-                            'An email has been sent to applicant about surrender of this licence',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Surrender',
+                            text: 'An email has been sent to applicant about surrender of this licence',
+                            icon: 'success',
+                        });
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
@@ -247,19 +246,7 @@ export default {
                 },
             });
         },
-        eventListeners: function () {
-            let vm = this;
-            // Initialise Date Picker
-
-            // $(vm.$refs.surrender_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.surrender_date).on('dp.change', function (e) {
-                if ($(vm.$refs.surrender_date).data('DateTimePicker').date()) {
-                    vm.approval.surrender_date = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.surrender_date).data('date') === '') {
-                    vm.approval.surrender_date = '';
-                }
-            });
-        },
+        eventListeners: function () {},
     },
 };
 </script>
