@@ -146,8 +146,10 @@ def send_approval_cancel_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -156,13 +158,16 @@ def send_approval_cancel_email_notification(approval):
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
     if approval.org_applicant:
         _log_org_email(
-            msg, approval.org_applicant, proposal.submitter, sender=sender_user
+            msg, approval.org_applicant, proposal_submitter, sender=sender_user
         )
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender_user)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender_user)
 
 
 def send_approval_suspend_email_notification(approval, request=None):
@@ -188,8 +193,10 @@ def send_approval_suspend_email_notification(approval, request=None):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -274,8 +281,10 @@ def send_approval_renewal_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     # attach renewal notice
     if approval.renewal_document and approval.renewal_document._file is not None:
         renewal_document = approval.renewal_document._file
@@ -319,8 +328,10 @@ def send_approval_eclass_renewal_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
 
     all_ccs = []
     # cc list commented below 15-Jul-2021 --> eclass renewal emails should only go to assessors
@@ -353,8 +364,10 @@ def send_approval_eclass_expiry_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
 
     all_ccs = []
     # cc list commented below 15-Jul-2021 --> eclass expiry emails should only go to assessors

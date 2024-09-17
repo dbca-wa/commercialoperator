@@ -33,7 +33,7 @@
                                                 v-model="
                                                     approval.cancellation_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="cancellation_date"
                                                 placeholder="DD/MM/YYYY"
@@ -200,11 +200,11 @@ export default {
                     (response) => {
                         vm.issuingApproval = false;
                         vm.close();
-                        swal(
-                            'Cancelled',
-                            'An email has been sent to applicant about cancellation of this licence',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Cancelled',
+                            text: 'An email has been sent to applicant about cancellation of this licence',
+                            icon: 'success',
+                        });
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
