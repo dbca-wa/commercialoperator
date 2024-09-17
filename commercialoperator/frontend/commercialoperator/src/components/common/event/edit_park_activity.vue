@@ -335,7 +335,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.events_park_id != null) {
                 vm.park.park = vm.events_park_id;
             }

@@ -31,7 +31,7 @@
                                         >
                                             <input
                                                 v-model="approval.from_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="from_date"
                                                 placeholder="DD/MM/YYYY"
@@ -63,7 +63,7 @@
                                         >
                                             <input
                                                 v-model="approval.to_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="to_date"
                                                 placeholder="DD/MM/YYYY"
@@ -215,7 +215,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 

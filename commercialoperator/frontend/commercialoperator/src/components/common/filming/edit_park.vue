@@ -440,7 +440,7 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.selected_park_id != null) {
                 vm.park.park = vm.selected_park_id;
             }

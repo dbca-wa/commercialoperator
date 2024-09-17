@@ -290,7 +290,7 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.vehicle_access_id != null) {
                 vm.vehicle.access_type = vm.vehicle_access_id;
             }

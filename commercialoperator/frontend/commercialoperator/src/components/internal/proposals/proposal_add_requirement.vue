@@ -421,7 +421,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         due_date: {
             cache: false,
@@ -518,7 +518,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let requirement = JSON.parse(JSON.stringify(vm.requirement));
             if (requirement.standard) {
                 requirement.free_requirement = '';
@@ -571,7 +571,7 @@ export default {
                             vm.close();
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.errorString = helpers.apiVueResourceError(error);
                             vm.updatingRequirement = false;
                         }
@@ -591,7 +591,7 @@ export default {
                             vm.$parent.updatedRequirements();
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.addingRequirement = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }

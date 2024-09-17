@@ -274,7 +274,7 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let vessel = JSON.parse(JSON.stringify(vm.vessel));
             vm.issuingVessel = true;
             if (vm.vessel_action == 'add' && vm.vessel_id == null) {

@@ -354,7 +354,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let comms = new FormData(vm.form);
             vm.addingComms = true;
             vm.$http.post(vm.url, comms, {}).then(

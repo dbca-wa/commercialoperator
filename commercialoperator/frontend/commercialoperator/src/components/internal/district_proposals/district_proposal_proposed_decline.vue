@@ -171,7 +171,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let decline = JSON.parse(JSON.stringify(vm.decline));
             vm.decliningProposal = true;
             if (vm.processing_status != 'With Approver') {

@@ -649,7 +649,7 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let data = new FormData(vm.form);
             vm.addingComms = true;
             vm.$http
@@ -771,7 +771,7 @@ export default {
 
         _sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             // Note: this variable was called `data` before. It was never used and the post method took `formData` which was never declared. I renamed data to formData
             let formData = new FormData(vm.form);
             vm.addingComms = true;

@@ -337,7 +337,7 @@ export default {
         },
         checkAnswers: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             vm.errorString = '';
             if (vm.checkAllAnswered()) {
                 var all_correct = true;

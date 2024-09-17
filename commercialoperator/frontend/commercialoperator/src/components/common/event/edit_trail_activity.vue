@@ -373,7 +373,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.events_trail_id != null) {
                 vm.trail.trail = vm.events_trail_id;
             }

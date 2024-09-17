@@ -226,7 +226,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let amendment = JSON.parse(JSON.stringify(vm.amendment));
             vm.$http
                 .post(

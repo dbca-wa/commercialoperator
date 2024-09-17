@@ -190,7 +190,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.contact.id) {
                 let contact = vm.contact;
                 vm.$http

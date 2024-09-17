@@ -217,7 +217,7 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let abseiling_climbing = JSON.parse(
                 JSON.stringify(vm.abseiling_climbing)
             );

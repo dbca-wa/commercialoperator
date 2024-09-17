@@ -314,7 +314,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.pre_event_park_id != null) {
                 vm.park.park = vm.pre_event_park_id;
             }
