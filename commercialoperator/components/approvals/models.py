@@ -392,7 +392,7 @@ class Approval(RevisionedMixin):
     def save(self, *args, **kwargs):
         if self.lodgement_number in ["", None]:
             self.lodgement_number = "L{0:06d}".format(self.next_id)
-            # self.save()
+
         super(Approval, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -745,17 +745,17 @@ class Approval(RevisionedMixin):
                         "You cannot suspend approval if it is not current or suspended"
                     )
                 if details.get("to_date"):
-                    to_date = details.get("to_date").strftime("%d/%m/%Y")
+                    to_date = details.get("to_date").strftime("%Y-%m-%d")
                 else:
                     to_date = ""
                 self.suspension_details = {
-                    "from_date": details.get("from_date").strftime("%d/%m/%Y"),
+                    "from_date": details.get("from_date").strftime("%Y-%m-%d"),
                     "to_date": to_date,
                     "details": details.get("suspension_details"),
                 }
                 today = timezone.now().date()
                 from_date = datetime.datetime.strptime(
-                    self.suspension_details["from_date"], "%d/%m/%Y"
+                    self.suspension_details["from_date"], "%Y-%m-%d"
                 )
                 from_date = from_date.date()
                 if from_date <= today:
@@ -928,7 +928,7 @@ class ApprovalUserAction(UserAction):
 
     @classmethod
     def log_action(cls, approval, action, user):
-        return cls.objects.create(approval=approval, who=user, what=str(action))
+        return cls.objects.create(approval=approval, who_id=user.id, what=str(action))
 
     approval = models.ForeignKey(
         Approval, related_name="action_logs", on_delete=models.CASCADE

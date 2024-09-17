@@ -235,11 +235,11 @@ export default {
                         vm.issuingApproval = false;
                         vm.approval = {};
                         vm.close();
-                        swal(
-                            'Suspend',
-                            'An email has been sent to applicant about suspension of this licence',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Suspend',
+                            text: 'An email has been sent to applicant about suspension of this licence',
+                            icon: 'success',
+                        });
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {

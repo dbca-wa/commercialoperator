@@ -35,7 +35,11 @@ from commercialoperator.components.organisations.emails import (
     send_organisation_request_link_email_notification,
 )
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
-from commercialoperator.components.stubs.utils import retrieve_members
+from commercialoperator.components.stubs.utils import (
+    retrieve_email_user,
+    retrieve_members,
+    retrieve_organisation_delegate_ids,
+)
 
 
 class Organisation(models.Model):
@@ -690,9 +694,11 @@ class Organisation(models.Model):
 
     @property
     def all_admin_emails(self):
-        return [
-            user.email for user in self.delegates.all() if can_admin_org(self, user.id)
-        ]
+        delegate_user_ids = retrieve_organisation_delegate_ids(self.id)
+        # delegate_user_ids = [1] # for testing
+        delegates_all = [retrieve_email_user(user_id) for user_id in delegate_user_ids]
+        delegates_all = [user for user in delegates_all if user] # Get rid of None values
+        return [user.email for user in delegates_all if can_admin_org(self, user.id)]
 
 
 class OrganisationContact(models.Model):

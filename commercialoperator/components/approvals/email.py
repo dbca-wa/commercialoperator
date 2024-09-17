@@ -9,6 +9,9 @@ from commercialoperator.components.emails.emails import TemplateEmailBase
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from commercialoperator.components.stubs.models import EmailUserLogEntry
+from commercialoperator.components.stubs.utils import retrieve_email_user
+
 logger = logging.getLogger(__name__)
 
 SYSTEM_NAME = settings.SYSTEM_NAME_SHORT + " Automated Message"
@@ -195,13 +198,16 @@ def send_approval_suspend_email_notification(approval, request=None):
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
     if approval.org_applicant:
         _log_org_email(
-            msg, approval.org_applicant, proposal.submitter, sender=sender_user
+            msg, approval.org_applicant, proposal_submitter, sender=sender_user
         )
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender_user)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender_user)
 
 
 def send_approval_surrender_email_notification(approval, request=None):
@@ -387,6 +393,8 @@ def send_approval_reinstate_email_notification(approval, request):
 def _log_approval_email(email_message, approval, sender=None):
     from commercialoperator.components.approvals.models import ApprovalLogEntry
 
+    submitter = retrieve_email_user(approval.current_proposal.submitter_id)
+
     if isinstance(
         email_message,
         (
@@ -414,11 +422,9 @@ def _log_approval_email(email_message, approval, sender=None):
     else:
         text = smart_text(email_message)
         subject = ""
-        to = approval.current_proposal.submitter.email
+        to = submitter.email if submitter else None
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = approval.current_proposal.submitter
 
     staff = sender
 
@@ -426,8 +432,8 @@ def _log_approval_email(email_message, approval, sender=None):
         "subject": subject,
         "text": text,
         "approval": approval,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": submitter.id if submitter else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
@@ -480,8 +486,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
-    customer = customer
-
     staff = sender
 
     kwargs = {
@@ -501,8 +505,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
 
 
 def _log_user_email(email_message, emailuser, customer, sender=None):
-    from ledger.accounts.models import EmailUserLogEntry
-
     if isinstance(
         email_message,
         (
@@ -534,16 +536,14 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
-    customer = customer
-
     staff = sender
 
     kwargs = {
         "subject": subject,
         "text": text,
-        "emailuser": emailuser,
-        "customer": customer,
-        "staff": staff,
+        "emailuser_id": emailuser.id if emailuser else None,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,

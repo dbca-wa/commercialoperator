@@ -44,6 +44,7 @@ from commercialoperator.components.proposals.email import (
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     EmailUserQuerySet,
+    retrieve_email_user,
     retrieve_group_members,
     retrieve_user_groups,
 )
@@ -1394,36 +1395,29 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             p = p.previous_application
         return l
 
-    #    def _get_history(self):
-    #        """ Return the prev proposal versions """
-    #        l = []
-    #        p = copy.deepcopy(self)
-    #        while (p.previous_application):
-    #            l.append( [p.id, p.previous_application.id] )
-    #            p = p.previous_application
-    #        return l
-
     @property
     def proposal_submitter_email(self):
+        submitter = retrieve_email_user(self.submitter_id)
         fallback_recipient = (
             self.org_applicant.all_admin_emails
             if len(self.org_applicant.all_admin_emails) > 0
-            else self.submitter.email
+            else submitter.email if submitter else None
         )
         if self.org_applicant:
             try:
-                contact = self.org_applicant.contacts.filter(email=self.submitter)
+                contact = self.org_applicant.contacts.filter(email=submitter.email)
+            except:
+                return fallback_recipient
+            else:
                 if contact:
                     contact = contact[0]
                     if contact.user_status == "active":
-                        return self.submitter.email
+                        return submitter.email if submitter else fallback_recipient
                     else:
                         return fallback_recipient
                 return fallback_recipient
-            except:
-                return fallback_recipient
         else:
-            return self.submitter.email
+            return submitter.email if submitter else fallback_recipient
 
     @property
     def is_assigned(self):
@@ -4659,7 +4653,7 @@ class ProposalUserAction(UserAction):
 
     @classmethod
     def log_action(cls, proposal, action, user):
-        return cls.objects.create(proposal=proposal, who=user, what=str(action))
+        return cls.objects.create(proposal=proposal, who_id=user.id, what=str(action))
 
     proposal = models.ForeignKey(
         Proposal, related_name="action_logs", on_delete=models.CASCADE
