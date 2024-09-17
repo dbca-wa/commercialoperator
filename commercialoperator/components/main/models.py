@@ -6,6 +6,8 @@ from django.core.exceptions import ValidationError
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from django.contrib.postgres.fields.jsonb import JSONField
 
+from commercialoperator.components.stubs.utils import retrieve_email_user
+
 
 class Region(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -508,8 +510,9 @@ class UserAction(models.Model):
     what = models.TextField(blank=False)
 
     def __str__(self):
+        who = retrieve_email_user(self.who_id)
         return "{what} ({who} at {when})".format(
-            what=self.what, who=self.who, when=self.when
+            what=self.what, who=who, when=self.when
         )
 
     class Meta:

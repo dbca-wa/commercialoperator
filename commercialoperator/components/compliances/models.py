@@ -273,14 +273,14 @@ class Compliance(RevisionedMixin):
             except:
                 raise ValidationError("Document not found")
 
+    @transaction.atomic
     def assign_to(self, user, request):
-        with transaction.atomic():
-            self.assigned_to = user
-            self.save()
-            self.log_user_action(
-                ComplianceUserAction.ACTION_ASSIGN_TO.format(user.get_full_name()),
-                request,
-            )
+        self.assigned_to = user
+        self.save()
+        self.log_user_action(
+            ComplianceUserAction.ACTION_ASSIGN_TO.format(user.get_full_name()),
+            request,
+        )
 
     def unassign(self, request):
         with transaction.atomic():
@@ -412,7 +412,9 @@ class ComplianceUserAction(UserAction):
 
     @classmethod
     def log_action(cls, compliance, action, user):
-        return cls.objects.create(compliance=compliance, who=user, what=str(action))
+        return cls.objects.create(
+            compliance=compliance, who_id=user.id, what=str(action)
+        )
 
     compliance = models.ForeignKey(
         Compliance, related_name="action_logs", on_delete=models.CASCADE
