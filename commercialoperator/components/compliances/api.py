@@ -189,46 +189,6 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    #    @action(methods=['GET',])
-    #    def compliances_paginated(self, request, *args, **kwargs):
-    #        """
-    #        Used by the external dashboard
-    #
-    #        http://localhost:8499/api/compliances/compliances_external/paginated/?format=datatables&draw=1&length=2
-    #        """
-    #
-    #        qs = self.get_queryset().exclude(processing_status='future')
-    #        qs = ProposalFilterBackend().filter_queryset(request, qs, self)
-    #
-    #        paginator = DatatablesPageNumberPagination()
-    #        paginator.page_size = qs.count()
-    #        result_page = paginator.paginate_queryset(qs, request)
-    #        serializer = ComplianceSerializer(result_page, context={'request':request}, many=True)
-    #        return paginator.get_paginated_response(serializer.data)
-
-    #    @action(methods=['GET',])
-    #    def user_list(self, request, *args, **kwargs):
-    #        #Remove filter to include 'Apporved Proposals in external dashboard .exclude(processing_status=Proposal.PROCESSING_STATUS_CHOICES[13][0])
-    #        queryset = self.get_queryset().exclude(processing_status='future')
-    #        serializer = ComplianceSerializer(queryset, many=True)
-    #        return Response(serializer.data)
-    #
-    #    @action(methods=['GET'])
-    #    def user_list_paginated(self, request, *args, **kwargs):
-    #        """
-    #        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
-    #        otherwise all serializers will use the default pagination class
-    #
-    #        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-    #        """
-    #        queryset = self.get_queryset().exclude(processing_status='future')
-    #        paginator = DatatablesPageNumberPagination()
-    #        paginator.page_size = queryset.count()
-    #        result_page = paginator.paginate_queryset(queryset, request)
-    #        #serializer = ListProposalSerializer(result_page, context={'request':request}, many=True)
-    #        serializer = self.get_serializer(result_page, context={'request':request}, many=True)
-    #        return paginator.get_paginated_response(serializer.data)
-
     @action(
         methods=[
             "POST",
