@@ -122,7 +122,6 @@ export default {
             this.approval = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            //$(this.$refs.cancellation_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         sendData: function () {

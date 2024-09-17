@@ -513,9 +513,9 @@ def _log_org_email(email_message, organisation, customer, sender=None):
     kwargs = {
         "subject": subject,
         "text": text,
-        "organisation": organisation,
-        "customer": customer,
-        "staff": staff,
+        "organisation_id": organisation.id if organisation else None,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
