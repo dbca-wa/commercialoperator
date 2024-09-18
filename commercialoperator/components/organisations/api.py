@@ -623,9 +623,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                 )
 
             cache.delete(
-                settings.CACHE_KEY_LEDGER_ORGANISATION.format(
-                    instance.organisation_id
-                )
+                settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
             )
 
             serializer = DetailsSerializer(
@@ -826,7 +824,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
-            instance = self.get_object(requester=request.user)
+            instance = self.get_object()
+            instance.assign_to(request.user, request)
             serializer = OrganisationRequestSerializer(instance)
             return Response(serializer.data)
         except serializers.ValidationError:

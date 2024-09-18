@@ -697,7 +697,9 @@ class Organisation(models.Model):
         delegate_user_ids = retrieve_organisation_delegate_ids(self.id)
         # delegate_user_ids = [1] # for testing
         delegates_all = [retrieve_email_user(user_id) for user_id in delegate_user_ids]
-        delegates_all = [user for user in delegates_all if user] # Get rid of None values
+        delegates_all = [
+            user for user in delegates_all if user
+        ]  # Get rid of None values
         return [user.email for user in delegates_all if can_admin_org(self, user.id)]
 
 
@@ -836,7 +838,9 @@ class OrganisationAction(UserAction):
 
     @classmethod
     def log_action(cls, organisation, action, user):
-        return cls.objects.create(organisation=organisation, who=user, what=str(action))
+        return cls.objects.create(
+            organisation=organisation, who_id=user.id, what=str(action)
+        )
 
     organisation = models.ForeignKey(
         Organisation, related_name="action_logs", on_delete=models.CASCADE
@@ -1060,7 +1064,9 @@ class OrganisationRequestUserAction(UserAction):
 
     @classmethod
     def log_action(cls, request, action, user):
-        return cls.objects.create(request=request, who=user, what=str(action))
+        return cls.objects.create(
+            request_id=request.id, who_id=user.id, what=str(action)
+        )
 
     request = models.ForeignKey(
         OrganisationRequest, related_name="action_logs", on_delete=models.CASCADE
