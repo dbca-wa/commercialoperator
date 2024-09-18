@@ -587,7 +587,6 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                //console.log('INTERNAL: ' + error);
                                 var text = helpers.apiVueResourceError(error);
                                 if (typeof text == 'object') {
                                     // eslint-disable-next-line no-prototype-builtins
