@@ -333,13 +333,9 @@ class DetailsSerializer(serializers.ModelSerializer):
                 )
             else:
                 # Note: No abn field on Organisation model yet
-                raise NotImplementedError(
-                    "ABN change is not implemented yet."
-                )
+                raise NotImplementedError("ABN change is not implemented yet.")
                 existance = (
-                    Organisation.objects.filter(abn=new_abn)
-                    .exclude(id=obj_id)
-                    .exists()
+                    Organisation.objects.filter(abn=new_abn).exclude(id=obj_id).exists()
                 )
                 if existance:
                     raise serializers.ValidationError(
@@ -378,14 +374,30 @@ class OrganisationContactSerializer(serializers.ModelSerializer):
 
 
 class OrgRequestRequesterSerializer(serializers.ModelSerializer):
+    email = serializers.SerializerMethodField()
+    mobile_number = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = EmailUser
         fields = ("email", "mobile_number", "phone_number", "full_name")
 
+    def get_email(self, obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.email if emailuser else None
+
+    def get_mobile_number(self, obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.mobile_number if emailuser else None
+
+    def get_phone_number(self, obj):
+        emailuser = retrieve_email_user(obj)
+        return emailuser.phone_number if emailuser else None
+
     def get_full_name(self, obj):
-        return obj.get_full_name()
+        emailuser = retrieve_email_user(obj)
+        return f"{emailuser.first_name} {emailuser.last_name}" if emailuser else None
 
 
 class OrganisationRequestSerializer(serializers.ModelSerializer):
