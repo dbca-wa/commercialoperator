@@ -254,3 +254,11 @@ CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"
+
+# API Exception message
+# When debug is False, the following message will be sent to the user
+# The real exception will be logged
+API_EXCEPTION_MESSAGE = (
+    "An error occurred while processing your request, "
+    f"please try again and if the problem persists contact {SUPPORT_EMAIL}"
+)
