@@ -6,8 +6,8 @@ from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import (
-    oracle_parser,
-    update_payments,
+    oracle_parser as ledger_oracle_parser,
+    update_payments as ledger_update_payments,
     get_all_organisation,
 )
 
@@ -103,14 +103,14 @@ def createCustomBasket(*args, **kwargs):
 
 
 def oracle_parser(*args, **kwargs):
-    logger.error(oracle_parser())
+    logger.error(ledger_oracle_parser())
     raise NotImplementedError(
         "ledger.payments.utils.oracle_parser needs implementation"
     )
 
 
 def update_payments(*args, **kwargs):
-    logger.error(update_payments())
+    logger.error(ledger_update_payments())
     raise NotImplementedError(
         "ledger.payments.utils.update_payments needs implementation"
     )
