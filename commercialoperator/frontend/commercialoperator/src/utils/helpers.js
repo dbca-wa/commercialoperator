@@ -19,7 +19,12 @@ module.exports = {
     apiVueResourceError: function (resp) {
         var error_str = '';
         var text = null;
-        if (resp.status === 400) {
+
+        if (resp.status === 404) {
+            return 'The resource you are looking for does not exist.';
+        }
+
+        if (resp.status >= 400) {
             if (Array.isArray(resp.body)) {
                 text = resp.body[0];
             } else if (typeof resp.body == 'object') {
@@ -50,9 +55,8 @@ module.exports = {
                 error_str = text.replace(/[[\]"]/g, '');
                 error_str = text.replace(/^['"](.*)['"]$/, '$1');
             }
-        } else if (resp.status === 404) {
-            error_str = 'The resource you are looking for does not exist.';
         }
+
         return error_str;
     },
 
