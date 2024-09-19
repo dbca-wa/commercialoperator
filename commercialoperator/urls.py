@@ -1,8 +1,9 @@
 from django.conf import settings
-from django.contrib import admin
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from rest_framework import routers
+
+from commercialoperator.admin import admin
 from commercialoperator import views
 from commercialoperator.components.proposals import views as proposal_views
 from commercialoperator.components.organisations import views as organisation_views
