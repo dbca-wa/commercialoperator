@@ -6,7 +6,7 @@
         "path": "/commercialoperator/frontend/commercialoperator",
         "options": {
           "env": {
-            "PORT": "9072"
+            "PORT": "9107"
           }
         },
         "type": "npm",
