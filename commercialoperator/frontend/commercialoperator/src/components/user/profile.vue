@@ -1368,6 +1368,11 @@ export default {
                         (error) => {
                             console.log(error);
                             vm.updatingContact = false;
+                            swal.fire({
+                                title: 'Error updating contact details',
+                                html: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             }

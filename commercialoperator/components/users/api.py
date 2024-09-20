@@ -99,48 +99,20 @@ class UserViewSet(viewsets.ModelViewSet):
             return qs
         return EmailUser.objects.none()
 
-    #    @action(methods=['POST',])
-    #    def update_personal(self, request, *args, **kwargs):
-    #        try:
-    #            instance = self.get_object()
-    #            serializer = PersonalSerializer(instance,data=request.data)
-    #            serializer.is_valid(raise_exception=True)
-    #            instance = serializer.save()
-    #            serializer = UserSerializer(instance)
-    #            return Response(serializer.data);
-    #        except serializers.ValidationError:
-    #            print(traceback.print_exc())
-    #            raise
-    #        except ValidationError as e:
-    #            print(traceback.print_exc())
-    #            raise serializers.ValidationError(repr(e.error_dict))
-    #        except Exception as e:
-    #            print(traceback.print_exc())
-    #            raise serializers.ValidationError(str(e))
-
     @action(
         methods=[
             "POST",
         ],
         detail=True,
     )
+    @basic_exception_handler
     def update_contact(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = ContactSerializer(instance, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-            serializer = UserSerializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        serializer = ContactSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        serializer = UserSerializer(instance, context={"request": request})
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -166,9 +138,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 .get("data", {})
                 .get("residential_address", {})
             )
-            raise NotImplementedError(
-                "Need to implement update of address in ledger"
-            )
+            raise NotImplementedError("Need to implement update of address in ledger")
 
             total_addresses = address.count()
             if total_addresses > 0:

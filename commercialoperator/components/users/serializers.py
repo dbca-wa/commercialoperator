@@ -241,7 +241,7 @@ class UserSerializer(serializers.ModelSerializer):
         commercialoperator_organisations = []
 
         for org_id in organisation_ids:
-            organisations_response = get_organisation(obj.id)
+            organisations_response = get_organisation(org_id)
             if organisations_response.get("status", None) == status.HTTP_200_OK:
                 commercialoperator_organisations.append(
                     organisations_response.get("data", [])
