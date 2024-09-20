@@ -1,14 +1,18 @@
+import json
 import traceback
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
+from rest_framework import status
 from rest_framework import viewsets, serializers, generics, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
+from ledger_api_client.api import get_account_details
 from commercialoperator.components.organisations.models import OrganisationRequest
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.models import EmailUserAction
 
 from commercialoperator.components.users.serializers import (
@@ -138,83 +142,61 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    # @action(methods=['POST',])
-    # def update_address(self, request, *args, **kwargs):
-    #     try:
-    #         instance = self.get_object()
-    #         serializer = UserAddressSerializer(data=request.data)
-    #         serializer.is_valid(raise_exception=True)
-    #         address, created = Address.objects.get_or_create(
-    #             line1 = serializer.validated_data['line1'],
-    #             locality = serializer.validated_data['locality'],
-    #             state = serializer.validated_data['state'],
-    #             country = serializer.validated_data['country'],
-    #             postcode = serializer.validated_data['postcode'],
-    #             user = instance
-    #         )
-    #         instance.residential_address = address
-    #         instance.save()
-    #         serializer = UserSerializer(instance)
-    #         return Response(serializer.data);
-    #     except serializers.ValidationError:
-    #         print(traceback.print_exc())
-    #         raise
-    #     except ValidationError as e:
-    #         print(traceback.print_exc())
-    #         raise serializers.ValidationError(repr(e.error_dict))
-    #     except Exception as e:
-    #         print(traceback.print_exc())
-    #         raise serializers.ValidationError(str(e))
-
     @action(
         methods=[
             "POST",
         ],
         detail=True,
     )
+    @transaction.atomic
+    @basic_exception_handler
     def update_address(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = UserAddressSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            if instance.residential_address:
-                address = Address.objects.filter(id=instance.residential_address.id)
-                total_addresses = address.count()
-                if total_addresses > 0:
-                    residential_address = Address.objects.get(id=address[0].id)
-                    residential_address.locality = serializer.validated_data["locality"]
-                    residential_address.state = serializer.validated_data["state"]
-                    residential_address.country = serializer.validated_data["country"]
-                    residential_address.postcode = serializer.validated_data["postcode"]
-                    residential_address.line1 = serializer.validated_data["line1"]
-                    residential_address.save()
-                    instance.residential_address = residential_address
-            else:
-                address = Address.objects.create(
-                    line1=serializer.validated_data["line1"],
-                    locality=serializer.validated_data["locality"],
-                    state=serializer.validated_data["state"],
-                    country=serializer.validated_data["country"],
-                    postcode=serializer.validated_data["postcode"],
-                    user=instance,
+        instance = self.get_object()
+        serializer = UserAddressSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if instance.residential_address:
+            # address = Address.objects.filter(id=instance.residential_address.id)
+            account_details_response = get_account_details(request, str(instance.id))
+            if account_details_response.status_code != status.HTTP_200_OK:
+                raise serializers.ValidationError(
+                    "Error retrieving address details from ledger"
                 )
-                address.save()
-                instance.residential_address = address
-                instance.save()
+            residential_address = (
+                json.loads(account_details_response.content)
+                .get("data", {})
+                .get("residential_address", {})
+            )
+            raise NotImplementedError(
+                "Need to implement update of address in ledger"
+            )
 
-            with transaction.atomic():
-                instance.save()
-                serializer = UserSerializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+            total_addresses = address.count()
+            if total_addresses > 0:
+                # residential_address = Address.objects.get(id=address[0].id)
+                residential_address.locality = serializer.validated_data["locality"]
+                residential_address.state = serializer.validated_data["state"]
+                residential_address.country = serializer.validated_data["country"]
+                residential_address.postcode = serializer.validated_data["postcode"]
+                residential_address.line1 = serializer.validated_data["line1"]
+                residential_address.save()
+                instance.residential_address = residential_address
+        else:
+            address = Address.objects.create(
+                line1=serializer.validated_data["line1"],
+                locality=serializer.validated_data["locality"],
+                state=serializer.validated_data["state"],
+                country=serializer.validated_data["country"],
+                postcode=serializer.validated_data["postcode"],
+                user=instance,
+            )
+            address.save()
+            instance.residential_address = address
+            instance.save()
+
+        instance.save()
+        serializer = UserSerializer(instance)
+
+        return Response(serializer.data)
 
     @action(
         methods=[

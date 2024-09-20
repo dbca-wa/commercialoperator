@@ -1417,8 +1417,12 @@ export default {
                             }
                         },
                         (error) => {
-                            console.log(error);
                             vm.updatingAddress = false;
+                            swal.fire({
+                                title: 'Error updating address',
+                                html: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             }
