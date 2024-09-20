@@ -712,8 +712,8 @@
                                                 placeholder=""
                                             />
                                         </div>
-                                        <lable
-                                            >&nbsp;Pending for approval</lable
+                                        <label
+                                            >&nbsp;Pending for approval</label
                                         >
                                     </div>
                                 </div>
@@ -1135,6 +1135,8 @@ export default {
             errorListContact: [],
             showContactError: false,
             role: null,
+            phoneNumberReadonly: false,
+            mobileNumberReadonly: false,
         };
     },
     computed: {
