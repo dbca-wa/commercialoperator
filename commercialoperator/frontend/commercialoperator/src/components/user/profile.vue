@@ -1486,6 +1486,11 @@ export default {
                     },
                     (error) => {
                         console.log(error);
+                        swal.fire({
+                            title: 'Check Organisation',
+                            html: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },

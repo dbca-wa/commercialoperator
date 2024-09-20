@@ -14,6 +14,7 @@ from ledger_api_client.utils import update_organisation_obj
 
 from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
     filter_organisation_list,
     retrieve_email_user,
@@ -576,26 +577,17 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
+    @basic_exception_handler
     def existance(self, request, *args, **kwargs):
-        try:
-            serializer = OrganisationCheckSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            data = Organisation.existance(serializer.validated_data["abn"])
-            # Check request user cannot be relinked to org.
-            data.update([("user", request.user.id)])
-            data.update([("abn", request.data["abn"])])
-            serializer = OrganisationCheckExistSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        serializer = OrganisationCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = Organisation.existance(serializer.validated_data["abn"])
+        # Check request user cannot be relinked to org.
+        data.update([("user", request.user.id)])
+        data.update([("abn", request.data["abn"])])
+        serializer = OrganisationCheckExistSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
 
     @action(
         methods=[
