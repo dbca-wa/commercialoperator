@@ -174,30 +174,19 @@ class UserViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def update_system_settings(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            # serializer = UserSystemSettingsSerializer(data=request.data)
-            # serializer.is_valid(raise_exception=True)
-            user_setting, created = UserSystemSettings.objects.get_or_create(
-                user=instance
-            )
-            serializer = UserSystemSettingsSerializer(user_setting, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            # instance.residential_address = address
-            serializer.save()
-            instance = self.get_object()
-            serializer = UserSerializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        user_setting, created = UserSystemSettings.objects.get_or_create(
+            user=instance
+        )
+        serializer = UserSystemSettingsSerializer(user_setting, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        instance = self.get_object()
+        serializer = UserSerializer(instance, context={"request": request})
+        return Response(serializer.data)
+
 
     @action(
         methods=[
