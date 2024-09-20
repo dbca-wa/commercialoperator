@@ -21,7 +21,10 @@
                                             class="input-group date"
                                         >
                                             <input
-                                                type="text"
+                                                v-model="
+                                                    accountsDateStartPicker
+                                                "
+                                                type="date"
                                                 class="form-control"
                                                 name="start"
                                                 placeholder="DD/MM/YYYY"
@@ -43,7 +46,8 @@
                                             class="input-group date"
                                         >
                                             <input
-                                                type="text"
+                                                v-model="accountsDateEndPicker"
+                                                type="date"
                                                 class="form-control"
                                                 name="end"
                                                 placeholder="DD/MM/YYYY"
@@ -67,7 +71,8 @@
                                             class="input-group date"
                                         >
                                             <input
-                                                type="text"
+                                                v-model="flatDateStartPicker"
+                                                type="date"
                                                 class="form-control"
                                                 name="banked_start"
                                                 placeholder="DD/MM/YYYY"
@@ -89,7 +94,8 @@
                                             class="input-group date"
                                         >
                                             <input
-                                                type="text"
+                                                v-model="flatDateEndPicker"
+                                                type="date"
                                                 class="form-control"
                                                 name="banked_end"
                                                 placeholder="DD/MM/YYYY"
@@ -144,7 +150,10 @@
                                                     class="input-group date"
                                                 >
                                                     <input
-                                                        type="text"
+                                                        v-model="
+                                                            bookingSettlementsDatePicker
+                                                        "
+                                                        type="date"
                                                         class="form-control"
                                                         name="booking_settlement_date"
                                                         placeholder="DD/MM/YYYY"
@@ -194,7 +203,8 @@
                                                 class="input-group date"
                                             >
                                                 <input
-                                                    type="text"
+                                                    v-model="oracleDatePicker"
+                                                    type="date"
                                                     class="form-control"
                                                     name="oracle_date"
                                                     placeholder="DD/MM/YYYY"
@@ -304,46 +314,6 @@ export default {
             vm.oracle_form = $(vm.$refs.oracle_form);
             vm.booking_settlements_form = $(vm.$refs.booking_settlements_form);
             vm.bookings_form = $(vm.$refs.bookings_form);
-            vm.accountsDateStartPicker = $(
-                '#accountsDateStartPicker'
-            ).datetimepicker(vm.datepickerOptions);
-            vm.accountsDateEndPicker = $(
-                '#accountsDateEndPicker'
-            ).datetimepicker(vm.datepickerOptions);
-            vm.flatDateStartPicker = $('#flatDateStartPicker').datetimepicker(
-                vm.datepickerOptions
-            );
-            vm.flatDateEndPicker = $('#flatDateEndPicker').datetimepicker(
-                vm.datepickerOptions
-            );
-            vm.refundsStartPicker = $('#refundsStartPicker').datetimepicker(
-                vm.datepickerOptions
-            );
-            vm.refundsEndPicker = $('#refundsEndPicker').datetimepicker(
-                vm.datepickerOptions
-            );
-            vm.oracleDatePicker = $(vm.$refs.oracleDatePicker).datetimepicker(
-                vm.datepickerOptions
-            );
-            vm.bookingSettlementsDatePicker = $(
-                vm.$refs.bookingSettlementsDatePicker
-            ).datetimepicker(vm.datepickerOptions);
-            vm.bookingsDatePicker = $(
-                vm.$refs.bookingsDatePicker
-            ).datetimepicker(vm.datepickerOptions);
-
-            vm.flatDateStartPicker.on('dp.hide', function (e) {
-                vm.flatDateEndPicker.data('DateTimePicker').date(null);
-                vm.flatDateEndPicker.data('DateTimePicker').minDate(e.date);
-            });
-            vm.accountsDateStartPicker.on('dp.hide', function (e) {
-                vm.accountsDateEndPicker.data('DateTimePicker').date(null);
-                vm.accountsDateEndPicker.data('DateTimePicker').minDate(e.date);
-            });
-            vm.refundsStartPicker.on('dp.hide', function (e) {
-                vm.refundsEndPicker.data('DateTimePicker').date(null);
-                vm.refundsEndPicker.data('DateTimePicker').minDate(e.date);
-            });
             vm.addFormValidations();
             vm.fetchRegions();
         },
@@ -351,10 +321,7 @@ export default {
             let vm = this;
 
             if (vm.oracle_form.valid()) {
-                let data = vm.oracleDatePicker
-                    .data('DateTimePicker')
-                    .date()
-                    .format('DD/MM/YYYY');
+                let data = moment(vm.oracleDatePicker).format('DD/MM/YYYY');
                 let override = vm.oracle_override ? 'true' : 'false';
                 vm.$http
                     .get(
@@ -362,15 +329,15 @@ export default {
                     )
                     .then(
                         () => {
-                            swal({
-                                type: 'success',
+                            swal.fire({
+                                icon: 'success',
                                 title: 'Job Success',
                                 text: 'The oracle job was completed successfully',
                             });
                         },
                         (error) => {
-                            swal({
-                                type: 'error',
+                            swal.fire({
+                                icon: 'error',
                                 title: 'Oracle Job Error',
                                 text: helpers.apiVueResourceError(error),
                             });
@@ -382,10 +349,9 @@ export default {
             let vm = this;
 
             if (vm.booking_settlements_form.valid()) {
-                let data = vm.bookingSettlementsDatePicker
-                    .data('DateTimePicker')
-                    .date()
-                    .format('DD/MM/YYYY');
+                let data = moment(vm.bookingSettlementsDatePicker).format(
+                    'DD/MM/YYYY'
+                );
                 var url = '/api/reports/booking_settlements?date=' + data;
                 window.location.assign(url);
             }
@@ -394,10 +360,7 @@ export default {
             let vm = this;
 
             if (vm.bookings_form.valid()) {
-                let data = vm.bookingsDatePicker
-                    .data('DateTimePicker')
-                    .date()
-                    .format('DD/MM/YYYY');
+                let data = moment(vm.bookingsDatePicker).format('DD/MM/YYYY');
                 var url = '/api/reports/bookings?date=' + data;
                 window.location.assign(url);
             }
@@ -418,66 +381,30 @@ export default {
         },
         generateValues: function () {
             let vm = this;
+
             if (vm.form.valid()) {
                 var values = {
                     system: 'S557',
                     start: vm.region
-                        ? vm.flatDateStartPicker
-                              .data('DateTimePicker')
-                              .date()
-                              .set({
-                                  hour: 0,
-                                  minute: 0,
-                                  second: 0,
-                                  millisecond: 0,
-                              })
-                              .format('YYYY-MM-DD H:mm:ss')
-                        : vm.accountsDateStartPicker
-                              .data('DateTimePicker')
-                              .date()
-                              .set({
-                                  hour: 0,
-                                  minute: 0,
-                                  second: 0,
-                                  millisecond: 0,
-                              })
-                              .format('YYYY-MM-DD H:mm:ss'),
+                        ? moment(vm.flatDateStartPicker).format(
+                              'YYYY-MM-DD H:mm:ss'
+                          )
+                        : moment(vm.accountsDateStartPicker).format(
+                              'YYYY-MM-DD H:mm:ss'
+                          ),
                     end: vm.region
-                        ? vm.flatDateEndPicker
-                              .data('DateTimePicker')
-                              .date()
-                              .set({
-                                  hour: 23,
-                                  minute: 59,
-                                  second: 59,
-                                  millisecond: 0,
-                              })
-                              .format('YYYY-MM-DD H:mm:ss')
-                        : vm.accountsDateEndPicker
-                              .data('DateTimePicker')
-                              .date()
-                              .set({
-                                  hour: 23,
-                                  minute: 59,
-                                  second: 59,
-                                  millisecond: 0,
-                              })
-                              .format('YYYY-MM-DD H:mm:ss'),
-                    banked_start: vm.flatDateStartPicker
-                        .data('DateTimePicker')
-                        .date()
-                        .set({ hour: 0, minute: 0, second: 0, millisecond: 0 })
-                        .format('YYYY-MM-DD H:mm:ss'),
-                    banked_end: vm.flatDateEndPicker
-                        .data('DateTimePicker')
-                        .date()
-                        .set({
-                            hour: 23,
-                            minute: 59,
-                            second: 59,
-                            millisecond: 0,
-                        })
-                        .format('YYYY-MM-DD H:mm:ss'),
+                        ? moment(vm.flatDateEndPicker).format(
+                              'YYYY-MM-DD H:mm:ss'
+                          )
+                        : moment(vm.accountsDateEndPicker).format(
+                              'YYYY-MM-DD H:mm:ss'
+                          ),
+                    banked_start: moment(vm.flatDateStartPicker).format(
+                        'YYYY-MM-DD H:mm:ss'
+                    ),
+                    banked_end: moment(vm.flatDateEndPicker).format(
+                        'YYYY-MM-DD H:mm:ss'
+                    ),
                 };
                 return values;
             }
@@ -496,14 +423,8 @@ export default {
 
             if (vm.refund_form.valid()) {
                 var values = {
-                    start: vm.refundsStartPicker
-                        .data('DateTimePicker')
-                        .date()
-                        .format('DD/MM/YYYY'),
-                    end: vm.refundsEndPicker
-                        .data('DateTimePicker')
-                        .date()
-                        .format('DD/MM/YYYY'),
+                    start: moment(vm.refundsStartPicker).format('DD/MM/YYYY'),
+                    end: moment(vm.refundsEndPicker).format('DD/MM/YYYY'),
                 };
                 var url = api_endpoints.booking_refunds + '?' + $.param(values);
                 window.location.assign(url);

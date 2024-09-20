@@ -528,35 +528,30 @@ class PaymentViewSet(viewsets.ModelViewSet):
 class BookingSettlementReportView(views.APIView):
     renderer_classes = (JSONRenderer,)
 
+    @basic_exception_handler
     def get(self, request, format=None):
-        try:
-            http_status = status.HTTP_200_OK
-            # parse and validate data
-            report = None
-            data = {
-                "date": request.GET.get("date"),
-            }
-            serializer = BookingSettlementReportSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            filename = "Booking Settlement Report-{}".format(
-                str(serializer.validated_data["date"])
+        # parse and validate data
+        report = None
+        data = {
+            "date": request.GET.get("date"),
+        }
+        serializer = BookingSettlementReportSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        filename = "Booking Settlement Report-{}".format(
+            str(serializer.validated_data["date"])
+        )
+        # Generate Report
+        report = reports.booking_bpoint_settlement_report(
+            serializer.validated_data["date"]
+        )
+        if report:
+            response = HttpResponse(FileWrapper(report), content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="{}.csv"'.format(
+                filename
             )
-            # Generate Report
-            report = reports.booking_bpoint_settlement_report(
-                serializer.validated_data["date"]
-            )
-            if report:
-                response = HttpResponse(FileWrapper(report), content_type="text/csv")
-                response["Content-Disposition"] = (
-                    'attachment; filename="{}.csv"'.format(filename)
-                )
-                return response
-            else:
-                raise serializers.ValidationError("No report was generated.")
-        except serializers.ValidationError:
-            raise
-        except Exception as e:
-            traceback.print_exc()
+            return response
+        else:
+            raise serializers.ValidationError("No report was generated.")
 
 
 class OracleJob(views.APIView):

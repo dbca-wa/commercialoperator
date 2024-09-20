@@ -1,8 +1,14 @@
+from typing import Any
 from django.db import models
 
 from ledger_api_client.order import (
     Order as LedgerOrder,
 )  # Exists in ledger_api_client.order, but is empty
+
+
+class ErsatzQuerySet(models.QuerySet):
+    def filter(self, *args: Any, **kwargs: Any):
+        raise NotImplementedError(f"{self.model.__name__} model needs implementation")
 
 
 class Ersatz(models.Model):
@@ -11,7 +17,7 @@ class Ersatz(models.Model):
     (e.g. implementing in ledger api client, refactoring cols logic)
     """
 
-    objects = models.Manager()
+    objects = ErsatzQuerySet.as_manager()
 
     class Meta:
         abstract = True
