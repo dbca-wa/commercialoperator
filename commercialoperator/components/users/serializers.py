@@ -262,13 +262,17 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_system_settings(self, obj):
         try:
-            user_system_settings = obj.system_settings.first()
+            user_id = obj.id
+            # user_id = 119740 # An existing user id for testing
+            user_system_settings = UserSystemSettings.objects.get(user_id=user_id)
+        except UserSystemSettings.DoesNotExist:
+            serialized_settings = UserSystemSettingsSerializer(None).data
+        else:
             serialized_settings = UserSystemSettingsSerializer(
                 user_system_settings
             ).data
+        finally:
             return serialized_settings
-        except:
-            return None
 
     def get_is_commercialoperator_admin(self, obj):
         request = self.context["request"] if self.context else None
