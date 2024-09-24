@@ -581,7 +581,9 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     def existance(self, request, *args, **kwargs):
         serializer = OrganisationCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = Organisation.existance(serializer.validated_data["abn"])
+        name = serializer.validated_data.get("name", None)
+        abn = serializer.validated_data.get("abn", None)
+        data = Organisation.existance(name, abn)
         # Check request user cannot be relinked to org.
         data.update([("user", request.user.id)])
         data.update([("abn", request.data["abn"])])

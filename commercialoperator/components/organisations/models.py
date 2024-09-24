@@ -31,6 +31,7 @@ from commercialoperator.components.organisations.emails import (
     send_organisation_request_email_notification,
     send_organisation_request_link_email_notification,
 )
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     retrieve_email_user,
@@ -221,33 +222,35 @@ class Organisation(models.Model):
         send_organisation_request_link_email_notification(self, request, recipients)
 
     @staticmethod
-    def existance(abn):
+    @basic_exception_handler
+    def existance(name, abn):
         exists = True
         org = None
-        l_org = None
-        try:
-            try:
-                l_org = ledger_organisation.objects.get(abn=abn)
-            except ledger_organisation.DoesNotExist:
-                exists = False
-            if l_org:
-                try:
-                    org = Organisation.objects.get(organisation=l_org)
-                except Organisation.DoesNotExist:
-                    exists = False
-            if exists:
-                if has_atleast_one_admin(org):
-                    return {
-                        "exists": exists,
-                        "id": org.id,
-                        "first_five": org.first_five,
-                    }
-                else:
-                    return {"exists": has_atleast_one_admin(org)}
-            return {"exists": exists}
 
-        except:
-            raise
+        organisation_response = get_search_organisation(name, abn)
+        response_status = organisation_response.get("status", None)
+
+        if response_status == status.HTTP_200_OK:
+            ledger_org = organisation_response.get("data", {})[0]
+            try:
+                org = Organisation.objects.get(
+                    organisation_id=ledger_org["organisation_id"]
+                )
+            except Organisation.DoesNotExist:
+                exists = False
+        else:
+            exists = False
+
+        if exists:
+            if has_atleast_one_admin(org):
+                return {
+                    "exists": exists,
+                    "id": org.id,
+                    "first_five": org.first_five,
+                }
+            else:
+                return {"exists": has_atleast_one_admin(org)}
+        return {"exists": exists}
 
     def accept_user(self, user, request):
         with transaction.atomic():
@@ -681,10 +684,12 @@ class Organisation(models.Model):
 
     @property
     def first_five(self):
+        delegates_all_5 = retrieve_organisation_delegate_ids(self.id)[:5]
+        delegates_all_5 = [retrieve_email_user(user_id) for user_id in delegates_all_5]
         return ",".join(
             [
                 user.get_full_name()
-                for user in self.delegates.all()[:5]
+                for user in delegates_all_5
                 if can_admin_org(self, user.id)
             ]
         )
