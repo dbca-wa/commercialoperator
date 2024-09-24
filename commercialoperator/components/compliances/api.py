@@ -22,6 +22,7 @@ from commercialoperator.components.compliances.serializers import (
     ComplianceAmendmentRequestSerializer,
     CompAmendmentRequestDisplaySerializer,
 )
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
@@ -43,26 +44,17 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
                 | Q(requirement__notification_only=True)
             )
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
-                | Q(proposal__submitter=self.request.user)
+                | Q(proposal__submitter_id=user.id)
             ).exclude(
                 Q(processing_status="discarded")
                 | Q(requirement__notification_only=True)
             )
             return queryset
         return Compliance.objects.none()
-
-    #    def list(self, request, *args, **kwargs):
-    #        response = super(ProposalPaginatedViewSet, self).list(request, args, kwargs)
-    #
-    #        # Add extra data to response.data
-    #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
-    #        return response
 
     @action(
         methods=[
@@ -107,13 +99,11 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Compliance.objects.all().exclude(processing_status="discarded")
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
-                | Q(proposal__submitter=self.request.user)
+                | Q(proposal__submitter_id=user.id)
             ).exclude(processing_status="discarded")
             return queryset
         return Compliance.objects.none()

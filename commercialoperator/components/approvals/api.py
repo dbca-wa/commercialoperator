@@ -29,6 +29,7 @@ from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
 )
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
@@ -106,22 +107,13 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Approval.objects.all()
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter=self.request.user)
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
         return Approval.objects.none()
-
-    #    def list(self, request, *args, **kwargs):
-    #        response = super(ProposalPaginatedViewSet, self).list(request, args, kwargs)
-    #
-    #        # Add extra data to response.data
-    #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
-    #        return response
 
     @action(
         methods=[
@@ -229,12 +221,10 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Approval.objects.all()
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter=self.request.user)
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
         return Approval.objects.none()

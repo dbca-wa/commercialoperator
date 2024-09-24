@@ -440,23 +440,12 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             qs = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter=user)
             ).exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
         return Proposal.objects.none()
-
-    #    def filter_queryset(self, request, queryset, view):
-    #        return self.filter_backends[0]().filter_queryset(self.request, queryset, view)
-    # return super(ProposalPaginatedViewSet, self).filter_queryset(request, queryset, view)
-
-    #    def list(self, request, *args, **kwargs):
-    #        response = super(ProposalPaginatedViewSet, self).list(request, args, kwargs)
-    #
-    #        # Add extra data to response.data
-    #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
-    #        return response
 
     @action(
         methods=[
