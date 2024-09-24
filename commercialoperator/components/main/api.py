@@ -118,6 +118,11 @@ class ActivityMatrixViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
+            activity_matrix = ActivityMatrix.objects.filter(
+                name="Commercial Operator"
+            ).order_by("-version")
+            if not activity_matrix.exists():
+                return ActivityMatrix.objects.none()
             return [
                 ActivityMatrix.objects.filter(name="Commercial Operator")
                 .order_by("-version")
