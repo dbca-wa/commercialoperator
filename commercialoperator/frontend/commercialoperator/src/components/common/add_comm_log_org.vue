@@ -284,6 +284,7 @@ export default {
                     name: '',
                 },
             ],
+            localAction: JSON.parse(JSON.stringify(this.action)),
         };
     },
     computed: {
@@ -295,6 +296,14 @@ export default {
             return this.processing_status == 'With Approver'
                 ? 'Issue Comms'
                 : 'Propose to issue licence';
+        },
+    },
+    watch: {
+        action: {
+            handler(newVal) {
+                this.localAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -364,7 +373,7 @@ export default {
             vm.$http.post(vm.url, comms, {}).then(
                 () => {
                     vm.addingComms = false;
-                    vm.$emit('refreshActionFromResponse', this.action);
+                    vm.$emit('refreshActionFromResponse', this.localAction);
                     vm.close();
                 },
                 (error) => {

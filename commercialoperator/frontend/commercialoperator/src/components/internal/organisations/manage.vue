@@ -1728,7 +1728,8 @@ export default {
                         async (result) => {
                             if (result) {
                                 this.action = 'unlink';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1767,7 +1768,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'reinstate';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1806,7 +1808,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'relink';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1845,7 +1848,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'suspend';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1884,7 +1888,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'make_admin_contact';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1923,7 +1928,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'make_user_contact';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1962,7 +1968,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'accept';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -2001,7 +2008,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'decline';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -2040,7 +2048,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'accept_declined';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },

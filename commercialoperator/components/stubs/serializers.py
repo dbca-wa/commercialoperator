@@ -54,7 +54,7 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
     def get_full_name(self, obj):
         email_user = retrieve_email_user(obj)
         if email_user:
-            return f"{email_user.first_name} {email_user.last_name}"
+            return email_user.get_full_name()
         return
 
     def get_title(self, obj):
