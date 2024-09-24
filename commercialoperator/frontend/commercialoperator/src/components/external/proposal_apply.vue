@@ -37,7 +37,6 @@
                         <div :id="pBody" class="panel-body collapse in">
                             <div class="col-sm-12">
                                 <div v-if="!isLoading" class="form-group">
-
                                     <div
                                         v-if="
                                             profile
@@ -48,27 +47,27 @@
                                         <label>Do you apply </label>
                                         <br />
                                         <div
-                                            v-for="org in profile.commercialoperator_organisations"
-                                            :key="org.id"
+                                            v-for="orga in profile.commercialoperator_organisations"
+                                            :key="orga.id"
                                             class="radio"
                                         >
-                                            <label v-if="!org.is_consultant">
+                                            <label v-if="!orga.is_consultant">
                                                 <input
                                                     v-model="org_applicant"
                                                     type="radio"
                                                     name="behalf_of_org"
-                                                    :value="org.id"
+                                                    :value="orga.id"
                                                 />
-                                                On behalf of {{ org.name }}
+                                                On behalf of {{ orga.name }}
                                             </label>
-                                            <label v-if="org.is_consultant">
+                                            <label v-if="orga.is_consultant">
                                                 <input
                                                     v-model="org_applicant"
                                                     type="radio"
                                                     name="behalf_of_org"
-                                                    :value="org.id"
+                                                    :value="orga.id"
                                                 />
-                                                On behalf of {{ org.name }} (as
+                                                On behalf of {{ orga.name }} (as
                                                 a Consultant)
                                             </label>
                                         </div>
@@ -171,14 +170,14 @@
                                                     from*
                                                 </option>
                                                 <option
-                                                    v-for="proposal in event_proposals()"
-                                                    :key="proposal.id"
+                                                    v-for="event_proposal in event_proposals()"
+                                                    :key="event_proposal.id"
                                                     :value="
-                                                        proposal.current_proposal
+                                                        event_proposal.current_proposal
                                                     "
                                                 >
                                                     {{
-                                                        proposal.current_proposal__event_activity__event_name
+                                                        event_proposal.current_proposal__event_activity__event_name
                                                     }}
                                                 </option>
                                             </select>
