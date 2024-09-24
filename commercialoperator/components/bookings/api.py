@@ -12,6 +12,7 @@ from commercialoperator.components.bookings.serializers import (
     DTParkBookingSerializer,
     OverdueBookingInvoiceSerializer,
 )
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
@@ -32,10 +33,10 @@ class BookingPaginatedViewSet(viewsets.ModelViewSet):
                 booking_type=Booking.BOOKING_TYPE_TEMPORARY
             )
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user)
             return Booking.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
-                | Q(proposal__submitter=user)
+                | Q(proposal__submitter_id=user.id)
             ).exclude(booking_type=Booking.BOOKING_TYPE_TEMPORARY)
         return Booking.objects.none()
 
@@ -95,10 +96,11 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
             )
             return [inv for inv in bi if inv.overdue]
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            # user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user)
             bi = BookingInvoice.objects.filter(
                 Q(booking__proposal__org_applicant_id__in=user_orgs)
-                | Q(booking__proposal__submitter=user)
+                | Q(booking__proposal__submitter_id=user.id)
             ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
             return [inv for inv in bi if inv.overdue]
         return BookingInvoice.objects.none()
