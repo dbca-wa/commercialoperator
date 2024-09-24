@@ -1462,6 +1462,14 @@ export default {
         },
         checkOrganisation: function () {
             let vm = this;
+            if (!vm.newOrg.abn) {
+                swal.fire({
+                    title: 'Check Organisation',
+                    html: 'Please enter the ABN/ACN of the organisation.',
+                    icon: 'error',
+                });
+                return;
+            }
             this.newOrg.abn = this.newOrg.abn.replace(/[^0-9]/g, '');
 
             vm.$http
