@@ -565,10 +565,10 @@ export default {
         },
         acceptRequest: function () {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Accept Organisation Request',
                 text: 'Are you sure you want to accept this organisation request?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
@@ -584,6 +584,11 @@ export default {
                             (response) => {
                                 console.log(response);
                                 vm.access = response.body;
+                                swal.fire({
+                                    title: 'Success',
+                                    text: 'Organisation request has been accepted',
+                                    icon: 'success',
+                                });
                             },
                             (error) => {
                                 console.log(error);
@@ -594,12 +599,13 @@ export default {
                                         text = text.email[0];
                                     }
                                 }
-                                swal(
-                                    'Error',
-                                    'Organisation request cannot be accepted because of the following error: ' +
+                                swal.fire({
+                                    title: 'Error',
+                                    text:
+                                        'Organisation request cannot be accepted because of the following error: ' +
                                         text,
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 },
@@ -609,10 +615,10 @@ export default {
 
         declineRequest: function () {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Decline Organisation Request',
                 text: 'Are you sure you want to decline this organisation request?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Decline',
             }).then(

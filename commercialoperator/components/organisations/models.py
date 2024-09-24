@@ -5,11 +5,8 @@ from django.core.validators import MinValueValidator
 
 from rest_framework import status
 
-# from commercialoperator.components.stubs.models import (
-#     LedgerOrganisation as ledger_organisation,
-# )  # ledger.accounts.models.Organisation
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import get_organisation
+from ledger_api_client.utils import get_organisation, get_search_organisation
 from commercialoperator.components.main.models import (
     UserAction,
     CommunicationsLogEntry,
@@ -916,34 +913,39 @@ class OrganisationRequest(models.Model):
         app_label = "commercialoperator"
 
     def accept(self, request):
-        with transaction.atomic():
-            self.status = "approved"
-            self.save()
-            self.log_user_action(
-                OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
-                request,
-            )
-            # Continue with remaining logic
-            self.__accept(request)
+        self.status = "approved"
+        self.save()
+        self.log_user_action(
+            OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
+            request,
+        )
+        # Continue with remaining logic
+        self.__accept(request)
 
+    @transaction.atomic
     def __accept(self, request):
         # Check if orgsanisation exists in ledger
         ledger_org = None
-        try:
-            ledger_org = ledger_organisation.objects.get(abn=self.abn)
-        except ledger_organisation.DoesNotExist:
-            try:
-                check_name = ledger_organisation.objects.get(name=self.name)
-                if check_name:
-                    raise ValidationError(
-                        "Organisation with the same name already exists"
-                    )
-            except ledger_organisation.DoesNotExist:
-                ledger_org = ledger_organisation.objects.create(
-                    name=self.name, abn=self.abn
-                )
+        organisation_response = get_search_organisation(self.name, self.abn)
+        response_status = organisation_response.get("status", None)
+
+        if response_status == status.HTTP_404_NOT_FOUND:
+            # Note: Do we want to create a new organisation here?
+            raise NotImplementedError(
+                "Organisation does not exist in the ledger. Please create it first."
+            )
+
+        if response_status != status.HTTP_200_OK:
+            raise ValidationError(
+                "Failed to retrieve organisation details from the ledger."
+            )
+
+        ledger_org = organisation_response.get("data", {})[0]
+
         # Create Organisation in commercialoperator
-        org, created = Organisation.objects.get_or_create(organisation=ledger_org)
+        org, created = Organisation.objects.get_or_create(
+            organisation_id=ledger_org["organisation_id"]
+        )
         # Link requester to organisation
         delegate = UserDelegation.objects.create(user=self.requester, organisation=org)
         # log who approved the request

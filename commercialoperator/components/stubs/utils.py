@@ -172,16 +172,8 @@ def retrieve_delegate_organisation_ids(email_user_id):
     )
 
     organisation_ids = UserDelegation.objects.filter(user_id=email_user_id).values_list(
-        "organisation_id", flat=True
+        "organisation__organisation_id", flat=True
     )
-
-    # return list(
-    #     Organisation.objects.filter(
-    #         delegates__user=email_user_id,
-    #         # contacts__user=email_user_id,
-    #         # contacts__user_status=OrganisationContact.USER_STATUS_CHOICE_ACTIVE,
-    #     ).values_list("id", flat=True)
-    # )
 
     return organisation_ids
 
