@@ -737,7 +737,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return OrganisationRequest.objects.all()
         elif is_customer(self.request):
-            return user.organisationrequest_set.all()
+            return OrganisationRequest.objects.filter(requester_id=user)
         return OrganisationRequest.objects.none()
 
     @action(
