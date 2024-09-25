@@ -586,76 +586,66 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def update_details(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            if not can_admin_org(instance, request.user.id):
-                return Response(
-                    status=status.HTTP_403_FORBIDDEN,
-                    data={
-                        "message": "You do not have permission to update this organisation."
-                    },
-                )
-            # Note: Calling this function doesn't update the ledger name, trading name, email entries.
-            response_ledger = update_organisation_obj(request.data)
-            response_ledger_status = response_ledger.get("status", None)
-            if not response_ledger_status == status.HTTP_200_OK:
-                return Response(
-                    status=response_ledger_status,
-                    data=response_ledger.get("message", None),
-                )
-
-            cache.delete(
-                settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
+        instance = self.get_object()
+        if not can_admin_org(instance, request.user.id):
+            return Response(
+                status=status.HTTP_403_FORBIDDEN,
+                data={
+                    "message": "You do not have permission to update this organisation."
+                },
+            )
+        # Note: Calling this function doesn't update the ledger name, trading name, email entries.
+        response_ledger = update_organisation_obj(request.data)
+        response_ledger_status = response_ledger.get("status", None)
+        if not response_ledger_status == status.HTTP_200_OK:
+            return Response(
+                status=response_ledger_status,
+                data=response_ledger.get("message", None),
             )
 
-            serializer = DetailsSerializer(
-                instance, data=request.data, context={"request": request}
-            )
+        cache.delete(
+            settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
+        )
+
+        serializer = DetailsSerializer(
+            instance, data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+
+        if is_internal(request) and "apply_application_discount" in request.data:
+            data = request.data
+            if not data["apply_application_discount"]:
+                data["application_discount"] = 0
+            if not data["apply_licence_discount"]:
+                data["licence_discount"] = 0
+
+            if data["application_discount"] == 0:
+                data["apply_application_discount"] = False
+            if data["licence_discount"] == 0:
+                data["apply_licence_discount"] = False
+
+            if (
+                is_internal(request)
+                and "charge_once_per_year" in request.data
+                and request.data.get("charge_once_per_year")
+            ):
+                DD = int(request.data.get("charge_once_per_year").split("/")[0])
+                MM = int(request.data.get("charge_once_per_year").split("/")[1])
+                YYYY = timezone.now().year  # set to current year
+                data["charge_once_per_year"] = "{}-{}-{}".format(YYYY, MM, DD)
+            else:
+                data["charge_once_per_year"] = None
+
+            serializer = SaveDiscountSerializer(instance, data=data)
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
 
-            if is_internal(request) and "apply_application_discount" in request.data:
-                data = request.data
-                if not data["apply_application_discount"]:
-                    data["application_discount"] = 0
-                if not data["apply_licence_discount"]:
-                    data["licence_discount"] = 0
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-                if data["application_discount"] == 0:
-                    data["apply_application_discount"] = False
-                if data["licence_discount"] == 0:
-                    data["apply_licence_discount"] = False
-
-                if (
-                    is_internal(request)
-                    and "charge_once_per_year" in request.data
-                    and request.data.get("charge_once_per_year")
-                ):
-                    DD = int(request.data.get("charge_once_per_year").split("/")[0])
-                    MM = int(request.data.get("charge_once_per_year").split("/")[1])
-                    YYYY = timezone.now().year  # set to current year
-                    data["charge_once_per_year"] = "{}-{}-{}".format(YYYY, MM, DD)
-                else:
-                    data["charge_once_per_year"] = None
-
-                serializer = SaveDiscountSerializer(instance, data=data)
-                serializer.is_valid(raise_exception=True)
-                instance = serializer.save()
-
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError as e:
-            print(e.get_full_details())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            if hasattr(e, "message"):
-                raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[
@@ -663,20 +653,12 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def update_address(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            request.data["organisation_id"] = instance.organisation_id
-            return self.update_details(request, *args, **kwargs)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        request.data["organisation_id"] = instance.organisation_id
+        return self.update_details(request, *args, **kwargs)
+
 
     @action(
         methods=[

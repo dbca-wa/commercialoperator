@@ -1657,6 +1657,13 @@ export default {
                     (error) => {
                         console.log(error);
                         vm.updatingAddress = false;
+                        swal.fire({
+                            title: 'Error',
+                            text:
+                                'Address details cannot be saved because of the following error: ' +
+                                helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
