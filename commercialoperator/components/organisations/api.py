@@ -17,6 +17,7 @@ from commercialoperator.components.stubs.api import LedgerOrganisationFilterBack
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
     filter_organisation_list,
+    retrieve_delegate_organisation_ids,
     retrieve_email_user,
 )
 from commercialoperator.helpers import is_customer, is_internal
@@ -1156,5 +1157,6 @@ class MyOrganisationsViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Organisation.objects.all()
         elif is_customer(self.request):
-            return user.commercialoperator_organisations.all()
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
+            return Organisation.objects.filter(organisation_id__in=user_orgs)
         return Organisation.objects.none()

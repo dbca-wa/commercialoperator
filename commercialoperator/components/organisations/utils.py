@@ -111,7 +111,7 @@ def can_approve(organisation, user):
 def is_consultant(organisation, user):
     from commercialoperator.components.organisations.models import OrganisationContact
 
-    organisation_id = organisation.get("organisation_id", None)
+    organisation_id = getattr(organisation, "id", None)
     if not organisation_id:
         return False
 
