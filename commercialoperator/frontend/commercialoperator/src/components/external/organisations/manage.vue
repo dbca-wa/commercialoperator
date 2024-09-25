@@ -853,7 +853,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Contact Accept',
                         text:
                             'Are you sure you want to accept contact request ' +
@@ -879,13 +879,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Contact Accept',
                                                 text:
                                                     'You have successfully accepted ' +
                                                     name +
                                                     '.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -895,13 +895,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Contact Accept',
-                                                'There was an error accepting ' +
+                                            swal.fire({
+                                                title: 'Contact Accept',
+                                                text:
+                                                    'There was an error accepting ' +
                                                     name +
                                                     '.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -926,7 +927,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Contact Accept (Previously Declined)',
                         text:
                             'Are you sure you want to accept the previously declined contact request for ' +
@@ -952,13 +953,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Contact Accept (Previously Declined)',
                                                 text:
                                                     'You have successfully accepted ' +
                                                     name +
                                                     '.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -968,13 +969,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Contact Accept (Previously Declined)',
-                                                'There was an error accepting ' +
+                                            swal.fire({
+                                                title: 'Contact Accept (Previously Declined)',
+                                                text:
+                                                    'There was an error accepting ' +
                                                     name +
                                                     '.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -999,7 +1001,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Contact Decline',
                         text:
                             'Are you sure you want to decline the contact request for ' +
@@ -1025,13 +1027,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Contact Decline',
                                                 text:
                                                     'You have successfully declined ' +
                                                     name +
                                                     '.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1041,13 +1043,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Contact Decline',
-                                                'There was an error declining ' +
+                                            swal.fire({
+                                                title: 'Contact Decline',
+                                                text:
+                                                    'There was an error declining ' +
                                                     name +
                                                     '.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -1072,7 +1075,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Unlink',
                         text:
                             'Are you sure you want to unlink ' +
@@ -1098,13 +1101,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Unlink',
                                                 text:
                                                     'You have successfully unlinked ' +
                                                     name +
                                                     '.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1115,18 +1118,19 @@ export default {
                                         },
                                         (error) => {
                                             if (error.status == 500) {
-                                                swal(
-                                                    'Unlink',
-                                                    'Last Organisation Admin can not be unlinked.',
-                                                    'error'
-                                                );
+                                                swal.fire({
+                                                    title: 'Unlink',
+                                                    text: 'Last Organisation Admin can not be unlinked.',
+                                                    icon: 'error',
+                                                });
                                             } else {
-                                                swal(
-                                                    'Unlink',
-                                                    'There was an error unlinking this user ' +
+                                                swal.fire({
+                                                    title: 'Unlink',
+                                                    text:
+                                                        'There was an error unlinking this user ' +
                                                         error,
-                                                    'error'
-                                                );
+                                                    icon: 'error',
+                                                });
                                             }
                                         }
                                     );
@@ -1152,7 +1156,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Organisation Admin',
                         text:
                             'Are you sure you want to make ' +
@@ -1178,13 +1182,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Organisation Admin',
                                                 text:
                                                     'You have successfully made ' +
                                                     name +
                                                     ' an Organisation Admin.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1194,13 +1198,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Organisation Admin',
-                                                'There was an error making ' +
+                                            swal.fire({
+                                                title: 'Organisation Admin',
+                                                text:
+                                                    'There was an error making ' +
                                                     name +
                                                     ' an Organisation Admin.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -1225,7 +1230,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Organisation User',
                         text:
                             'Are you sure you want to make ' +
@@ -1252,13 +1257,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Organisation User',
                                                 text:
                                                     'You have successfully made ' +
                                                     name +
                                                     ' an Organisation User.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1273,14 +1278,15 @@ export default {
                                                 helpers.apiVueResourceError(
                                                     error
                                                 );
-                                            swal(
-                                                'Company Admin',
-                                                'There was an error making ' +
+                                            swal.fire({
+                                                title: 'Organisation User',
+                                                text:
+                                                    'There was an error making ' +
                                                     name +
                                                     ' an Organisation User. ' +
                                                     text,
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -1305,7 +1311,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Suspend User',
                         text:
                             'Are you sure you want to Suspend  ' +
@@ -1331,13 +1337,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Suspend User',
                                                 text:
                                                     'You have successfully suspended ' +
                                                     name +
                                                     ' as a User.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1347,13 +1353,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Suspend User',
-                                                'There was an error suspending ' +
+                                            swal.fire({
+                                                title: 'Suspend User',
+                                                text:
+                                                    'There was an error suspending ' +
                                                     name +
                                                     ' as a User.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -1378,7 +1385,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Reinstate User',
                         text:
                             'Are you sure you want to Reinstate  ' +
@@ -1404,13 +1411,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Reinstate User',
                                                 text:
                                                     'You have successfully reinstated ' +
                                                     name +
                                                     '.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1420,13 +1427,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Reinstate User',
-                                                'There was an error reinstating ' +
+                                            swal.fire({
+                                                title: 'Reinstate User',
+                                                text:
+                                                    'There was an error reinstating ' +
                                                     name +
                                                     '.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -1451,7 +1459,7 @@ export default {
                     vm.contact_user.email = email;
                     vm.contact_user.mobile_number = mobile;
                     vm.contact_user.phone_number = phone;
-                    swal({
+                    swal.fire({
                         title: 'Relink User',
                         text:
                             'Are you sure you want to Relink  ' +
@@ -1477,13 +1485,13 @@ export default {
                                     )
                                     .then(
                                         () => {
-                                            swal({
+                                            swal.fire({
                                                 title: 'Relink User',
                                                 text:
                                                     'You have successfully relinked ' +
                                                     name +
                                                     '.',
-                                                type: 'success',
+                                                icon: 'success',
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
@@ -1493,13 +1501,14 @@ export default {
                                             );
                                         },
                                         () => {
-                                            swal(
-                                                'Relink User',
-                                                'There was an error relink ' +
+                                            swal.fire({
+                                                title: 'Relink User',
+                                                text:
+                                                    'There was an error relink ' +
                                                     name +
                                                     '.',
-                                                'error'
-                                            );
+                                                icon: 'error',
+                                            });
                                         }
                                     );
                             }
@@ -1545,11 +1554,12 @@ export default {
                             vm.org.address = {};
                         }
                         if (!vm.isApplication) {
-                            swal(
-                                'Saved',
-                                'Organisation details have been saved',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Organisation details have been saved',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                            });
                         }
                     },
                     (error) => {
@@ -1561,23 +1571,25 @@ export default {
                                 text = text.email[0];
                             }
                         }
-                        swal(
-                            'Error',
-                            'Organisation details cannot be saved because of the following error: ' +
+                        swal.fire({
+                            title: 'Error',
+                            text:
+                                'Organisation details cannot be saved because of the following error: ' +
                                 text,
-                            'error'
-                        );
+                            icon: 'error',
+                        });
                         vm.updatingDetails = false;
                     }
                 );
         },
         addedContact: function () {
             let vm = this;
-            swal(
-                'Added',
-                'The contact has been successfully added.',
-                'success'
-            );
+            swal.fire({
+                title: 'Added',
+                text: 'The contact has been successfully added.',
+                icon: 'success',
+                confirmButtonText: 'OK',
+            });
             vm.$refs.contacts_datatable.vmDataTable.ajax.reload();
         },
         deleteContact: function (id) {
@@ -1592,22 +1604,23 @@ export default {
                 )
                 .then(
                     () => {
-                        swal(
-                            'Contact Deleted',
-                            'The contact was successfully deleted',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Contact Deleted',
+                            text: 'The contact was successfully deleted',
+                            icon: 'success',
+                        });
                         vm.$refs.contacts_datatable.vmDataTable.ajax.reload();
                     },
                     (error) => {
                         console.log(error);
-                        swal(
-                            'Contact Deleted',
-                            'The contact could not be deleted because of the following error : [' +
+                        swal.fire({
+                            title: 'Contact Deleted',
+                            text:
+                                'The contact could not be deleted because of the following error : [' +
                                 error.body +
                                 ']',
-                            'error'
-                        );
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -1630,11 +1643,12 @@ export default {
                         vm.updatingAddress = false;
                         vm.org = response.body;
                         if (!vm.isApplication) {
-                            swal(
-                                'Saved',
-                                'Address details have been saved',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Address details have been saved',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                            });
                         }
                         if (vm.org.address == null) {
                             vm.org.address = {};
@@ -1651,7 +1665,7 @@ export default {
             let org = vm.org;
             let org_name = org.name;
             let person = helpers.copyObject(d);
-            swal({
+            swal.fire({
                 title: 'Unlink From Organisation',
                 text:
                     'Are you sure you want to unlink ' +
@@ -1661,7 +1675,7 @@ export default {
                     ' from ' +
                     org.name +
                     ' ?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
@@ -1683,27 +1697,30 @@ export default {
                                 if (vm.org.address == null) {
                                     vm.org.address = {};
                                 }
-                                swal(
-                                    'Unlink',
-                                    'You have successfully unlinked ' +
+                                swal.fire({
+                                    title: 'Unlink',
+                                    text:
+                                        'You have successfully unlinked ' +
                                         person.name +
                                         ' from ' +
                                         org_name +
                                         '.',
-                                    'success'
-                                );
+                                    icon: 'success',
+                                    confirmButtonText: 'OK',
+                                });
                             },
                             (error) => {
-                                swal(
-                                    'Unlink',
-                                    'There was an error unlinking ' +
+                                swal.fire({
+                                    title: 'Unlink',
+                                    text:
+                                        'There was an error unlinking ' +
                                         person.name +
                                         ' from ' +
                                         org_name +
                                         '. ' +
                                         error.body,
-                                    'error'
-                                );
+                                    icon: 'error',
+                                });
                             }
                         );
                 },
