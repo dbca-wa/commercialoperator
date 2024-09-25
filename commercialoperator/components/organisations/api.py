@@ -33,7 +33,6 @@ from commercialoperator.components.organisations.models import (
 
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
-    OrganisationAddressSerializer,
     DetailsSerializer,
     SaveDiscountSerializer,
     OrganisationRequestSerializer,
@@ -67,7 +66,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             # org_contacts = OrganisationContact.objects.filter(is_admin=True).filter(email=user.email) #TODO: is there a better way than email?
             # user_admin_orgs = [org.organisation.id for org in org_contacts]
             # return Organisation.objects.filter(id__in=user_admin_orgs)
-            return user.commercialoperator_organisations.all()
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
+            return Organisation.objects.filter(organisation_id__in=user_orgs)
         return Organisation.objects.none()
 
     @action(
