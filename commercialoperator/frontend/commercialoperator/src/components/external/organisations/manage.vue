@@ -832,8 +832,12 @@ export default {
         },
         eventListeners: function () {
             let vm = this;
-            // if (true) {
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            const contacts_datatable_user = vm.$refs.contacts_datatable_user;
+            if (!contacts_datatable_user) {
+                console.log('No contacts datatable');
+                return;
+            }
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.accept_contact',
                 (e) => {
@@ -885,7 +889,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -906,7 +910,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.accept_declined_contact',
                 (e) => {
@@ -958,7 +962,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -979,7 +983,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.decline_contact',
                 (e) => {
@@ -1031,7 +1035,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -1052,7 +1056,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.unlink_contact',
                 (e) => {
@@ -1104,7 +1108,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -1132,7 +1136,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.make_admin_contact',
                 (e) => {
@@ -1184,7 +1188,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -1205,7 +1209,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.make_user_contact',
                 (e) => {
@@ -1258,7 +1262,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -1285,7 +1289,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.suspend_contact',
                 (e) => {
@@ -1337,7 +1341,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -1358,7 +1362,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.reinstate_contact',
                 (e) => {
@@ -1410,7 +1414,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
@@ -1431,7 +1435,7 @@ export default {
                     );
                 }
             );
-            vm.$refs.contacts_datatable_user.vmDataTable.on(
+            contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.relink_contact',
                 (e) => {
@@ -1483,7 +1487,7 @@ export default {
                                                 confirmButtonText: 'OK',
                                             }).then(
                                                 () => {
-                                                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                                                    contacts_datatable_user.vmDataTable.ajax.reload();
                                                 },
                                                 () => {}
                                             );
