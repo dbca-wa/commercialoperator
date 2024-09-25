@@ -645,7 +645,7 @@ export default {
         submit: function () {
             let vm = this;
             console.log(vm.org_applicant);
-            swal({
+            swal.fire({
                 title: 'Create ' + vm.selected_application_name,
                 text:
                     'Are you sure you want to create ' +
@@ -653,7 +653,7 @@ export default {
                     ' application on behalf of ' +
                     vm.org +
                     ' ?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
