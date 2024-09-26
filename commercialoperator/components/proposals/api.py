@@ -115,6 +115,7 @@ from commercialoperator.components.bookings.models import (
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
     retrieve_delegate_organisation_ids,
     retrieve_group_members,
@@ -3248,28 +3249,15 @@ class VehicleViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
+    @basic_exception_handler
     def create(self, request, *args, **kwargs):
-        try:
-            # instance = self.get_object()
-            serializer = SaveVehicleSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-            instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_CREATE_VEHICLE.format(instance.id), request
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        serializer = SaveVehicleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        instance.proposal.log_user_action(
+            ProposalUserAction.ACTION_CREATE_VEHICLE.format(instance.id), request
+        )
+        return Response(serializer.data)
 
 
 class VesselViewSet(viewsets.ModelViewSet):

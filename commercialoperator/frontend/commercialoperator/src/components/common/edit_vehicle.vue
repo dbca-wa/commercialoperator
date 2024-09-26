@@ -304,6 +304,10 @@ export default {
                 vm.vehicle.access_type = vm.vehicle_access_id;
             }
             let vehicle = JSON.parse(JSON.stringify(vm.vehicle));
+            // Format the date to align with the backend
+            vehicle['rego_expiry'] = moment(vehicle['rego_expiry']).format(
+                'DD/MM/YYYY'
+            );
             vm.issuingVehicle = true;
             if (vm.localVehicleAction == 'add' && vm.vehicle_id == null) {
                 vm.$http
