@@ -809,6 +809,10 @@ export default {
     methods: {
         get_selected_trail_data: function (trail_id) {
             let vm = this;
+            if (!vm.trails) {
+                // trails may be null if the API call has not returned yet
+                return null;
+            }
             for (var i = 0; i < vm.trails.length; i++) {
                 if (vm.trails[i].id == trail_id) {
                     return {
