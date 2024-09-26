@@ -407,18 +407,6 @@ export default {
                 return 'Pay and Submit';
             }
         },
-        _save_applicant_data: function () {
-            let vm = this;
-            if (vm.proposal.applicant_type == 'SUB') {
-                vm.$refs.proposal_tclass.$refs.profile.updatePersonal();
-                vm.$refs.proposal_tclass.$refs.profile.updateAddress();
-                vm.$refs.proposal_tclass.$refs.profile.updateContact();
-            }
-            if (vm.proposal.applicant_type == 'ORG') {
-                vm.$refs.proposal_tclass.$refs.organisation.updateDetails_noconfirm();
-                vm.$refs.proposal_tclass.$refs.organisation.updateAddress();
-            }
-        },
         save_applicant_data: function () {
             let vm = this;
             if (vm.proposal.applicant_type == 'SUB') {
@@ -427,8 +415,8 @@ export default {
                 vm.proposal_refs().$refs.profile.updateContact();
             }
             if (vm.proposal.applicant_type == 'ORG') {
-                vm.proposal_refs().$refs.organisation.updateDetails();
-                vm.proposal_refs().$refs.organisation.updateAddress();
+                vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
+                vm.proposal_refs().$refs.organisation.updateAddress_noconfirm();
             }
         },
 

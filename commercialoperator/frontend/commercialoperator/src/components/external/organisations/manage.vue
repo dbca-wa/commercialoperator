@@ -1520,16 +1520,66 @@ export default {
         },
         updateDetails_noconfirm: function () {
             let vm = this;
-            vm.$http.post(
-                helpers.add_endpoint_json(
-                    api_endpoints.organisations,
-                    vm.org.id + '/update_details'
-                ),
-                JSON.stringify(vm.org),
-                {
-                    emulateJSON: true,
-                }
-            );
+            vm.updatingDetails = true;
+            vm.$http
+                .post(
+                    helpers.add_endpoint_json(
+                        api_endpoints.organisations,
+                        vm.org.id + '/update_details'
+                    ),
+                    JSON.stringify(vm.org),
+                    {
+                        emulateJSON: true,
+                    }
+                )
+                .then(
+                    (response) => {
+                        vm.updatingDetails = false;
+                        vm.org = response.body;
+                        if (vm.org.address == null) {
+                            vm.org.address = {};
+                        }
+                    },
+                    (error) => {
+                        console.log('EXTERNAL: ' + JSON.stringify(error));
+                        var text = helpers.apiVueResourceError(error);
+                        if (typeof text == 'object') {
+                            // eslint-disable-next-line no-prototype-builtins
+                            if (text.hasOwnProperty('email')) {
+                                text = text.email[0];
+                            }
+                        }
+                        vm.updatingDetails = false;
+                    }
+                );
+        },
+        updateAddress_noconfirm: function () {
+            let vm = this;
+            vm.updatingAddress = true;
+            vm.$http
+                .post(
+                    helpers.add_endpoint_json(
+                        api_endpoints.organisations,
+                        vm.org.id + '/update_address'
+                    ),
+                    JSON.stringify(vm.org.address),
+                    {
+                        emulateJSON: true,
+                    }
+                )
+                .then(
+                    (response) => {
+                        vm.updatingAddress = false;
+                        vm.org = response.body;
+                        if (vm.org.address == null) {
+                            vm.org.address = {};
+                        }
+                    },
+                    (error) => {
+                        console.log(error);
+                        vm.updatingAddress = false;
+                    }
+                );
         },
 
         updateDetails: function () {
