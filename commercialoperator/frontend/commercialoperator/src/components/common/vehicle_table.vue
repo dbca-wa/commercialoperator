@@ -160,7 +160,7 @@ export default {
                 proposal: vm.proposal.id,
             };
             this.$refs.edit_vehicle.vehicle = new_vehicle_another;
-            this.$refs.edit_vehicle.vehicle_action = 'add';
+            this.$refs.edit_vehicle.localVehicleAction = 'add';
             this.$refs.edit_vehicle.isModalOpen = true;
         },
         editVehicle: function (id) {

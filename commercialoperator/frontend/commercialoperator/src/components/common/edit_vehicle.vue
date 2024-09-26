@@ -216,6 +216,7 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            localVehicleAction: JSON.parse(JSON.stringify(this.vehicle_action)),
         };
     },
     computed: {
@@ -224,9 +225,17 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.vehicle_action == 'add'
+            return this.localVehicleAction == 'add'
                 ? 'Add a new Vehicle record'
                 : 'Edit a vehicle record';
+        },
+    },
+    watch: {
+        vehicle_action: {
+            handler(newVal) {
+                this.localVehicleAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -296,7 +305,7 @@ export default {
             }
             let vehicle = JSON.parse(JSON.stringify(vm.vehicle));
             vm.issuingVehicle = true;
-            if (vm.vehicle_action == 'add' && vm.vehicle_id == null) {
+            if (vm.localVehicleAction == 'add' && vm.vehicle_id == null) {
                 vm.$http
                     .post(api_endpoints.vehicles, JSON.stringify(vehicle), {
                         emulateJSON: true,
