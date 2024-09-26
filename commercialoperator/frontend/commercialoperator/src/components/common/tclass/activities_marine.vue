@@ -34,9 +34,11 @@
                                 </div>
                             </form>
                             <form>
-                                <div class="col-sm-12">
+                                <div
+                                    v-if="marine_activity_options.length"
+                                    class="col-sm-12"
+                                >
                                     <div>
-                                        <!--<pre>{{ selected_activities }}</pre>-->
                                         <label class="control-label"
                                             >Select the required
                                             activities</label
@@ -50,14 +52,22 @@
                                         ></TreeSelect>
                                     </div>
                                 </div>
+                                <div v-else>
+                                    <div v-if="isLoading" class="col-sm-12">
+                                        <i class="fa fa-spinner fa-spin"></i>
+                                        Loading
+                                    </div>
+                                </div>
                             </form>
                         </div>
 
                         <div class="borderDecoration col-sm-12">
                             <form>
-                                <div class="col-sm-12">
+                                <div
+                                    v-if="marine_park_options.length"
+                                    class="col-sm-12"
+                                >
                                     <div>
-                                        <!--<pre>{{ selected_activities }}</pre>-->
                                         <label class="control-label"
                                             >Select the parks for which the
                                             activities are required</label
@@ -70,6 +80,12 @@
                                             :allow_edit="true"
                                             :disabled="!canEditActivities"
                                         ></TreeSelect>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <div v-if="isLoading" class="col-sm-12">
+                                        <i class="fa fa-spinner fa-spin"></i>
+                                        Loading
                                     </div>
                                 </div>
                             </form>
@@ -193,6 +209,7 @@ export default {
             marine_parks_activities: [],
             park_error_list: [],
             required_documents_list: null,
+            isLoading: false,
         };
     },
     watch: {
@@ -490,6 +507,7 @@ export default {
 
         fetchMarineTreeview: function () {
             let vm = this;
+            vm.isLoading = true;
 
             vm.$http.get(api_endpoints.tclass_container_marine).then(
                 (response) => {
@@ -515,9 +533,11 @@ export default {
                     vm.required_documents_list =
                         response.body['required_documents'];
                     vm.fetchRequiredDocumentList();
+                    vm.isLoading = false;
                 },
                 (error) => {
                     console.log(error);
+                    vm.isLoading = false;
                 }
             );
         },
