@@ -30,7 +30,10 @@
                             </div>
                         </form>
                         <form>
-                            <div class="col-sm-12">
+                            <div
+                                v-if="land_access_options.length"
+                                class="col-sm-12"
+                            >
                                 <div>
                                     <label class="control-label"
                                         >Select the required access</label
@@ -45,12 +48,21 @@
                                     ></TreeSelect>
                                 </div>
                             </div>
+                            <div v-else>
+                                <div v-if="isLoading" class="col-sm-12">
+                                    <i class="fa fa-spinner fa-spin"></i>
+                                    Loading
+                                </div>
+                            </div>
                         </form>
                     </div>
 
                     <div class="borderDecoration col-sm-12">
                         <form>
-                            <div class="col-sm-12">
+                            <div
+                                v-if="land_activity_options.length"
+                                class="col-sm-12"
+                            >
                                 <div>
                                     <label class="control-label"
                                         >Select the required activities</label
@@ -64,12 +76,18 @@
                                     ></TreeSelect>
                                 </div>
                             </div>
+                            <div v-else>
+                                <div v-if="isLoading" class="col-sm-12">
+                                    <i class="fa fa-spinner fa-spin"></i>
+                                    Loading
+                                </div>
+                            </div>
                         </form>
                     </div>
 
                     <div class="borderDecoration col-sm-12">
                         <form>
-                            <div class="col-sm-12">
+                            <div v-if="park_options.length" class="col-sm-12">
                                 <div>
                                     <label class="control-label"
                                         >Select Parks</label
@@ -82,6 +100,12 @@
                                         :allow_edit="true"
                                         :disabled="!canEditActivities"
                                     ></TreeSelect>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div v-if="isLoading" class="col-sm-12">
+                                    <i class="fa fa-spinner fa-spin"></i>
+                                    Loading
                                 </div>
                             </div>
                         </form>
@@ -157,7 +181,10 @@
                                 </div>
                             </form>
                             <form>
-                                <div class="col-sm-12">
+                                <div
+                                    v-if="trail_activity_options.length"
+                                    class="col-sm-12"
+                                >
                                     <div>
                                         <label class="control-label"
                                             >Select the required activities for
@@ -172,12 +199,21 @@
                                         ></TreeSelect>
                                     </div>
                                 </div>
+                                <div v-else>
+                                    <div v-if="isLoading" class="col-sm-12">
+                                        <i class="fa fa-spinner fa-spin"></i>
+                                        Loading
+                                    </div>
+                                </div>
                             </form>
                         </div>
 
                         <div class="borderDecoration col-sm-12">
                             <form>
-                                <div class="col-sm-12">
+                                <div
+                                    v-if="trail_options.length"
+                                    class="col-sm-12"
+                                >
                                     <div>
                                         <label class="control-label"
                                             >Select the long distance
@@ -192,6 +228,12 @@
                                             :allow_edit="true"
                                             :disabled="!canEditActivities"
                                         ></TreeSelect>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <div v-if="isLoading" class="col-sm-12">
+                                        <i class="fa fa-spinner fa-spin"></i>
+                                        Loading
                                     </div>
                                 </div>
                             </form>
@@ -299,6 +341,7 @@ export default {
             selected_trails_activities: [],
             trail_error_list: [],
             park_error_list: [],
+            isLoading: false,
         };
     },
     computed: {},
@@ -790,6 +833,7 @@ export default {
 
         fetchParkTreeview: function () {
             let vm = this;
+            vm.isLoading = true;
 
             vm.$http.get(api_endpoints.tclass_container_land).then(
                 (response) => {
@@ -850,9 +894,11 @@ export default {
                     vm.required_documents_list =
                         response.body['land_required_documents'];
                     vm.fetchRequiredDocumentList();
+                    vm.isLoading = false;
                 },
                 (error) => {
                     console.log(error);
+                    vm.isLoading = false;
                 }
             );
         },
