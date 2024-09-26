@@ -170,10 +170,10 @@ export default {
         },
         discardVehicle: function (vehicle_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Vehicle',
                 text: 'Are you sure you want to discard this vehicle?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Vehicle',
                 confirmButtonColor: '#d9534f',
@@ -183,11 +183,11 @@ export default {
                         .delete(api_endpoints.discard_vehicle(vehicle_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your vehicle has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your vehicle has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.vehicle_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
