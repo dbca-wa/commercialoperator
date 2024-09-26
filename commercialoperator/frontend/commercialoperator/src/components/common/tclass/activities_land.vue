@@ -196,18 +196,6 @@
                                 </div>
                             </form>
                         </div>
-
-                        <!--
-            <div>Selected_Parks: {{selected_parks}}</div><br>
-            <div>Selected_Parks_Activities: {{selected_parks_activities}}</div>
-            <div>Trail: {{selected_trails}}</div>
-            <div>Activities: {{selected_trails_activities}}</div>
-            -->
-                        <!--
-            <div>Trail_actvities: {{trail_activities}}</div><br>
-            <div>Selected_Trail: {{selected_trails}}</div><br>
-            <div>Selected_Trailss_Activities: {{selected_trails_activities}}</div>
-            -->
                     </div>
                 </div>
             </div>
