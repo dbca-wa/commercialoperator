@@ -319,11 +319,11 @@ export default {
                             vm.issuingVehicle = false;
                             vm.vehicle = {};
                             vm.close();
-                            swal(
-                                'Created',
-                                'New vehicle record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New vehicle record has been created.',
+                                type: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -349,11 +349,11 @@ export default {
                             vm.issuingVehicle = false;
                             vm.vehicle = {};
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Vehicle details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Vehicle details has been saved.',
+                                type: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
