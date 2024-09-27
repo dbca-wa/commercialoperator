@@ -29,6 +29,7 @@ from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
 )
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
@@ -106,22 +107,13 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Approval.objects.all()
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter=self.request.user)
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
         return Approval.objects.none()
-
-    #    def list(self, request, *args, **kwargs):
-    #        response = super(ProposalPaginatedViewSet, self).list(request, args, kwargs)
-    #
-    #        # Add extra data to response.data
-    #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
-    #        return response
 
     @action(
         methods=[
@@ -136,9 +128,6 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         To test:
             http://localhost:8000/api/approval_paginated/approvals_external/?format=datatables&draw=1&length=2
         """
-
-        # qs = self.queryset().order_by('lodgement_number', '-issue_date').distinct('lodgement_number')
-        # qs = ProposalFilterBackend().filter_queryset(self.request, qs, self)
 
         ids = (
             self.get_queryset()
@@ -232,12 +221,10 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Approval.objects.all()
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter=self.request.user)
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
         return Approval.objects.none()
@@ -383,8 +370,6 @@ class ApprovalViewSet(viewsets.ModelViewSet):
 
         try:
             with transaction.atomic():
-                # keys = request.data.keys()
-                # file_keys = [key for key in keys if 'file-upload' in i]
                 org_applicant = None
                 proxy_applicant = None
 
@@ -398,7 +383,6 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                         org_applicant = Organisation.objects.get(
                             organisation_id=request.data.get("holder-selected")
                         )
-                        # org_applicant = ledger_org.objects.get(id=request.data.get('holder-selected'))
                     else:
                         proxy_applicant = EmailUser.objects.get(
                             id=request.data.get("holder-selected")
@@ -423,17 +407,17 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                         )
 
                 start_date = (
-                    datetime.strptime(request.data.get("start_date"), "%d/%m/%Y")
+                    datetime.strptime(request.data.get("start_date"), "%Y-%m-%d")
                     if request.data.get("start_date")
                     else raiser("Start Date is required")
                 )
                 issue_date = (
-                    datetime.strptime(request.data.get("issue_date"), "%d/%m/%Y")
+                    datetime.strptime(request.data.get("issue_date"), "%Y-%m-%d")
                     if request.data.get("issue_date")
                     else raiser("Issue Date is required")
                 )
                 expiry_date = (
-                    datetime.strptime(request.data.get("expiry_date"), "%d/%m/%Y")
+                    datetime.strptime(request.data.get("expiry_date"), "%Y-%m-%d")
                     if request.data.get("expiry_date")
                     else raiser("Expiry Date is required")
                 )

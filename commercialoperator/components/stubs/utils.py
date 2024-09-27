@@ -6,8 +6,8 @@ from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import (
-    oracle_parser,
-    update_payments,
+    oracle_parser as ledger_oracle_parser,
+    update_payments as ledger_update_payments,
     get_all_organisation,
 )
 
@@ -103,14 +103,14 @@ def createCustomBasket(*args, **kwargs):
 
 
 def oracle_parser(*args, **kwargs):
-    logger.error(oracle_parser())
+    logger.error(ledger_oracle_parser())
     raise NotImplementedError(
         "ledger.payments.utils.oracle_parser needs implementation"
     )
 
 
 def update_payments(*args, **kwargs):
-    logger.error(update_payments())
+    logger.error(ledger_update_payments())
     raise NotImplementedError(
         "ledger.payments.utils.update_payments needs implementation"
     )
@@ -172,18 +172,23 @@ def retrieve_delegate_organisation_ids(email_user_id):
     )
 
     organisation_ids = UserDelegation.objects.filter(user_id=email_user_id).values_list(
-        "organisation_id", flat=True
+        "organisation__organisation_id", flat=True
     )
 
-    # return list(
-    #     Organisation.objects.filter(
-    #         delegates__user=email_user_id,
-    #         # contacts__user=email_user_id,
-    #         # contacts__user_status=OrganisationContact.USER_STATUS_CHOICE_ACTIVE,
-    #     ).values_list("id", flat=True)
-    # )
-
     return organisation_ids
+
+
+def retrieve_organisation_delegate_ids(organisation_id):
+    from commercialoperator.components.organisations.models import (
+        Organisation,
+        UserDelegation,
+    )
+
+    delegate_ids = UserDelegation.objects.filter(
+        organisation_id=organisation_id
+    ).values_list("user_id", flat=True)
+
+    return delegate_ids
 
 
 class ListAsQuerySet(list):

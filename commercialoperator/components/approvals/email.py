@@ -9,6 +9,9 @@ from commercialoperator.components.emails.emails import TemplateEmailBase
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from commercialoperator.components.stubs.models import EmailUserLogEntry
+from commercialoperator.components.stubs.utils import retrieve_email_user
+
 logger = logging.getLogger(__name__)
 
 SYSTEM_NAME = settings.SYSTEM_NAME_SHORT + " Automated Message"
@@ -143,8 +146,10 @@ def send_approval_cancel_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -153,13 +158,16 @@ def send_approval_cancel_email_notification(approval):
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
     if approval.org_applicant:
         _log_org_email(
-            msg, approval.org_applicant, proposal.submitter, sender=sender_user
+            msg, approval.org_applicant, proposal_submitter, sender=sender_user
         )
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender_user)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender_user)
 
 
 def send_approval_suspend_email_notification(approval, request=None):
@@ -185,8 +193,10 @@ def send_approval_suspend_email_notification(approval, request=None):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -195,13 +205,16 @@ def send_approval_suspend_email_notification(approval, request=None):
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
     if approval.org_applicant:
         _log_org_email(
-            msg, approval.org_applicant, proposal.submitter, sender=sender_user
+            msg, approval.org_applicant, proposal_submitter, sender=sender_user
         )
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender_user)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender_user)
 
 
 def send_approval_surrender_email_notification(approval, request=None):
@@ -224,8 +237,10 @@ def send_approval_surrender_email_notification(approval, request=None):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -234,12 +249,16 @@ def send_approval_surrender_email_notification(approval, request=None):
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    if approval.org_applicant:
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
+    if approval.org_applicant_id:
         _log_org_email(
-            msg, approval.org_applicant, proposal.submitter, sender=sender_user
+            msg, approval.org_applicant, proposal_submitter, sender=sender_user
         )
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender_user)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender_user)
 
 
 # approval renewal notice
@@ -262,8 +281,10 @@ def send_approval_renewal_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
     # attach renewal notice
     if approval.renewal_document and approval.renewal_document._file is not None:
         renewal_document = approval.renewal_document._file
@@ -307,8 +328,10 @@ def send_approval_eclass_renewal_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
 
     all_ccs = []
     # cc list commented below 15-Jul-2021 --> eclass renewal emails should only go to assessors
@@ -341,8 +364,10 @@ def send_approval_eclass_expiry_email_notification(approval):
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
     except:
-        EmailUser.objects.create(email=sender, password="")
-        sender_user = EmailUser.objects.get(email__icontains=sender)
+        # Note: Should we create a new user after segregation?
+        # EmailUser.objects.create(email=sender, password="")
+        # sender_user = EmailUser.objects.get(email__icontains=sender)
+        raise ValueError("EmailUser does not exist and creation has been disabled")
 
     all_ccs = []
     # cc list commented below 15-Jul-2021 --> eclass expiry emails should only go to assessors
@@ -376,16 +401,21 @@ def send_approval_reinstate_email_notification(approval, request):
             all_ccs = [cc_list]
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+
+    proposal_submitter = retrieve_email_user(proposal.submitter_id)
+    approval_submitter = retrieve_email_user(approval.submitter_id)
+
     _log_approval_email(msg, approval, sender=sender)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender)
     if approval.org_applicant:
-        _log_org_email(msg, approval.org_applicant, proposal.submitter, sender=sender)
+        _log_org_email(msg, approval.org_applicant, proposal_submitter, sender=sender)
     else:
-        _log_user_email(msg, approval.submitter, proposal.submitter, sender=sender)
+        _log_user_email(msg, approval_submitter, proposal_submitter, sender=sender)
 
 
 def _log_approval_email(email_message, approval, sender=None):
     from commercialoperator.components.approvals.models import ApprovalLogEntry
+
+    submitter = retrieve_email_user(approval.current_proposal.submitter_id)
 
     if isinstance(
         email_message,
@@ -414,11 +444,9 @@ def _log_approval_email(email_message, approval, sender=None):
     else:
         text = smart_text(email_message)
         subject = ""
-        to = approval.current_proposal.submitter.email
+        to = submitter.email if submitter else None
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = approval.current_proposal.submitter
 
     staff = sender
 
@@ -426,8 +454,8 @@ def _log_approval_email(email_message, approval, sender=None):
         "subject": subject,
         "text": text,
         "approval": approval,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": submitter.id if submitter else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
@@ -480,16 +508,14 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
-    customer = customer
-
     staff = sender
 
     kwargs = {
         "subject": subject,
         "text": text,
-        "organisation": organisation,
-        "customer": customer,
-        "staff": staff,
+        "organisation_id": organisation.id if organisation else None,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
@@ -501,8 +527,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
 
 
 def _log_user_email(email_message, emailuser, customer, sender=None):
-    from ledger.accounts.models import EmailUserLogEntry
-
     if isinstance(
         email_message,
         (
@@ -534,16 +558,14 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
-    customer = customer
-
     staff = sender
 
     kwargs = {
         "subject": subject,
         "text": text,
-        "emailuser": emailuser,
-        "customer": customer,
-        "staff": staff,
+        "emailuser_id": emailuser.id if emailuser else None,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,

@@ -14,8 +14,10 @@ from ledger_api_client.utils import update_organisation_obj
 
 from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
     filter_organisation_list,
+    retrieve_delegate_organisation_ids,
     retrieve_email_user,
 )
 from commercialoperator.helpers import is_customer, is_internal
@@ -31,7 +33,6 @@ from commercialoperator.components.organisations.models import (
 
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
-    OrganisationAddressSerializer,
     DetailsSerializer,
     SaveDiscountSerializer,
     OrganisationRequestSerializer,
@@ -62,10 +63,8 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         if is_internal(self.request) or self.allow_external:
             return Organisation.objects.all()
         elif is_customer(self.request):
-            # org_contacts = OrganisationContact.objects.filter(is_admin=True).filter(email=user.email) #TODO: is there a better way than email?
-            # user_admin_orgs = [org.organisation.id for org in org_contacts]
-            # return Organisation.objects.filter(id__in=user_admin_orgs)
-            return user.commercialoperator_organisations.all()
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
+            return Organisation.objects.filter(organisation_id__in=user_orgs)
         return Organisation.objects.none()
 
     @action(
@@ -539,36 +538,27 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         detail=True,
     )
     @renderer_classes((JSONRenderer,))
+    @basic_exception_handler
+    @transaction.atomic
     def add_comms_log(self, request, *args, **kwargs):
-        try:
-            with transaction.atomic():
-                instance = self.get_object()
-                mutable = request.data._mutable
-                request.data._mutable = True
-                request.data["organisation"] = "{}".format(instance.id)
-                request.data["staff"] = "{}".format(request.user.id)
-                request.data._mutable = mutable
-                serializer = OrganisationLogEntrySerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                comms = serializer.save()
-                # Save the files
-                for f in request.FILES:
-                    document = comms.documents.create()
-                    document.name = str(request.FILES[f])
-                    document._file = request.FILES[f]
-                    document.save()
-                # End Save Documents
+        instance = self.get_object()
+        mutable = request.data._mutable
+        request.data._mutable = True
+        request.data["organisation"] = "{}".format(instance.id)
+        request.data["staff_id"] = "{}".format(request.user.id)
+        request.data._mutable = mutable
+        serializer = OrganisationLogEntrySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comms = serializer.save()
+        # Save the files
+        for f in request.FILES:
+            document = comms.documents.create()
+            document.name = str(request.FILES[f])
+            document._file = request.FILES[f]
+            document.save()
+        # End Save Documents
 
-                return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -576,26 +566,19 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
+    @basic_exception_handler
     def existance(self, request, *args, **kwargs):
-        try:
-            serializer = OrganisationCheckSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            data = Organisation.existance(serializer.validated_data["abn"])
-            # Check request user cannot be relinked to org.
-            data.update([("user", request.user.id)])
-            data.update([("abn", request.data["abn"])])
-            serializer = OrganisationCheckExistSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        serializer = OrganisationCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        name = serializer.validated_data.get("name", None)
+        abn = serializer.validated_data.get("abn", None)
+        data = Organisation.existance(name, abn)
+        # Check request user cannot be relinked to org.
+        data.update([("user", request.user.id)])
+        data.update([("abn", request.data["abn"])])
+        serializer = OrganisationCheckExistSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -603,78 +586,66 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def update_details(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            if not can_admin_org(instance, request.user.id):
-                return Response(
-                    status=status.HTTP_403_FORBIDDEN,
-                    data={
-                        "message": "You do not have permission to update this organisation."
-                    },
-                )
-            # Note: Calling this function doesn't update the ledger name, trading name, email entries.
-            response_ledger = update_organisation_obj(request.data)
-            response_ledger_status = response_ledger.get("status", None)
-            if not response_ledger_status == status.HTTP_200_OK:
-                return Response(
-                    status=response_ledger_status,
-                    data=response_ledger.get("message", None),
-                )
-
-            cache.delete(
-                settings.CACHE_KEY_LEDGER_ORGANISATION.format(
-                    instance.organisation_id
-                )
+        instance = self.get_object()
+        if not can_admin_org(instance, request.user.id):
+            return Response(
+                status=status.HTTP_403_FORBIDDEN,
+                data={
+                    "message": "You do not have permission to update this organisation."
+                },
+            )
+        # Note: Calling this function doesn't update the ledger name, trading name, email entries.
+        response_ledger = update_organisation_obj(request.data)
+        response_ledger_status = response_ledger.get("status", None)
+        if not response_ledger_status == status.HTTP_200_OK:
+            return Response(
+                status=response_ledger_status,
+                data=response_ledger.get("message", None),
             )
 
-            serializer = DetailsSerializer(
-                instance, data=request.data, context={"request": request}
-            )
+        cache.delete(
+            settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
+        )
+
+        serializer = DetailsSerializer(
+            instance, data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+
+        if is_internal(request) and "apply_application_discount" in request.data:
+            data = request.data
+            if not data["apply_application_discount"]:
+                data["application_discount"] = 0
+            if not data["apply_licence_discount"]:
+                data["licence_discount"] = 0
+
+            if data["application_discount"] == 0:
+                data["apply_application_discount"] = False
+            if data["licence_discount"] == 0:
+                data["apply_licence_discount"] = False
+
+            if (
+                is_internal(request)
+                and "charge_once_per_year" in request.data
+                and request.data.get("charge_once_per_year")
+            ):
+                DD = int(request.data.get("charge_once_per_year").split("/")[0])
+                MM = int(request.data.get("charge_once_per_year").split("/")[1])
+                YYYY = timezone.now().year  # set to current year
+                data["charge_once_per_year"] = "{}-{}-{}".format(YYYY, MM, DD)
+            else:
+                data["charge_once_per_year"] = None
+
+            serializer = SaveDiscountSerializer(instance, data=data)
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
 
-            if is_internal(request) and "apply_application_discount" in request.data:
-                data = request.data
-                if not data["apply_application_discount"]:
-                    data["application_discount"] = 0
-                if not data["apply_licence_discount"]:
-                    data["licence_discount"] = 0
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-                if data["application_discount"] == 0:
-                    data["apply_application_discount"] = False
-                if data["licence_discount"] == 0:
-                    data["apply_licence_discount"] = False
-
-                if (
-                    is_internal(request)
-                    and "charge_once_per_year" in request.data
-                    and request.data.get("charge_once_per_year")
-                ):
-                    DD = int(request.data.get("charge_once_per_year").split("/")[0])
-                    MM = int(request.data.get("charge_once_per_year").split("/")[1])
-                    YYYY = timezone.now().year  # set to current year
-                    data["charge_once_per_year"] = "{}-{}-{}".format(YYYY, MM, DD)
-                else:
-                    data["charge_once_per_year"] = None
-
-                serializer = SaveDiscountSerializer(instance, data=data)
-                serializer.is_valid(raise_exception=True)
-                instance = serializer.save()
-
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError as e:
-            print(e.get_full_details())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            if hasattr(e, "message"):
-                raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[
@@ -682,20 +653,12 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def update_address(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            request.data["organisation_id"] = instance.organisation_id
-            return self.update_details(request, *args, **kwargs)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        request.data["organisation_id"] = instance.organisation_id
+        return self.update_details(request, *args, **kwargs)
+
 
     @action(
         methods=[
@@ -747,7 +710,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return OrganisationRequest.objects.all()
         elif is_customer(self.request):
-            return user.organisationrequest_set.all()
+            return OrganisationRequest.objects.filter(requester_id=user)
         return OrganisationRequest.objects.none()
 
     @action(
@@ -826,7 +789,8 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
-            instance = self.get_object(requester=request.user)
+            instance = self.get_object()
+            instance.assign_to(request.user, request)
             serializer = OrganisationRequestSerializer(instance)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1038,37 +1002,28 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         detail=True,
     )
     @renderer_classes((JSONRenderer,))
+    @basic_exception_handler
+    @transaction.atomic
     def add_comms_log(self, request, *args, **kwargs):
-        try:
-            with transaction.atomic():
-                instance = self.get_object()
-                mutable = request.data._mutable
-                request.data._mutable = True
-                request.data["organisation"] = "{}".format(instance.id)
-                request.data["request"] = "{}".format(instance.id)
-                request.data["staff"] = "{}".format(request.user.id)
-                request.data._mutable = mutable
-                serializer = OrganisationRequestLogEntrySerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                comms = serializer.save()
-                # Save the files
-                for f in request.FILES:
-                    document = comms.documents.create()
-                    document.name = str(request.FILES[f])
-                    document._file = request.FILES[f]
-                    document.save()
-                # End Save Documents
+        instance = self.get_object()
+        mutable = request.data._mutable
+        request.data._mutable = True
+        request.data["organisation"] = "{}".format(instance.id)
+        request.data["request"] = "{}".format(instance.id)
+        request.data["staff_id"] = "{}".format(request.user.id)
+        request.data._mutable = mutable
+        serializer = OrganisationRequestLogEntrySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comms = serializer.save()
+        # Save the files
+        for f in request.FILES:
+            document = comms.documents.create()
+            document.name = str(request.FILES[f])
+            document._file = request.FILES[f]
+            document.save()
+        # End Save Documents
 
-                return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         try:
@@ -1181,5 +1136,6 @@ class MyOrganisationsViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Organisation.objects.all()
         elif is_customer(self.request):
-            return user.commercialoperator_organisations.all()
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
+            return Organisation.objects.filter(organisation_id__in=user_orgs)
         return Organisation.objects.none()

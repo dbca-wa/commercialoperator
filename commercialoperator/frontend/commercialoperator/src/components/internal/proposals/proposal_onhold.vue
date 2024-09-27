@@ -83,7 +83,7 @@ export default {
         return {
             isModalOpen: false,
             form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             validation_form: null,
             on_hold_file: 'on_hold_file',
@@ -93,7 +93,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         document_url: function () {
             return this.proposal_id
@@ -185,7 +185,7 @@ export default {
                 reason_id: null,
                 proposal: this.proposal_id,
             };
-            this.errors = false;
+            this.hasErrors = false;
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
 

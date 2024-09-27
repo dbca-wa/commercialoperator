@@ -64,7 +64,6 @@
 </template>
 
 <script>
-//import $ from 'jquery'
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -85,7 +84,7 @@ export default {
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -94,7 +93,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
             return 'Extend Licence';
@@ -121,14 +120,13 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.approval = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            //$(this.$refs.cancellation_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 
@@ -155,7 +153,7 @@ export default {
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.issuingApproval = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     }

@@ -98,7 +98,7 @@ export default {
         return {
             isModalOpen: false,
             form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             validation_form: null,
             // eslint-disable-next-line vue/no-reserved-keys
@@ -110,7 +110,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         document_url: function () {
             // location on media folder for the docs - to be passed to FileField
@@ -207,7 +207,7 @@ export default {
                 reason_id: null,
                 proposal: this.proposal_id,
             };
-            this.errors = false;
+            this.hasErrors = false;
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
 

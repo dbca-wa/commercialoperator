@@ -369,7 +369,6 @@ export default {
                             }
                         },
                         createdCell: helpers.dtPopoverCellFn,
-                        //name: "id, lodgement_number",
                         name: 'lodgement_number',
                     },
                     {
@@ -392,6 +391,8 @@ export default {
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
+                        searchable: false,
                     },
                     { data: 'status' },
                     {
@@ -420,7 +421,6 @@ export default {
                             var result = '';
                             var popTemplate = '';
                             if (!full.migrated) {
-                                // return `<a href="${data}" target="_blank"><i style="color:red" class="fa fa-file-pdf-o"></i></a>`;
                                 result = `<a href="${data}" target="_blank"><i style="color:red" class="fa fa-file-pdf-o"></i></a>`;
                             } else if (full.migrated) {
                                 var icon =
@@ -868,10 +868,10 @@ export default {
             let vm = this;
             let status = 'with_approver';
             let data = { status: status };
-            swal({
+            swal.fire({
                 title: 'Reissue Licence',
                 text: 'Are you sure you want to reissue this licence?',
-                type: 'warning',
+                icon: 'warning',
                 confirmButtonText: 'Reissue licence',
             }).then(
                 () => {
@@ -895,10 +895,10 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                swal({
+                                swal.fire({
                                     title: 'Reissue Licence',
                                     text: error.body,
-                                    type: 'error',
+                                    icon: 'error',
                                 });
                             }
                         );
@@ -911,10 +911,10 @@ export default {
             let vm = this;
             let status = 'with_approver';
             let data = { status: status };
-            swal({
+            swal.fire({
                 title: 'Renew Licence',
                 text: "<input type='email' class='form-control' name='email' id='email'/>",
-                type: 'input',
+                icon: 'input',
                 showCancelButton: true,
                 confirmButtonText: 'Extend licence',
             }).then(
@@ -939,10 +939,10 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                swal({
+                                swal.fire({
                                     title: 'Extend Licence',
                                     text: error.body,
-                                    type: 'error',
+                                    icon: 'error',
                                 });
                             }
                         );
@@ -958,10 +958,10 @@ export default {
 
         reinstateApproval: function (approval_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Reinstate Licence',
                 text: 'Are you sure you want to reinstate this licence?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Reinstate licence',
             }).then(
@@ -976,19 +976,19 @@ export default {
                         )
                         .then(
                             () => {
-                                swal(
-                                    'Reinstate',
-                                    'Your licence has been reinstated',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Reinstate',
+                                    text: 'Your licence has been reinstated',
+                                    icon: 'success',
+                                });
                                 vm.$refs.proposal_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
                                 console.log(error);
-                                swal({
+                                swal.fire({
                                     title: 'Reinstate Licence',
                                     text: error.body,
-                                    type: 'error',
+                                    icon: 'error',
                                 });
                             }
                         );
@@ -999,15 +999,15 @@ export default {
 
         renewApproval: function (proposal_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Renew Licence',
                 text: 'Are you sure you want to renew this licence?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Renew licence',
             }).then(
                 () => {
-                    swal({
+                    swal.fire({
                         title: 'Loading...',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
@@ -1036,10 +1036,10 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                swal({
+                                swal.fire({
                                     title: 'Renew Licence',
                                     text: error.body,
-                                    type: 'error',
+                                    icon: 'error',
                                 });
                             }
                         );
@@ -1050,15 +1050,15 @@ export default {
 
         amendApproval: function (proposal_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Amend Licence',
                 text: 'Are you sure you want to amend this licence?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Amend licence',
             }).then(
                 () => {
-                    swal({
+                    swal.fire({
                         title: 'Loading...',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
@@ -1087,10 +1087,10 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                swal({
+                                swal.fire({
                                     title: 'Amend Licence',
                                     text: error.body,
-                                    type: 'error',
+                                    icon: 'error',
                                 });
                             }
                         );

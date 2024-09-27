@@ -755,10 +755,10 @@ export default {
                         if (vm.user.residential_address == null) {
                             vm.user.residential_address = {};
                         }
-                        swal({
+                        swal.fire({
                             title: 'Update Contact Details',
                             html: 'User contact details has been successfully updated.',
-                            type: 'success',
+                            icon: 'success',
                         });
                     },
                     (error) => {
@@ -767,12 +767,12 @@ export default {
                         for (var key in error.body) {
                             error_msg += key + ': ' + error.body[key] + '<br/>';
                         }
-                        swal({
+                        swal.fire({
                             title: 'Update Contact Details',
                             html:
                                 'There was an error updating the user contact details.<br/>' +
                                 error_msg,
-                            type: 'error',
+                            icon: 'error',
                         });
                     }
                 );
@@ -798,10 +798,10 @@ export default {
                         if (vm.user.residential_address == null) {
                             vm.user.residential_address = {};
                         }
-                        swal({
+                        swal.fire({
                             title: 'Update Address Details',
                             html: 'User address details has been successfully updated.',
-                            type: 'success',
+                            icon: 'success',
                         });
                     },
                     (error) => {
@@ -810,12 +810,12 @@ export default {
                         for (var key in error.body) {
                             error_msg += key + ': ' + error.body[key] + '<br/>';
                         }
-                        swal({
+                        swal.fire({
                             title: 'Update Address Details',
                             html:
                                 'There was an error updating the user address details.<br/>' +
                                 error_msg,
-                            type: 'error',
+                            icon: 'error',
                         });
                     }
                 );
@@ -823,13 +823,13 @@ export default {
         unlinkUser: function (org) {
             let vm = this;
             let org_name = org.name;
-            swal({
+            swal.fire({
                 title: 'Unlink From Organisation',
                 text:
                     'Are you sure you want to unlink this user from ' +
                     org.name +
                     ' ?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
@@ -875,25 +875,27 @@ export default {
                                                 ) {
                                                     vm.managesOrg = 'Yes';
                                                 }
-                                                swal(
-                                                    'Unlink',
-                                                    'The user has been successfully unlinked from ' +
+                                                swal.fire({
+                                                    title: 'Unlink',
+                                                    text:
+                                                        'The user has been successfully unlinked from ' +
                                                         org_name +
                                                         '.',
-                                                    'success'
-                                                );
+                                                    icon: 'success',
+                                                });
                                             },
                                             () => {}
                                         );
                                 },
                                 () => {
-                                    swal(
-                                        'Unlink',
-                                        'There was an error unlinking the user from ' +
+                                    swal.fire({
+                                        title: 'Unlink',
+                                        text:
+                                            'There was an error unlinking the user from ' +
                                             org_name +
                                             '.',
-                                        'error'
-                                    );
+                                        icon: 'error',
+                                    });
                                 }
                             );
                     }
@@ -924,10 +926,10 @@ export default {
             console.log(data);
             if (vm.uploadedID == null) {
                 vm.uploadingID = false;
-                swal({
+                swal.fire({
                     title: 'Upload ID',
                     html: 'Please select a file to upload.',
-                    type: 'error',
+                    icon: 'error',
                 });
             } else {
                 vm.$http
@@ -945,10 +947,10 @@ export default {
                         () => {
                             vm.uploadingID = false;
                             vm.uploadedID = null;
-                            swal({
+                            swal.fire({
                                 title: 'Upload ID',
                                 html: 'The user ID has been successfully uploaded.',
-                                type: 'success',
+                                icon: 'success',
                             }).then(() => {
                                 window.location.reload(true);
                             });
@@ -961,12 +963,12 @@ export default {
                                 error_msg +=
                                     key + ': ' + error.body[key] + '<br/>';
                             }
-                            swal({
+                            swal.fire({
                                 title: 'Upload ID',
                                 html:
                                     'There was an error uploading the user ID.<br/>' +
                                     error_msg,
-                                type: 'error',
+                                icon: 'error',
                             });
                         }
                     );

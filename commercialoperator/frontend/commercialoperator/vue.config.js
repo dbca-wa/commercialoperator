@@ -2,7 +2,7 @@ const { defineConfig } = require('@vue/cli-service');
 const path = require('path');
 const webpack = require('webpack');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
-const port = process.env.PORT ? parseInt(process.env.PORT) : 9072;
+const port = process.env.PORT ? parseInt(process.env.PORT) : 9107;
 
 module.exports = defineConfig({
     runtimeCompiler: true,
@@ -20,7 +20,7 @@ module.exports = defineConfig({
         );
         config.resolve.alias.set(
             '@static-root',
-            path.resolve(__dirname, '../../../staticfiles_ll/')
+            path.resolve(__dirname, '../../../staticfiles/')
         );
     },
     configureWebpack: {

@@ -179,7 +179,6 @@ export default {
     },
     props: {
         // Note: I'm commenting out the vehicel_id prop because it doesn't seem to be initialized with a non-null value
-        // eslint-disable-next-line vue/prop-name-casing
         // vehicle_id: {
         //     type: Number,
         //     required: true,
@@ -205,7 +204,7 @@ export default {
             state: 'proposed_vehicle',
             issuingVehicle: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -217,17 +216,26 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            localVehicleAction: JSON.parse(JSON.stringify(this.vehicle_action)),
         };
     },
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
-            return this.vehicle_action == 'add'
+            return this.localVehicleAction == 'add'
                 ? 'Add a new Vehicle record'
                 : 'Edit a vehicle record';
+        },
+    },
+    watch: {
+        vehicle_action: {
+            handler(newVal) {
+                this.localVehicleAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -252,7 +260,7 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.vehicle = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             $(this.$refs.rego_expiry).val('');
             this.$refs.capacity = '';
@@ -291,13 +299,13 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             if (vm.vehicle_access_id != null) {
                 vm.vehicle.access_type = vm.vehicle_access_id;
             }
             let vehicle = JSON.parse(JSON.stringify(vm.vehicle));
             vm.issuingVehicle = true;
-            if (vm.vehicle_action == 'add' && vm.vehicle_id == null) {
+            if (vm.localVehicleAction == 'add' && vm.vehicle_id == null) {
                 vm.$http
                     .post(api_endpoints.vehicles, JSON.stringify(vehicle), {
                         emulateJSON: true,
@@ -307,15 +315,15 @@ export default {
                             vm.issuingVehicle = false;
                             vm.vehicle = {};
                             vm.close();
-                            swal(
-                                'Created',
-                                'New vehicle record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New vehicle record has been created.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingVehicle = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -337,15 +345,15 @@ export default {
                             vm.issuingVehicle = false;
                             vm.vehicle = {};
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Vehicle details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Vehicle details has been saved.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingVehicle = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -357,6 +365,13 @@ export default {
             vm.validation_form = $(vm.form).validate({
                 rules: {
                     access_type: 'required',
+                    capacity: { required: true, number: true },
+                    rego: 'required',
+                    rego_expiry: {
+                        required: true,
+                        date: true,
+                    },
+                    license: 'required',
                 },
                 messages: {},
                 showErrors: function (errorMap, errorList) {

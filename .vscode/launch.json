@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/manage_co.py",
             "args": [
                 "runserver",
-                "0.0.0.0:9071"
+                "0.0.0.0:9106"
             ],
             "django": true
         },
@@ -20,7 +20,7 @@
             "request": "launch",
             "env": { "PORT": "9071" },
             "name": "Node: Chrome",
-            "url": "http://localhost:9071",
+            "url": "http://localhost:9106",
             "webRoot": "${workspaceFolder}/commercialoperator/frontend/commercialoperator/",
             "skipFiles": [
               "${workspaceFolder}/commercialoperator/frontend/commercialoperator/node_modules/**/",

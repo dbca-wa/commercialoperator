@@ -5,11 +5,8 @@ from django.core.validators import MinValueValidator
 
 from rest_framework import status
 
-# from commercialoperator.components.stubs.models import (
-#     LedgerOrganisation as ledger_organisation,
-# )  # ledger.accounts.models.Organisation
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import get_organisation
+from ledger_api_client.utils import get_organisation, get_search_organisation
 from commercialoperator.components.main.models import (
     UserAction,
     CommunicationsLogEntry,
@@ -34,8 +31,13 @@ from commercialoperator.components.organisations.emails import (
     send_organisation_request_email_notification,
     send_organisation_request_link_email_notification,
 )
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
-from commercialoperator.components.stubs.utils import retrieve_members
+from commercialoperator.components.stubs.utils import (
+    retrieve_email_user,
+    retrieve_members,
+    retrieve_organisation_delegate_ids,
+)
 
 
 class Organisation(models.Model):
@@ -220,33 +222,35 @@ class Organisation(models.Model):
         send_organisation_request_link_email_notification(self, request, recipients)
 
     @staticmethod
-    def existance(abn):
+    @basic_exception_handler
+    def existance(name, abn):
         exists = True
         org = None
-        l_org = None
-        try:
-            try:
-                l_org = ledger_organisation.objects.get(abn=abn)
-            except ledger_organisation.DoesNotExist:
-                exists = False
-            if l_org:
-                try:
-                    org = Organisation.objects.get(organisation=l_org)
-                except Organisation.DoesNotExist:
-                    exists = False
-            if exists:
-                if has_atleast_one_admin(org):
-                    return {
-                        "exists": exists,
-                        "id": org.id,
-                        "first_five": org.first_five,
-                    }
-                else:
-                    return {"exists": has_atleast_one_admin(org)}
-            return {"exists": exists}
 
-        except:
-            raise
+        organisation_response = get_search_organisation(name, abn)
+        response_status = organisation_response.get("status", None)
+
+        if response_status == status.HTTP_200_OK:
+            ledger_org = organisation_response.get("data", {})[0]
+            try:
+                org = Organisation.objects.get(
+                    organisation_id=ledger_org["organisation_id"]
+                )
+            except Organisation.DoesNotExist:
+                exists = False
+        else:
+            exists = False
+
+        if exists:
+            if has_atleast_one_admin(org):
+                return {
+                    "exists": exists,
+                    "id": org.id,
+                    "first_five": org.first_five,
+                }
+            else:
+                return {"exists": has_atleast_one_admin(org)}
+        return {"exists": exists}
 
     def accept_user(self, user, request):
         with transaction.atomic():
@@ -680,19 +684,25 @@ class Organisation(models.Model):
 
     @property
     def first_five(self):
+        delegates_all_5 = retrieve_organisation_delegate_ids(self.id)[:5]
+        delegates_all_5 = [retrieve_email_user(user_id) for user_id in delegates_all_5]
         return ",".join(
             [
                 user.get_full_name()
-                for user in self.delegates.all()[:5]
+                for user in delegates_all_5
                 if can_admin_org(self, user.id)
             ]
         )
 
     @property
     def all_admin_emails(self):
-        return [
-            user.email for user in self.delegates.all() if can_admin_org(self, user.id)
-        ]
+        delegate_user_ids = retrieve_organisation_delegate_ids(self.id)
+        # delegate_user_ids = [1] # for testing
+        delegates_all = [retrieve_email_user(user_id) for user_id in delegate_user_ids]
+        delegates_all = [
+            user for user in delegates_all if user
+        ]  # Get rid of None values
+        return [user.email for user in delegates_all if can_admin_org(self, user.id)]
 
 
 class OrganisationContact(models.Model):
@@ -830,7 +840,9 @@ class OrganisationAction(UserAction):
 
     @classmethod
     def log_action(cls, organisation, action, user):
-        return cls.objects.create(organisation=organisation, who=user, what=str(action))
+        return cls.objects.create(
+            organisation=organisation, who_id=user.id, what=str(action)
+        )
 
     organisation = models.ForeignKey(
         Organisation, related_name="action_logs", on_delete=models.CASCADE
@@ -906,34 +918,39 @@ class OrganisationRequest(models.Model):
         app_label = "commercialoperator"
 
     def accept(self, request):
-        with transaction.atomic():
-            self.status = "approved"
-            self.save()
-            self.log_user_action(
-                OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
-                request,
-            )
-            # Continue with remaining logic
-            self.__accept(request)
+        self.status = "approved"
+        self.save()
+        self.log_user_action(
+            OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
+            request,
+        )
+        # Continue with remaining logic
+        self.__accept(request)
 
+    @transaction.atomic
     def __accept(self, request):
         # Check if orgsanisation exists in ledger
         ledger_org = None
-        try:
-            ledger_org = ledger_organisation.objects.get(abn=self.abn)
-        except ledger_organisation.DoesNotExist:
-            try:
-                check_name = ledger_organisation.objects.get(name=self.name)
-                if check_name:
-                    raise ValidationError(
-                        "Organisation with the same name already exists"
-                    )
-            except ledger_organisation.DoesNotExist:
-                ledger_org = ledger_organisation.objects.create(
-                    name=self.name, abn=self.abn
-                )
+        organisation_response = get_search_organisation(self.name, self.abn)
+        response_status = organisation_response.get("status", None)
+
+        if response_status == status.HTTP_404_NOT_FOUND:
+            # Note: Do we want to create a new organisation here?
+            raise NotImplementedError(
+                "Organisation does not exist in the ledger. Please create it first."
+            )
+
+        if response_status != status.HTTP_200_OK:
+            raise ValidationError(
+                "Failed to retrieve organisation details from the ledger."
+            )
+
+        ledger_org = organisation_response.get("data", {})[0]
+
         # Create Organisation in commercialoperator
-        org, created = Organisation.objects.get_or_create(organisation=ledger_org)
+        org, created = Organisation.objects.get_or_create(
+            organisation_id=ledger_org["organisation_id"]
+        )
         # Link requester to organisation
         delegate = UserDelegation.objects.create(user=self.requester, organisation=org)
         # log who approved the request
@@ -1054,7 +1071,9 @@ class OrganisationRequestUserAction(UserAction):
 
     @classmethod
     def log_action(cls, request, action, user):
-        return cls.objects.create(request=request, who=user, what=str(action))
+        return cls.objects.create(
+            request_id=request.id, who_id=user.id, what=str(action)
+        )
 
     request = models.ForeignKey(
         OrganisationRequest, related_name="action_logs", on_delete=models.CASCADE

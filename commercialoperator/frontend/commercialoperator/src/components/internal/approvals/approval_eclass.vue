@@ -75,9 +75,6 @@
                                             label="Reserved Licence Lodgement Number"
                                             :is-required="false"
                                         />
-                                        <!-- <FileField :document_url="document_url" :proposal_id="proposal_id" isRepeatable="true" name="eclass_file" label="Licence" id="id_file" @refreshFromResponse="refreshFromResponse"/> -->
-                                        <!-- <RadioField :proposal_id="proposal_id" :readonly="readonly" name="applicant_type2" label="Applicant Type" id="id_applicant_type2" :options="radio_options" :conditions="radio_conditions"/> -->
-
                                         <div class="form-group">
                                             <div class="row">
                                                 <div class="col-sm-3">
@@ -232,7 +229,7 @@ export default {
         return {
             isModalOpen: false,
             form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             validation_form: null,
             // eslint-disable-next-line vue/no-reserved-keys
@@ -251,7 +248,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         document_url: function () {
             // location on media folder for the docs - to be passed to FileField
@@ -267,11 +264,9 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.eclassForm;
-        //vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListerners();
         });
-        //console.log(validate);
     },
     methods: {
         set_url: function () {
@@ -331,27 +326,27 @@ export default {
                 .then(
                     (res) => {
                         vm.proposal = res.body;
-                        swal(
-                            'New E Class Licence Created',
-                            'New E Class Licence Created: ' +
+                        swal.fire({
+                            title: 'New E Class Licence Created',
+                            text:
+                                'New E Class Licence Created: ' +
                                 res.body['approval'],
-                            'success'
-                        );
+                            icon: 'success',
+                        });
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
-                        swal(
-                            'Submit Error',
-                            helpers.apiVueResourceError(err),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Submit Error',
+                            text: helpers.apiVueResourceError(err),
+                            icon: 'error',
+                        });
                     }
                 );
         },
         ok: function () {
             let vm = this;
             if ($(vm.form).valid()) {
-                //vm.sendData();
                 vm.save();
             }
         },
@@ -366,7 +361,7 @@ export default {
                 reason_id: null,
                 proposal: this.proposal_id,
             };
-            this.errors = false;
+            this.hasErrors = false;
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
 

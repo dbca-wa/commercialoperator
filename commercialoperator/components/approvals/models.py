@@ -31,7 +31,10 @@ from commercialoperator.components.approvals.email import (
     send_approval_reinstate_email_notification,
     send_approval_surrender_email_notification,
 )
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.stubs.utils import (
+    retrieve_email_user,
+    retrieve_organisation_delegate_ids,
+)
 from commercialoperator.utils import search_keys, search_multiple_keys
 from commercialoperator.helpers import is_customer
 
@@ -392,7 +395,7 @@ class Approval(RevisionedMixin):
     def save(self, *args, **kwargs):
         if self.lodgement_number in ["", None]:
             self.lodgement_number = "L{0:06d}".format(self.next_id)
-            # self.save()
+
         super(Approval, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -745,17 +748,17 @@ class Approval(RevisionedMixin):
                         "You cannot suspend approval if it is not current or suspended"
                     )
                 if details.get("to_date"):
-                    to_date = details.get("to_date").strftime("%d/%m/%Y")
+                    to_date = details.get("to_date").strftime("%Y-%m-%d")
                 else:
                     to_date = ""
                 self.suspension_details = {
-                    "from_date": details.get("from_date").strftime("%d/%m/%Y"),
+                    "from_date": details.get("from_date").strftime("%Y-%m-%d"),
                     "to_date": to_date,
                     "details": details.get("suspension_details"),
                 }
                 today = timezone.now().date()
                 from_date = datetime.datetime.strptime(
-                    self.suspension_details["from_date"], "%d/%m/%Y"
+                    self.suspension_details["from_date"], "%Y-%m-%d"
                 )
                 from_date = from_date.date()
                 if from_date <= today:
@@ -822,56 +825,53 @@ class Approval(RevisionedMixin):
             except:
                 raise
 
+    @transaction.atomic
     def approval_surrender(self, request, details):
-        with transaction.atomic():
-            try:
-                if not request.user.commercialoperator_organisations.filter(
-                    organisation_id=self.applicant_id
-                ):
-                    if request.user not in self.allowed_assessors and not is_customer(
-                        request
-                    ):
-                        raise ValidationError(
-                            "You do not have access to surrender this approval"
-                        )
-                if not self.can_reissue and self.can_action:
-                    raise ValidationError(
-                        "You cannot surrender approval if it is not current or suspended"
-                    )
-                self.surrender_details = {
-                    "surrender_date": details.get("surrender_date").strftime(
-                        "%d/%m/%Y"
-                    ),
-                    "details": details.get("surrender_details"),
-                }
-                today = timezone.now().date()
-                surrender_date = datetime.datetime.strptime(
-                    self.surrender_details["surrender_date"], "%d/%m/%Y"
+        if not retrieve_organisation_delegate_ids(self.org_applicant_id).filter(
+            user_id=request.user.id
+        ):
+            # Note: In almost exlusively all cases, this filter will return an empty queryset (comparing organisation_id to user_id) and thus evaluate to True
+            # if not request.user.commercialoperator_organisations.filter(
+            #     organisation_id=self.applicant_id
+            # ):
+            if request.user not in self.allowed_assessors and not is_customer(request):
+                raise ValidationError(
+                    "You do not have access to surrender this approval"
                 )
-                surrender_date = surrender_date.date()
-                if surrender_date <= today:
-                    if not self.status == "surrendered":
-                        self.status = "surrendered"
-                        self.set_to_surrender = False
-                        self.save()
-                        send_approval_surrender_email_notification(self)
-                else:
-                    self.set_to_surrender = True
+        if not self.can_reissue and self.can_action:
+            raise ValidationError(
+                "You cannot surrender approval if it is not current or suspended"
+            )
+        self.surrender_details = {
+            "surrender_date": details.get("surrender_date").strftime("%d/%m/%Y"),
+            "details": details.get("surrender_details"),
+        }
+        today = timezone.now().date()
+        surrender_date = datetime.datetime.strptime(
+            self.surrender_details["surrender_date"], "%d/%m/%Y"
+        )
+        surrender_date = surrender_date.date()
+        if surrender_date <= today:
+            if not self.status == "surrendered":
+                self.status = "surrendered"
+                self.set_to_surrender = False
                 self.save()
-                # Log approval action
-                self.log_user_action(
-                    ApprovalUserAction.ACTION_SURRENDER_APPROVAL.format(self.id),
-                    request,
-                )
-                # Log entry for proposal
-                self.current_proposal.log_user_action(
-                    ProposalUserAction.ACTION_SURRENDER_APPROVAL.format(
-                        self.current_proposal.id
-                    ),
-                    request,
-                )
-            except:
-                raise
+                send_approval_surrender_email_notification(self)
+        else:
+            self.set_to_surrender = True
+        self.save()
+        # Log approval action
+        self.log_user_action(
+            ApprovalUserAction.ACTION_SURRENDER_APPROVAL.format(self.id),
+            request,
+        )
+        # Log entry for proposal
+        self.current_proposal.log_user_action(
+            ProposalUserAction.ACTION_SURRENDER_APPROVAL.format(
+                self.current_proposal.id
+            ),
+            request,
+        )
 
 
 class PreviewTempApproval(Approval):
@@ -928,7 +928,7 @@ class ApprovalUserAction(UserAction):
 
     @classmethod
     def log_action(cls, approval, action, user):
-        return cls.objects.create(approval=approval, who=user, what=str(action))
+        return cls.objects.create(approval=approval, who_id=user.id, what=str(action))
 
     approval = models.ForeignKey(
         Approval, related_name="action_logs", on_delete=models.CASCADE

@@ -17,8 +17,11 @@
                             <div class="row">
                                 <div class="col-sm-12">
                                     <strong>Submitted by</strong><br />
-                                    <!-- {{ proposal.submitter.first_name }}
-                                    {{ proposal.submitter.last_name }} -->
+                                    <span v-if="proposal.submitter">
+                                        {{ proposal.submitter.first_name }}
+                                        {{ proposal.submitter.last_name }}
+                                    </span>
+                                    <span v-else>Not available</span>
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
@@ -41,32 +44,34 @@
                 <div v-if="canSeeSubmission" class="row">
                     <div class="panel panel-default">
                         <div class="panel-heading">History</div>
-                        <table class="table small-table">
-                            <tr>
-                                <th>Last Modified</th>
-                                <th></th>
-                            </tr>
-                            <tr
-                                v-for="p in proposal.reversion_ids"
-                                :key="p.cur_version_id"
-                            >
-                                <td>{{ p.created | formatDate }}</td>
-                                <td>
-                                    <a
-                                        id="history_id"
-                                        :href="
-                                            history_url +
-                                            'version_id2=' +
-                                            p.cur_version_id +
-                                            '&version_id1=' +
-                                            p.prev_version_id
-                                        "
-                                        target="_blank"
-                                        >compare</a
-                                    >
-                                </td>
-                            </tr>
-                        </table>
+                        <div class="panel-body panel-collapse">
+                            <table class="table small-table">
+                                <tr>
+                                    <th>Last Modified</th>
+                                    <th></th>
+                                </tr>
+                                <tr
+                                    v-for="p in proposal.reversion_ids"
+                                    :key="p.cur_version_id"
+                                >
+                                    <td>{{ p.created | formatDate }}</td>
+                                    <td>
+                                        <a
+                                            id="history_id"
+                                            :href="
+                                                history_url +
+                                                'version_id2=' +
+                                                p.cur_version_id +
+                                                '&version_id1=' +
+                                                p.prev_version_id
+                                            "
+                                            target="_blank"
+                                            >compare</a
+                                        >
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -1667,10 +1672,19 @@ export default {
             );
             vm.$http.post(vm.proposal_form_url, formData).then(
                 () => {
-                    swal('Saved', 'Your application has been saved', 'success');
+                    swal.fire({
+                        title: 'Saved',
+                        text: 'Your application has been saved',
+                        icon: 'success',
+                    });
                     vm.savingProposal = false;
                 },
-                () => {
+                (e) => {
+                    swal.fire({
+                        title: 'Error',
+                        text: helpers.apiVueResourceError(e),
+                        icon: 'error',
+                    });
                     vm.savingProposal = false;
                 }
             );

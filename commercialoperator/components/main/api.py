@@ -55,6 +55,8 @@ from collections import namedtuple
 
 import logging
 
+from commercialoperator.components.stubs.decorators import basic_exception_handler
+
 logger = logging.getLogger("payment_checkout")
 
 
@@ -116,6 +118,11 @@ class ActivityMatrixViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
+            activity_matrix = ActivityMatrix.objects.filter(
+                name="Commercial Operator"
+            ).order_by("-version")
+            if not activity_matrix.exists():
+                return ActivityMatrix.objects.none()
             return [
                 ActivityMatrix.objects.filter(name="Commercial Operator")
                 .order_by("-version")
@@ -526,63 +533,30 @@ class PaymentViewSet(viewsets.ModelViewSet):
 class BookingSettlementReportView(views.APIView):
     renderer_classes = (JSONRenderer,)
 
+    @basic_exception_handler
     def get(self, request, format=None):
-        try:
-            http_status = status.HTTP_200_OK
-            # parse and validate data
-            report = None
-            data = {
-                "date": request.GET.get("date"),
-            }
-            serializer = BookingSettlementReportSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            filename = "Booking Settlement Report-{}".format(
-                str(serializer.validated_data["date"])
+        # parse and validate data
+        report = None
+        data = {
+            "date": request.GET.get("date"),
+        }
+        serializer = BookingSettlementReportSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        filename = "Booking Settlement Report-{}".format(
+            str(serializer.validated_data["date"])
+        )
+        # Generate Report
+        report = reports.booking_bpoint_settlement_report(
+            serializer.validated_data["date"]
+        )
+        if report:
+            response = HttpResponse(FileWrapper(report), content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="{}.csv"'.format(
+                filename
             )
-            # Generate Report
-            report = reports.booking_bpoint_settlement_report(
-                serializer.validated_data["date"]
-            )
-            if report:
-                response = HttpResponse(FileWrapper(report), content_type="text/csv")
-                response["Content-Disposition"] = (
-                    'attachment; filename="{}.csv"'.format(filename)
-                )
-                return response
-            else:
-                raise serializers.ValidationError("No report was generated.")
-        except serializers.ValidationError:
-            raise
-        except Exception as e:
-            traceback.print_exc()
-
-
-# class BookingReportView(views.APIView):
-#    renderer_classes = (JSONRenderer,)
-#
-#    def get(self,request,format=None):
-#        try:
-#            http_status = status.HTTP_200_OK
-#            #parse and validate data
-#            report = None
-#            data = {
-#                "date":request.GET.get('date'),
-#            }
-#            serializer = BookingSettlementReportSerializer(data=data)
-#            serializer.is_valid(raise_exception=True)
-#            filename = 'Booking Report-{}'.format(str(serializer.validated_data['date']))
-#            # Generate Report
-#            report = reports.bookings_report(serializer.validated_data['date'])
-#            if report:
-#                response = HttpResponse(FileWrapper(report), content_type='text/csv')
-#                response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(filename)
-#                return response
-#            else:
-#                raise serializers.ValidationError('No report was generated.')
-#        except serializers.ValidationError:
-#            raise
-#        except Exception as e:
-#            traceback.print_exc()
+            return response
+        else:
+            raise serializers.ValidationError("No report was generated.")
 
 
 class OracleJob(views.APIView):
@@ -590,32 +564,20 @@ class OracleJob(views.APIView):
         JSONRenderer,
     ]
 
+    @basic_exception_handler
     def get(self, request, format=None):
-        try:
-            data = {
-                "date": request.GET.get("date"),
-                "override": request.GET.get("override"),
-            }
-            serializer = OracleSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            oracle_integration(
-                serializer.validated_data["date"].strftime("%Y-%m-%d"),
-                serializer.validated_data["override"],
-            )
-            data = {"successful": True}
-            return Response(data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            raise (
-                serializers.ValidationError(repr(e.error_dict))
-                if hasattr(e, "error_dict")
-                else serializers.ValidationError(e)
-            )
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e[0]))
+        data = {
+            "date": request.GET.get("date"),
+            "override": request.GET.get("override"),
+        }
+        serializer = OracleSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        oracle_integration(
+            serializer.validated_data["date"].strftime("%Y-%m-%d"),
+            serializer.validated_data["override"],
+        )
+        data = {"successful": True}
+        return Response(data)
 
 
 # To display only trails and activity types on Event activity tab

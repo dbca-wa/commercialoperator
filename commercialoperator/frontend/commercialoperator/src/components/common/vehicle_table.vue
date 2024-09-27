@@ -160,7 +160,7 @@ export default {
                 proposal: vm.proposal.id,
             };
             this.$refs.edit_vehicle.vehicle = new_vehicle_another;
-            this.$refs.edit_vehicle.vehicle_action = 'add';
+            this.$refs.edit_vehicle.localVehicleAction = 'add';
             this.$refs.edit_vehicle.isModalOpen = true;
         },
         editVehicle: function (id) {
@@ -170,24 +170,27 @@ export default {
         },
         discardVehicle: function (vehicle_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Vehicle',
                 text: 'Are you sure you want to discard this vehicle?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Vehicle',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_vehicle(vehicle_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your vehicle has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your vehicle has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.vehicle_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {

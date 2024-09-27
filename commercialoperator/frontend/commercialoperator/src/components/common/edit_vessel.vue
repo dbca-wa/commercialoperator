@@ -9,7 +9,11 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="vesselForm">
+                    <form
+                        id="vessel-form"
+                        class="form-horizontal"
+                        name="vesselForm"
+                    >
                         <alert :show.sync="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
@@ -160,7 +164,6 @@ export default {
     props: {
         // Note: I'm commenting out the vessel_id prop because it doesn't seem to be initialized with a non-null value
         // Note: Instead when the vessel_id is modified, it seems to be done through the vessel data property
-        // eslint-disable-next-line vue/prop-name-casing
         // vessel_id: {
         //     type: Number,
         //     required: true,
@@ -182,7 +185,7 @@ export default {
             state: 'proposed_vessel',
             issuingVessel: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -194,17 +197,26 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            localVesselAction: JSON.parse(JSON.stringify(this.vessel_action)),
         };
     },
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
-            return this.vessel_action == 'add'
+            return this.localVesselAction == 'add'
                 ? 'Add a new Vessel record'
                 : 'Edit a vessel record';
+        },
+    },
+    watch: {
+        vessel_action: {
+            handler(newVal) {
+                this.localVesselAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -229,7 +241,7 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.vessel = {};
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             this.validation_form.resetForm();
         },
@@ -275,10 +287,10 @@ export default {
 
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let vessel = JSON.parse(JSON.stringify(vm.vessel));
             vm.issuingVessel = true;
-            if (vm.vessel_action == 'add' && vm.vessel_id == null) {
+            if (vm.localVesselAction == 'add' && vm.vessel_id == null) {
                 vm.$http
                     .post(api_endpoints.vessels, JSON.stringify(vessel), {
                         emulateJSON: true,
@@ -287,15 +299,15 @@ export default {
                         (response) => {
                             vm.issuingVessel = false;
                             vm.close();
-                            swal(
-                                'Created',
-                                'New vessel record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New vessel record has been created.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingVessel = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -316,15 +328,15 @@ export default {
                         (response) => {
                             vm.issuingVessel = false;
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Vessel details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Vessel details has been saved.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingVessel = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -334,8 +346,13 @@ export default {
         addFormValidations: function () {
             let vm = this;
             vm.validation_form = $(vm.form).validate({
+                // Note: Made all fields required and added number validation for craft_no and size
                 rules: {
-                    access_type: 'required',
+                    hire_rego: 'required',
+                    spv_no: 'required',
+                    capacity: 'required',
+                    craft_no: { required: true, number: true },
+                    size: { required: true, number: true },
                 },
                 messages: {},
                 showErrors: function (errorMap, errorList) {

@@ -305,20 +305,20 @@ class ApprovalExtendSerializer(serializers.Serializer):
 
 
 class ApprovalCancellationSerializer(serializers.Serializer):
-    cancellation_date = serializers.DateField(input_formats=["%d/%m/%Y"])
+    cancellation_date = serializers.DateField(input_formats=["%Y-%m-%d"])
     cancellation_details = serializers.CharField()
 
 
 class ApprovalSuspensionSerializer(serializers.Serializer):
-    from_date = serializers.DateField(input_formats=["%d/%m/%Y"])
+    from_date = serializers.DateField(input_formats=["%Y-%m-%d"])
     to_date = serializers.DateField(
-        input_formats=["%d/%m/%Y"], required=False, allow_null=True
+        input_formats=["%Y-%m-%d"], required=False, allow_null=True
     )
     suspension_details = serializers.CharField()
 
 
 class ApprovalSurrenderSerializer(serializers.Serializer):
-    surrender_date = serializers.DateField(input_formats=["%d/%m/%Y"])
+    surrender_date = serializers.DateField(input_formats=["%Y-%m-%d"])
     surrender_details = serializers.CharField()
 
 

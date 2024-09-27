@@ -15,7 +15,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class EmailUserLogEntryManager(models.Manager):
+    def create(self, *args, **kwargs):
+        logger.error("EmailUserLogEntry model does not exist during segregation")
+
+        return False
+
 class EmailUserLogEntry(CommunicationsLogEntry):
+    objects = EmailUserLogEntryManager()
+
     emailuser = models.IntegerField()
 
     def __str__(self):

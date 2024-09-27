@@ -407,18 +407,6 @@ export default {
                 return 'Pay and Submit';
             }
         },
-        _save_applicant_data: function () {
-            let vm = this;
-            if (vm.proposal.applicant_type == 'SUB') {
-                vm.$refs.proposal_tclass.$refs.profile.updatePersonal();
-                vm.$refs.proposal_tclass.$refs.profile.updateAddress();
-                vm.$refs.proposal_tclass.$refs.profile.updateContact();
-            }
-            if (vm.proposal.applicant_type == 'ORG') {
-                vm.$refs.proposal_tclass.$refs.organisation.updateDetails_noconfirm();
-                vm.$refs.proposal_tclass.$refs.organisation.updateAddress();
-            }
-        },
         save_applicant_data: function () {
             let vm = this;
             if (vm.proposal.applicant_type == 'SUB') {
@@ -427,8 +415,8 @@ export default {
                 vm.proposal_refs().$refs.profile.updateContact();
             }
             if (vm.proposal.applicant_type == 'ORG') {
-                vm.proposal_refs().$refs.organisation.updateDetails();
-                vm.proposal_refs().$refs.organisation.updateAddress();
+                vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
+                vm.proposal_refs().$refs.organisation.updateAddress_noconfirm();
             }
         },
 
@@ -459,12 +447,20 @@ export default {
             let formData = vm.set_formData();
             vm.$http.post(vm.proposal_form_url, formData).then(
                 () => {
-                    swal('Saved', 'Your application has been saved', 'success');
+                    swal.fire({
+                        title: 'Saved',
+                        text: 'Your application has been saved',
+                        icon: 'success',
+                    });
                     vm.savingProposal = false;
                 },
                 (err) => {
                     var errorText = helpers.apiVueResourceError(err);
-                    swal('Save Error', errorText, 'error');
+                    swal.fire({
+                        title: 'Save Error',
+                        text: errorText,
+                        icon: 'error',
+                    });
                     vm.savingProposal = false;
                 }
             );
@@ -503,7 +499,11 @@ export default {
                     },
                     (err) => {
                         var errorText = helpers.apiVueResourceError(err);
-                        swal('Submit Error', errorText, 'error');
+                        swal.fire({
+                            title: 'Save Error',
+                            text: errorText,
+                            icon: 'error',
+                        });
                         vm.paySubmitting = false;
                         vm.saveError = true;
                     }
@@ -525,7 +525,11 @@ export default {
                 },
                 (err) => {
                     var errorText = helpers.apiVueResourceError(err);
-                    swal('Submit Error', errorText, 'error');
+                    swal.fire({
+                        title: 'Save Error',
+                        text: errorText,
+                        icon: 'error',
+                    });
                     vm.paySubmitting = false;
                 }
             );
@@ -1162,10 +1166,10 @@ export default {
 
             var missing_data = vm.can_submit();
             if (missing_data != true) {
-                swal({
+                swal.fire({
                     title: 'Please fix following errors before submitting',
                     text: missing_data,
-                    type: 'error',
+                    icon: 'error',
                 });
                 return false;
             }
@@ -1174,13 +1178,13 @@ export default {
             vm.submitting = true;
             vm.paySubmitting = true;
 
-            swal({
+            swal.fire({
                 title: vm.submit_text() + ' Application',
                 text:
                     'Are you sure you want to ' +
                     vm.submit_text().toLowerCase() +
                     ' this application?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: vm.submit_text(),
             }).then(
@@ -1213,11 +1217,13 @@ export default {
                                         });
                                     },
                                     (err) => {
-                                        swal(
-                                            'Submit Error',
-                                            helpers.apiVueResourceError(err),
-                                            'error'
-                                        );
+                                        swal.fire({
+                                            title: 'Submit Error',
+                                            text: helpers.apiVueResourceError(
+                                                err
+                                            ),
+                                            icon: 'error',
+                                        });
                                     }
                                 );
                         }

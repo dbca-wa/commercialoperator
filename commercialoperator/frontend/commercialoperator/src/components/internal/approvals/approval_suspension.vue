@@ -31,7 +31,7 @@
                                         >
                                             <input
                                                 v-model="approval.from_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="from_date"
                                                 placeholder="DD/MM/YYYY"
@@ -63,7 +63,7 @@
                                         >
                                             <input
                                                 v-model="approval.to_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="to_date"
                                                 placeholder="DD/MM/YYYY"
@@ -150,7 +150,7 @@ export default {
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -166,7 +166,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         title: function () {
             return 'Suspend Licence';
@@ -195,7 +195,7 @@ export default {
             this.approval = {};
             //this.approval.from_date = ""
             //this.approval.to_date = ""
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             // $(this.$refs.from_date).data('DateTimePicker').clear();
             // $(this.$refs.to_date).data('DateTimePicker').clear();
@@ -215,7 +215,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 
@@ -235,15 +235,15 @@ export default {
                         vm.issuingApproval = false;
                         vm.approval = {};
                         vm.close();
-                        swal(
-                            'Suspend',
-                            'An email has been sent to applicant about suspension of this licence',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Suspend',
+                            text: 'An email has been sent to applicant about suspension of this licence',
+                            icon: 'success',
+                        });
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
-                        vm.errors = true;
+                        vm.hasErrors = true;
                         vm.issuingApproval = false;
                         vm.errorString = helpers.apiVueResourceError(error);
                     }

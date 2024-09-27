@@ -249,7 +249,7 @@ export default {
             state: 'proposed_approval',
             issuingApproval: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             toDateError: false,
             startDateError: false,
             errorString: '',
@@ -274,7 +274,7 @@ export default {
         },
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
         showtoDateError: function () {
             var vm = this;
@@ -376,7 +376,7 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.approval = {};
-            this.errors = false;
+            this.hasErrors = false;
             this.toDateError = false;
             this.startDateError = false;
             $('.has-error').removeClass('has-error');
@@ -398,7 +398,7 @@ export default {
         },
         sendData: function () {
             let vm = this;
-            vm.errors = false;
+            vm.hasErrors = false;
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
             if (vm.state == 'proposed_approval') {
@@ -421,7 +421,7 @@ export default {
                             vm.$router.push({ path: '/internal' }); //Navigate to dashboard page after Propose issue.
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingApproval = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }
@@ -445,7 +445,7 @@ export default {
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
-                            vm.errors = true;
+                            vm.hasErrors = true;
                             vm.issuingApproval = false;
                             vm.errorString = helpers.apiVueResourceError(error);
                         }

@@ -1,8 +1,11 @@
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.organisations import models
-from commercialoperator.components.organisations.forms import OrganisationAccessGroupAdminForm
+from commercialoperator.components.organisations.forms import (
+    OrganisationAccessGroupAdminForm,
+)
 from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
+from commercialoperator.components.stubs.models import OrganisationAccessGroupMembers
 
 
 @admin.register(models.Organisation)
@@ -28,6 +31,11 @@ class OrganisationRequestAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "requester", "abn", "status"]
 
 
+class OrganisationAccessGroupMemberInline(admin.TabularInline):
+    model = OrganisationAccessGroupMembers
+    extra = 0
+
+
 @admin.register(models.OrganisationAccessGroup)
 class OrganisationAccessGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ("members",)
@@ -35,9 +43,8 @@ class OrganisationAccessGroupAdmin(admin.ModelAdmin):
     exclude = ("site",)
     actions = None
     readonly_fields = ["staff_members"]
-    fields = (
-        "staff_members",
-    )
+    fields = ("staff_members",)
+    inlines = [OrganisationAccessGroupMemberInline]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
@@ -56,4 +63,3 @@ class OrganisationAccessGroupAdmin(admin.ModelAdmin):
         return ", ".join(
             [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
-

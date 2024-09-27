@@ -5,6 +5,7 @@ from commercialoperator.components.stubs.utils import retrieve_group_members
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+
 def can_manage_org(organisation, user):
     from commercialoperator.components.organisations.models import (
         OrganisationAccessGroup,
@@ -110,7 +111,7 @@ def can_approve(organisation, user):
 def is_consultant(organisation, user):
     from commercialoperator.components.organisations.models import OrganisationContact
 
-    organisation_id = organisation.get("organisation_id", None)
+    organisation_id = getattr(organisation, "id", None)
     if not organisation_id:
         return False
 
@@ -130,13 +131,14 @@ def random_generator(size=12, chars=string.digits):
 
 
 def has_atleast_one_admin(organisation):
+    """A check for whether Organisation has atlease one admin user"""
+
     from commercialoperator.components.organisations.models import OrganisationContact
 
-    """ A check for whether Organisation has atlease one admin user """
     _atleast_one_admin = False
     try:
         _admin_contacts = OrganisationContact.objects.filter(
-            organisation_id=organisation,
+            organisation_id=organisation.id,
             user_status="active",
             user_role="organisation_admin",
             is_admin=True,

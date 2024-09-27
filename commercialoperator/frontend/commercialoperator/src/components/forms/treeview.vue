@@ -1,6 +1,6 @@
 <template lang="html">
     <div>
-        <!-- <treeselect
+        <Treeselect
             v-model="localValue"
             :options="options"
             :open-on-click="true"
@@ -55,22 +55,20 @@
                     <a> {{ node.label }} </a>
                 </div>
             </div>
-        </treeselect> -->
+        </Treeselect>
     </div>
 </template>
 
 <script>
-/* hack because I have modified two methods in vue-treeselect.js --> renderLabelContainer, renderOptionContainer. TODO look to override instead
-   sudo npm install --save @riophae/vue-treeselect
-   import Treeselect from '@riophae/vue-treeselect'
-*/
-// import Treeselect from '@/third-party/vue-treeselect/dict/vue-treeselect.js';
-import '@/third-party/vue-treeselect/dict/vue-treeselect.css';
+// import the component
+import Treeselect from '@riophae/vue-treeselect';
+// import the styles
+import '@riophae/vue-treeselect/dist/vue-treeselect.css';
 
 export default {
     name: 'TreeSelect',
     components: {
-        // Treeselect,
+        Treeselect,
     },
     props: {
         proposal: {

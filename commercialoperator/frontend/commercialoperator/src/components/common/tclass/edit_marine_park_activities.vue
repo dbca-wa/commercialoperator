@@ -128,7 +128,7 @@ export default {
             selected_zone: '',
             issuingVehicle: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
@@ -147,7 +147,7 @@ export default {
     computed: {
         showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
     },
     mounted: function () {
@@ -187,7 +187,7 @@ export default {
             this.park_id = null;
             this.selected_zone = '';
             this.park_activities = [];
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
         },
         addFormValidations: function () {},

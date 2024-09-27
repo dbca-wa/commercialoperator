@@ -22,6 +22,7 @@ from commercialoperator.components.compliances.serializers import (
     ComplianceAmendmentRequestSerializer,
     CompAmendmentRequestDisplaySerializer,
 )
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
@@ -43,26 +44,17 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
                 | Q(requirement__notification_only=True)
             )
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
-                | Q(proposal__submitter=self.request.user)
+                | Q(proposal__submitter_id=user.id)
             ).exclude(
                 Q(processing_status="discarded")
                 | Q(requirement__notification_only=True)
             )
             return queryset
         return Compliance.objects.none()
-
-    #    def list(self, request, *args, **kwargs):
-    #        response = super(ProposalPaginatedViewSet, self).list(request, args, kwargs)
-    #
-    #        # Add extra data to response.data
-    #        #response.data['regions'] = self.get_queryset().filter(region__isnull=False).values_list('region__name', flat=True).distinct()
-    #        return response
 
     @action(
         methods=[
@@ -107,13 +99,11 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return Compliance.objects.all().exclude(processing_status="discarded")
         elif is_customer(self.request):
-            user_orgs = [
-                org.id
-                for org in self.request.user.commercialoperator_organisations.all()
-            ]
+            user = self.request.user
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
-                | Q(proposal__submitter=self.request.user)
+                | Q(proposal__submitter_id=user.id)
             ).exclude(processing_status="discarded")
             return queryset
         return Compliance.objects.none()
@@ -188,46 +178,6 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             instance, context={"request": request}
         )
         return Response(serializer.data)
-
-    #    @action(methods=['GET',])
-    #    def compliances_paginated(self, request, *args, **kwargs):
-    #        """
-    #        Used by the external dashboard
-    #
-    #        http://localhost:8499/api/compliances/compliances_external/paginated/?format=datatables&draw=1&length=2
-    #        """
-    #
-    #        qs = self.get_queryset().exclude(processing_status='future')
-    #        qs = ProposalFilterBackend().filter_queryset(request, qs, self)
-    #
-    #        paginator = DatatablesPageNumberPagination()
-    #        paginator.page_size = qs.count()
-    #        result_page = paginator.paginate_queryset(qs, request)
-    #        serializer = ComplianceSerializer(result_page, context={'request':request}, many=True)
-    #        return paginator.get_paginated_response(serializer.data)
-
-    #    @action(methods=['GET',])
-    #    def user_list(self, request, *args, **kwargs):
-    #        #Remove filter to include 'Apporved Proposals in external dashboard .exclude(processing_status=Proposal.PROCESSING_STATUS_CHOICES[13][0])
-    #        queryset = self.get_queryset().exclude(processing_status='future')
-    #        serializer = ComplianceSerializer(queryset, many=True)
-    #        return Response(serializer.data)
-    #
-    #    @action(methods=['GET'])
-    #    def user_list_paginated(self, request, *args, **kwargs):
-    #        """
-    #        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
-    #        otherwise all serializers will use the default pagination class
-    #
-    #        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-    #        """
-    #        queryset = self.get_queryset().exclude(processing_status='future')
-    #        paginator = DatatablesPageNumberPagination()
-    #        paginator.page_size = queryset.count()
-    #        result_page = paginator.paginate_queryset(queryset, request)
-    #        #serializer = ListProposalSerializer(result_page, context={'request':request}, many=True)
-    #        serializer = self.get_serializer(result_page, context={'request':request}, many=True)
-    #        return paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=[

@@ -1064,6 +1064,7 @@ export default {
                 },
                 columns: [
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             if (full.is_admin) {
                                 return (
@@ -1082,6 +1083,7 @@ export default {
                     { data: 'fax_number' },
                     { data: 'email' },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             let name = full.first_name + ' ' + full.last_name;
@@ -1113,6 +1115,7 @@ export default {
                 },
                 columns: [
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             return full.first_name + ' ' + full.last_name;
                         },
@@ -1121,6 +1124,7 @@ export default {
                     { data: 'email' },
                     { data: 'user_status' },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (vm.is_commercialoperator_admin) {
@@ -1724,7 +1728,8 @@ export default {
                         async (result) => {
                             if (result) {
                                 this.action = 'unlink';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1763,7 +1768,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'reinstate';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1802,7 +1808,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'relink';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1841,7 +1848,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'suspend';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1880,7 +1888,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'make_admin_contact';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1919,7 +1928,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'make_user_contact';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1958,7 +1968,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'accept';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -1997,7 +2008,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'decline';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
@@ -2036,7 +2048,8 @@ export default {
                         (result) => {
                             if (result) {
                                 this.action = 'accept_declined';
-                                this.$refs.add_comm_org.action = this.action;
+                                this.$refs.add_comm_org.localAction =
+                                    this.action;
                                 this.addComm();
                             }
                         },
