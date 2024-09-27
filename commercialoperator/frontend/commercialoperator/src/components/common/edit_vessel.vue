@@ -193,6 +193,7 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            localVesselAction: JSON.parse(JSON.stringify(this.vessel_action)),
         };
     },
     computed: {
@@ -201,9 +202,17 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.vessel_action == 'add'
+            return this.localVesselAction == 'add'
                 ? 'Add a new Vessel record'
                 : 'Edit a vessel record';
+        },
+    },
+    watch: {
+        vessel_action: {
+            handler(newVal) {
+                this.localVesselAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -277,7 +286,7 @@ export default {
             vm.hasErrors = false;
             let vessel = JSON.parse(JSON.stringify(vm.vessel));
             vm.issuingVessel = true;
-            if (vm.vessel_action == 'add' && vm.vessel_id == null) {
+            if (vm.localVesselAction == 'add' && vm.vessel_id == null) {
                 vm.$http
                     .post(api_endpoints.vessels, JSON.stringify(vessel), {
                         emulateJSON: true,
@@ -286,11 +295,11 @@ export default {
                         (response) => {
                             vm.issuingVessel = false;
                             vm.close();
-                            swal(
-                                'Created',
-                                'New vessel record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New vessel record has been created.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -315,11 +324,11 @@ export default {
                         (response) => {
                             vm.issuingVessel = false;
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Vessel details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Vessel details has been saved.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {

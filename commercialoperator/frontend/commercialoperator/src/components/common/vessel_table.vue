@@ -152,7 +152,7 @@ export default {
                 proposal: vm.proposal.id,
             };
             this.$refs.edit_vessel.vessel = new_vessel_another;
-            this.$refs.edit_vessel.vessel_action = 'add';
+            this.$refs.edit_vessel.localVesselAction = 'add';
             this.$refs.edit_vessel.isModalOpen = true;
         },
         editVessel: function (id) {
@@ -162,10 +162,10 @@ export default {
         },
         discardVessel: function (vessel_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Vessel',
                 text: 'Are you sure you want to discard this vessel?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Vessel',
                 confirmButtonColor: '#d9534f',
@@ -175,11 +175,11 @@ export default {
                         .delete(api_endpoints.discard_vessel(vessel_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your vessel has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your vessel has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.vessel_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
