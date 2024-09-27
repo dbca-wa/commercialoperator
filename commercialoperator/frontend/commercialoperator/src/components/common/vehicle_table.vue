@@ -178,7 +178,10 @@ export default {
                 confirmButtonText: 'Discard Vehicle',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_vehicle(vehicle_id))
                         .then(

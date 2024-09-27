@@ -322,7 +322,7 @@ export default {
                             swal.fire({
                                 title: 'Created',
                                 text: 'New vehicle record has been created.',
-                                type: 'success',
+                                icon: 'success',
                             });
                             vm.$emit('refreshFromResponse', response);
                         },
@@ -352,7 +352,7 @@ export default {
                             swal.fire({
                                 title: 'Saved',
                                 text: 'Vehicle details has been saved.',
-                                type: 'success',
+                                icon: 'success',
                             });
                             vm.$emit('refreshFromResponse', response);
                         },

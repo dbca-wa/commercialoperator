@@ -170,7 +170,10 @@ export default {
                 confirmButtonText: 'Discard Vessel',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_vessel(vessel_id))
                         .then(
