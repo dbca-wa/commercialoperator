@@ -244,35 +244,39 @@ class QAOfficerReferralSerializer(serializers.ModelSerializer):
     def get_qaofficer(self,obj):
         return obj.qaofficer.get_full_name() if obj.qaofficer else ''
 
+
 class ProposalAccreditationSerializer(serializers.ModelSerializer):
-    accreditation_type_value= serializers.SerializerMethodField()
-    accreditation_expiry = serializers.DateField(format="%d/%m/%Y",input_formats=['%d/%m/%Y'],required=False,allow_null=True)
+    accreditation_type_value = serializers.SerializerMethodField()
+    accreditation_expiry = serializers.DateField(
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = ProposalAccreditation
-        # fields = '__all__'
-        fields=('id',
-                'accreditation_type',
-                'accreditation_expiry',
-                'comments',
-                'proposal_other_details',
-                'accreditation_type_value'
-                )
+        fields = (
+            "id",
+            "accreditation_type",
+            "accreditation_expiry",
+            "comments",
+            "proposal_other_details",
+            "accreditation_type_value",
+        )
 
-    def get_accreditation_type_value(self,obj):
+    def get_accreditation_type_value(self, obj):
         return obj.get_accreditation_type_display()
 
 
 class ProposalOtherDetailsSerializer(serializers.ModelSerializer):
     nominated_start_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
+        required=False, allow_null=True
     )
     insurance_expiry = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
+        required=False, allow_null=True
     )
     accreditations = ProposalAccreditationSerializer(many=True, read_only=True)
     preferred_licence_period = serializers.CharField(allow_blank=True, allow_null=True)
-    proposed_end_date = serializers.DateField(format="%d/%m/%Y", read_only=True)
+    proposed_end_date = serializers.DateField(read_only=True)
 
     class Meta:
         model = ProposalOtherDetails
@@ -1103,49 +1107,57 @@ class RequirementDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequirementDocument
         fields = ('id', 'name', '_file')
-        #fields = '__all__'
+        # fields = '__all__'
+
 
 class ProposalRequirementSerializer(serializers.ModelSerializer):
-    due_date = serializers.DateField(input_formats=['%d/%m/%Y'],required=False,allow_null=True)
-    can_referral_edit=serializers.SerializerMethodField()
-    can_district_assessor_edit=serializers.SerializerMethodField()
+    due_date = serializers.DateField(required=False, allow_null=True)
+    can_referral_edit = serializers.SerializerMethodField()
+    can_district_assessor_edit = serializers.SerializerMethodField()
     requirement_documents = RequirementDocumentSerializer(many=True, read_only=True)
+
     class Meta:
         model = ProposalRequirement
         fields = (
-            'id',
-            'due_date',
-            'free_requirement',
-            'standard_requirement',
-            'standard','order',
-            'proposal',
-            'recurrence',
-            'recurrence_schedule',
-            'recurrence_pattern',
-            'requirement',
-            'is_deleted',
-            'copied_from',
-            'referral_group',
-            'can_referral_edit',
-            'district_proposal',
-            'district',
-            'requirement_documents',
-            'can_district_assessor_edit',
-            'require_due_date',
-            'copied_for_renewal',
-            'notification_only',
+            "id",
+            "due_date",
+            "free_requirement",
+            "standard_requirement",
+            "standard",
+            "order",
+            "proposal",
+            "recurrence",
+            "recurrence_schedule",
+            "recurrence_pattern",
+            "requirement",
+            "is_deleted",
+            "copied_from",
+            "referral_group",
+            "can_referral_edit",
+            "district_proposal",
+            "district",
+            "requirement_documents",
+            "can_district_assessor_edit",
+            "require_due_date",
+            "copied_for_renewal",
+            "notification_only",
         )
-        read_only_fields = ('order','requirement', 'copied_from')
+        read_only_fields = ("order", "requirement", "copied_from")
 
-    def get_can_referral_edit(self,obj):
-        request = self.context['request']
-        user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
+    def get_can_referral_edit(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
         return obj.can_referral_edit(user)
 
-    def get_can_district_assessor_edit(self,obj):
-        request = self.context['request']
-        user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
+    def get_can_district_assessor_edit(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
         return obj.can_district_assessor_edit(user)
+
 
 class ProposalStandardRequirementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1153,8 +1165,8 @@ class ProposalStandardRequirementSerializer(serializers.ModelSerializer):
         fields = ('id','code','text')
 
 class ProposedApprovalSerializer(serializers.Serializer):
-    expiry_date = serializers.DateField(input_formats=['%d/%m/%Y'])
-    start_date = serializers.DateField(input_formats=['%d/%m/%Y'])
+    expiry_date = serializers.DateField()
+    start_date = serializers.DateField()
     details = serializers.CharField()
     cc_email = serializers.CharField(required=False,allow_null=True)
 
@@ -1203,7 +1215,8 @@ class SearchReferenceSerializer(serializers.Serializer):
 
 class VehicleSerializer(serializers.ModelSerializer):
     access_type= AccessTypeSerializer()
-    rego_expiry=serializers.DateField(format="%d/%m/%Y")
+    rego_expiry=serializers.DateField()
+
     class Meta:
         model = Vehicle
         fields = ('id', 'capacity', 'rego', 'license', 'access_type', 'rego_expiry', 'proposal')
@@ -1213,12 +1226,21 @@ class VesselSerializer(serializers.ModelSerializer):
         model = Vessel
         fields = '__all__'
 
+
 class SaveVehicleSerializer(serializers.ModelSerializer):
-    #access_type= AccessTypeSerializer()
-    rego_expiry = serializers.DateField(input_formats=['%d/%m/%Y'], allow_null=True)
+    rego_expiry = serializers.DateField(allow_null=True)
+
     class Meta:
         model = Vehicle
-        fields = ('id', 'capacity', 'rego', 'license', 'access_type', 'rego_expiry', 'proposal')
+        fields = (
+            "id",
+            "capacity",
+            "rego",
+            "license",
+            "access_type",
+            "rego_expiry",
+            "proposal",
+        )
 
 
 class ProposalFilmingSerializer(BaseProposalSerializer):
