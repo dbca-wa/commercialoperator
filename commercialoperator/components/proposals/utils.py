@@ -20,6 +20,12 @@ from commercialoperator.components.proposals.models import (
     ProposalAssessmentAnswer,
     ChecklistQuestion,
 )
+from commercialoperator.components.proposals.serializers_event import (
+    ProposalEventOtherDetailsSerializer,
+    ProposalEventManagementSerializer,
+    ProposalEventActivitiesSerializer,
+    ProposalEventVehiclesVesselsSerializer,
+)
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.proposals.email import (
     send_submit_email_notification,
@@ -1149,290 +1155,241 @@ from commercialoperator.components.proposals.serializers_filming import (
 )
 
 
+@transaction.atomic
 def save_proponent_data_filming(instance, request, viewset, parks=None, trails=None):
-    with transaction.atomic():
-        try:
-            data = {}
+    data = {}
 
-            try:
-                schema = request.data.get("schema")
-            except:
-                schema = request.POST.get("schema")
-            import json
+    try:
+        schema = request.data.get("schema")
+    except:
+        schema = request.POST.get("schema")
+    import json
 
-            sc = json.loads(schema)
-            filming_activity_data = sc["filming_activity"]
-            filming_access_data = sc["filming_access"]
-            filming_equipment_data = sc["filming_equipment"]
-            filming_other_details_data = sc["filming_other_details"]
+    sc = json.loads(schema)
+    filming_activity_data = sc["filming_activity"]
+    filming_access_data = sc["filming_access"]
+    filming_equipment_data = sc["filming_equipment"]
+    filming_other_details_data = sc["filming_other_details"]
 
-            # save Filming activity data
-            serializer = ProposalFilmingActivitySerializer(
-                instance.filming_activity, data=filming_activity_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    # save Filming activity data
+    serializer = ProposalFilmingActivitySerializer(
+        instance.filming_activity, data=filming_activity_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
 
-            # save Filming access data
-            serializer = ProposalFilmingAccessSerializer(
-                instance.filming_access, data=filming_access_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    # save Filming access data
+    serializer = ProposalFilmingAccessSerializer(
+        instance.filming_access, data=filming_access_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
 
-            # save Filming equipment data
-            serializer = ProposalFilmingEquipmentSerializer(
-                instance.filming_equipment, data=filming_equipment_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    # save Filming equipment data
+    serializer = ProposalFilmingEquipmentSerializer(
+        instance.filming_equipment, data=filming_equipment_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
 
-            # save Filming other details data
-            serializer = ProposalFilmingOtherDetailsSerializer(
-                instance.filming_other_details, data=filming_other_details_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    # save Filming other details data
+    serializer = ProposalFilmingOtherDetailsSerializer(
+        instance.filming_other_details, data=filming_other_details_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
 
-            filming_other_details = (
-                ProposalFilmingOtherDetails.objects.update_or_create(proposal=instance)
-            )
-            # instance.save()
-            serializer = SaveProposalSerializer(instance, data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            viewset.perform_update(serializer)
-
-        except:
-            raise
+    ProposalFilmingOtherDetails.objects.update_or_create(
+        proposal=instance
+    )
+    serializer = SaveProposalSerializer(instance, data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    viewset.perform_update(serializer)
 
 
-from commercialoperator.components.proposals.serializers_event import (
-    ProposalEventOtherDetailsSerializer,
-    ProposalEventManagementSerializer,
-    ProposalEventActivitiesSerializer,
-    ProposalEventVehiclesVesselsSerializer,
-)
-
-
+@transaction.atomic
 def save_proponent_data_event(instance, request, viewset, parks=None, trails=None):
-    with transaction.atomic():
+    data = {}
+
+    try:
+        schema = request.data.get("schema")
+    except:
+        schema = request.POST.get("schema")
+    import json
+
+    sc = json.loads(schema)
+    event_activity_data = sc["event_activity"]
+    event_vehicles_vessels_data = sc["event_vehicles_vessels"]
+    # filming_access_data=sc['filming_access']
+    event_management_data = sc["event_management"]
+    events_other_details_data = sc["event_other_details"]
+    try:
+        select_trails_activities = json.loads(
+            request.data.get("selected_trails_activities")
+        )
+    except:
+        select_trails_activities = json.loads(
+            request.POST.get("selected_trails_activities", None)
+        )
+
+    # print select_trails_activities
+    # save Event Activity tab data
+    serializer = ProposalEventActivitiesSerializer(
+        instance.event_activity, data=event_activity_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    # save Event Vehicle Vessels data
+    serializer = ProposalEventVehiclesVesselsSerializer(
+        instance.event_vehicles_vessels, data=event_vehicles_vessels_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    # save Event Management data
+    serializer = ProposalEventManagementSerializer(
+        instance.event_management, data=event_management_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    # save Event other details data
+    serializer = ProposalEventOtherDetailsSerializer(
+        instance.event_other_details, data=events_other_details_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    if select_trails_activities or len(select_trails_activities) == 0:
         try:
-            data = {}
 
-            try:
-                schema = request.data.get("schema")
-            except:
-                schema = request.POST.get("schema")
-            import json
-
-            sc = json.loads(schema)
-            event_activity_data = sc["event_activity"]
-            event_vehicles_vessels_data = sc["event_vehicles_vessels"]
-            # filming_access_data=sc['filming_access']
-            event_management_data = sc["event_management"]
-            events_other_details_data = sc["event_other_details"]
-            try:
-                select_trails_activities = json.loads(
-                    request.data.get("selected_trails_activities")
-                )
-            except:
-                select_trails_activities = json.loads(
-                    request.POST.get("selected_trails_activities", None)
-                )
-
-            # print select_trails_activities
-            # save Event Activity tab data
-            serializer = ProposalEventActivitiesSerializer(
-                instance.event_activity, data=event_activity_data
+            save_trail_section_activity_data(
+                instance, select_trails_activities, request
             )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # save Event Vehicle Vessels data
-            serializer = ProposalEventVehiclesVesselsSerializer(
-                instance.event_vehicles_vessels, data=event_vehicles_vessels_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # save Event Management data
-            serializer = ProposalEventManagementSerializer(
-                instance.event_management, data=event_management_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # save Event other details data
-            serializer = ProposalEventOtherDetailsSerializer(
-                instance.event_other_details, data=events_other_details_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            if select_trails_activities or len(select_trails_activities) == 0:
-                try:
-
-                    save_trail_section_activity_data(
-                        instance, select_trails_activities, request
-                    )
-
-                except:
-                    raise
-
-            serializer = SaveProposalSerializer(instance, data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            viewset.perform_update(serializer)
 
         except:
             raise
 
+    serializer = SaveProposalSerializer(instance, data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    viewset.perform_update(serializer)
 
+
+@transaction.atomic
 def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=None):
-    with transaction.atomic():
-        try:
-            #            lookable_fields = ['isTitleColumnForDashboard','isActivityColumnForDashboard','isRegionColumnForDashboard']
-            #            extracted_fields,special_fields = create_data_from_form(instance.schema, request.POST, request.FILES, special_fields=lookable_fields)
-            #            instance.data = extracted_fields
-            #            data = {
-            #                #'region': special_fields.get('isRegionColumnForDashboard',None),
-            #                'title': special_fields.get('isTitleColumnForDashboard',None),
-            #                'activity': special_fields.get('isActivityColumnForDashboard',None),
-            #
-            #                'data': extracted_fields,
-            #                'processing_status': instance.PROCESSING_STATUS_CHOICES[1][0] if instance.processing_status == 'temp' else instance.processing_status,
-            #                'customer_status': instance.PROCESSING_STATUS_CHOICES[1][0] if instance.processing_status == 'temp' else instance.customer_status,
-            #            }
-            data = {}
+    data = {}
 
-            try:
-                schema = request.data.get("schema")
-            except:
-                schema = request.POST.get("schema")
-            import json
+    try:
+        schema = request.data.get("schema")
+    except:
+        schema = request.POST.get("schema")
+    import json
 
-            sc = json.loads(schema)
-            other_details_data = sc["other_details"]
-            # print other_details_data
-            if instance.is_amendment_proposal or instance.pending_amendment_request:
-                other_details_data["preferred_licence_period"] = (
-                    instance.other_details.preferred_licence_period
-                )
-            serializer = ProposalOtherDetailsSerializer(
-                instance.other_details, data=other_details_data
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            # select_parks_activities=sc['selected_parks_activities']
-            # select_trails_activities=sc['selected_trails_activities']
+    sc = json.loads(schema)
+    other_details_data = sc["other_details"]
 
-            try:
-                select_parks_activities = json.loads(
-                    request.data.get("selected_parks_activities")
-                )
-                select_trails_activities = json.loads(
-                    request.data.get("selected_trails_activities")
-                )
-                marine_parks_activities = json.loads(
-                    request.data.get("marine_parks_activities")
-                )
-            except:
-                select_parks_activities = json.loads(
-                    request.POST.get("selected_parks_activities", None)
-                )
-                select_trails_activities = json.loads(
-                    request.POST.get("selected_trails_activities", None)
-                )
-                marine_parks_activities = json.loads(
-                    request.POST.get("marine_parks_activities", None)
-                )
+    if instance.is_amendment_proposal or instance.pending_amendment_request:
+        other_details_data["preferred_licence_period"] = (
+            instance.other_details.preferred_licence_period
+        )
+    serializer = ProposalOtherDetailsSerializer(
+        instance.other_details, data=other_details_data
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
 
-            other_details = ProposalOtherDetails.objects.update_or_create(
-                proposal=instance
-            )
-            # instance.save()
-            serializer = SaveProposalSerializer(instance, data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            viewset.perform_update(serializer)
-            if "accreditations" in other_details_data:
-                accreditation_types = instance.other_details.accreditations.values_list(
-                    "accreditation_type", flat=True
-                )
-                for acc in other_details_data["accreditations"]:
-                    # print acc
-                    if "id" in acc:
-                        # acc_qs = ProposalAccreditation.objects.filter(id=acc['id'])
-                        acc_qs = instance.other_details.accreditations.filter(
+    try:
+        select_parks_activities = json.loads(
+            request.data.get("selected_parks_activities")
+        )
+        select_trails_activities = json.loads(
+            request.data.get("selected_trails_activities")
+        )
+        marine_parks_activities = json.loads(
+            request.data.get("marine_parks_activities")
+        )
+    except:
+        select_parks_activities = json.loads(
+            request.POST.get("selected_parks_activities", None)
+        )
+        select_trails_activities = json.loads(
+            request.POST.get("selected_trails_activities", None)
+        )
+        marine_parks_activities = json.loads(
+            request.POST.get("marine_parks_activities", None)
+        )
+
+    ProposalOtherDetails.objects.update_or_create(proposal=instance)
+    serializer = SaveProposalSerializer(instance, data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    viewset.perform_update(serializer)
+    if "accreditations" in other_details_data:
+        accreditation_types = instance.other_details.accreditations.values_list(
+            "accreditation_type", flat=True
+        )
+        for acc in other_details_data["accreditations"]:
+            if "id" in acc:
+                acc_qs = instance.other_details.accreditations.filter(id=acc["id"])
+
+                if acc_qs and "is_deleted" in acc and acc["is_deleted"] == True:
+                    acc_qs[0].delete()
+
+                elif acc["accreditation_type"] in accreditation_types:
+                    try:
+                        instance.other_details.accreditations.filter(
                             id=acc["id"]
+                        ).update(
+                            accreditation_type=acc["accreditation_type"],
+                            comments=acc["comments"],
+                            accreditation_expiry=(
+                                datetime.strptime(
+                                    acc["accreditation_expiry"], "%d/%m/%Y"
+                                ).date()
+                                if acc["accreditation_expiry"]
+                                else None
+                            ),  # TODO later this may be mandatory
                         )
-
-                        if acc_qs and "is_deleted" in acc and acc["is_deleted"] == True:
-                            acc_qs[0].delete()
-
-                        elif acc["accreditation_type"] in accreditation_types:
-                            try:
-                                instance.other_details.accreditations.filter(
-                                    id=acc["id"]
-                                ).update(
-                                    accreditation_type=acc["accreditation_type"],
-                                    comments=acc["comments"],
-                                    accreditation_expiry=(
-                                        datetime.strptime(
-                                            acc["accreditation_expiry"], "%d/%m/%Y"
-                                        ).date()
-                                        if acc["accreditation_expiry"]
-                                        else None
-                                    ),  # TODO later this may be mandatory
-                                )
-                            except Exception as e:
-                                logger.error(
-                                    "An error occurred while updating Accreditations {}".format(
-                                        e
-                                    )
-                                )
-                        else:
-                            serializer = ProposalAccreditationSerializer(data=acc)
-                            serializer.is_valid(raise_exception=True)
-                            serializer.save()
-                            # ProposalAccreditation.objects.create(
-                            #    id=acc['id'],
-                            #    accreditation_type=acc['accreditation_type'],
-                            #    comments = acc['comments'],
-                            #    accreditation_expiry = datetime.strptime(acc['accreditation_expiry'], "%d/%m/%Y").date(),
-                            # )
-
-                    elif acc["accreditation_type"] not in accreditation_types:
-                        serializer = ProposalAccreditationSerializer(data=acc)
-                        serializer.is_valid(raise_exception=True)
-                        serializer.save()
-                    else:
-                        logger.warn(
-                            "Possible duplicate Accreditation Type for Application {}".format(
-                                instance.lodgement_number
+                    except Exception as e:
+                        logger.error(
+                            "An error occurred while updating Accreditations {}".format(
+                                e
                             )
                         )
+                else:
+                    serializer = ProposalAccreditationSerializer(data=acc)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
 
-            if select_parks_activities or len(select_parks_activities) == 0:
-                try:
-
-                    save_park_activity_data(instance, select_parks_activities, request)
-
-                except:
-                    raise
-
-            if select_trails_activities or len(select_trails_activities) == 0:
-                try:
-
-                    save_trail_section_activity_data(
-                        instance, select_trails_activities, request
+            elif acc["accreditation_type"] not in accreditation_types:
+                serializer = ProposalAccreditationSerializer(data=acc)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            else:
+                logger.warn(
+                    "Possible duplicate Accreditation Type for Application {}".format(
+                        instance.lodgement_number
                     )
+                )
 
-                except:
-                    raise
+    if select_parks_activities or len(select_parks_activities) == 0:
+        try:
 
-            if marine_parks_activities or len(marine_parks_activities) == 0:
-                try:
-                    save_park_zone_activity_data(
-                        instance, marine_parks_activities, request
-                    )
-                except:
-                    raise
+            save_park_activity_data(instance, select_parks_activities, request)
+
+        except:
+            raise
+
+    if select_trails_activities or len(select_trails_activities) == 0:
+        try:
+
+            save_trail_section_activity_data(
+                instance, select_trails_activities, request
+            )
+
+        except:
+            raise
+
+    if marine_parks_activities or len(marine_parks_activities) == 0:
+        try:
+            save_park_zone_activity_data(instance, marine_parks_activities, request)
         except:
             raise
 
