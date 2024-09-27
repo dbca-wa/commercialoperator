@@ -369,6 +369,13 @@ export default {
             vm.validation_form = $(vm.form).validate({
                 rules: {
                     access_type: 'required',
+                    capacity: { required: true, number: true },
+                    rego: 'required',
+                    rego_expiry: {
+                        required: true,
+                        date: true,
+                    },
+                    license: 'required',
                 },
                 messages: {},
                 showErrors: function (errorMap, errorList) {

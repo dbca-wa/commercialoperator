@@ -9,7 +9,11 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="vesselForm">
+                    <form
+                        id="vessel-form"
+                        class="form-horizontal"
+                        name="vesselForm"
+                    >
                         <alert :show.sync="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
@@ -342,8 +346,13 @@ export default {
         addFormValidations: function () {
             let vm = this;
             vm.validation_form = $(vm.form).validate({
+                // Note: Made all fields required and added number validation for craft_no and size
                 rules: {
-                    access_type: 'required',
+                    hire_rego: 'required',
+                    spv_no: 'required',
+                    capacity: 'required',
+                    craft_no: { required: true, number: true },
+                    size: { required: true, number: true },
                 },
                 messages: {},
                 showErrors: function (errorMap, errorList) {
