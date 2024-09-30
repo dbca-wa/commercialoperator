@@ -70,7 +70,7 @@
                                                     proposal.event_activity
                                                         .commencement_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="event_activity_commencement_date"
                                                 placeholder="Commencement date"
@@ -98,7 +98,7 @@
                                                     proposal.event_activity
                                                         .completion_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="event_activity_completion_date"
                                                 placeholder="Completion date"
@@ -746,61 +746,12 @@ export default {
                 date.getDate()
             );
 
-            $(vm.$refs.event_activity_commencement_date).datetimepicker(
-                vm.datepickerOptions
-            );
             //Set minimum date on datetimepicker so that nominated
             //start date cannot be selected prior to today
-            $(vm.$refs.event_activity_commencement_date)
-                .data('DateTimePicker')
-                .minDate(today);
-            $(vm.$refs.event_activity_commencement_date).on(
-                'dp.change',
-                function (e) {
-                    if (
-                        $(vm.$refs.event_activity_commencement_date)
-                            .data('DateTimePicker')
-                            .date()
-                    ) {
-                        vm.proposal.event_activity.commencement_date =
-                            e.date.format('DD/MM/YYYY');
-                    } else if (
-                        $(vm.$refs.event_activity_commencement_date).data(
-                            'date'
-                        ) === ''
-                    ) {
-                        vm.proposal.event_activity.commencement_date = '';
-                    }
-                }
-            );
-
-            $(vm.$refs.event_activity_completion_date).datetimepicker(
-                vm.datepickerOptions
-            );
+            $(vm.$refs.event_activity_commencement_date).attr('min', today);
             //Set minimum date on datetimepicker so that nominated
             //start date cannot be selected prior to today
-            $(vm.$refs.event_activity_completion_date)
-                .data('DateTimePicker')
-                .minDate(today);
-            $(vm.$refs.event_activity_completion_date).on(
-                'dp.change',
-                function (e) {
-                    if (
-                        $(vm.$refs.event_activity_completion_date)
-                            .data('DateTimePicker')
-                            .date()
-                    ) {
-                        vm.proposal.event_activity.completion_date =
-                            e.date.format('DD/MM/YYYY');
-                    } else if (
-                        $(vm.$refs.event_activity_completion_date).data(
-                            'date'
-                        ) === ''
-                    ) {
-                        vm.proposal.event_activity.completion_date = '';
-                    }
-                }
-            );
+            $(vm.$refs.event_activity_completion_date).attr('min', today);
         },
         fetchGlobalSettings: function () {
             let vm = this;

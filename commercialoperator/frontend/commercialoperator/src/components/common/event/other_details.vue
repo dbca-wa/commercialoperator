@@ -43,7 +43,7 @@
                                                     proposal.event_other_details
                                                         .training_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="training_date"
                                                 placeholder="DD/MM/YYYY"
@@ -394,7 +394,7 @@
                                                     proposal.event_other_details
                                                         .insurance_expiry
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="insurance_expiry"
                                                 placeholder="DD/MM/YYYY"
@@ -802,35 +802,12 @@ export default {
                 date.getDate()
             );
 
-            //Insurance expiry date listener
-            $(vm.$refs.insurance_expiry).datetimepicker(vm.datepickerOptions);
             //Set minimum date on datetimepicker so that
             //insurance expiry date cannot be selected prior to today
-            $(vm.$refs.insurance_expiry).data('DateTimePicker').minDate(today);
-            $(vm.$refs.insurance_expiry).on('dp.change', function (e) {
-                if (
-                    $(vm.$refs.insurance_expiry).data('DateTimePicker').date()
-                ) {
-                    vm.proposal.event_other_details.insurance_expiry =
-                        e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.insurance_expiry).data('date') === '') {
-                    vm.proposal.event_other_details.insurance_expiry = '';
-                }
-            });
-
-            //Training date listener
-            $(vm.$refs.training_date).datetimepicker(vm.datepickerOptions);
+            $(vm.$refs.insurance_expiry).attr('min', today);
             //Set minimum date on datetimepicker so that
             //Training date cannot be selected prior to today
-            $(vm.$refs.training_date).data('DateTimePicker').minDate(today);
-            $(vm.$refs.training_date).on('dp.change', function (e) {
-                if ($(vm.$refs.training_date).data('DateTimePicker').date()) {
-                    vm.proposal.event_other_details.training_date =
-                        e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.training_date).data('date') === '') {
-                    vm.proposal.event_other_details.training_date = '';
-                }
-            });
+            $(vm.$refs.training_date).attr('min', today);
         },
     },
 };
