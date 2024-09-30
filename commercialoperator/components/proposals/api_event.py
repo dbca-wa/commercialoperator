@@ -25,6 +25,7 @@ from commercialoperator.components.proposals.serializers_event import (
     SaveProposalEventsTrailsSerializer,
 )
 
+from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 
 import logging
@@ -41,10 +42,10 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return ProposalEventsParks.objects.all().order_by("id")
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalEventsParks.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
-                | Q(proposal_id__submitter=user)
+                | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
         return ProposalEventsParks.objects.none()
 
@@ -138,10 +139,10 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return AbseilingClimbingActivity.objects.all().order_by("id")
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             return AbseilingClimbingActivity.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
-                | Q(proposal_id__submitter=user)
+                | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
         return AbseilingClimbingActivity.objects.none()
 
@@ -184,10 +185,10 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return ProposalPreEventsParks.objects.all().order_by("id")
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalPreEventsParks.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
-                | Q(proposal_id__submitter=user)
+                | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
         return ProposalPreEventsParks.objects.none()
 
@@ -283,10 +284,10 @@ class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return ProposalEventsTrails.objects.all().order_by("id")
         elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalEventsTrails.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
-                | Q(proposal_id__submitter=user)
+                | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
         return ProposalEventsTrails.objects.none()
 
