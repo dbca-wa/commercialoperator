@@ -27,7 +27,6 @@
         </div>
         <editTrail
             ref="edit_trail"
-            :trail_id="trail_id"
             :is_internal="is_internal"
             @refreshFromResponse="refreshFromResponse"
         ></editTrail>

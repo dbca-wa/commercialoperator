@@ -84,7 +84,7 @@
                                                 "
                                                 :delete_url="delete_url"
                                                 :proposal_id="park_id"
-                                                is-repeatable="true"
+                                                :is-repeatable="true"
                                                 name="pre_event_park_file"
                                                 @refreshFromResponse="
                                                     refreshFromResponse

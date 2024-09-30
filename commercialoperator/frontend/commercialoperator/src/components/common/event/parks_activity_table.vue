@@ -3,7 +3,6 @@
         <div class="col-sm-12">
             <div class="row">
                 <div v-if="canEditActivities" class="col-md-3">
-                    <!-- <button style="margin-top:25px;" class="btn btn-primary pull-right">New Application</button> -->
                     <input
                         type="button"
                         style="margin-top: 25px"
@@ -32,7 +31,7 @@
                         :id="'proposal' + proposal.id"
                         ref="event_park_maps"
                         :proposal_id="proposal.id"
-                        is-repeatable="true"
+                        :is-repeatable="true"
                         name="event_park_maps"
                         :readonly="!canEditActivities"
                     ></FileField>
@@ -52,7 +51,6 @@
         </div>
         <editPark
             ref="edit_park"
-            :park_id="park_id"
             :is_internal="is_internal"
             :is_external="is_external"
             @refreshFromResponse="refreshFromResponse"

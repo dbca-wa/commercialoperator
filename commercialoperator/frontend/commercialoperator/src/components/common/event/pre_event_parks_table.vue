@@ -3,7 +3,6 @@
         <div class="col-sm-12">
             <div class="row">
                 <div v-if="!proposal.readonly" class="col-md-3">
-                    <!-- <button style="margin-top:25px;" class="btn btn-primary pull-right">New Application</button> -->
                     <input
                         type="button"
                         style="margin-top: 25px"
@@ -27,7 +26,6 @@
         </div>
         <editPark
             ref="edit_park"
-            :park_id="park_id"
             @refreshFromResponse="refreshFromResponse"
         ></editPark>
     </div>
