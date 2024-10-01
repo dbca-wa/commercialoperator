@@ -190,7 +190,7 @@
                                                 proposal.filming_equipment
                                                     .rps_used_details
                                             "
-                                            :disabled="readonly"
+                                            :disabled="proposal.readonly"
                                             class="form-control"
                                             name="camp_location"
                                             placeholder=""
@@ -359,7 +359,7 @@
                                                 proposal.filming_equipment
                                                     .alteration_required_details
                                             "
-                                            :disabled="readonly"
+                                            :disabled="proposal.readonly"
                                             class="form-control"
                                             name="camp_location"
                                             placeholder=""
