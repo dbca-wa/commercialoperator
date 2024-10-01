@@ -741,7 +741,7 @@
                                         <FileField
                                             :id="'proposal' + proposal.id"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="true"
+                                            :is-repeatable="true"
                                             name="cultural_significance"
                                             :readonly="!canEditActivities"
                                         ></FileField>
