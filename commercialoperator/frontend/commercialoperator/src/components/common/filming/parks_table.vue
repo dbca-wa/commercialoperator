@@ -192,24 +192,27 @@ export default {
         },
         discardPark: function (park_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Park',
                 text: 'Are you sure you want to discard this park?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Park',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_filming_park(park_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your park has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your park has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.park_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {

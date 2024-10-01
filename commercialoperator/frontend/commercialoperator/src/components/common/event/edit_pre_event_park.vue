@@ -174,6 +174,7 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            localParkAction: JSON.parse(JSON.stringify(this.park_action)),
         };
     },
     computed: {
@@ -182,7 +183,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.park_action == 'add'
+            return this.localParkAction == 'add'
                 ? 'Add a new Park or Reserve'
                 : 'Edit a Park or Reserve';
         },
@@ -192,6 +193,14 @@ export default {
                       this.park_id +
                       '/delete_document/'
                 : '';
+        },
+    },
+    watch: {
+        park_action: {
+            handler(newVal) {
+                this.localParkAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -332,7 +341,7 @@ export default {
 
             formData.append('data', JSON.stringify(park));
             vm.issuingPark = true;
-            if (vm.park_action == 'add' && vm.park_id == null) {
+            if (vm.localParkAction == 'add' && vm.park_id == null) {
                 vm.$http
                     .post(api_endpoints.proposal_pre_event_parks, formData, {
                         emulateJSON: true,
@@ -342,11 +351,11 @@ export default {
                             vm.issuingPark = false;
                             vm.park = {};
                             vm.close();
-                            swal(
-                                'Created',
-                                'New park record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New park record has been created.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -372,11 +381,11 @@ export default {
                             vm.issuingPark = false;
                             vm.park = {};
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Park details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Park details has been saved.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
