@@ -1188,7 +1188,12 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: vm.submit_text(),
             }).then(
-                async () => {
+                async (result) => {
+                    if (!result.isConfirmed) {
+                        vm.submitting = false;
+                        vm.paySubmitting = false;
+                        return;
+                    }
                     // Filming has deferred payment once assessor decides whether 'Licence' (fee) or 'Lawful Authority' (no fee) is to be issued
                     if (
                         !vm.proposal.fee_paid &&
