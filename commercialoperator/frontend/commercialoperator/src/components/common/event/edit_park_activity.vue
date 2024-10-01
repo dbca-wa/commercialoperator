@@ -231,7 +231,6 @@ export default {
         },
         cancel: function () {
             this.close();
-            this.$refs.filefield.reset_files();
         },
         close: function () {
             this.isModalOpen = false;
