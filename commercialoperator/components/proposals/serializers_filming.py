@@ -40,12 +40,8 @@ class ProposalFilmingActivitySerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
-    commencement_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
-    completion_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
+    commencement_date = serializers.DateField(required=False, allow_null=True)
+    completion_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = ProposalFilmingActivity
@@ -67,9 +63,7 @@ class ProposalFilmingEquipmentSerializer(serializers.ModelSerializer):
 
 
 class ProposalFilmingOtherDetailsSerializer(serializers.ModelSerializer):
-    insurance_expiry = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
+    insurance_expiry = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = ProposalFilmingOtherDetails
@@ -104,8 +98,8 @@ class FilmingParkDocumentSerializer(serializers.ModelSerializer):
 
 class ProposalFilmingParksSerializer(serializers.ModelSerializer):
     park = ParkFilterSerializer()
-    from_date = serializers.DateField(format="%d/%m/%Y")
-    to_date = serializers.DateField(format="%d/%m/%Y")
+    from_date = serializers.DateField()
+    to_date = serializers.DateField()
     filming_park_documents = FilmingParkDocumentSerializer(many=True, read_only=True)
     can_assessor_edit = serializers.SerializerMethodField()
 
@@ -132,8 +126,8 @@ class ProposalFilmingParksSerializer(serializers.ModelSerializer):
 
 class SaveProposalFilmingParksSerializer(serializers.ModelSerializer):
     # park=ParkFilterSerializer()
-    from_date = serializers.DateField(input_formats=["%d/%m/%Y"], allow_null=True)
-    to_date = serializers.DateField(input_formats=["%d/%m/%Y"], allow_null=True)
+    from_date = serializers.DateField(allow_null=True)
+    to_date = serializers.DateField(allow_null=True)
 
     class Meta:
         model = ProposalFilmingParks
