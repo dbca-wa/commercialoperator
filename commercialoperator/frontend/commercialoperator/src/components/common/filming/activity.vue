@@ -47,7 +47,7 @@
                                                     proposal.filming_activity
                                                         .commencement_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="commencement_date"
                                                 placeholder="Commencement date"
@@ -75,7 +75,7 @@
                                                     proposal.filming_activity
                                                         .completion_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="completion_date"
                                                 placeholder="Completion date"
@@ -160,9 +160,6 @@
                                         class="col-sm-9"
                                         style="margin-bottom: 5px"
                                     >
-                                        <!-- <select style="width:100%" class="form-control input-sm" multiple ref="filmSponsorshipSelect" v-model="proposal.filming_activity.sponsorship">
-                                        <option v-for="s in sponsorship_choices" :value="s.key">{{s.value}}</option>
-                                    </select> -->
                                         <ul class="list-inline">
                                             <li
                                                 v-for="s in sponsorship_choices"
