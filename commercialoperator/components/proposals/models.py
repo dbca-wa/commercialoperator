@@ -246,7 +246,10 @@ class ProposalAssessorGroup(models.Model):
 
     @property
     def members_email(self):
-        return [i.email for i in self.members.all()]
+        members = retrieve_group_members(self)
+        emailusers = [retrieve_email_user(i) for i in members]
+        emailusers = [u for u in emailusers if u]
+        return [u.email for u in emailusers]
 
 
 class TaggedProposalApproverGroupRegions(TaggedItemBase):
@@ -1976,8 +1979,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         except:
             recipients = ProposalAssessorGroup.objects.get(default=True).members_email
 
-        # if self.submitter.email not in recipients:
-        #    recipients.append(self.submitter.email)
         return recipients
 
     @property

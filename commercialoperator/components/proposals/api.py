@@ -1703,28 +1703,14 @@ class ProposalViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
+    @basic_exception_handler
     @renderer_classes((JSONRenderer,))
     def submit(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            # instance.submit(request,self)
-            proposal_submit(instance, request)
-            instance.save()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-            # return redirect(reverse('external'))
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        proposal_submit(instance, request)
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @action(
         methods=[
