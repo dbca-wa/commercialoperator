@@ -262,7 +262,7 @@
                                             :id="'proposal' + proposal.id"
                                             ref="event_activity_pdswa_file"
                                             :proposal_id="proposal.id"
-                                            is-repeatable="true"
+                                            :is-repeatable="true"
                                             name="event_activity_pdswa_location"
                                             :readonly="!canEditActivities"
                                         ></FileField>

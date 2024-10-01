@@ -367,7 +367,7 @@ export default {
                             swal.fire({
                                 title: 'Created',
                                 text: 'New park record has been created.',
-                                type: 'success',
+                                icon: 'success',
                             });
                             vm.$emit('refreshFromResponse', response);
                         },
@@ -397,7 +397,7 @@ export default {
                             swal.fire({
                                 title: 'Saved',
                                 text: 'Park details has been saved.',
-                                type: 'success',
+                                icon: 'success',
                             });
                             vm.$emit('refreshFromResponse', response);
                         },
