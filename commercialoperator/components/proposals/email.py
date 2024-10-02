@@ -304,8 +304,6 @@ def send_referral_email_notification(referral, recipients, request, reminder=Fal
         "proposed_start_date": proposed_start_date,
     }
 
-    # msg = email.send(referral.referral.email, context=context)
-    # recipients = list(ReferralRecipientGroup.objects.get(name=referral.email_group).members.all().values_list('email', flat=True))
     msg = email.send(recipients, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_referral_email(msg, referral, sender=sender)
@@ -952,8 +950,8 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
         "subject": subject,
         "text": text,
         "proposal": referral.proposal,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
@@ -1008,7 +1006,7 @@ def _log_proposal_email(
         "subject": subject,
         "text": text,
         "proposal": proposal,
-        "customer_id": customer.id,
+        "customer_id": customer.id if customer else None,
         "staff_id": staff.id,
         "to": to,
         "fromm": fromm,
@@ -1070,7 +1068,7 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         "subject": subject,
         "text": text,
         "organisation": organisation,
-        "customer_id": customer.id,
+        "customer_id": customer.id if customer else None,
         "staff_id": staff.id,
         "to": to,
         "fromm": fromm,

@@ -41,6 +41,7 @@ from commercialoperator.components.proposals.email import (
     send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
 )
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     EmailUserQuerySet,
@@ -2225,111 +2226,85 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             else:
                 raise ValidationError("You can't edit this proposal at this moment")
 
+    @basic_exception_handler
+    @transaction.atomic
     def send_referral(self, request, referral_email, referral_text):
-        with transaction.atomic():
-            try:
-                if (
-                    self.processing_status == "with_assessor"
-                    or self.processing_status == "with_referral"
-                ):
-                    self.processing_status = "with_referral"
-                    self.save()
-                    referral = None
+        if (
+            self.processing_status == "with_assessor"
+            or self.processing_status == "with_referral"
+        ):
+            self.processing_status = "with_referral"
+            self.save()
+            referral = None
 
-                    # Check if the user is in ledger
-                    try:
-                        # user = EmailUser.objects.get(email__icontains=referral_email)
-                        # referral_group = ReferralRecipientGroup.objects.get(name__icontains=referral_email)
-                        referral_group = ReferralRecipientGroup.objects.get(
-                            name__iexact=referral_email
-                        )
-                    # except EmailUser.DoesNotExist:
-                    except ReferralRecipientGroup.DoesNotExist:
-                        raise exceptions.ProposalReferralCannotBeSent()
-                    #                        # Validate if it is a deparment user
-                    #                        department_user = get_department_user(referral_email)
-                    #                        if not department_user:
-                    #                            raise ValidationError('The user you want to send the referral to is not a member of the department')
-                    #                        # Check if the user is in ledger or create
-                    #                        email = department_user['email'].lower()
-                    #                        user,created = EmailUser.objects.get_or_create(email=department_user['email'].lower())
-                    #                        if created:
-                    #                            user.first_name = department_user['given_name']
-                    #                            user.last_name = department_user['surname']
-                    #                            user.save()
-                    try:
-                        # Referral.objects.get(referral=user,proposal=self)
-                        Referral.objects.get(
-                            referral_group=referral_group, proposal=self
-                        )
-                        raise ValidationError(
-                            "A referral has already been sent to this group"
-                        )
-                    except Referral.DoesNotExist:
-                        # Create Referral
-                        referral = Referral.objects.create(
-                            proposal=self,
-                            # referral=user,
-                            referral_group=referral_group,
-                            sent_by=request.user,
-                            text=referral_text,
-                        )
-                        # Create assessor checklist with the current assessor_list type questions
-                        # Assessment instance already exits then skip.
+            # Check if the user is in ledger
+            try:
+                referral_group = ReferralRecipientGroup.objects.get(
+                    name__iexact=referral_email
+                )
+            except ReferralRecipientGroup.DoesNotExist:
+                raise exceptions.ProposalReferralCannotBeSent()
+            try:
+                Referral.objects.get(referral_group=referral_group, proposal=self)
+                raise ValidationError("A referral has already been sent to this group")
+            except Referral.DoesNotExist:
+                # Create Referral
+                referral = Referral.objects.create(
+                    proposal=self,
+                    referral_group=referral_group,
+                    sent_by=request.user,
+                    text=referral_text,
+                )
+                # Create assessor checklist with the current assessor_list type questions
+                # Assessment instance already exits then skip.
+                try:
+                    referral_assessment = ProposalAssessment.objects.get(
+                        proposal=self,
+                        referral_group=referral_group,
+                        referral_assessment=True,
+                        referral=referral,
+                    )
+                except ProposalAssessment.DoesNotExist:
+                    referral_assessment = ProposalAssessment.objects.create(
+                        proposal=self,
+                        referral_group=referral_group,
+                        referral_assessment=True,
+                        referral=referral,
+                    )
+                    checklist = ChecklistQuestion.objects.filter(
+                        list_type="referral_list",
+                        application_type=self.application_type,
+                        obsolete=False,
+                    )
+                    for chk in checklist:
                         try:
-                            referral_assessment = ProposalAssessment.objects.get(
-                                proposal=self,
-                                referral_group=referral_group,
-                                referral_assessment=True,
-                                referral=referral,
+                            chk_instance = ProposalAssessmentAnswer.objects.get(
+                                question=chk, assessment=referral_assessment
                             )
-                        except ProposalAssessment.DoesNotExist:
-                            referral_assessment = ProposalAssessment.objects.create(
-                                proposal=self,
-                                referral_group=referral_group,
-                                referral_assessment=True,
-                                referral=referral,
+                        except ProposalAssessmentAnswer.DoesNotExist:
+                            chk_instance = ProposalAssessmentAnswer.objects.create(
+                                question=chk, assessment=referral_assessment
                             )
-                            checklist = ChecklistQuestion.objects.filter(
-                                list_type="referral_list",
-                                application_type=self.application_type,
-                                obsolete=False,
-                            )
-                            for chk in checklist:
-                                try:
-                                    chk_instance = ProposalAssessmentAnswer.objects.get(
-                                        question=chk, assessment=referral_assessment
-                                    )
-                                except ProposalAssessmentAnswer.DoesNotExist:
-                                    chk_instance = (
-                                        ProposalAssessmentAnswer.objects.create(
-                                            question=chk, assessment=referral_assessment
-                                        )
-                                    )
-                    # Create a log entry for the proposal
-                    # self.log_user_action(ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(referral.id,self.id,'{}({})'.format(user.get_full_name(),user.email)),request)
-                    self.log_user_action(
-                        ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
-                            referral.id, self.id, "{}".format(referral_group.name)
-                        ),
-                        request,
-                    )
-                    # Create a log entry for the organisation
-                    # self.applicant.log_user_action(ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(referral.id,self.id,'{}({})'.format(user.get_full_name(),user.email)),request)
-                    applicant_field = getattr(self, self.applicant_field)
-                    applicant_field.log_user_action(
-                        ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
-                            referral.id, self.id, "{}".format(referral_group.name)
-                        ),
-                        request,
-                    )
-                    # send email
-                    recipients = referral_group.members_list
-                    send_referral_email_notification(referral, recipients, request)
-                else:
-                    raise exceptions.ProposalReferralCannotBeSent()
-            except:
-                raise
+            # Create a log entry for the proposal
+            self.log_user_action(
+                ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
+                    referral.id, self.id, "{}".format(referral_group.name)
+                ),
+                request,
+            )
+            # Create a log entry for the organisation
+            applicant_field = getattr(self, self.applicant_field)
+            applicant_field.log_user_action(
+                ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
+                    referral.id, self.id, "{}".format(referral_group.name)
+                ),
+                request,
+            )
+            # send email
+            recipients = referral_group.members_list
+            send_referral_email_notification(referral, recipients, request)
+        else:
+            raise exceptions.ProposalReferralCannotBeSent()
 
     def assign_officer(self, request, officer):
         with transaction.atomic():
@@ -4668,14 +4643,6 @@ class ReferralRecipientGroup(models.Model, MembersPropertiesMixin):
     def __str__(self):
         return self.name
 
-    @property
-    def filtered_members(self):
-        return self.members.all()
-
-    @property
-    def members_list(self):
-        return list(self.members.all().values_list("email", flat=True))
-
     class Meta:
         app_label = "commercialoperator"
         verbose_name = "Referral group"
@@ -4689,14 +4656,6 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
 
     def __str__(self):
         return "QA Officer Group"
-
-    @property
-    def filtered_members(self):
-        return self.members.all()
-
-    @property
-    def members_list(self):
-        return list(self.members.all().values_list("email", flat=True))
 
     class Meta:
         app_label = "commercialoperator"
