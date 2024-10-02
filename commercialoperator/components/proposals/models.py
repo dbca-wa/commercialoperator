@@ -4662,12 +4662,10 @@ class ProposalUserAction(UserAction):
 
 
 class ReferralRecipientGroup(models.Model, MembersPropertiesMixin):
-    # site = models.OneToOneField(Site, default='1')
     name = models.CharField(max_length=30, unique=True)
     members = models.ManyToManyField(EmailUser)
 
     def __str__(self):
-        # return 'Referral Recipient Group'
         return self.name
 
     @property
