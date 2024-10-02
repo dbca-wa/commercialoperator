@@ -1559,19 +1559,19 @@ export default {
                                     response.body
                                 );
                                 vm.proposal = response.body;
-                                swal(
-                                    'Sent',
-                                    'The proposal has been sent to Districts',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Sent',
+                                    text: 'The proposal has been sent to Districts',
+                                    icon: 'success',
+                                });
                             },
                             (error) => {
                                 console.log(error);
-                                swal(
-                                    'Error',
-                                    helpers.apiVueResourceError(error),
-                                    'error'
-                                );
+                                swal.fire({
+                                    title: 'Error',
+                                    text: helpers.apiVueResourceError(error),
+                                    icon: 'error',
+                                });
                                 vm.sendingToDistrict = false;
                             }
                         );
@@ -1613,19 +1613,19 @@ export default {
                                     response.body
                                 );
                                 vm.proposal = response.body;
-                                swal(
-                                    'Sent',
-                                    'The proposal has been sent to Kensington',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Sent',
+                                    text: 'The proposal has been sent to Kensington',
+                                    icon: 'success',
+                                });
                             },
                             (error) => {
                                 console.log(error);
-                                swal(
-                                    'Error',
-                                    helpers.apiVueResourceError(error),
-                                    'error'
-                                );
+                                swal.fire({
+                                    title: 'Error',
+                                    text: helpers.apiVueResourceError(error),
+                                    icon: 'error',
+                                });
                                 vm.sendingToKensington = false;
                             }
                         );
@@ -1748,11 +1748,11 @@ export default {
                     (error) => {
                         vm.proposal = helpers.copyObject(vm.original_proposal);
                         vm.updateAssignedOfficerSelect();
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -1822,11 +1822,11 @@ export default {
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchProposalParks(vm.proposal.id);
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             } else {
@@ -1858,11 +1858,11 @@ export default {
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchProposalParks(vm.proposal.id);
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             }
@@ -1931,11 +1931,13 @@ export default {
                                             ? vm.proposal.org_applicant.address
                                             : {};
                                     vm.fetchProposalParks(vm.proposal.id);
-                                    swal(
-                                        'Application Error',
-                                        helpers.apiVueResourceError(error),
-                                        'error'
-                                    );
+                                    swal.fire({
+                                        title: 'Application Error',
+                                        text: helpers.apiVueResourceError(
+                                            error
+                                        ),
+                                        icon: 'error',
+                                    });
                                 }
                             );
                         vm.changingStatus = false;
@@ -1984,11 +1986,11 @@ export default {
                             vm.proposal = helpers.copyObject(
                                 vm.original_proposal
                             );
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             } else {
@@ -2027,11 +2029,11 @@ export default {
                                 vm.original_proposal
                             );
                             vm.fetchProposalParks(vm.proposal.id);
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                             vm.changingStatus = false;
                         }
                     );
@@ -2168,14 +2170,13 @@ export default {
                                 );
                                 vm.proposal = response.body;
                                 vm.fetchProposalParks(vm.proposal.id);
-                                swal(
-                                    'Referral Sent',
-                                    //'The referral has been sent to '+vm.department_users.find(d => d.email == vm.selected_referral).name,
-                                    // 'The referral has been sent to '+vm.referral_recipient_groups.find(d => d.email == vm.selected_referral).name,
-                                    'The referral has been sent to ' +
+                                swal.fire({
+                                    title: 'Referral Sent',
+                                    text:
+                                        'The referral has been sent to ' +
                                         vm.selected_referral,
-                                    'success'
-                                );
+                                    icon: 'success',
+                                });
                                 $(vm.$refs.referral_recipient_groups)
                                     .val(null)
                                     .trigger('change');
@@ -2184,11 +2185,11 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                swal(
-                                    'Referral Error',
-                                    helpers.apiVueResourceError(error),
-                                    'error'
-                                );
+                                swal.fire({
+                                    title: 'Referral Error',
+                                    text: helpers.apiVueResourceError(error),
+                                    icon: 'error',
+                                });
                                 vm.sendingReferral = false;
                             }
                         );
@@ -2213,18 +2214,18 @@ export default {
                         );
                         vm.proposal = response.body;
                         vm.fetchProposalParks(vm.proposal.id);
-                        swal(
-                            'Referral Reminder',
-                            'A reminder has been sent to ' + r.referral,
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Reminder',
+                            text: 'A reminder has been sent to ' + r.referral,
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -2245,18 +2246,19 @@ export default {
                         );
                         vm.proposal = response.body;
                         vm.fetchProposalParks(vm.proposal.id);
-                        swal(
-                            'Referral Resent',
-                            'The referral has been resent to ' + r.referral,
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Resent',
+                            text:
+                                'The referral has been resent to ' + r.referral,
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -2277,18 +2279,20 @@ export default {
                         );
                         vm.proposal = response.body;
                         vm.fetchProposalParks(vm.proposal.id);
-                        swal(
-                            'Referral Recall',
-                            'The referall has been recalled from ' + r.referral,
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Recall',
+                            text:
+                                'The referral has been recalled from ' +
+                                r.referral,
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
