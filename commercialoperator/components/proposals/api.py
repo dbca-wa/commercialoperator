@@ -196,12 +196,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
-        def get_choice(status, choices=Proposal.PROCESSING_STATUS_CHOICES):
-            for i in choices:
-                if i[1] == status:
-                    return i[0]
-            return None
-
         # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
         regions = request.GET.get("regions")
         if regions:
@@ -224,7 +218,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(park_bookings__park__id__in=[park])
 
             if payment_method:
-                # queryset = queryset.filter(invoices__payment_method=payment_method)
                 queryset = queryset.filter(
                     Q(invoices__payment_method=payment_method)
                     | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING)
@@ -233,11 +226,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             if payment_status:
                 ids = []
                 if payment_status.lower() == "overdue":
-                    # for i in ParkBooking.objects.all():
-                    #    if (i.booking.invoices.last() and i.booking.invoices.last().payment_status=='Unpaid') or \
-                    #        not i.booking.invoices.last() and \
-                    #        i.booking.invoices.last() and i.booking.deferred_payment_date and i.booking.deferred_payment_date < timezone.now().date():
-                    #        ids.append(i.id)
                     ids = list(
                         ParkBooking.objects.filter(
                             (
@@ -255,9 +243,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                         ).values_list("id", flat=True)
                     )
                 elif payment_status.lower() == "unpaid":
-                    # for i in ParkBooking.objects.all():
-                    #    if (i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()=='unpaid') or not i.booking.invoices.last():
-                    #        ids.append(i.id)
                     ids = list(
                         ParkBooking.objects.filter(
                             Q(
@@ -267,9 +252,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                         ).values_list("id", flat=True)
                     )
                 else:
-                    # for i in ParkBooking.objects.all():
-                    #    if i.booking.invoices.last() and i.booking.invoices.last().payment_status and i.booking.invoices.last().payment_status.lower()==payment_status.lower().replace('_',' '):
-                    #        ids.append(i.id)
                     ids = list(
                         ParkBooking.objects.filter(
                             booking__invoices__property_cache__payment_status__iexact=payment_status.lower().replace(
@@ -400,33 +382,16 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             request, queryset, view
         )
         setattr(view, "_datatables_total_count", total_count)
+
         return queryset
 
 
-# class ProposalRenderer(DatatablesRenderer):
-#    def render(self, data, accepted_media_type=None, renderer_context=None):
-#        if 'view' in renderer_context and hasattr(renderer_context['view'], '_datatables_total_count'):
-#            data['recordsTotal'] = renderer_context['view']._datatables_total_count
-#            #data.pop('recordsTotal')
-#            #data.pop('recordsFiltered')
-#        return super(ProposalRenderer, self).render(data, accepted_media_type, renderer_context)
-
-
-# from django.utils.decorators import method_decorator
-# from django.views.decorators.cache import cache_page
 class ProposalPaginatedViewSet(viewsets.ModelViewSet):
-    # queryset = Proposal.objects.all()
-    # filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     queryset = Proposal.objects.none()
     serializer_class = ListProposalSerializer
     page_size = 10
-
-    #    @method_decorator(cache_page(60))
-    #    def dispatch(self, *args, **kwargs):
-    #        return super(ListProposalViewSet, self).dispatch(*args, **kwargs)
 
     @property
     def excluded_type(self):
@@ -2191,9 +2156,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             serializer.validated_data["email_group"],
             serializer.validated_data["text"],
         )
-        serializer = InternalProposalSerializer(
-            instance, context={"request": request}
-        )
+        serializer = InternalProposalSerializer(instance, context={"request": request})
         return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
@@ -3714,23 +3677,23 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             user_id = user.id
             # user_id = 132360  # A real user id for testing
-            # user_assessor_groups = user.districtproposalassessorgroup_set.all()
             user_assessor_groups = retrieve_user_groups(
                 "districtproposalassessorgroup", user_id
             )
-            # user_approver_groups = user.districtproposalapprovergroup_set.all()
             user_approver_groups = retrieve_user_groups(
                 "districtproposalapprovergroup", user_id
             )
 
-            qs = [
-                d.id
-                for d in DistrictProposal.objects.all()
-                if d.assessor_group in user_assessor_groups
-                or d.approver_group in user_approver_groups
-            ]
-            queryset = DistrictProposal.objects.filter(id__in=qs)
-            return queryset
+            return (
+                DistrictProposal.objects.with_approver_group_id()
+                .filter(approver_group_id__in=user_approver_groups)
+                .union(
+                    DistrictProposal.objects.with_assessor_group_id().filter(
+                        assessor_group_id__in=user_assessor_groups
+                    )
+                )
+            )
+
         return DistrictProposal.objects.none()
 
     @action(

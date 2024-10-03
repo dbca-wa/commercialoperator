@@ -1841,7 +1841,7 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
     district_name = serializers.CharField(read_only=True)
     proposal_lodgement_date = serializers.CharField(source='proposal.lodgement_date')
     proposal_lodgement_number = serializers.CharField(source='proposal.lodgement_number')
-    submitter = serializers.SerializerMethodField()
+    applicant = EmailUserSerializer(source="proposal.applicant_id")
     submitter = EmailUserSerializer(source="proposal.submitter_id")
     assigned_officer = serializers.CharField(source='assigned_officer.get_full_name', allow_null=True)
 

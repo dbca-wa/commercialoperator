@@ -204,8 +204,8 @@ export default {
                         data: 'submitter',
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
-                            if (data) {
-                                return `${data.first_name} ${data.last_name}`;
+                            if (data && data.full_name) {
+                                return `${data.full_name}`;
                             }
                             return '';
                         },
@@ -214,6 +214,13 @@ export default {
                     {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
+                        // eslint-disable-next-line no-unused-vars
+                        mRender: function (data, type, full) {
+                            if (data && data.full_name) {
+                                return `${data.full_name}`;
+                            }
+                            return '';
+                        },
                     },
                     {
                         data: 'processing_status',

@@ -68,7 +68,7 @@ from commercialoperator.components.proposals.email import (
 )
 import copy
 import subprocess
-from django.db.models import Q
+from django.db.models import Q, F, When, Case
 from reversion.models import Version
 from dirtyfields import DirtyFieldsMixin
 from decimal import Decimal as D
@@ -6861,7 +6861,37 @@ class DistrictProposalApproverGroup(models.Model):
         return [i.email for i in self.members.all()]
 
 
+class DistrictProposalQuerySet(models.QuerySet):
+    def with_approver_group_id(self):
+        try:
+            default_group = DistrictProposalApproverGroup.objects.get(default=True)
+        except DistrictProposalApproverGroup.DoesNotExist:
+            default_group_id = None
+        else:
+            default_group_id = default_group.id
+
+        return self.annotate(approver_group_id=Case(
+            When(district__isnull=False, then=F("district__districtproposalapprovergroup")),
+            default=default_group_id)
+        )
+
+    def with_assessor_group_id(self):
+        try:
+            default_group = DistrictProposalAssessorGroup.objects.get(default=True)
+        except DistrictProposalAssessorGroup.DoesNotExist:
+            default_group_id = None
+        else:
+            default_group_id = default_group.id
+
+        return self.annotate(assessor_group_id=Case(
+            When(district__isnull=False, then=F("district__districtproposalassessorgroup")),
+            default=default_group_id)
+        )
+
+
 class DistrictProposal(models.Model):
+    objects = DistrictProposalQuerySet.as_manager()
+
     PROCESSING_STATUS_WITH_ASSESSOR = "with_assessor"
     PROCESSING_STATUS_WITH_REFERRAL = "with_referral"
     PROCESSING_STATUS_WITH_ASSESSOR_REQUIREMENTS = "with_assessor_requirements"
