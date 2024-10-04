@@ -161,11 +161,6 @@ class GetEmptyList(views.APIView):
         return Response([])
 
 
-# class DatatablesFilterBackend(BaseFilterBackend):
-#
-#   def filter_queryset(self, request, queryset, view):
-#       queryset = super(DatatablesFilterBackend, self).filter_queryset(request, queryset, view)
-#       return queryset
 
 """
 1. internal_proposal.json
@@ -426,7 +421,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         http://localhost:8499/api/proposal_paginated/proposal_paginated_internal/?format=datatables&draw=1&length=2
         """
         qs = self.get_queryset()
-        # qs = self.filter_queryset(self.request, qs, self)
         qs = self.filter_queryset(qs)
 
         # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
