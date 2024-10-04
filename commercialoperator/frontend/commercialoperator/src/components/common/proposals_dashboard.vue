@@ -293,10 +293,12 @@ export default {
                             return '';
                         },
                         name: 'submitter__email',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'customer_status',
@@ -434,10 +436,12 @@ export default {
                             return '';
                         },
                         name: 'submitter__email',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
                         name: 'applicant',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'processing_status',
@@ -456,6 +460,7 @@ export default {
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'event_name',

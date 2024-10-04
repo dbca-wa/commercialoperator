@@ -245,6 +245,7 @@ export default {
                             return '';
                         },
                         name: 'proposal__submitter__email',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
