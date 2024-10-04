@@ -819,11 +819,13 @@ class ProposalViewSet(viewsets.ModelViewSet):
             self.get_queryset()
             .filter(submitter__isnull=False)
             .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
             .distinct("submitter_email")
             .values_list(
                 "submitter_first_name", "submitter_last_name", "submitter_email"
             )
         )
+
         submitters = [
             dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
             for i in submitter_qs
@@ -2496,6 +2498,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
                 )
             )
             .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
             .order_by("submitter_email")
             .distinct("submitter_email")
             .values_list(
@@ -3576,6 +3579,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
                 )
             )
             .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
             .order_by("submitter_email")
             .distinct("submitter_email")
             .values_list(

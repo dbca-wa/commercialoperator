@@ -25,7 +25,7 @@ def retrieve_email_user(email_user_id):
     )
     email_user = cache.get(cache_key)
 
-    if settings.DEBUG and email_user is EmailUser.DoesNotExist:
+    if settings.DEBUG and email_user == EmailUser.DoesNotExist.__name__:
         return None
     elif email_user is None:
         try:
@@ -33,11 +33,13 @@ def retrieve_email_user(email_user_id):
         except EmailUser.DoesNotExist:
             # logger.error(f"EmailUser with id {email_user_id} does not exist")
             if settings.DEBUG:
-                cache.set(cache_key, EmailUser.DoesNotExist, cache_timeout)
+                cache.set(cache_key, EmailUser.DoesNotExist.__name__, cache_timeout)
             return None
         else:
             cache.set(cache_key, email_user, cache_timeout)
-    return email_user
+            return email_user
+    else:
+        return email_user
 
 
 class EmailUserQuerySet(models.QuerySet):
@@ -66,32 +68,71 @@ class EmailUserQuerySet(models.QuerySet):
         if not getattr(self.model, emailuser_fk_field_id, None):
             raise ValueError(f"Field {emailuser_fk_field} does not exist in the model")
 
-        # I wish this would work :(((
-        # from django.db.models import Subquery, OuterRef
-        # return self.annotate(user_email=Subquery(EmailUser.objects.filter(id=OuterRef("submitter_id")).values("email")))
-
         emailuser_property_values = {
             f"{emailuser_fk_field}_{property}": models.Value("")
             for property in emailuser_properties
         }
-        emailuser_property_values[f"{emailuser_fk_field}_exists"] = models.Value(False)
 
-        self = self.annotate(**emailuser_property_values)
+        emailuser_fk_field_ids = []
+        emailuser_fk_field_property_values = {}
 
         for obj in self:
             emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id)
             emailuser = retrieve_email_user(emailuser_fk_field_id_value)
-            setattr(obj, emailuser_fk_field, emailuser)
-            if emailuser is not None:
+            if emailuser:
+                setattr(obj, emailuser_fk_field, emailuser)
+                if emailuser.id not in emailuser_fk_field_ids:
+                    # Collect unique emailuser ids
+                    emailuser_fk_field_ids.append(emailuser.id)
+                if emailuser.id not in emailuser_fk_field_property_values:
+                    # Collect emailuser properties
+                    emailuser_fk_field_property_values[emailuser.id] = {}
                 for property in emailuser_properties:
-                    if property == f"{emailuser_fk_field}_exists":
-                        setattr(obj, f"{emailuser_fk_field}_exists", True)
-                        continue
-                    setattr(
-                        obj,
-                        f"{emailuser_fk_field}_{property}",
-                        getattr(emailuser, property),
+                    # Collect emailuser property values
+                    emailuser_fk_field_property_values[emailuser.id][property] = (
+                        getattr(emailuser, property)
                     )
+
+        # Create a dictionary of Case expressions for each emailuser property
+        # E.g. {
+        #     "submitter_email": Case(
+        #         When(submitter_id=1, then=Value("email1")),
+        #         When(submitter_id=2, then=Value("email2")),
+        #         default=Value(""),
+        #         output_field=CharField()
+        #     ),
+        case_whens = {
+            f"{emailuser_fk_field}_{property}": models.Case(
+                *[
+                    models.When(
+                        **{f"{emailuser_fk_field_id}": emailuser_fk_field_id_value},
+                        then=models.Value(
+                            emailuser_fk_field_property_values[
+                                emailuser_fk_field_id_value
+                            ][property]
+                        ),
+                    )
+                    for emailuser_fk_field_id_value in emailuser_fk_field_ids
+                ],
+                default=models.Value(""),
+                output_field=models.CharField(),
+            )
+            for property in emailuser_properties
+        }
+
+        # Add the emailuser_fk_field_exists field, e.h. submitter_exists
+        self = self.annotate(
+            **{
+                f"{emailuser_fk_field}_exists": models.Case(
+                    models.When(
+                        **{f"{emailuser_fk_field_id}__in": emailuser_fk_field_ids},
+                        then=models.Value(True),
+                    ),
+                    default=models.Value(False),
+                    output_field=models.BooleanField(),
+                )
+            }
+        ).annotate(**case_whens)
 
         return self
 
