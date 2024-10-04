@@ -80,25 +80,26 @@ class ProposalTypeSerializer(serializers.ModelSerializer):
 class EmailUserSerializer(EmailUserRoSerializer):
     pass
 
+
 class EmailUserAppViewBaseSerializer(EmailUserSerializer):
     dob = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()
     mobile_number = serializers.SerializerMethodField()
 
-    def get_dob(self,obj):
+    def get_dob(self, obj):
         emailuser = retrieve_email_user(obj)
-        return emailuser.dob.strftime('%d/%m/%Y') if emailuser.dob else None
+        return emailuser.dob.strftime("%d/%m/%Y") if emailuser.dob else None
 
-    def get_email(self,obj):
+    def get_email(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.email if emailuser else None
 
-    def get_phone_number(self,obj):
+    def get_phone_number(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.phone_number if emailuser else None
 
-    def get_mobile_number(self,obj):
+    def get_mobile_number(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.mobile_number if emailuser else None
 
@@ -831,7 +832,7 @@ class InternalProposalSerializer(BaseProposalSerializer):
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    submitter = EmailUserAppViewSerializer()
+    submitter = EmailUserAppViewSerializer(source='submitter_id')
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
