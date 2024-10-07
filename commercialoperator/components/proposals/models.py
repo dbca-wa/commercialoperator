@@ -1187,10 +1187,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def applicant_email(self):
         if (
             self.org_applicant
-            and hasattr(self.org_applicant.organisation, "email")
-            and self.org_applicant.organisation.email
+            and hasattr(self.org_applicant, "email")
+            and self.org_applicant.email
         ):
-            return self.org_applicant.organisation.email
+            return self.org_applicant.email
         elif self.proxy_applicant:
             return self.proxy_applicant.email
         else:
@@ -4679,31 +4679,6 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
         return Proposal.objects.filter(processing_status__in=assessable_states)
 
 
-#
-# class ReferralRequestUserAction(UserAction):
-#    ACTION_LODGE_REQUEST = "Lodge request {}"
-#    ACTION_ASSIGN_TO = "Assign to {}"
-#    ACTION_UNASSIGN = "Unassign"
-#    ACTION_DECLINE_REQUEST = "Decline request"
-#    # Assessors
-#
-#    ACTION_CONCLUDE_REQUEST = "Conclude request {}"
-#
-#    @classmethod
-#    def log_action(cls, request, action, user):
-#        return cls.objects.create(
-#            request=request,
-#            who=user,
-#            what=str(action)
-#        )
-#
-#    request = models.ForeignKey(ReferralRequest,related_name='action_logs')
-#
-#    class Meta:
-#        app_label = 'commercialoperator'
-
-
-# class Referral(models.Model):
 class Referral(RevisionedMixin):
     SENT_CHOICES = ((1, "Sent From Assessor"), (2, "Sent From Referral"))
     PROCESSING_STATUS_CHOICES = (
@@ -4911,35 +4886,33 @@ class Referral(RevisionedMixin):
             recipients = self.referral_group.members_list
             send_referral_email_notification(self, recipients, request, reminder=True)
 
+    @transaction.atomic
     def resend(self, request):
-        with transaction.atomic():
-            if not self.proposal.can_assess(request.user):
-                raise exceptions.ProposalNotAuthorized()
-            self.processing_status = "with_referral"
-            self.proposal.processing_status = "with_referral"
-            self.proposal.save()
-            self.sent_from = 1
-            self.save()
-            # Create a log entry for the proposal
-            # self.proposal.log_user_action(ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
-            self.proposal.log_user_action(
-                ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
-                    self.id, self.proposal.id, "{}".format(self.referral_group.name)
-                ),
-                request,
-            )
-            # Create a log entry for the organisation
-            # self.proposal.applicant.log_user_action(ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
-            applicant_field = getattr(self.proposal, self.proposal.applicant_field)
-            applicant_field.log_user_action(
-                ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
-                    self.id, self.proposal.id, "{}".format(self.referral_group.name)
-                ),
-                request,
-            )
-            # send email
-            recipients = self.referral_group.members_list
-            send_referral_email_notification(self, recipients, request)
+        if not self.proposal.can_assess(request.user):
+            raise exceptions.ProposalNotAuthorized()
+        self.processing_status = "with_referral"
+        self.proposal.processing_status = "with_referral"
+        self.proposal.save()
+        self.sent_from = 1
+        self.save()
+        # Create a log entry for the proposal
+        self.proposal.log_user_action(
+            ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
+                self.id, self.proposal.id, "{}".format(self.referral_group.name)
+            ),
+            request,
+        )
+        # Create a log entry for the organisation
+        applicant_field = getattr(self.proposal, self.proposal.applicant_field)
+        applicant_field.log_user_action(
+            ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
+                self.id, self.proposal.id, "{}".format(self.referral_group.name)
+            ),
+            request,
+        )
+        # send email
+        recipients = self.referral_group.members_list
+        send_referral_email_notification(self, recipients, request)
 
     def complete(self, request):
         with transaction.atomic():
@@ -6870,9 +6843,14 @@ class DistrictProposalQuerySet(models.QuerySet):
         else:
             default_group_id = default_group.id
 
-        return self.annotate(approver_group_id=Case(
-            When(district__isnull=False, then=F("district__districtproposalapprovergroup")),
-            default=default_group_id)
+        return self.annotate(
+            approver_group_id=Case(
+                When(
+                    district__isnull=False,
+                    then=F("district__districtproposalapprovergroup"),
+                ),
+                default=default_group_id,
+            )
         )
 
     def with_assessor_group_id(self):
@@ -6883,9 +6861,14 @@ class DistrictProposalQuerySet(models.QuerySet):
         else:
             default_group_id = default_group.id
 
-        return self.annotate(assessor_group_id=Case(
-            When(district__isnull=False, then=F("district__districtproposalassessorgroup")),
-            default=default_group_id)
+        return self.annotate(
+            assessor_group_id=Case(
+                When(
+                    district__isnull=False,
+                    then=F("district__districtproposalassessorgroup"),
+                ),
+                default=default_group_id,
+            )
         )
 
 
