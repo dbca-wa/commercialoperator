@@ -14,6 +14,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.pagination import PageNumberPagination
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.utils import (
+    get_proposal_serializer_by_application_type,
     save_proponent_data,
     save_assessor_data,
     proposal_submit,
@@ -1646,21 +1647,9 @@ class ProposalViewSet(viewsets.ModelViewSet):
     )
     def internal_proposal(self, request, *args, **kwargs):
         instance = self.get_object()
-        # instance.submitter_id = 1
-
-        serializer = InternalProposalSerializer(instance, context={"request": request})
-        if instance.application_type.name == ApplicationType.TCLASS:
-            serializer = InternalProposalSerializer(
-                instance, context={"request": request}
-            )
-        elif instance.application_type.name == ApplicationType.FILMING:
-            serializer = InternalFilmingProposalSerializer(
-                instance, context={"request": request}
-            )
-        elif instance.application_type.name == ApplicationType.EVENT:
-            serializer = InternalEventProposalSerializer(
-                instance, context={"request": request}
-            )
+        serializer = get_proposal_serializer_by_application_type(
+            instance, context={"request": request}
+        )
         return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
@@ -2628,23 +2617,14 @@ class ReferralViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def remind(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.remind(request)
-            serializer = InternalProposalSerializer(
-                instance.proposal, context={"request": request}
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        instance.remind(request)
+        serializer = get_proposal_serializer_by_application_type(
+            instance.proposal, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -2652,23 +2632,14 @@ class ReferralViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def recall(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.recall(request)
-            serializer = InternalProposalSerializer(
-                instance.proposal, context={"request": request}
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        instance.recall(request)
+        serializer = get_proposal_serializer_by_application_type(
+            instance.proposal, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -2680,7 +2651,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
     def resend(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.resend(request)
-        serializer = InternalProposalSerializer(
+        serializer = get_proposal_serializer_by_application_type(
             instance.proposal, context={"request": request}
         )
         return Response(serializer.data)
