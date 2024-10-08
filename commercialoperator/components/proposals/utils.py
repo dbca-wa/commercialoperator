@@ -32,6 +32,9 @@ from commercialoperator.components.proposals.email import (
     send_external_submit_email_notification,
 )
 from commercialoperator.components.proposals.serializers import (
+    InternalEventProposalSerializer,
+    InternalFilmingProposalSerializer,
+    InternalProposalSerializer,
     SaveProposalSerializer,
     ProposalAccreditationSerializer,
     ProposalOtherDetailsSerializer,
@@ -1810,3 +1813,20 @@ def test_proposal_emails(request):
         booking_email.send_confirmation_tclass_email_notification(
             request.user, booking, bi, recipients, is_test=True
         )
+
+
+def get_proposal_serializer_by_application_type(instance, context):
+    """Return the appropriate serializer based on the application type of the proposal"""
+
+    if instance.application_type.name == ApplicationType.TCLASS:
+        logger.debug(f"Get serializer: {ApplicationType.TCLASS}")
+        return InternalProposalSerializer(instance, context=context)
+    elif instance.application_type.name == ApplicationType.FILMING:
+        logger.debug(f"Get serializer: {ApplicationType.FILMING}")
+        return InternalFilmingProposalSerializer(instance, context=context)
+    elif instance.application_type.name == ApplicationType.EVENT:
+        logger.debug(f"Get serializer: {ApplicationType.EVENT}")
+        return InternalEventProposalSerializer(instance, context=context)
+    else:
+        logger.debug("Get default InternalProposalSerializer")
+        return InternalProposalSerializer(instance, context=context)
