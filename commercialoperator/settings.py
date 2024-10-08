@@ -255,6 +255,32 @@ LOGGING["loggers"]["payment_checkout"] = {
 
 LOGGING["loggers"]["commercialoperator"] = {"handlers": ["file"], "level": "INFO"}
 
+if DEBUG:
+    LOGGING["formatters"] = {
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(name)s [Line:%(lineno)s][%(funcName)s] %(message)s"
+        },
+        "simple": {
+            "format": "[Line:%(lineno)s][%(funcName)s] %(levelname)s %(message)s"
+        },
+    }
+    LOGGING["handlers"]["console"] = {
+        "level": "DEBUG",
+        "class": "logging.StreamHandler",
+        "formatter": "verbose",
+    }
+    LOGGING["loggers"]["commercialoperator"] = {
+        "handlers": ["console"],
+        "level": "DEBUG",
+        "formatter": "verbose",
+        "propagate": False,
+    }
+
+    # Get rid of the annoying asyncio info log message
+    LOGGING["loggers"]["asyncio"] = {
+        "level": "WARNING",
+    }
+
 
 # Cache timeouts
 CACHE_TIMEOUT_5_SECONDS = 5
