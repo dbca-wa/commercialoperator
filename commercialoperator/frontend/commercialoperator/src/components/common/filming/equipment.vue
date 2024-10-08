@@ -38,6 +38,9 @@
                                                 class="form-check list-inline-item"
                                             >
                                                 <input
+                                                    v-if="
+                                                        proposal.filming_equipment
+                                                    "
                                                     ref="Radio"
                                                     v-model="
                                                         // eslint-disable-next-line vue/no-mutating-props
@@ -60,6 +63,9 @@
                                                 class="form-check list-inline-item"
                                             >
                                                 <input
+                                                    v-if="
+                                                        proposal.filming_equipment
+                                                    "
                                                     ref="Radio"
                                                     v-model="
                                                         // eslint-disable-next-line vue/no-mutating-props
@@ -84,6 +90,7 @@
                                 <div class="row">&nbsp;</div>
                                 <div
                                     v-if="
+                                        proposal.filming_equipment &&
                                         proposal.filming_equipment.vehicle_owned
                                     "
                                     class=""
@@ -124,6 +131,9 @@
                                     <ul class="list-inline">
                                         <li class="form-check list-inline-item">
                                             <input
+                                                v-if="
+                                                    proposal.filming_equipment
+                                                "
                                                 ref="Radio"
                                                 v-model="
                                                     // eslint-disable-next-line vue/no-mutating-props
@@ -141,6 +151,9 @@
                                         </li>
                                         <li class="form-check list-inline-item">
                                             <input
+                                                v-if="
+                                                    proposal.filming_equipment
+                                                "
                                                 ref="Radio"
                                                 v-model="
                                                     // eslint-disable-next-line vue/no-mutating-props
@@ -161,7 +174,10 @@
                             </div>
                             <div class="row">&nbsp;</div>
                             <div
-                                v-if="proposal.filming_equipment.rps_used"
+                                v-if="
+                                    proposal.filming_equipment &&
+                                    proposal.filming_equipment.rps_used
+                                "
                                 class="row"
                             >
                                 <div class="col-sm-6">
@@ -185,6 +201,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_equipment"
                                             v-model="
                                                 // eslint-disable-next-line vue/no-mutating-props
                                                 proposal.filming_equipment
@@ -199,7 +216,10 @@
                                 </div>
                             </div>
                             <div
-                                v-if="proposal.filming_equipment.rps_used"
+                                v-if="
+                                    proposal.filming_equipment &&
+                                    proposal.filming_equipment.rps_used
+                                "
                                 class="row"
                             >
                                 <div class="col-sm-6">
@@ -248,6 +268,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_equipment"
                                             v-model="
                                                 // eslint-disable-next-line vue/no-mutating-props
                                                 proposal.filming_equipment
@@ -284,6 +305,9 @@
                                                 class="form-check list-inline-item"
                                             >
                                                 <input
+                                                    v-if="
+                                                        proposal.filming_equipment
+                                                    "
                                                     ref="Radio"
                                                     v-model="
                                                         // eslint-disable-next-line vue/no-mutating-props
@@ -306,6 +330,9 @@
                                                 class="form-check list-inline-item"
                                             >
                                                 <input
+                                                    v-if="
+                                                        proposal.filming_equipment
+                                                    "
                                                     ref="Radio"
                                                     v-model="
                                                         // eslint-disable-next-line vue/no-mutating-props
@@ -331,6 +358,7 @@
                             <div class="row">&nbsp;</div>
                             <div
                                 v-if="
+                                    proposal.filming_equipment &&
                                     proposal.filming_equipment
                                         .alteration_required
                                 "
@@ -354,6 +382,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_equipment"
                                             v-model="
                                                 // eslint-disable-next-line vue/no-mutating-props
                                                 proposal.filming_equipment
@@ -369,6 +398,7 @@
                             </div>
                             <div
                                 v-if="
+                                    proposal.filming_equipment &&
                                     proposal.filming_equipment
                                         .alteration_required
                                 "
@@ -418,6 +448,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_equipment"
                                             v-model="
                                                 // eslint-disable-next-line vue/no-mutating-props
                                                 proposal.filming_equipment

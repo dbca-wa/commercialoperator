@@ -43,6 +43,7 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                v-if="proposal.filming_activity"
                                                 v-model="
                                                     proposal.filming_activity
                                                         .commencement_date
@@ -71,6 +72,7 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                v-if="proposal.filming_activity"
                                                 v-model="
                                                     proposal.filming_activity
                                                         .completion_date
@@ -108,6 +110,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <input
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .activity_title
@@ -135,6 +138,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <input
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .previous_contact_person
@@ -167,6 +171,9 @@
                                                 class="form-check list-inline-item"
                                             >
                                                 <input
+                                                    v-if="
+                                                        proposal.filming_activity
+                                                    "
                                                     ref="Radio"
                                                     v-model="
                                                         proposal
@@ -195,8 +202,9 @@
                                 </div>
                                 <div
                                     v-if="
+                                        proposal.filming_activity &&
                                         proposal.filming_activity.sponsorship ==
-                                        'other'
+                                            'other'
                                     "
                                     class="row"
                                 >
@@ -212,6 +220,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .sponsorship_details
@@ -235,6 +244,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .production_description
@@ -260,6 +270,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            v-if="proposal.filming_activity"
                                             ref="film_type_select"
                                             v-model="
                                                 proposal.filming_activity
@@ -295,6 +306,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            v-if="proposal.filming_activity"
                                             ref="filmPurposeSelect"
                                             v-model="
                                                 proposal.filming_activity
@@ -354,6 +366,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            v-if="proposal.filming_activity"
                                             ref="filmUsageSelect"
                                             v-model="
                                                 proposal.filming_activity

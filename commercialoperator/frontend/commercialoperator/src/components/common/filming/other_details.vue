@@ -48,6 +48,9 @@
                                             style="width: 70%"
                                         >
                                             <textarea
+                                                v-if="
+                                                    proposal.filming_other_details
+                                                "
                                                 v-model="
                                                     proposal
                                                         .filming_other_details
@@ -122,6 +125,9 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="
+                                                proposal.filming_other_details
+                                            "
                                             v-model="
                                                 proposal.filming_other_details
                                                     .other_comments
@@ -191,6 +197,7 @@
                                 <div class="row">&nbsp;</div>
                                 <div
                                     v-if="
+                                        proposal.filming_other_details &&
                                         proposal.filming_other_details
                                             .camping_fee_waived
                                     "
@@ -212,6 +219,9 @@
                                             style="margin-bottom: 5px"
                                         >
                                             <input
+                                                v-if="
+                                                    proposal.filming_other_details
+                                                "
                                                 v-model="
                                                     proposal
                                                         .filming_other_details
@@ -228,6 +238,7 @@
                                 </div>
                                 <div
                                     v-if="
+                                        proposal.filming_other_details &&
                                         proposal.filming_other_details
                                             .camping_fee_waived
                                     "
@@ -332,6 +343,9 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                v-if="
+                                                    proposal.filming_other_details
+                                                "
                                                 v-model="
                                                     proposal
                                                         .filming_other_details
