@@ -888,6 +888,7 @@
                                         "
                                         id="proposalStart"
                                         ref="tclass"
+                                        :key="keyProposalTClass"
                                         :proposal="proposal"
                                         :can-edit-activities="canEditActivities"
                                         :is_internal="true"
@@ -902,6 +903,7 @@
                                         "
                                         id="proposalStart"
                                         ref="filming"
+                                        :key="keyProposalFilming"
                                         :proposal="proposal"
                                         :can-edit-activities="canEditActivities"
                                         :can-edit-period="canEditPeriod"
@@ -917,6 +919,7 @@
                                         "
                                         id="proposalStart"
                                         ref="event"
+                                        :key="keyProposalEvent"
                                         :proposal="proposal"
                                         :can-edit-activities="canEditActivities"
                                         :can-edit-period="canEditPeriod"
@@ -1041,6 +1044,7 @@ import OnHold from './proposal_onhold.vue';
 import WithQAOfficer from './proposal_qaofficer.vue';
 import FilmingDistrictProposalsTable from '@common-utils/filming_district_proposals_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 export default {
     name: 'InternalProposal',
     components: {
@@ -1189,6 +1193,9 @@ export default {
             comparing: false,
             sendingToDistrict: false,
             sendingToKensington: false,
+            keyProposalFilming: uuid(),
+            keyProposalEvent: uuid(),
+            keyProposalTClass: uuid(),
         };
     },
     computed: {
@@ -2219,6 +2226,9 @@ export default {
                             text: 'A reminder has been sent to ' + r.referral,
                             icon: 'success',
                         });
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
+                        );
                     },
                     (error) => {
                         swal.fire({
@@ -2252,6 +2262,9 @@ export default {
                                 'The referral has been resent to ' + r.referral,
                             icon: 'success',
                         });
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
+                        );
                     },
                     (error) => {
                         swal.fire({
@@ -2286,6 +2299,9 @@ export default {
                                 r.referral,
                             icon: 'success',
                         });
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
+                        );
                     },
                     (error) => {
                         swal.fire({
@@ -2295,6 +2311,24 @@ export default {
                         });
                     }
                 );
+        },
+        /**
+         * Refreshes the key for the given application type, or all if not specified
+         * @param application_type The application type to refresh the key for
+         */
+        refreshApplicationTypeKey: function (application_type) {
+            let vm = this;
+            if (application_type == vm.application_type_filming) {
+                vm.keyProposalFilming = uuid();
+            } else if (application_type == vm.application_type_event) {
+                vm.keyProposalEvent = uuid();
+            } else if (application_type == vm.application_type_tclass) {
+                vm.keyProposalTClass = uuid();
+            } else {
+                vm.keyProposalFilming = uuid();
+                vm.keyProposalEvent = uuid();
+                vm.keyProposalTClass = uuid();
+            }
         },
     },
 };
