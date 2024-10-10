@@ -31,9 +31,9 @@ if env("CONSOLE_EMAIL_BACKEND", False):
 
 SHOW_ROOT_API = env("SHOW_ROOT_API", False)
 
-TEMPLATE_TITLE = "Commercial Operator Licensing System"
-TEMPLATE_HEADER_LOGO = "/static/commercialoperator/img/dbca-logo.png"
-TEMPLATE_GROUP = "parkswildlifev2"
+TEMPLATE_TITLE = "Commercial Operator Licensing"
+TEMPLATE_HEADER_LOGO = "/static/commercialoperator/img/logo-park-stay-trunc.gif"
+TEMPLATE_GROUP = "parkswildlife"
 
 LEDGER_TEMPLATE = "bootstrap5"
 
