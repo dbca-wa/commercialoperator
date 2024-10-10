@@ -4,16 +4,12 @@ import Vue from 'vue';
 import resource from 'vue-resource';
 import App from './App';
 import router from './router';
-import 'bootstrap';
 import helpers from '@/utils/helpers';
 import { extendMoment } from 'moment-range';
 
-import 'datatables.net';
-import 'datatables.net-bs';
-import 'datatables.net-buttons';
-import 'datatables.net-buttons-bs';
-import 'datatables.net-responsive';
-import 'datatables.net-responsive-bs';
+import 'datatables.net-bs5';
+import 'datatables.net-buttons-bs5';
+import 'datatables.net-responsive-bs5';
 import 'datatables.net-buttons/js/dataTables.buttons.js';
 import 'datatables.net-buttons/js/buttons.html5.js';
 
@@ -27,14 +23,14 @@ import 'sweetalert2/dist/sweetalert2.css';
 import '@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
 import 'select2/dist/css/select2.min.css';
 import 'select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
-import '@/../node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css';
-import '@/../node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css';
+import '@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css';
+import '@/../node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css';
 
 import api_endpoints from './api';
 import VeeValidate from 'vee-validate';
 
 require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css');
-require('@/../node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css');
+require('@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css');
 
 extendMoment(moment);
 
