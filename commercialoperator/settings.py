@@ -84,7 +84,6 @@ INSTALLED_APPS += [
     "reversion",
     "reversion_compare",
     "webtemplate_dbca",
-    # "bootstrap3",
     "ledger_api_client",
     "commercialoperator",
     "commercialoperator.components.main",
