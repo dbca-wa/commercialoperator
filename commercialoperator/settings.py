@@ -3,6 +3,9 @@ from django.core.exceptions import ImproperlyConfigured
 import os, hashlib
 import confy
 from confy import env
+import logging
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.exists(BASE_DIR + "/.env"):
@@ -27,6 +30,25 @@ if env("CONSOLE_EMAIL_BACKEND", False):
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SHOW_ROOT_API = env("SHOW_ROOT_API", False)
+
+TEMPLATE_TITLE = "Commercial Operator Licensing System"
+TEMPLATE_HEADER_LOGO = "/static/commercialoperator/img/dbca-logo.png"
+TEMPLATE_GROUP = "parkswildlifev2"
+
+LEDGER_TEMPLATE = "bootstrap5"
+
+# Use git commit hash for purging cache in browser for deployment changes
+GIT_COMMIT_HASH = os.popen(
+    f"cd {BASE_DIR}; git log -1 --format=%H"
+).read()  # noqa: S605
+GIT_COMMIT_DATE = os.popen(
+    f"cd {BASE_DIR}; git log -1 --format=%cd"
+).read()  # noqa: S605
+if len(GIT_COMMIT_HASH) == 0:
+    GIT_COMMIT_HASH = os.popen("cat /app/git_hash").read()
+    if len(GIT_COMMIT_HASH) == 0:
+        logger.error("No git hash available to tag urls for pinned caching")
+APPLICATION_VERSION = env("APPLICATION_VERSION", "1.0.0") + "-" + GIT_COMMIT_HASH[:7]
 
 if SHOW_DEBUG_TOOLBAR:
     #    def get_ip():
@@ -61,8 +83,8 @@ STATIC_URL = "/static/"
 INSTALLED_APPS += [
     "reversion",
     "reversion_compare",
-    # "webtemplate_dbca",
-    "bootstrap3",
+    "webtemplate_dbca",
+    # "bootstrap3",
     "ledger_api_client",
     "commercialoperator",
     "commercialoperator.components.main",
@@ -131,18 +153,10 @@ TEMPLATES[0]["DIRS"].append(
 TEMPLATES[0]["DIRS"].append(
     os.path.join(BASE_DIR, "commercialoperator", "components", "emails", "templates")
 )
-del BOOTSTRAP3["css_url"]
-# BOOTSTRAP3 = {
-#    'jquery_url': '//static.dpaw.wa.gov.au/static/libs/jquery/2.2.1/jquery.min.js',
-#    'base_url': '//static.dpaw.wa.gov.au/static/libs/twitter-bootstrap/3.3.6/',
-#    'css_url': None,
-#    'theme_url': None,
-#    'javascript_url': None,
-#    'javascript_in_head': False,
-#    'include_jquery': False,
-#    'required_css_class': 'required-form-field',
-#    'set_placeholder': False,
-# }
+TEMPLATES[0]["OPTIONS"]["context_processors"].append(
+    "commercialoperator.context_processors.commercialoperator_url"
+)
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
