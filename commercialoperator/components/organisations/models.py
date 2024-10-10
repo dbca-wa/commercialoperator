@@ -103,6 +103,9 @@ class Organisation(models.Model):
         delegate_organisations = retrieve_delegate_organisation_ids(user_id)
         emailuser = retrieve_email_user(user_id)
 
+        if not emailuser:
+            return cls.objects.none()
+
         return (
             cls.objects.filter(
                 organisation_id__in=delegate_organisations, # delegates__user=user_id
