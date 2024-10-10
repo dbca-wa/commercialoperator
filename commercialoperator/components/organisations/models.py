@@ -34,6 +34,7 @@ from commercialoperator.components.organisations.emails import (
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
+    retrieve_delegate_organisation_ids,
     retrieve_email_user,
     retrieve_members,
     retrieve_organisation_delegate_ids,
@@ -96,6 +97,22 @@ class Organisation(models.Model):
 
     def __str__(self):
         return str(f"Organisation ID: {self.organisation_id}")
+
+    @classmethod
+    def organisations_user_can_admin(cls, user_id):
+        delegate_organisations = retrieve_delegate_organisation_ids(user_id)
+        emailuser = retrieve_email_user(user_id)
+
+        return (
+            cls.objects.filter(
+                organisation_id__in=delegate_organisations, # delegates__user=user_id
+                contacts__email=emailuser.email, # contacts__user=user_id
+                contacts__user_status=OrganisationContact.USER_STATUS_CHOICES[2][0], # active
+                contacts__user_role=OrganisationContact.USER_ROLE_CHOICES[0][0], # organisation_admin
+            )
+            .distinct()
+            .only("id",)
+        )
 
     def log_user_action(self, action, request):
         return OrganisationAction.log_action(self, action, request.user)
