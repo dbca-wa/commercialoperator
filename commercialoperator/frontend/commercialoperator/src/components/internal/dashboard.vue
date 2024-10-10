@@ -1,19 +1,45 @@
 <template>
     <div id="internalDash" class="container">
-        <ProposalDashTable level="internal" :url="proposals_url" />
-        <ReferralDashTable :url="referrals_url" />
-        <QAOfficerDashTable
+        <FormSection
+            :form-collapse="false"
+            label="Applications"
+            index="applications"
+        >
+            <ProposalDashTable level="internal" :url="proposals_url" />
+        </FormSection>
+        <FormSection
+            :form-collapse="false"
+            label="Applications referred to me"
+            index="referrals"
+        >
+            <ReferralDashTable :url="referrals_url" />
+        </FormSection>
+        <FormSection
             v-if="is_qaofficer"
-            level="internal"
-            :url="qaofficer_url"
-        />
-        <DistrictProposalDashTable
-            level="internal"
-            :url="district_proposals_url"
-        />
+            :form-collapse="false"
+            label="Applications referred to me for QA"
+            index="qa_applications"
+        >
+            <QAOfficerDashTable
+                v-if="is_qaofficer"
+                level="internal"
+                :url="qaofficer_url"
+            />
+        </FormSection>
+        <FormSection
+            :form-collapse="false"
+            label="District Applications referred to me"
+            index="district_applications"
+        >
+            <DistrictProposalDashTable
+                level="internal"
+                :url="district_proposals_url"
+            />
+        </FormSection>
     </div>
 </template>
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import ProposalDashTable from '@common-utils/proposals_dashboard.vue';
 import ReferralDashTable from '@common-utils/referrals_dashboard.vue';
 import QAOfficerDashTable from '@common-utils/qaofficer_dashboard.vue';
@@ -23,6 +49,7 @@ import { api_endpoints } from '@/utils/hooks';
 export default {
     name: 'ExternalDashboard',
     components: {
+        FormSection,
         ProposalDashTable,
         ReferralDashTable,
         QAOfficerDashTable,
