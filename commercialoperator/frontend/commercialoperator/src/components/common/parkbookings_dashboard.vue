@@ -4,12 +4,20 @@
             v-if="is_external && overdue_invoices.length > 0"
             class="row error"
         >
-            <div class="col-sm-12">
-                <div class="well well-sm">
-                    <p>The following invoice(s) are overdue:<br /></p>
-
-                    <div v-for="invoice in overdue_invoices" :key="invoice">
-                        {{ invoice.invoice_reference }}
+            <div class="col-sm-12 mb-2">
+                <div class="card">
+                    <div class="card-header">
+                        The following invoice(s) are overdue:
+                    </div>
+                    <div class="well well-sm card-body">
+                        <div class="card-text">
+                            <div
+                                v-for="invoice in overdue_invoices"
+                                :key="invoice.id"
+                            >
+                                {{ invoice.invoice_reference }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -17,34 +25,28 @@
 
         <div class="row">
             <div class="col-sm-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Park Entry Fees (per Park)
-                            <small v-if="is_external"
-                                >Entry fees apply to passengers
-                                <a :href="payment_help_url" target="_blank"
-                                    ><i
-                                        class="fa fa-question-circle"
-                                        style="color: blue"
-                                        >&nbsp;</i
-                                    ></a
-                                ></small
+                <div v-if="is_external" class="card mb-2">
+                    <div class="card-header">Park Entry Fees (per Park)</div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            Entry fees apply to passenger
+                            <a :href="payment_help_url" target="_blank"
+                                ><i
+                                    class="fa fa-question-circle"
+                                    style="color: blue"
+                                    >&nbsp;</i
+                                ></a
                             >
-                            <a
-                                :href="'#' + pBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="pBody"
-                            >
-                                <span
-                                    class="glyphicon glyphicon-chevron-up pull-right"
-                                ></span>
-                            </a>
-                        </h3>
+                        </p>
                     </div>
-                    <div :id="pBody" class="panel-body collapse in">
+                </div>
+                <div class="panel panel-default">
+                    <FormSection
+                        :form-collapse="false"
+                        label="Park Entry Fees (per Park)"
+                        index="parl_entry_fees_per_park"
+                        subtitle=""
+                    >
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -165,13 +167,14 @@
                                 />
                             </div>
                         </div>
-                    </div>
+                    </FormSection>
                 </div>
             </div>
         </div>
     </div>
 </template>
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@/utils/vue/datatable.vue';
 import Vue from 'vue';
 
@@ -179,6 +182,7 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
     components: {
+        FormSection,
         datatable,
     },
     props: {
