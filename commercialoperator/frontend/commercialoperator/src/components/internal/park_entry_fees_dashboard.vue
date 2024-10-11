@@ -1,10 +1,14 @@
 <template>
     <div id="internalDash" class="container">
-        <div v-if="one_row_per_park">
+        <!-- Check for true, false, and null to not possibly load both tables while the profile is being fetched -->
+        <div v-if="one_row_per_park == true">
             <ParkBookingDash level="internal" />
         </div>
-        <div v-else>
+        <div v-else-if="one_row_per_park == false">
             <PaymentDash level="internal" />
+        </div>
+        <div v-else>
+            <i class="fa fa-2x fa-spinner fa-spin"></i>
         </div>
     </div>
 </template>
@@ -21,7 +25,7 @@ export default {
     data() {
         return {
             profile: {},
-            one_row_per_park: false,
+            one_row_per_park: null,
         };
     },
     computed: {},
