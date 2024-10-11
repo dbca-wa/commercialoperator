@@ -396,9 +396,15 @@ class DTParkBookingSerializer(serializers.ModelSerializer):
     def get_payment_method(self, obj):
         if obj.booking and obj.booking.invoices.last():
             inv = obj.booking.invoices.last()
-            return Invoice.objects.get(
-                reference=inv.invoice_reference
-            ).get_payment_method_display()
+            try:
+                return Invoice.objects.get(
+                    reference=inv.invoice_reference
+                ).get_payment_method_display()
+            except Invoice.DoesNotExist:
+                logger.error(
+                    f"Invoice with reference {inv.invoice_reference} does not exist"
+                )
+                return settings.INVOICE_NOT_FOUND
         else:
             # if no invoice exists, likely this is booking is for monthly_invoicing
             return obj.booking.get_booking_type_display()
