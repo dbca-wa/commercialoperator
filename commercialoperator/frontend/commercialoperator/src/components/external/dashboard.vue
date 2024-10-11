@@ -13,12 +13,34 @@
                 </div>
             </div>
         </div>
-        <ProposalDashTable level="external" :url="proposals_url" />
-        <ApprovalDashTable level="external" :url="approvals_url" />
-        <ComplianceDashTable level="external" :url="compliances_url" />
+        <FormSection
+            :form-collapse="false"
+            label="Proposals"
+            index="proposals"
+            subtitle="View existing proposals and lodge new ones"
+        >
+            <ProposalDashTable level="external" :url="proposals_url" />
+        </FormSection>
+        <FormSection
+            :form-collapse="false"
+            label="Licenses"
+            index="approvals"
+            subtitle="View existing licenses"
+        >
+            <ApprovalDashTable level="external" :url="approvals_url" />
+        </FormSection>
+        <FormSection
+            :form-collapse="false"
+            label="Compliances"
+            index="compliances"
+            subtitle="The obligations you must comply by to keep your license valid"
+        >
+            <ComplianceDashTable level="external" :url="compliances_url" />
+        </FormSection>
     </div>
 </template>
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import ProposalDashTable from '@common-utils/proposals_dashboard.vue';
 import ApprovalDashTable from '@common-utils/approvals_dashboard.vue';
 import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
@@ -26,6 +48,7 @@ import { api_endpoints } from '@/utils/hooks';
 export default {
     name: 'ExternalDashboard',
     components: {
+        FormSection,
         ProposalDashTable,
         ApprovalDashTable,
         ComplianceDashTable,
