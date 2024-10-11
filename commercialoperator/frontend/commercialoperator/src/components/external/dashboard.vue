@@ -1,15 +1,19 @@
 <template>
     <div id="externalDash" class="container">
         <div class="row">
-            <div class="col-sm-12">
-                <div class="well well-sm">
-                    <p>
-                        Welcome to the {{ system_name }} dashboard.<br /><br />
-                        From this page you can view existing applications,
-                        create new applications,<br />
-                        view current licences, apply to amend a licence, check
-                        through conditions of your licence.
-                    </p>
+            <div class="col-sm-12 mb-2">
+                <div class="card">
+                    <div class="card-header">
+                        Welcome to the {{ system_name }} dashboard.
+                    </div>
+                    <div class="well well-sm card-body">
+                        <p class="card-text">
+                            From this page you can view existing applications,
+                            create new applications,<br />
+                            view current licences, apply to amend a licence,
+                            check through conditions of your licence.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -23,9 +27,9 @@
         </FormSection>
         <FormSection
             :form-collapse="false"
-            label="Licenses"
+            label="Licences"
             index="approvals"
-            subtitle="View existing licenses"
+            subtitle="View existing licences"
         >
             <ApprovalDashTable level="external" :url="approvals_url" />
         </FormSection>
@@ -33,7 +37,7 @@
             :form-collapse="false"
             label="Compliances"
             index="compliances"
-            subtitle="The obligations you must comply by to keep your license valid"
+            subtitle="The obligations you must comply by to keep your licence valid"
         >
             <ComplianceDashTable level="external" :url="compliances_url" />
         </FormSection>
