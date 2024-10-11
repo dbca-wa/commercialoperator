@@ -31,9 +31,11 @@
         </a>
     </li>
 {% else %}
-    <li class="nav-item">
-        <a class="nav-link{% if 'species-communities' in request.path %} active{% endif %}" href="/external/payment">
-            Park Entry Fees
-        </a>
-    </li>
+    {% if request.user.is_authenticated %}
+        <li class="nav-item">
+            <a class="nav-link" href="/external/payment">
+                Park Entry Fees
+            </a>
+        </li>
+    {% endif %}
 {% endif %}
