@@ -2,25 +2,12 @@
     <div id="internalOrgAccessDash" class="container">
         <div class="row">
             <div class="col-sm-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Organisation Access Requests
-                            <a
-                                :href="'#' + pBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="pBody"
-                            >
-                                <span
-                                    class="glyphicon glyphicon-chevron-up pull-right"
-                                ></span>
-                            </a>
-                        </h3>
-                    </div>
-
-                    <div :id="pBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Organisation Access Requests"
+                    index="organisation_access_requests"
+                >
+                    <div class="panel panel-default">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -102,7 +89,7 @@
                             :dt-headers="dtHeaders"
                         ></datatable>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
@@ -110,11 +97,13 @@
 <script>
 import Vue from 'vue';
 import $ from 'jquery';
+import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'OrganisationAccessDashboard',
     components: {
+        FormSection,
         datatable,
     },
     data() {
