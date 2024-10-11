@@ -1,268 +1,407 @@
 <template lang="html">
     <div>
-        <!-- <div class="col-md-3" >
-            <div class="panel panel-default fixed">
-              <div class="panel-heading">
-                <h5>Sections</h5>
-              </div>
-              <div class="panel-body" style="padding:0">
-                  <ul class="list-group" id="scrollspy-section" style="margin-bottom:0">
-
-                  </ul>
-              </div>
-            </div>
-        </div> -->
-
         <div class="col-md-12">
-            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" id="pills-applicant-tab" data-toggle="pill" href="#pills-applicant" role="tab" aria-controls="pills-applicant" aria-selected="true">
-                  1. Applicant
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="pills-activities-tab" data-toggle="pill" href="#pills-activities" role="tab" aria-controls="pills-activities" aria-selected="false">
-                  2. Activities
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="pills-event-management-tab" data-toggle="pill" href="#pills-event-management" role="tab" aria-controls="pills-event-management" aria-selected="false">
-                  3. Event Management
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="pills-vehicles-vessels-tab" data-toggle="pill" href="#pills-vehicles-vessels" role="tab" aria-controls="pills-vehicles-vessels" aria-selected="false">
-                  4. Vehicles/Vessels
-                </a>
-              </li>
+            <ul id="pills-tab" class="nav nav-pills mb-3" role="tablist">
+                <li class="nav-item">
+                    <a
+                        id="pills-applicant-tab"
+                        class="nav-link active"
+                        data-toggle="pill"
+                        href="#pills-applicant"
+                        role="tab"
+                        aria-controls="pills-applicant"
+                        aria-selected="true"
+                    >
+                        1. Applicant
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a
+                        id="pills-activities-tab"
+                        class="nav-link"
+                        data-toggle="pill"
+                        href="#pills-activities"
+                        role="tab"
+                        aria-controls="pills-activities"
+                        aria-selected="false"
+                    >
+                        2. Activities
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a
+                        id="pills-event-management-tab"
+                        class="nav-link"
+                        data-toggle="pill"
+                        href="#pills-event-management"
+                        role="tab"
+                        aria-controls="pills-event-management"
+                        aria-selected="false"
+                    >
+                        3. Event Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a
+                        id="pills-vehicles-vessels-tab"
+                        class="nav-link"
+                        data-toggle="pill"
+                        href="#pills-vehicles-vessels"
+                        role="tab"
+                        aria-controls="pills-vehicles-vessels"
+                        aria-selected="false"
+                    >
+                        4. Vehicles/Vessels
+                    </a>
+                </li>
 
-              <li class="nav-item">
-                <a class="nav-link" id="pills-other-details-tab" data-toggle="pill" href="#pills-other-details" role="tab" aria-controls="pills-other-details" aria-selected="false">
-                  5. Other Details
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="pills-online-training-tab" data-toggle="pill" href="#pills-online-training" role="tab" aria-controls="pills-online-training" aria-selected="false">
-                  6. Online Training
-                </a>
-              </li>
-              <li v-if="is_external" class="nav-item" id="li-payment">
-                <a class="nav-link disabled" id="pills-payment-tab" data-toggle="pill" href="" role="tab" aria-controls="pills-payment" aria-selected="false">
-                  7. Payment
-                </a>
-              </li>
-              <li v-if="is_external" class="nav-item" id="li-confirm">
-                <a class="nav-link disabled" id="pills-confirm-tab" data-toggle="pill" href="" role="tab" aria-controls="pills-confirm" aria-selected="false">
-                  8. Confirmation
-                </a>
-              </li>
-
+                <li class="nav-item">
+                    <a
+                        id="pills-other-details-tab"
+                        class="nav-link"
+                        data-toggle="pill"
+                        href="#pills-other-details"
+                        role="tab"
+                        aria-controls="pills-other-details"
+                        aria-selected="false"
+                    >
+                        5. Other Details
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a
+                        id="pills-online-training-tab"
+                        class="nav-link"
+                        data-toggle="pill"
+                        href="#pills-online-training"
+                        role="tab"
+                        aria-controls="pills-online-training"
+                        aria-selected="false"
+                    >
+                        6. Online Training
+                    </a>
+                </li>
+                <li v-if="is_external" id="li-payment" class="nav-item">
+                    <a
+                        id="pills-payment-tab"
+                        class="nav-link disabled"
+                        data-toggle="pill"
+                        href=""
+                        role="tab"
+                        aria-controls="pills-payment"
+                        aria-selected="false"
+                    >
+                        7. Payment
+                    </a>
+                </li>
+                <li v-if="is_external" id="li-confirm" class="nav-item">
+                    <a
+                        id="pills-confirm-tab"
+                        class="nav-link disabled"
+                        data-toggle="pill"
+                        href=""
+                        role="tab"
+                        aria-controls="pills-confirm"
+                        aria-selected="false"
+                    >
+                        8. Confirmation
+                    </a>
+                </li>
             </ul>
-            <div class="tab-content" id="pills-tabContent">
+            <div id="pills-tabContent" class="tab-content">
+                <div
+                    id="pills-applicant"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-applicant-tab"
+                >
+                    <div v-if="is_external">
+                        <Profile
+                            v-if="applicantType == 'SUB'"
+                            ref="profile"
+                            :is-application="true"
+                        ></Profile>
 
-              <!--
-              <div class="tab-pane fade show active" id="pills-applicant" role="tabpanel" aria-labelledby="pills-applicant-tab"> 
-                <Applicant :proposal="proposal" id="proposalStartApplicant"></Applicant>
-              </div>
-              -->
-
-              <div class="tab-pane fade" id="pills-applicant" role="tabpanel" aria-labelledby="pills-applicant-tab">
-                  <div v-if="is_external">
-                    <Profile :isApplication="true" v-if="applicantType == 'SUB'" ref="profile"></Profile>
-              
-                    <Organisation :org_id="proposal.org_applicant" :isApplication="true" v-if="applicantType == 'ORG'" ref="organisation"></Organisation> 
-                  </div>
-                  <div v-else>
-                    <Applicant :proposal="proposal" id="proposalStartApplicant"></Applicant>
-                    <div v-if="is_internal">
-                      <Assessment :proposal="proposal" :assessment="proposal.assessor_assessment" :hasAssessorMode="hasAssessorMode" :is_internal="is_internal" :is_referral="is_referral"></Assessment>
-                      <div v-for="assess in proposal.referral_assessments">
-                        <Assessment :proposal="proposal" :assessment="assess"></Assessment>
-                      </div>
+                        <Organisation
+                            v-if="applicantType == 'ORG'"
+                            ref="organisation"
+                            :org_id="proposal.org_applicant"
+                            :is-application="true"
+                        ></Organisation>
                     </div>
-                  </div>
-              </div>
+                    <div v-else>
+                        <Applicant
+                            id="proposalStartApplicant"
+                            :proposal="proposal"
+                        ></Applicant>
+                        <div v-if="is_internal">
+                            <Assessment
+                                :proposal="proposal"
+                                :assessment="proposal.assessor_assessment"
+                                :has-assessor-mode="hasAssessorMode"
+                                :is_internal="is_internal"
+                                :is_referral="is_referral"
+                            ></Assessment>
+                            <div
+                                v-for="assess in proposal.referral_assessments"
+                                :key="assess.id"
+                            >
+                                <Assessment
+                                    :proposal="proposal"
+                                    :assessment="assess"
+                                ></Assessment>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-
-
-              <div class="tab-pane fade" id="pills-activities" role="tabpanel" aria-labelledby="pills-activities-tab">
-                <Activities :proposal="proposal" id="proposalStartActivities" :canEditActivities="canEditActivities" :canEditPeriod="canEditPeriod" :is_external= "is_external" ref="event_activities" :hasAssessorMode="hasAssessorMode" :is_internal="is_internal" :hasReferralMode="hasReferralMode"></Activities>
-              </div>
-              <div class="tab-pane fade" id="pills-event-management" role="tabpanel" aria-labelledby="pills-event-management-tab">
-                <EventManagement :proposal="proposal" id="proposalStartEventManagement" ref="event_management" :canEditActivities="canEditActivities"></EventManagement>
-              </div>
-              <div class="tab-pane fade" id="pills-vehicles-vessels" role="tabpanel" aria-labelledby="pills-vehicles-vessels-tab">
-                <VehiclesVessels :proposal="proposal" id="proposalStartVehiclesVessels"></VehiclesVessels>
-              </div>
-              <div class="tab-pane fade" id="pills-other-details" role="tabpanel" aria-labelledby="pills-other-details-tab">
-                <OtherDetails :proposal="proposal" id="proposalStartOtherDetails" ref="event_other_details" :canEditActivities="canEditActivities"></OtherDetails>
-              </div>
-              <div class="tab-pane fade" id="pills-online-training" role="tabpanel" aria-labelledby="pills-online-training-tab">
-                <OnlineTraining :proposal="proposal" id="proposalStartOnlineTraining"></OnlineTraining>
-              </div>
-              <div class="tab-pane fade" id="pills-payment" role="tabpanel" aria-labelledby="pills-payment-tab">
-                <!-- <Payment :proposal="proposal" id="proposalStartPayment"></Payment> -->
-              </div>
-              <div class="tab-pane fade" id="pills-confirm" role="tabpanel" aria-labelledby="pills-confirm-tab">
-                <Confirmation :proposal="proposal" id="proposalStartConfirmation"></Confirmation>
-              </div>
+                <div
+                    id="pills-activities"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-activities-tab"
+                >
+                    <Activities
+                        id="proposalStartActivities"
+                        ref="event_activities"
+                        :proposal="proposal"
+                        :can-edit-activities="canEditActivities"
+                        :can-edit-period="canEditPeriod"
+                        :is_external="is_external"
+                        :has-assessor-mode="hasAssessorMode"
+                        :is_internal="is_internal"
+                        :has-referral-mode="hasReferralMode"
+                    ></Activities>
+                </div>
+                <div
+                    id="pills-event-management"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-event-management-tab"
+                >
+                    <EventManagement
+                        id="proposalStartEventManagement"
+                        ref="event_management"
+                        :proposal="proposal"
+                        :can-edit-activities="canEditActivities"
+                    ></EventManagement>
+                </div>
+                <div
+                    id="pills-vehicles-vessels"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-vehicles-vessels-tab"
+                >
+                    <VehiclesVessels
+                        id="proposalStartVehiclesVessels"
+                        :proposal="proposal"
+                    ></VehiclesVessels>
+                </div>
+                <div
+                    id="pills-other-details"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-other-details-tab"
+                >
+                    <OtherDetails
+                        id="proposalStartOtherDetails"
+                        ref="event_other_details"
+                        :proposal="proposal"
+                        :can-edit-activities="canEditActivities"
+                    ></OtherDetails>
+                </div>
+                <div
+                    id="pills-online-training"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-online-training-tab"
+                >
+                    <OnlineTraining
+                        id="proposalStartOnlineTraining"
+                        :proposal="proposal"
+                    ></OnlineTraining>
+                </div>
+                <div
+                    id="pills-payment"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-payment-tab"
+                ></div>
+                <div
+                    id="pills-confirm"
+                    class="tab-pane fade"
+                    role="tabpanel"
+                    aria-labelledby="pills-confirm-tab"
+                >
+                    <Confirmation
+                        id="proposalStartConfirmation"
+                        :proposal="proposal"
+                    ></Confirmation>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-    import Profile from '@/components/user/profile.vue'
-    import Organisation from '@/components/external/organisations/manage.vue'
-    import Applicant from '@/components/common/tclass/applicant.vue'
-    import Assessment from '@/components/common/tclass/assessment.vue'
-
-    //import Applicant from '@/components/common/event/applicant.vue'
-    import Activities from '@/components/common/event/activities.vue'
-    import EventManagement from '@/components/common/event/event_management.vue'
-    import VehiclesVessels from '@/components/common/event/vehicles_vessels.vue'
-    import OtherDetails from '@/components/common/event/other_details.vue'
-    import OnlineTraining from '@/components/common/event/online_training.vue'
-    import Payment from '@/components/common/event/payment.vue'
-    import Confirmation from '@/components/common/event/confirmation.vue'
-    export default {
-        props:{
-            proposal:{
-                type: Object,
-                required:true
-            },
-            canEditActivities:{
-              type: Boolean,
-              default: true
-            },
-            is_external:{
-              type: Boolean,
-              default: false
-            },
-            is_internal:{
-              type: Boolean,
-              default: false
-            },
-            is_referral:{
-              type: Boolean,
-              default: false
-            },
-            hasReferralMode:{
-                type:Boolean,
-                default: false
-            },
-            hasAssessorMode:{
-                type:Boolean,
-                default: false
-            },
-            referral:{
-                type: Object,
-                required:false
-            },
-            proposal_parks:{
-                type:Object,
-                default:null
-            },
-            canEditPeriod:{
-              type: Boolean,
-              default: false
-            },
-            canEditPeriod:{
-              type: Boolean,
-              default: false
-            },
+import Profile from '@/components/user/profile.vue';
+import Organisation from '@/components/external/organisations/manage.vue';
+import Applicant from '@/components/common/tclass/applicant.vue';
+import Assessment from '@/components/common/tclass/assessment.vue';
+import Activities from '@/components/common/event/activities.vue';
+import EventManagement from '@/components/common/event/event_management.vue';
+import VehiclesVessels from '@/components/common/event/vehicles_vessels.vue';
+import OtherDetails from '@/components/common/event/other_details.vue';
+import OnlineTraining from '@/components/common/event/online_training.vue';
+import Confirmation from '@/components/common/event/confirmation.vue';
+export default {
+    components: {
+        Applicant,
+        Activities,
+        EventManagement,
+        VehiclesVessels,
+        OtherDetails,
+        OnlineTraining,
+        Confirmation,
+        Profile,
+        Organisation,
+        Assessment,
+    },
+    props: {
+        proposal: {
+            type: Object,
+            required: true,
         },
-        data:function () {
-            return{
-                values:null
-            }
+        canEditActivities: {
+            type: Boolean,
+            default: true,
         },
-        components: {
-            Applicant,
-            Activities,
-            EventManagement,
-            VehiclesVessels,
-            OtherDetails,
-            OnlineTraining,
-            Payment,
-            Confirmation,
-            Profile,
-            Organisation,
-            Assessment
+        // eslint-disable-next-line vue/prop-name-casing
+        is_external: {
+            type: Boolean,
+            default: false,
         },
-        computed:{
-          applicantType: function(){
+        // eslint-disable-next-line vue/prop-name-casing
+        is_internal: {
+            type: Boolean,
+            default: false,
+        },
+        // eslint-disable-next-line vue/prop-name-casing
+        is_referral: {
+            type: Boolean,
+            default: false,
+        },
+        hasReferralMode: {
+            type: Boolean,
+            default: false,
+        },
+        hasAssessorMode: {
+            type: Boolean,
+            default: false,
+        },
+        // eslint-disable-next-line vue/require-default-prop
+        referral: {
+            type: Object,
+            required: false,
+        },
+        // eslint-disable-next-line vue/prop-name-casing
+        proposal_parks: {
+            type: Object,
+            default: null,
+        },
+        canEditPeriod: {
+            type: Boolean,
+            default: false,
+        },
+    },
+    data: function () {
+        return {
+            values: null,
+        };
+    },
+    computed: {
+        applicantType: function () {
             return this.proposal.applicant_type;
-          },
         },
-        methods:{
-          set_tabs:function(){
-                let vm = this;
-
-                /* set Applicant tab Active */
-                $('#pills-tab a[href="#pills-applicant"]').tab('show');
-
-                if (vm.proposal.fee_paid && vm.training_completed) {
-                    /* Online Training tab */
-                    $('#pills-online-training-tab').attr('style', 'background-color:#E5E8E8 !important; color: #99A3A4;');
-                    $('#li-training').attr('class', 'nav-item disabled');
-                    $('#pills-online-training-tab').attr("href", "")
-                }
-
-                if (!vm.proposal.training_completed) {
-                    /* Payment tab  (this is enabled after online_training is completed - in online_training.vue)*/
-                    $('#pills-payment-tab').attr('style', 'background-color:#E5E8E8 !important; color: #99A3A4;');
-                    $('#li-payment').attr('class', 'nav-item disabled');
-                }
-
-                /* Confirmation tab - Always Disabled */
-                $('#pills-confirm-tab').attr('style', 'background-color:#E5E8E8 !important; color: #99A3A4;');
-                $('#li-confirm').attr('class', 'nav-item disabled');
-            },
-        },
-        mounted: function() {
+    },
+    mounted: function () {
+        let vm = this;
+        $('#pills-activities-tab').on('shown.bs.tab', function () {
+            // fixes column width collapse on datatables within the tabs
+            vm.$refs.event_activities.$refs.trails_table.$refs.park_datatable.vmDataTable.columns
+                .adjust()
+                .responsive.recalc();
+            vm.$refs.event_activities.$refs.parks_table.$refs.park_datatable.vmDataTable.columns
+                .adjust()
+                .responsive.recalc();
+        });
+        $('#pills-tab a[href="#pills-applicant"]').tab('show');
+        vm.set_tabs();
+        vm.form = document.forms.new_proposal;
+    },
+    methods: {
+        set_tabs: function () {
             let vm = this;
-            $('#pills-activities-tab').on('shown.bs.tab', function (e) {
-                // fixes column width collapse on datatables within the tabs
-                vm.$refs.event_activities.$refs.trails_table.$refs.park_datatable.vmDataTable.columns.adjust().responsive.recalc();
-                vm.$refs.event_activities.$refs.parks_table.$refs.park_datatable.vmDataTable.columns.adjust().responsive.recalc();
-            });
+
+            /* set Applicant tab Active */
             $('#pills-tab a[href="#pills-applicant"]').tab('show');
-            vm.set_tabs();
-            vm.form = document.forms.new_proposal;
-            //window.addEventListener('beforeunload', vm.leaving);
-            //indow.addEventListener('onblur', vm.leaving);
-        }
- 
-    }
+
+            if (vm.proposal.fee_paid && vm.training_completed) {
+                /* Online Training tab */
+                $('#pills-online-training-tab').attr(
+                    'style',
+                    'background-color:#E5E8E8 !important; color: #99A3A4;'
+                );
+                $('#li-training').attr('class', 'nav-item disabled');
+                $('#pills-online-training-tab').attr('href', '');
+            }
+
+            if (!vm.proposal.training_completed) {
+                /* Payment tab  (this is enabled after online_training is completed - in online_training.vue)*/
+                $('#pills-payment-tab').attr(
+                    'style',
+                    'background-color:#E5E8E8 !important; color: #99A3A4;'
+                );
+                $('#li-payment').attr('class', 'nav-item disabled');
+            }
+
+            /* Confirmation tab - Always Disabled */
+            $('#pills-confirm-tab').attr(
+                'style',
+                'background-color:#E5E8E8 !important; color: #99A3A4;'
+            );
+            $('#li-confirm').attr('class', 'nav-item disabled');
+        },
+    },
+};
 </script>
 
 <style lang="css" scoped>
-    .section{
-        text-transform: capitalize;
-    }
-    .list-group{
-        margin-bottom: 0;
-    }
-    .fixed-top{
-        position: fixed;
-        top:56px;
-    }
+.section {
+    text-transform: capitalize;
+}
+.list-group {
+    margin-bottom: 0;
+}
+.fixed-top {
+    position: fixed;
+    top: 56px;
+}
 
-    .nav-item {
-        background-color: rgb(200,200,200,0.8) !important;
-    }
+.nav-item {
+    background-color: rgb(200, 200, 200, 0.8) !important;
+}
 
-    .nav-item>li>a {
-        background-color: yellow !important;
-        color: #fff;
-    }
+.nav-item > li > a {
+    background-color: yellow !important;
+    color: #fff;
+}
 
-    .nav-item>li.active>a, .nav-item>li.active>a:hover, .nav-item>li.active>a:focus {
-      color: white;
-      background-color: blue;
-      border: 1px solid #888888;
-    }
-
+.nav-item > li.active > a,
+.nav-item > li.active > a:hover,
+.nav-item > li.active > a:focus {
+    color: white;
+    background-color: blue;
+    border: 1px solid #888888;
+}
 </style>
-
