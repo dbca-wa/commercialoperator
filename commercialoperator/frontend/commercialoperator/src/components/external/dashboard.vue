@@ -29,7 +29,7 @@
             :form-collapse="false"
             label="Licences"
             index="approvals"
-            subtitle="View existing licences"
+            subtitle="View existing licences and amend or renew them"
         >
             <ApprovalDashTable level="external" :url="approvals_url" />
         </FormSection>
@@ -37,7 +37,7 @@
             :form-collapse="false"
             label="Compliances"
             index="compliances"
-            subtitle="The obligations you must comply by to keep your licence valid"
+            subtitle="View submitted compliances and submit new ones"
         >
             <ComplianceDashTable level="external" :url="compliances_url" />
         </FormSection>
