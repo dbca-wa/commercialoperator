@@ -6,7 +6,7 @@
                     <a
                         id="pills-applicant-tab"
                         class="nav-link active"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-applicant"
                         role="tab"
                         aria-controls="pills-applicant"
@@ -19,7 +19,7 @@
                     <a
                         id="pills-activities-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-activities"
                         role="tab"
                         aria-controls="pills-activities"
@@ -32,7 +32,7 @@
                     <a
                         id="pills-event-management-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-event-management"
                         role="tab"
                         aria-controls="pills-event-management"
@@ -45,7 +45,7 @@
                     <a
                         id="pills-vehicles-vessels-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-vehicles-vessels"
                         role="tab"
                         aria-controls="pills-vehicles-vessels"
@@ -59,7 +59,7 @@
                     <a
                         id="pills-other-details-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-other-details"
                         role="tab"
                         aria-controls="pills-other-details"
@@ -72,7 +72,7 @@
                     <a
                         id="pills-online-training-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-online-training"
                         role="tab"
                         aria-controls="pills-online-training"
@@ -85,7 +85,7 @@
                     <a
                         id="pills-payment-tab"
                         class="nav-link disabled"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href=""
                         role="tab"
                         aria-controls="pills-payment"
@@ -98,7 +98,7 @@
                     <a
                         id="pills-confirm-tab"
                         class="nav-link disabled"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href=""
                         role="tab"
                         aria-controls="pills-confirm"
@@ -111,7 +111,7 @@
             <div id="pills-tabContent" class="tab-content">
                 <div
                     id="pills-applicant"
-                    class="tab-pane fade"
+                    class="tab-pane fade active show"
                     role="tabpanel"
                     aria-labelledby="pills-applicant-tab"
                 >
@@ -335,16 +335,12 @@ export default {
                 .adjust()
                 .responsive.recalc();
         });
-        $('#pills-tab a[href="#pills-applicant"]').tab('show');
         vm.set_tabs();
         vm.form = document.forms.new_proposal;
     },
     methods: {
         set_tabs: function () {
             let vm = this;
-
-            /* set Applicant tab Active */
-            $('#pills-tab a[href="#pills-applicant"]').tab('show');
 
             if (vm.proposal.fee_paid && vm.training_completed) {
                 /* Online Training tab */
