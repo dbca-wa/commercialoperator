@@ -43,7 +43,7 @@
                 <FormSection
                     :form-collapse="false"
                     label="Park Entry Fees"
-                    index="parl_entry_fees"
+                    index="park_entry_fees"
                     subtitle=""
                 >
                     <div class="row">
