@@ -4,30 +4,16 @@
             <div class="col-md-12">
                 <div class="">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Workflow - Checklist
-                                <small v-if="assessment.referral_group">
-                                    Referral Group:
-                                    {{ assessment.referral_group_name }}</small
-                                >
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + detailsBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="false"
-                                    :aria-controls="detailsBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
-                            :id="detailsBody"
-                            class="panel-body panel-collapse collapse in"
+                        <FormSection
+                            :form-collapse="false"
+                            label="Workflow - Checklist"
+                            index="workflow_checklist"
+                            :subtitle="
+                                assessment.referral_group
+                                    ? 'Referral Group: ' +
+                                      assessment.referral_group_name
+                                    : ''
+                            "
                         >
                             <form class="form-horizontal">
                                 <ul
@@ -112,7 +98,7 @@
                                     </button>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -121,9 +107,13 @@
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'AssessmentComponent',
+    components: {
+        FormSection,
+    },
     props: {
         proposal: {
             type: Object,
