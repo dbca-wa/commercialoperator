@@ -105,8 +105,6 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import Vue from 'vue';
-require('select2/dist/css/select2.min.css');
-// require('select2-bootstrap-theme/dist/select2-bootstrap.min.css');
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
