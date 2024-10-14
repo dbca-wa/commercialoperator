@@ -165,11 +165,11 @@ export default {
                                 popTemplate = _.template(
                                     '<a href="#" ' +
                                         'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="click" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
+                                        'data-bs-toggle="popover" ' +
+                                        'data-bs-trigger="click" ' +
+                                        'data-bs-placement="top auto"' +
+                                        'data-bs-html="true" ' +
+                                        'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
                             if (_.endsWith(truncated, ellipsis)) {
@@ -179,11 +179,6 @@ export default {
                             }
 
                             return result;
-                        },
-                        createdCell: function (cell) {
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            $(cell).popover();
                         },
                     },
                     {
@@ -200,11 +195,11 @@ export default {
                                 popTemplate = _.template(
                                     '<a href="#" ' +
                                         'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="click" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
+                                        'data-bs-toggle="popover" ' +
+                                        'data-bs-trigger="click" ' +
+                                        'data-bs-placement="top auto"' +
+                                        'data-bs-html="true" ' +
+                                        'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
                             if (_.endsWith(truncated, ellipsis)) {
@@ -214,11 +209,6 @@ export default {
                             }
 
                             return result;
-                        },
-                        createdCell: function (cell) {
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            $(cell).popover();
                         },
                     },
                     {
@@ -240,11 +230,11 @@ export default {
                                 popTemplate = _.template(
                                     '<a href="#" ' +
                                         'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="click" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
+                                        'data-bs-toggle="popover" ' +
+                                        'data-bs-trigger="click" ' +
+                                        'data-bs-placement="top auto"' +
+                                        'data-bs-html="true" ' +
+                                        'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
                             if (_.endsWith(truncated, ellipsis)) {
@@ -254,11 +244,6 @@ export default {
                             }
 
                             return result;
-                        },
-                        createdCell: function (cell) {
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            $(cell).popover();
                         },
                     },
                     {
@@ -275,11 +260,11 @@ export default {
                                 popTemplate = _.template(
                                     '<a href="#" ' +
                                         'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="click" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
+                                        'data-bs-toggle="popover" ' +
+                                        'data-bs-trigger="click" ' +
+                                        'data-bs-placement="top auto"' +
+                                        'data-bs-html="true" ' +
+                                        'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
                             if (_.endsWith(truncated, ellipsis)) {
@@ -289,11 +274,6 @@ export default {
                             }
 
                             return result;
-                        },
-                        createdCell: function (cell) {
-                            //TODO why this is not working?
-                            // the call to popover is done in the 'draw' event
-                            $(cell).popover();
                         },
                     },
                     {
@@ -350,147 +330,149 @@ export default {
     },
     methods: {
         initialiseCommLogs: function (vm_uid, ref, datatable_options, table) {
+            // To allow table elements (ref: https://getbootstrap.com/docs/5.1/getting-started/javascript/#sanitizer)
+            var myDefaultAllowList = bootstrap.Tooltip.Default.allowList;
+
+            myDefaultAllowList.table = [];
             let vm = this;
-            let commsLogId = 'comms-log-table' + vm_uid;
-            let popover_name = 'popover-' + vm._uid + '-comms';
-            $(ref)
-                .popover({
-                    content: function () {
-                        return `
-                    <table id="${commsLogId}" class="hover table table-striped table-bordered dt-responsive " cellspacing="0" width="100%">
-                    </table>`;
-                    },
-                    html: true,
-                    title: 'Communications Log',
-                    container: 'body',
-                    placement: 'right',
-                    trigger: 'click',
-                    template: `<div class="popover ${popover_name}" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`,
-                })
-                .on('inserted.bs.popover', function () {
-                    table = $('#' + commsLogId).DataTable(datatable_options);
+            let commsLogId = 'comms-log-table' + vm.uuid;
+            let popover_name = 'popover-' + vm.uuid + '-comms';
+            let popover_elem = $(vm.$refs.showCommsBtn)[0];
+            let my_content =
+                '<table id="' +
+                commsLogId +
+                '" class="hover table table-striped table-bordered dt-responsive" cellspacing="0"></table>';
+            let my_template =
+                '<div class="popover ' +
+                popover_name +
+                '" role="tooltip"><div class="popover-arrow" style="top:110px;"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+            new bootstrap.Popover(popover_elem, {
+                sanitize: false,
+                html: true,
+                content: my_content,
+                template: my_template,
+                title: 'Communication logs',
+                container: 'body',
+                placement: 'auto',
+                trigger: 'click',
+            });
 
-                    // activate popover when table is drawn.
-                    table.on('draw.dt', function () {
-                        var $tablePopover = $(this).find(
-                            '[data-toggle="popover"]'
-                        );
-                        if ($tablePopover.length > 0) {
-                            $tablePopover.popover();
-                            // the next line prevents from scrolling up to the top after clicking on the popover.
-                            $($tablePopover).on('click', function (e) {
-                                e.preventDefault();
-                                return true;
-                            });
-                        }
-                    });
-                })
-                .on('shown.bs.popover', function () {
-                    var el = ref;
-                    // eslint-disable-next-line no-unused-vars
-                    var popoverheight = parseInt(
-                        $('.' + popover_name).height()
-                    );
+            popover_elem.addEventListener('inserted.bs.popover', function () {
+                table = $('#' + commsLogId).DataTable(datatable_options);
 
-                    var popover_bounding_top = parseInt(
-                        $('.' + popover_name)[0].getBoundingClientRect().top
+                // activate popover when table is drawn.
+                table.on('draw.dt', function () {
+                    var $tablePopover = $(this).find(
+                        '[data-bs-toggle="popover"]'
                     );
-                    // eslint-disable-next-line no-unused-vars
-                    var popover_bounding_bottom = parseInt(
-                        $('.' + popover_name)[0].getBoundingClientRect().bottom
-                    );
-
-                    var el_bounding_top = parseInt(
-                        $(el)[0].getBoundingClientRect().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var el_bounding_bottom = parseInt(
-                        $(el)[0].getBoundingClientRect().top
-                    );
-
-                    var diff = el_bounding_top - popover_bounding_top;
-
-                    // eslint-disable-next-line no-unused-vars
-                    var position = parseInt(
-                        $('.' + popover_name).position().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var pos2 = parseInt($(el).position().top) - 5;
-
-                    var x = diff + 5;
-                    $('.' + popover_name)
-                        .children('.arrow')
-                        .css('top', x + 'px');
+                    if ($tablePopover.length > 0) {
+                        // $tablePopover.popover();
+                        // the next line prevents from scrolling up to the top after clicking on the popover.
+                        $($tablePopover).on('click', function (e) {
+                            e.preventDefault();
+                            return true;
+                        });
+                    }
                 });
+            });
+            popover_elem.addEventListener('shown.bs.popover', function () {
+                var el = popover_elem;
+                // eslint-disable-next-line no-unused-vars
+                var popoverheight = parseInt($('.' + popover_name).height());
+
+                var popover_bounding_top = parseInt(
+                    $('.' + popover_name)[0].getBoundingClientRect().top
+                );
+                // eslint-disable-next-line no-unused-vars
+                var popover_bounding_bottom = parseInt(
+                    $('.' + popover_name)[0].getBoundingClientRect().bottom
+                );
+
+                var el_bounding_top = parseInt(
+                    $(el)[0].getBoundingClientRect().top
+                );
+                // eslint-disable-next-line no-unused-vars
+                var el_bounding_bottom = parseInt(
+                    $(el)[0].getBoundingClientRect().top
+                );
+
+                var diff = el_bounding_top - popover_bounding_top;
+
+                // eslint-disable-next-line no-unused-vars
+                var position = parseInt($('.' + popover_name).position().top);
+                // eslint-disable-next-line no-unused-vars
+                var pos2 = parseInt($(el).position().top) - 5;
+
+                var x = diff + 5;
+                $('.' + popover_name)
+                    .children('.arrow')
+                    .css('top', x + 'px');
+            });
         },
         // eslint-disable-next-line no-unused-vars
         initialiseActionLogs: function (vm_uid, ref, datatable_options, table) {
+            // To allow table elements (ref: https://getbootstrap.com/docs/5.1/getting-started/javascript/#sanitizer)
+            var myDefaultAllowList = bootstrap.Tooltip.Default.allowList;
+            myDefaultAllowList.table = [];
+
             let vm = this;
-            let actionLogId = 'actions-log-table' + vm_uid;
-            let popover_name = 'popover-' + vm._uid + '-logs';
-            $(ref)
-                .popover({
-                    content: function () {
-                        return `
-                    <table id="${actionLogId}" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
-                        <thead>
-                            <tr>
-                                <th>Who</th>
-                                <th>What</th>
-                                <th>When</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>`;
-                    },
-                    html: true,
-                    title: 'Action Log',
-                    container: 'body',
-                    placement: 'right',
-                    trigger: 'click',
-                    template: `<div class="popover ${popover_name}" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`,
-                })
-                .on('inserted.bs.popover', function () {
-                    table = $('#' + actionLogId).DataTable(datatable_options);
-                })
-                .on('shown.bs.popover', function () {
-                    var el = ref;
-                    // eslint-disable-next-line no-unused-vars
-                    var popoverheight = parseInt(
-                        $('.' + popover_name).height()
-                    );
+            let actionLogId = 'actions-log-table' + vm.uuid;
+            let popover_name = 'popover-' + vm.uuid + '-logs';
+            let popover_elem = $(vm.$refs.showActionBtn)[0];
+            let my_content =
+                '<table id="' +
+                actionLogId +
+                '" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%"></table>';
+            let my_template =
+                '<div class="popover ' +
+                popover_name +
+                '" role="tooltip"><div class="popover-arrow" style="top:110px;"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+            new bootstrap.Popover(popover_elem, {
+                html: true,
+                content: my_content,
+                template: my_template,
+                title: 'Action logs',
+                container: 'body',
+                placement: 'auto',
+                trigger: 'click',
+            });
 
-                    var popover_bounding_top = parseInt(
-                        $('.' + popover_name)[0].getBoundingClientRect().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var popover_bounding_bottom = parseInt(
-                        $('.' + popover_name)[0].getBoundingClientRect().bottom
-                    );
+            popover_elem.addEventListener('inserted.bs.popover', function () {
+                table = $('#' + actionLogId).DataTable(datatable_options);
+            });
+            popover_elem.addEventListener('shown.bs.popover', function () {
+                var el = popover_elem;
+                // eslint-disable-next-line no-unused-vars
+                var popoverheight = parseInt($('.' + popover_name).height());
 
-                    var el_bounding_top = parseInt(
-                        $(el)[0].getBoundingClientRect().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var el_bounding_bottom = parseInt(
-                        $(el)[0].getBoundingClientRect().top
-                    );
+                var popover_bounding_top = parseInt(
+                    $('.' + popover_name)[0].getBoundingClientRect().top
+                );
+                // eslint-disable-next-line no-unused-vars
+                var popover_bounding_bottom = parseInt(
+                    $('.' + popover_name)[0].getBoundingClientRect().bottom
+                );
 
-                    var diff = el_bounding_top - popover_bounding_top;
+                var el_bounding_top = parseInt(
+                    $(el)[0].getBoundingClientRect().top
+                );
+                // eslint-disable-next-line no-unused-vars
+                var el_bounding_bottom = parseInt(
+                    $(el)[0].getBoundingClientRect().top
+                );
 
-                    // eslint-disable-next-line no-unused-vars
-                    var position = parseInt(
-                        $('.' + popover_name).position().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var pos2 = parseInt($(el).position().top) - 5;
+                var diff = el_bounding_top - popover_bounding_top;
 
-                    var x = diff + 5;
-                    $('.' + popover_name)
-                        .children('.arrow')
-                        .css('top', x + 'px');
-                });
+                // eslint-disable-next-line no-unused-vars
+                var position = parseInt($('.' + popover_name).position().top);
+                // eslint-disable-next-line no-unused-vars
+                var pos2 = parseInt($(el).position().top) - 5;
+
+                var x = diff + 5;
+                $('.' + popover_name)
+                    .children('.arrow')
+                    .css('top', x + 'px');
+            });
         },
         initialisePopovers: function () {
             if (!this.popoversInitialised) {
