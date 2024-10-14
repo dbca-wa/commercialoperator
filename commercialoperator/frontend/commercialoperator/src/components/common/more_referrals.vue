@@ -103,11 +103,11 @@ export default {
                                 popTemplate = _.template(
                                     '<a href="#" ' +
                                         'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="click" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
+                                        'data-bs-toggle="popover" ' +
+                                        'data-bs-trigger="click" ' +
+                                        'data-bs-placement="top auto"' +
+                                        'data-bs-html="true" ' +
+                                        'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
                             if (_.endsWith(truncated, ellipsis)) {
@@ -143,7 +143,9 @@ export default {
     },
     computed: {},
     mounted() {
-        this.initialiseTable();
+        this.$nextTick(() => {
+            this.initialiseTable();
+        });
     },
     methods: {
         remindReferral: function (_id, user) {
@@ -233,99 +235,105 @@ export default {
                 );
         },
         initialiseTable: function () {
+            // To allow table elements (ref: https://getbootstrap.com/docs/5.1/getting-started/javascript/#sanitizer)
+            var myDefaultAllowList = bootstrap.Tooltip.Default.allowList;
+            myDefaultAllowList.table = [];
+
             let vm = this;
             let table_id = 'more-referrals-table' + vm._uid;
             let popover_name = 'popover-' + vm._uid;
-            $(vm.$refs.showRef)
-                .popover({
-                    content: function () {
-                        return `
-                    <table id="${table_id}" class="hover table table-striped table-bordered dt-responsive " cellspacing="0" width="100%">
-                    </table>`;
-                    },
-                    template: `<div class="popover ${popover_name}" role="tooltip"><div class="arrow" style="top:110px;"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>`,
-                    html: true,
-                    title: 'Referrals',
-                    container: 'body',
-                    placement: 'right',
-                    trigger: 'click focus',
-                })
-                .on('inserted.bs.popover', function () {
-                    vm.table = $('#' + table_id).DataTable(
-                        vm.datatable_options
-                    );
+            let my_content =
+                '<table id="' +
+                table_id +
+                '" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%"></table>';
+            let my_template =
+                '<div class="popover ' +
+                popover_name +
+                '" role="tooltip"><div class="popover-arrow" style="top:110px;"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
+            let popover_elem = $(vm.$refs.showRef)[0];
 
-                    // activate popover when table is drawn.
-                    vm.table
-                        .on('draw.dt', function () {
-                            var $tablePopover = $(this).find(
-                                '[data-toggle="popover"]'
-                            );
-                            if ($tablePopover.length > 0) {
-                                $tablePopover.popover();
-                                // the next line prevents from scrolling up to the top after clicking on the popover.
-                                $($tablePopover).on('click', function (e) {
-                                    e.preventDefault();
-                                    return true;
-                                });
-                            }
-                        })
-                        .on('click', '.resendRef', function (e) {
-                            e.preventDefault();
-                            var _id = $(this).data('id');
-                            var user = $(this).data('user');
-                            vm.resendReferral(_id, user);
-                        })
-                        .on('click', '.recallRef', function (e) {
-                            e.preventDefault();
-                            var _id = $(this).data('id');
-                            var user = $(this).data('user');
-                            vm.recallReferral(_id, user);
-                        })
-                        .on('click', '.remindRef', function (e) {
-                            e.preventDefault();
-                            var _id = $(this).data('id');
-                            var user = $(this).data('user');
-                            vm.remindReferral(_id, user);
-                        });
-                })
-                .on('shown.bs.popover', function () {
-                    var el = vm.$refs.showRef;
-                    // eslint-disable-next-line no-unused-vars
-                    var popoverheight = parseInt(
-                        $('.' + popover_name).height()
-                    );
+            new bootstrap.Popover(popover_elem, {
+                sanitize: false,
+                html: true,
+                content: my_content,
+                template: my_template,
+                title: 'Referrals',
+                container: 'body',
+                placement: 'right',
+                trigger: 'click focus',
+            });
 
-                    var popover_bounding_top = parseInt(
-                        $('.' + popover_name)[0].getBoundingClientRect().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var popover_bounding_bottom = parseInt(
-                        $('.' + popover_name)[0].getBoundingClientRect().bottom
-                    );
+            popover_elem.addEventListener('inserted.bs.popover', function () {
+                vm.table = $('#' + table_id).DataTable(vm.datatable_options);
 
-                    var el_bounding_top = parseInt(
-                        $(el)[0].getBoundingClientRect().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var el_bounding_bottom = parseInt(
-                        $(el)[0].getBoundingClientRect().top
-                    );
+                // activate popover when table is drawn.
+                vm.table
+                    .on('draw.dt', function () {
+                        var $tablePopover = $(this).find(
+                            '[data-bs-toggle="popover"]'
+                        );
+                        if ($tablePopover.length > 0) {
+                            $tablePopover.popover();
+                            // the next line prevents from scrolling up to the top after clicking on the popover.
+                            $($tablePopover).on('click', function (e) {
+                                e.preventDefault();
+                                return true;
+                            });
+                        }
+                    })
+                    .on('click', '.resendRef', function (e) {
+                        e.preventDefault();
+                        var _id = $(this).data('id');
+                        var user = $(this).data('user');
+                        vm.resendReferral(_id, user);
+                    })
+                    .on('click', '.recallRef', function (e) {
+                        e.preventDefault();
+                        var _id = $(this).data('id');
+                        var user = $(this).data('user');
+                        vm.recallReferral(_id, user);
+                    })
+                    .on('click', '.remindRef', function (e) {
+                        e.preventDefault();
+                        var _id = $(this).data('id');
+                        var user = $(this).data('user');
+                        vm.remindReferral(_id, user);
+                    });
+            });
+            // .on('shown.bs.popover', function () {
+            popover_elem.addEventListener('shown.bs.popover', function () {
+                var el = vm.$refs.showRef;
+                // eslint-disable-next-line no-unused-vars
+                var popoverheight = parseInt($('.' + popover_name).height());
 
-                    var diff = el_bounding_top - popover_bounding_top;
+                var popover_bounding_top = parseInt(
+                    $('.' + popover_name)[0].getBoundingClientRect().top
+                );
+                // eslint-disable-next-line no-unused-vars
+                var popover_bounding_bottom = parseInt(
+                    $('.' + popover_name)[0].getBoundingClientRect().bottom
+                );
 
-                    // eslint-disable-next-line no-unused-vars
-                    var position = parseInt(
-                        $('.' + popover_name).position().top
-                    );
-                    // eslint-disable-next-line no-unused-vars
-                    var pos2 = parseInt($(el).position().top) - 5;
+                var el_bounding_top = parseInt(
+                    $(el)[0].getBoundingClientRect().top
+                );
+                // eslint-disable-next-line no-unused-vars
+                var el_bounding_bottom = parseInt(
+                    $(el)[0].getBoundingClientRect().top
+                );
 
-                    var x = diff + 5;
-                    $('.' + popover_name)
-                        .children('.arrow')
-                        .css('top', x + 'px');
-                });
+                var diff = el_bounding_top - popover_bounding_top;
+
+                // eslint-disable-next-line no-unused-vars
+                var position = parseInt($('.' + popover_name).position().top);
+                // eslint-disable-next-line no-unused-vars
+                var pos2 = parseInt($(el).position().top) - 5;
+
+                var x = diff + 5;
+                $('.' + popover_name)
+                    .children('.arrow')
+                    .css('top', x + 'px');
+            });
         },
     },
 };
