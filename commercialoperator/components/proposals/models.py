@@ -4786,8 +4786,10 @@ class Referral(RevisionedMixin):
     def can_process(self, user):
         if self.processing_status == "with_referral":
             group = ReferralRecipientGroup.objects.filter(id=self.referral_group.id)
-            # user=request.user
-            if group and group[0] in user.referralrecipientgroup_set.all():
+            user_referralrecipientgroup_set = retrieve_user_groups(
+                "ReferralRecipientGroup", user.id
+            )
+            if group and group[0] in user_referralrecipientgroup_set:
                 return True
             else:
                 return False
