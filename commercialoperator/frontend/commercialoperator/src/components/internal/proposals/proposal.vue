@@ -406,7 +406,6 @@
                                             class="row"
                                         >
                                             <div class="col-sm-12">
-                                                <!-- <button  v-if="proposal.application_type=='Filming' && proposal.filming_approval_type=='lawful_authority'" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToDistricts()">Send to Districts</button><br/> -->
                                                 <button
                                                     v-if="sendingToDistrict"
                                                     style="width: 80%"
@@ -534,12 +533,6 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <!--
-                                        <div v-if="isQAOfficerAssessmentCompleted" class="col-sm-12">
-                                            <button style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="true" @click.prevent="withQAOfficer()">Completed: {{QAOfficerAssessmentCompletedBy}}</button>
-                                        </div>
-                                        -->
-
                                             <div
                                                 v-if="
                                                     isQAOfficerAssessmentCompleted
@@ -737,7 +730,6 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <!-- v-if="!proposal.proposed_decline_status" -->
                                             <div class="col-sm-12">
                                                 <button
                                                     style="width: 80%"
@@ -830,7 +822,6 @@
                 </div>
             </div>
             <div v-if="!comparing" class="col-md-1"></div>
-            <!--<div class="col-md-8">-->
             <div :class="class_ncols">
                 <div class="row">
                     <template
@@ -1099,7 +1090,6 @@ export default {
                     vm.proposal = res.body;
                     vm.fetchProposalParks(to.params.proposal_id);
                     vm.original_proposal = helpers.copyObject(res.body);
-                    // vm.proposal.org_applicant.address = vm.proposal.org_applicant.address != null ? vm.proposal.org_applicant.address : {};
                     vm.proposal.selected_trails_activities = [];
                     vm.proposal.selected_parks_activities = [];
                     vm.proposal.marine_parks_activities = [];
@@ -1383,22 +1373,11 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchReferralRecipientGroups();
+        vm.initialiseSelects();
     },
     updated: function () {
         let vm = this;
-        // if (!vm.panelClickersInitialised){
-        //     $('.panelClicker[data-toggle="collapse"]').on('click', function () {
-        //         var chev = $(this).children()[0];
-        //         window.setTimeout(function () {
-        //             $(chev).toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
-        //         },100);
-        //     });
-        //     vm.panelClickersInitialised = true;
-        // }
         this.$nextTick(() => {
-            //vm.initialiseOrgContactTable();
-            vm.initialiseSelects();
-
             if (typeof vm.$refs.tclass !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 vm.proposal.selected_parks_activities =
@@ -1410,7 +1389,6 @@ export default {
             }
             if (typeof vm.$refs.event !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
-
                 vm.proposal.selected_trails_activities =
                     vm.$refs.event.$refs.event_activities.selected_trails_activities;
             }
@@ -1512,7 +1490,6 @@ export default {
             this.$refs.proposed_approval.isModalOpen = true;
         },
         issueProposal: function () {
-            //this.$refs.proposed_approval.approval = helpers.copyObject(this.proposal.proposed_issuance_approval);
             this.$refs.proposed_approval.approval =
                 this.proposal.proposed_issuance_approval != null
                     ? helpers.copyObject(
@@ -1534,7 +1511,6 @@ export default {
         sendToDistricts: function () {
             console.log('hello');
             let vm = this;
-            //vm.save_wo();
             let formData = new FormData(vm.form);
             formData.append(
                 'selected_parks_activities',
@@ -1897,7 +1873,6 @@ export default {
                 vm.$http.post(vm.proposal_form_url, formData).then(
                     () => {
                         //save Proposal before changing status so that unsaved assessor data is saved.
-
                         let data = {
                             status: status,
                             approver_comment: vm.approver_comment,

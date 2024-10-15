@@ -429,11 +429,11 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchReferralRecipientGroups();
+        vm.initialiseSelects();
     },
     updated: function () {
         let vm = this;
         this.$nextTick(() => {
-            vm.initialiseSelects();
             vm.form = document.forms.new_proposal;
         });
     },

@@ -589,6 +589,7 @@ export default {
         let vm = this;
         vm.fetchProposalGroupMembers();
         vm.fetchReferralRecipientGroups();
+        vm.initialiseSelects();
     },
     updated: function () {
         let vm = this;
@@ -605,7 +606,6 @@ export default {
         }
         this.$nextTick(() => {
             vm.initialiseOrgContactTable();
-            vm.initialiseSelects();
             vm.form = document.forms.new_proposal;
         });
     },
