@@ -1363,7 +1363,9 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchReferralRecipientGroups();
-        vm.initialiseSelects();
+        this.$nextTick(() => {
+            vm.initialiseSelects();
+        });
     },
     updated: function () {
         let vm = this;
@@ -2052,7 +2054,7 @@ export default {
             // Assigned officer select
             $(vm.$refs.assigned_officer)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Officer',
                 })
@@ -2085,7 +2087,7 @@ export default {
             if (!vm.initialisedSelects) {
                 $(vm.$refs.referral_recipient_groups)
                     .select2({
-                        theme: 'bootstrap',
+                        theme: 'bootstrap-5',
                         allowClear: true,
                         placeholder: 'Select Referral',
                     })

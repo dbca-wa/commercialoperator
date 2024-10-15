@@ -3,7 +3,7 @@
     <div id="activityInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Filming Details <small></small>
                         <a
@@ -20,7 +20,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <div :id="lBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Filming Details"
+                    index="filming_details"
+                    subtitle=""
+                >
                     <div class="">
                         <div
                             class="form-horizontal col-sm-12 borderDecoration"
@@ -415,15 +421,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
     name: 'FilmingActivity',
+    components: {
+        FormSection,
+    },
     props: {
         proposal: {
             type: Object,
@@ -552,7 +563,7 @@ export default {
             // Initialise select2 for Film Type
             $(vm.$refs.film_type_select)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Film Type',
                 })
@@ -567,7 +578,7 @@ export default {
             // Initialise select2 for Film Purpose
             $(vm.$refs.filmPurposeSelect)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Film Purpose',
                 })
@@ -582,7 +593,7 @@ export default {
             // Initialise select2 for Film Usage
             $(vm.$refs.filmUsageSelect)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Film Usage',
                 })
@@ -615,4 +626,4 @@ export default {
 };
 </script>
 
-<style lang="css" scoped></style>
+<!-- <style lang="css" scoped></style> -->
