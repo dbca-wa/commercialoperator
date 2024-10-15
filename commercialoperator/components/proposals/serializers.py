@@ -1527,13 +1527,12 @@ class ProposalEventSerializer(BaseProposalSerializer):
 
 
 class InternalEventProposalSerializer(BaseProposalSerializer):
-    #applicant = ApplicantSerializer()
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    submitter = EmailUserAppViewSerializer()
+    submitter = EmailUserAppViewSerializer(source='submitter_id')
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
