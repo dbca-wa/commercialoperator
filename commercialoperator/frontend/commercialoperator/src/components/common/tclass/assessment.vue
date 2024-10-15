@@ -91,7 +91,7 @@
                                     class="form-group col-sm-12"
                                 >
                                     <button
-                                        class="btn btn-primary pull-right"
+                                        class="btn btn-primary float-end"
                                         style="margin-top: 5px"
                                         @click.prevent="update()"
                                     >

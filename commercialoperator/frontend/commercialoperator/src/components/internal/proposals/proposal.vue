@@ -939,43 +939,33 @@
                                     >
                                         <div
                                             v-if="hasAssessorMode"
-                                            class="navbar navbar-fixed-bottom"
+                                            class="navbar navbar-nav navbar-fixed-bottom ms-auto align-items-end"
                                             style="background-color: #f5f5f5"
                                         >
-                                            <div class="navbar-inner">
+                                            <div>
                                                 <div
                                                     v-if="hasAssessorMode"
-                                                    class="container"
+                                                    class="container-fluid"
                                                 >
-                                                    <p class="pull-right">
-                                                        <button
-                                                            v-if="
-                                                                savingProposal
-                                                            "
-                                                            class="btn btn-primary pull-right"
-                                                            style="
-                                                                margin-top: 5px;
-                                                            "
-                                                            disabled
-                                                        >
-                                                            Save Changes&nbsp;
-                                                            <i
-                                                                class="fa fa-circle-o-notch fa-spin fa-fw"
-                                                            ></i>
-                                                        </button>
-                                                        <button
-                                                            v-else
-                                                            class="btn btn-primary pull-right"
-                                                            style="
-                                                                margin-top: 5px;
-                                                            "
-                                                            @click.prevent="
-                                                                save()
-                                                            "
-                                                        >
-                                                            Save Changes
-                                                        </button>
-                                                    </p>
+                                                    <button
+                                                        v-if="savingProposal"
+                                                        class="btn btn-primary"
+                                                        style="margin-top: 5px"
+                                                        disabled
+                                                    >
+                                                        Save Changes&nbsp;
+                                                        <i
+                                                            class="fa fa-circle-o-notch fa-spin fa-fw"
+                                                        ></i>
+                                                    </button>
+                                                    <button
+                                                        v-else
+                                                        class="btn btn-primary"
+                                                        style="margin-top: 5px"
+                                                        @click.prevent="save()"
+                                                    >
+                                                        Save Changes
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

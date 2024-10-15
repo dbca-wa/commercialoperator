@@ -336,17 +336,17 @@
                                     v-if="
                                         !proposal.can_user_edit && !isFinalised
                                     "
-                                    class="navbar navbar-fixed-bottom"
+                                    class="navbar navbar-fixed-bottom ms-auto align-items-end"
                                     style="background-color: #f5f5f5"
                                 >
                                     <div class="navbar-inner">
                                         <div
                                             v-if="!isFinalised"
-                                            class="container"
+                                            class="container-fluid"
                                         >
                                             <p class="pull-right">
                                                 <button
-                                                    class="btn btn-primary pull-right"
+                                                    class="btn btn-primary"
                                                     style="margin-top: 5px"
                                                     @click.prevent="save()"
                                                 >

@@ -2,27 +2,15 @@
     <div id="approvalType" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Approval Type <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#accessInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Approval Type"
+                    index="approval_type"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12">
-                            <div class="form-group">
+                            <div class="form-group row">
                                 <div class="">
                                     <div class="col-sm-6">
                                         <label
@@ -150,15 +138,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
-    components: {},
+    components: { FormSection },
     props: {
         proposal: {
             type: Object,

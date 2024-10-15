@@ -5,30 +5,15 @@
             <div class="col-md-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Applicant
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + detailsBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="detailsBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
+                        <FormSection
                             v-if="applicantType == 'ORG'"
-                            :id="detailsBody"
-                            class="panel-body panel-collapse collapse in"
+                            :form-collapse="false"
+                            label="Applicant"
+                            index="applicant"
+                            subtitle=""
                         >
                             <form class="form-horizontal">
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >Name</label
                                     >
@@ -46,7 +31,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >Trading Name</label
                                     >
@@ -65,7 +50,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <label for="" class="col-sm-3 control-label"
                                         >ABN/ACN</label
                                     >
@@ -82,14 +67,16 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
-                        <div
+                        </FormSection>
+                        <FormSection
                             v-if="applicantType == 'SUB'"
-                            :id="detailsBody"
-                            class="panel-body panel-collapse collapse in"
+                            :form-collapse="false"
+                            label="Approval Type"
+                            index="approval_type"
+                            subtitle=""
                         >
                             <form class="form-horizontal">
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <label for="" class="col-sm-3 control-label"
                                         >Given Name(s)</label
                                     >
@@ -106,7 +93,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <label for="" class="col-sm-3 control-label"
                                         >Surname</label
                                     >
@@ -124,40 +111,25 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
             <div class="col-md-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Address Details
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + addressBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="false"
-                                    :aria-controls="addressBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
+                        <FormSection
                             v-if="
                                 applicantType == 'ORG' &&
                                 proposal.org_applicant.address
                             "
-                            :id="addressBody"
-                            class="panel-body panel-collapse collapse"
+                            :form-collapse="false"
+                            label="Address Details"
+                            index="address_details"
+                            subtitle=""
                         >
                             <form class="form-horizontal">
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >Street</label
                                     >
@@ -175,7 +147,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >Town/Suburb</label
                                     >
@@ -193,7 +165,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >State</label
                                     >
@@ -227,7 +199,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <label for="" class="col-sm-3 control-label"
                                         >Country</label
                                     >
@@ -245,14 +217,16 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
-                        <div
+                        </FormSection>
+                        <FormSection
                             v-if="
                                 applicantType == 'SUB' &&
                                 proposal.submitter.residential_address
                             "
-                            :id="addressBody"
-                            class="panel-body panel-collapse collapse"
+                            :form-collapse="false"
+                            label="Address Details"
+                            index="address_details"
+                            subtitle=""
                         >
                             <form class="form-horizontal">
                                 <div class="form-group">
@@ -327,7 +301,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <label for="" class="col-sm-3 control-label"
                                         >Country</label
                                     >
@@ -345,14 +319,14 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
             <div class="col-md-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
+                        <!-- <div class="panel-heading">
                             <h3 class="panel-title">
                                 Contact Details
                                 <a
@@ -373,6 +347,13 @@
                             v-if="applicantType == 'ORG'"
                             :id="contactsBody"
                             class="panel-body panel-collapse collapse"
+                        > -->
+                        <FormSection
+                            v-if="applicantType == 'ORG'"
+                            :form-collapse="false"
+                            label="Contact Details"
+                            index="contact_details"
+                            subtitle=""
                         >
                             <table
                                 :id="contacts_table_id"
@@ -381,14 +362,21 @@
                                 cellspacing="0"
                                 width="100%"
                             ></table>
-                        </div>
-                        <div
+                        </FormSection>
+                        <!-- <div
                             v-if="applicantType == 'SUB'"
                             :id="contactsBody"
                             class="panel-body panel-collapse collapse"
+                        > -->
+                        <FormSection
+                            v-if="applicantType == 'SUB'"
+                            :form-collapse="false"
+                            label="Contact Details"
+                            index="contact_details"
+                            subtitle=""
                         >
                             <form class="form-horizontal">
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >Phone (work)</label
                                     >
@@ -405,7 +393,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row mb-2">
                                     <label for="" class="col-sm-3 control-label"
                                         >Mobile</label
                                     >
@@ -422,7 +410,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <label for="" class="col-sm-3 control-label"
                                         >Email</label
                                     >
@@ -438,7 +426,7 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -447,10 +435,11 @@
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ApplicantComponent',
-    components: {},
+    components: { FormSection },
     props: {
         proposal: {
             type: Object,
