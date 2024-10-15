@@ -1492,7 +1492,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def assessor_assessment(self):
         qs = self.assessment.filter(referral_assessment=False, referral_group=None)
-        if qs:
+        if qs.exists():
             return qs[0]
         else:
             return None
@@ -1502,7 +1502,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         qs = self.assessment.filter(
             referral_assessment=True, referral_group__isnull=False
         )
-        if qs:
+        if qs.exists():
             return qs
         else:
             return None

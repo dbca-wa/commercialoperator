@@ -5,6 +5,7 @@
                 <div class="">
                     <div class="panel panel-default">
                         <FormSection
+                            v-if="assessment"
                             :form-collapse="false"
                             label="Workflow - Checklist"
                             index="workflow_checklist"
@@ -121,7 +122,8 @@ export default {
         },
         assessment: {
             type: Object,
-            required: true,
+            required: false,
+            default: null,
         },
         hasAssessorMode: {
             type: Boolean,
