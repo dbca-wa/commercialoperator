@@ -2,7 +2,7 @@
     <div id="vehiclesVesselsInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Vehicles/Vessels <small></small>
                         <a
@@ -19,7 +19,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <div :id="lBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Vehicles/Vessels"
+                    index="vehicles_vessels"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="">
@@ -55,7 +61,7 @@
                             ></VesselTable>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
@@ -63,10 +69,12 @@
 
 <script>
 import { helpers, api_endpoints } from '@/utils/hooks.js';
+import FormSection from '@/components/forms/section_toggle.vue';
 import VehicleTable from '@/components/common/vehicle_table.vue';
 import VesselTable from '@/components/common/vessel_table.vue';
 export default {
     components: {
+        FormSection,
         VehicleTable,
         VesselTable,
     },

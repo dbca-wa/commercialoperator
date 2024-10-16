@@ -2,7 +2,7 @@
     <div id="eventManagementInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Event Management <small></small>
                         <a
@@ -19,7 +19,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <div :id="lBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Event Management"
+                    index="event_management"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -823,16 +829,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import FileField from '@/components/forms/filefield.vue';
 export default {
     components: {
+        FormSection,
         FileField,
     },
     props: {

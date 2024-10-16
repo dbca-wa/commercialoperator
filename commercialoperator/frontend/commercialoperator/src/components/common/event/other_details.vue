@@ -3,24 +3,12 @@
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Pre-Event Training<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#otherInfo"
-                            :expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Pre-Event Training"
+                    index="pre_event_training"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="">
@@ -188,30 +176,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
 
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Other <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + oBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            :expanded="true"
-                            :aria-controls="oBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="oBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Other"
+                    index="other"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
@@ -255,30 +231,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
 
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Payment of Fees and Charges<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + mBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            :expanded="true"
-                            :aria-controls="mBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="mBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Payment of Fees and Charges"
+                    index="payment_of_fees_and_charges"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
@@ -305,30 +269,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
 
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Insurance <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + iBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            :expanded="true"
-                            :aria-controls="iBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="iBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Insurance"
+                    index="insurance"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
@@ -411,29 +363,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Deed Poll<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + dBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            :expanded="true"
-                            :aria-controls="dBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="dBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Deed Poll"
+                    index="dee_poll"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
@@ -486,18 +426,21 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import PreEventParksTable from './pre_event_parks_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+
 export default {
     components: {
+        FormSection,
         FileField,
         PreEventParksTable,
     },

@@ -3,24 +3,6 @@
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Safety<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#otherInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Safety"
@@ -93,24 +75,6 @@
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Other <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + oBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="oBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="oBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Other"
@@ -169,24 +133,6 @@
 
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Payment of Fees and Charges<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + mBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="mBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="mBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Payment of Fees and Charges"
@@ -281,24 +227,6 @@
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Insurance <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + iBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="iBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="iBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Insurance"
@@ -397,24 +325,6 @@
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Deed Poll<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + dBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="dBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="dBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Deed Poll"

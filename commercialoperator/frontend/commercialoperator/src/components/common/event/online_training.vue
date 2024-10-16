@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Commercial Event Questionnaire<small></small>
                         <a
@@ -19,7 +19,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="pBody" class="panel-body collapse in">
+                <div :id="pBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Commercial Event Questionnaire"
+                    index="commercial_event_questionnaire"
+                    subtitle=""
+                >
                     <div
                         v-if="proposal.applicant_training_completed"
                         class="form-horizontal col-sm-12"
@@ -258,7 +264,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
@@ -266,8 +272,12 @@
 
 <script>
 import { api_endpoints, helpers } from '@/utils/hooks';
+import FormSection from '@/components/forms/section_toggle.vue';
 
 export default {
+    components: {
+        FormSection,
+    },
     props: {
         proposal: {
             type: Object,
