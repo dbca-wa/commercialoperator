@@ -429,7 +429,7 @@ export default {
             let vm = this;
             $(vm.$refs.pre_event_park)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
                 })

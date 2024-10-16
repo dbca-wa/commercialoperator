@@ -257,7 +257,7 @@ export default {
             // Intialise select2
             $(vm.$refs.reason)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Reason',
                 })

@@ -253,7 +253,7 @@ export default {
             setTimeout(function () {
                 $('#' + vm.selectid)
                     .select2({
-                        theme: 'bootstrap',
+                        theme: 'bootstrap-5',
                         allowClear: true,
                         placeholder: 'Select...',
                     })

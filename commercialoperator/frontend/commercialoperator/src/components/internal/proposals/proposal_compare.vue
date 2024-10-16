@@ -886,7 +886,7 @@ export default {
             // Assigned officer select
             $(vm.$refs.assigned_officer)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Officer',
                 })
@@ -922,7 +922,7 @@ export default {
                 //$(vm.$refs.department_users).select2({
                 $(vm.$refs.referral_recipient_groups)
                     .select2({
-                        theme: 'bootstrap',
+                        theme: 'bootstrap-5',
                         allowClear: true,
                         placeholder: 'Select Referral',
                     })

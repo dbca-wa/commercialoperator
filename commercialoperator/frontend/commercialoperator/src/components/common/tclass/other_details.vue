@@ -987,7 +987,7 @@ export default {
             // Intialise select2
             $(vm.$refs.preferred_licence_period)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select preferred licence term',
                 })

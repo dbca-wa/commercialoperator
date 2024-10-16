@@ -482,7 +482,7 @@ export default {
             let vm = this;
             $(vm.$refs.events_trail)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
                 })
@@ -496,7 +496,7 @@ export default {
                 });
             $(vm.$refs.events_section)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select section',
                 })
@@ -511,7 +511,7 @@ export default {
             //Initialise select2 for Activity types
             $(vm.$refs.activities_select)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Activities',
                 })

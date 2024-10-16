@@ -434,7 +434,7 @@ export default {
             // Initialise select2 for region
             $(vm.$refs.searchOrg)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Organisation',
                 })

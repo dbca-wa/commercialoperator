@@ -548,7 +548,7 @@ export default {
             let vm = this;
             $(vm.$refs.filming_park)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
                 })
