@@ -51,15 +51,6 @@ if len(GIT_COMMIT_HASH) == 0:
 APPLICATION_VERSION = env("APPLICATION_VERSION", "1.0.0") + "-" + GIT_COMMIT_HASH[:7]
 
 if SHOW_DEBUG_TOOLBAR:
-    #    def get_ip():
-    #        import subprocess
-    #        route = subprocess.Popen(('ip', 'route'), stdout=subprocess.PIPE)
-    #        network = subprocess.check_output(
-    #            ('grep', '-Po', 'src \K[\d.]+\.'), stdin=route.stdout
-    #        ).decode().rstrip()
-    #        route.wait()
-    #        network_gateway = network + '1'
-    #        return network_gateway
 
     def show_toolbar(request):
         return True
@@ -114,23 +105,12 @@ WSGI_APPLICATION = "commercialoperator.wsgi.application"
     )
 }"""
 
-# REST_FRAMEWORK = {
-#    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-#    #'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#        'PAGE_SIZE': 5
-# }
-
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    #'DEFAULT_FILTER_BACKENDS': (
-    #    'rest_framework_datatables.filters.DatatablesFilterBackend',
-    # ),
-    #'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
-    #'PAGE_SIZE': 20,
 }
 
 
