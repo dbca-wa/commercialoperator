@@ -3,7 +3,7 @@
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Safety<small></small>
                         <a
@@ -20,7 +20,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <div :id="lBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Safety"
+                    index="safety"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -82,12 +88,12 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Other <small></small>
                         <a
@@ -104,7 +110,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="oBody" class="panel-body collapse in">
+                <div :id="oBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Other"
+                    index="other"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -151,13 +163,13 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
 
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Payment of Fees and Charges<small></small>
                         <a
@@ -174,7 +186,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="mBody" class="panel-body collapse in">
+                <div :id="mBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Payment of Fees and Charges"
+                    index="payment_of_fees_and_charges"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -258,12 +276,12 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Insurance <small></small>
                         <a
@@ -280,7 +298,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="iBody" class="panel-body collapse in">
+                <div :id="iBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Insurance"
+                    index="insurance"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -368,12 +392,12 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
+                <!-- <div class="panel-heading">
                     <h3 class="panel-title">
                         Deed Poll<small></small>
                         <a
@@ -390,7 +414,13 @@
                         </a>
                     </h3>
                 </div>
-                <div :id="dBody" class="panel-body collapse in">
+                <div :id="dBody" class="panel-body collapse in"> -->
+                <FormSection
+                    :form-collapse="false"
+                    label="Deed Poll"
+                    index="deed_poll"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -443,16 +473,19 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import FileField from '@/components/forms/filefield.vue';
+
 export default {
     components: {
+        FormSection,
         FileField,
     },
     props: {

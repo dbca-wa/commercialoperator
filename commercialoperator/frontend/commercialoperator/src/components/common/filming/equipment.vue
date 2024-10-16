@@ -2,25 +2,12 @@
     <div id="equipmentInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Vehicles, Vessels, RPA and other Equipment
-                        <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#accessInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Vehicles, Vessels, RPA and other Equipment"
+                    index="vehicles_vessels_rpa"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group col-sm-12">
@@ -465,7 +452,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
@@ -473,12 +460,14 @@
 
 <script>
 import { helpers, api_endpoints } from '@/utils/hooks.js';
+import FormSection from '@/components/forms/section_toggle.vue';
 import VehicleTable from '@/components/common/vehicle_table.vue';
 import VesselTable from '@/components/common/vessel_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 export default {
     name: 'FilmingEquipment',
     components: {
+        FormSection,
         VehicleTable,
         VesselTable,
         FileField,
