@@ -2,24 +2,6 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Commercial Event Questionnaire<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + pBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="pBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="pBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Commercial Event Questionnaire"

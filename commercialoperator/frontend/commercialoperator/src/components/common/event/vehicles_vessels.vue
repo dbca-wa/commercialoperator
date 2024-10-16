@@ -2,24 +2,6 @@
     <div id="vehiclesVesselsInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <!-- <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Vehicles/Vessels <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#vehiclesVesselsInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in"> -->
                 <FormSection
                     :form-collapse="false"
                     label="Vehicles/Vessels"

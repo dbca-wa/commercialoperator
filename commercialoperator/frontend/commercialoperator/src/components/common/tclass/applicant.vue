@@ -326,28 +326,6 @@
             <div class="col-md-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <!-- <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Contact Details
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + contactsBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="false"
-                                    :aria-controls="contactsBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
-                            v-if="applicantType == 'ORG'"
-                            :id="contactsBody"
-                            class="panel-body panel-collapse collapse"
-                        > -->
                         <FormSection
                             v-if="applicantType == 'ORG'"
                             :form-collapse="false"
