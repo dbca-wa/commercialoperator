@@ -89,6 +89,8 @@ class EmailUserAppViewBaseSerializer(EmailUserSerializer):
 
     def get_dob(self, obj):
         emailuser = retrieve_email_user(obj)
+        if not emailuser:
+            return None
         return emailuser.dob.strftime("%d/%m/%Y") if emailuser.dob else None
 
     def get_email(self, obj):
@@ -126,6 +128,8 @@ class EmailUserAppViewSerializer(EmailUserAppViewBaseSerializer):
 
     def get_residential_address(self, obj):
         emailuser = retrieve_email_user(obj)
+        if not emailuser:
+            return None
         return (
             UserAddressSerializer(emailuser.residential_address).data
             if emailuser.residential_address
