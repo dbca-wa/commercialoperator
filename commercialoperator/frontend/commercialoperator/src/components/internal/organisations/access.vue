@@ -108,7 +108,7 @@
             </div>
             <div class="col-md-1"></div>
             <div class="col-md-8">
-                <div class="row">
+                <div class="">
                     <div class="card mb-3">
                         <div class="card-header">
                             <h3>Organisation Access Request</h3>
@@ -120,9 +120,9 @@
                                         class="form-horizontal"
                                         name="access_form"
                                     >
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="name"
                                                 class="col-sm-3 control-label"
                                                 >Organisation</label
                                             >
@@ -137,9 +137,9 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="abn"
                                                 class="col-sm-3 control-label"
                                                 >ABN</label
                                             >
@@ -154,7 +154,7 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
                                                 for=""
                                                 class="col-sm-3 control-label"
@@ -174,11 +174,11 @@
                                             </div>
                                         </div>
                                         <div
-                                            class="form-group"
+                                            class="form-group row mb-3"
                                             style="margin-top: 50px"
                                         >
                                             <label
-                                                for=""
+                                                for="phone"
                                                 class="col-sm-3 control-label"
                                                 >Phone</label
                                             >
@@ -196,9 +196,9 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="mobile"
                                                 class="col-sm-3 control-label"
                                                 >Mobile</label
                                             >
@@ -216,9 +216,9 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <label
-                                                for=""
+                                                for="email"
                                                 class="col-sm-3 control-label"
                                                 >Email</label
                                             >
