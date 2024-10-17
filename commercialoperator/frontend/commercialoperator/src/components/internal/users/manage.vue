@@ -17,50 +17,58 @@
                         />
                     </div>
                     <div class="col-md-9">
-                        <ul class="nav nav-tabs">
-                            <li class="active">
-                                <a data-toggle="tab" :href="'#' + dTab"
+                        <ul class="nav nav-pills mb-3" role="tablist">
+                            <li class="nav-item">
+                                <a
+                                    id="pills-details-tab"
+                                    data-toggle="tab"
+                                    class="nav-link active"
+                                    data-bs-toggle="pill"
+                                    :href="'#' + dTab"
+                                    role="tab"
+                                    :aria-controls="dTab"
+                                    aria-selected="true"
                                     >Details</a
                                 >
                             </li>
-                            <li>
-                                <a data-toggle="tab" :href="'#' + oTab"
+                            <li class="nav-item">
+                                <a
+                                    id="pills-other-tab"
+                                    data-toggle="tab"
+                                    class="nav-link"
+                                    data-bs-toggle="pill"
+                                    :href="'#' + oTab"
+                                    role="tab"
+                                    :aria-controls="oTab"
+                                    aria-selected="false"
                                     >Other</a
                                 >
                             </li>
                         </ul>
                         <div class="tab-content">
-                            <div :id="dTab" class="tab-pane fade in active">
+                            <div
+                                :id="dTab"
+                                class="tab-pane fade active show"
+                                role="tabpanel"
+                                aria-labelledby="pills-details-tab"
+                            >
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">
-                                                    Personal Details
-                                                    <a
-                                                        class="panelClicker"
-                                                        :href="'#' + pdBody"
-                                                        data-toggle="collapse"
-                                                        data-parent="#userInfo"
-                                                        expanded="true"
-                                                        :aria-controls="pdBody"
-                                                    >
-                                                        <span
-                                                            class="glyphicon glyphicon-chevron-up pull-right"
-                                                        ></span>
-                                                    </a>
-                                                </h3>
-                                            </div>
-                                            <div
-                                                :id="pdBody"
-                                                class="panel-body collapse in"
+                                            <FormSection
+                                                :form-collapse="false"
+                                                label="Personal Details"
+                                                index="personal_details"
+                                                subtitle=""
                                             >
                                                 <form
                                                     class="form-horizontal"
                                                     name="personal_form"
                                                     method="post"
                                                 >
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <div
                                                             class="col-sm-3"
                                                         ></div>
@@ -84,7 +92,9 @@
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -103,7 +113,7 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div class="form-group row">
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -122,41 +132,27 @@
                                                         </div>
                                                     </div>
                                                 </form>
-                                            </div>
+                                            </FormSection>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">
-                                                    Address Details
-                                                    <a
-                                                        class="panelClicker"
-                                                        :href="'#' + adBody"
-                                                        data-toggle="collapse"
-                                                        expanded="false"
-                                                        data-parent="#userInfo"
-                                                        :aria-controls="adBody"
-                                                    >
-                                                        <span
-                                                            class="glyphicon glyphicon-chevron-up pull-right"
-                                                        ></span>
-                                                    </a>
-                                                </h3>
-                                            </div>
-                                            <div
-                                                v-if="loading.length == 0"
-                                                :id="adBody"
-                                                class="panel-body collapse in"
+                                            <FormSection
+                                                :form-collapse="false"
+                                                label="Address Details"
+                                                index="address_details"
+                                                subtitle=""
                                             >
                                                 <form
                                                     class="form-horizontal"
                                                     action="index.html"
                                                     method="post"
                                                 >
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -176,7 +172,9 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -196,7 +194,9 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -234,7 +234,9 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -264,13 +266,13 @@
                                                             </select>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div class="form-group row">
                                                         <div class="col-sm-12">
                                                             <button
                                                                 v-if="
                                                                     !updatingAddress
                                                                 "
-                                                                class="pull-right btn btn-primary"
+                                                                class="btn btn-primary float-end"
                                                                 @click.prevent="
                                                                     updateAddress()
                                                                 "
@@ -280,7 +282,7 @@
                                                             <button
                                                                 v-else
                                                                 disabled
-                                                                class="pull-right btn btn-primary"
+                                                                class="btn btn-primary float-end"
                                                             >
                                                                 <i
                                                                     class="fa fa-spin fa-spinner"
@@ -290,41 +292,27 @@
                                                         </div>
                                                     </div>
                                                 </form>
-                                            </div>
+                                            </FormSection>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">
-                                                    Contact Details
-                                                    <small></small>
-                                                    <a
-                                                        class="panelClicker"
-                                                        :href="'#' + cdBody"
-                                                        data-toggle="collapse"
-                                                        data-parent="#userInfo"
-                                                        expanded="false"
-                                                        :aria-controls="cdBody"
-                                                    >
-                                                        <span
-                                                            class="glyphicon glyphicon-chevron-up pull-right"
-                                                        ></span>
-                                                    </a>
-                                                </h3>
-                                            </div>
-                                            <div
-                                                :id="cdBody"
-                                                class="panel-body collapse in"
+                                            <FormSection
+                                                :form-collapse="false"
+                                                label="Contact Details"
+                                                index="contact_details"
+                                                subtitle=""
                                             >
                                                 <form
                                                     class="form-horizontal"
                                                     action="index.html"
                                                     method="post"
                                                 >
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -342,7 +330,9 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -360,7 +350,9 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -379,13 +371,13 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <div class="form-group">
+                                                    <div class="form-group row">
                                                         <div class="col-sm-12">
                                                             <button
                                                                 v-if="
                                                                     !updatingContact
                                                                 "
-                                                                class="pull-right btn btn-primary"
+                                                                class="btn btn-primary float-end"
                                                                 @click.prevent="
                                                                     updateContact()
                                                                 "
@@ -395,7 +387,7 @@
                                                             <button
                                                                 v-else
                                                                 disabled
-                                                                class="pull-right btn btn-primary"
+                                                                class="btn btn-primary float-end"
                                                             >
                                                                 <i
                                                                     class="fa fa-spin fa-spinner"
@@ -405,40 +397,26 @@
                                                         </div>
                                                     </div>
                                                 </form>
-                                            </div>
+                                            </FormSection>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="panel panel-default">
-                                            <div class="panel-heading">
-                                                <h3 class="panel-title">
-                                                    Organisations
-                                                    <small></small>
-                                                    <a
-                                                        class="panelClicker"
-                                                        :href="'#' + odBody"
-                                                        data-toggle="collapse"
-                                                        data-parent="#userInfo"
-                                                        expanded="false"
-                                                        :aria-controls="odBody"
-                                                    >
-                                                        <span
-                                                            class="glyphicon glyphicon-chevron-up pull-right"
-                                                        ></span>
-                                                    </a>
-                                                </h3>
-                                            </div>
-                                            <div
-                                                :id="odBody"
-                                                class="panel-body collapse in"
+                                            <FormSection
+                                                :form-collapse="false"
+                                                label="Organisations"
+                                                index="organisations"
+                                                subtitle=""
                                             >
                                                 <div
                                                     v-for="org in user.commercialoperator_organisations"
                                                     :key="org.id"
                                                 >
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-2 control-label"
@@ -473,26 +451,32 @@
                                                                 placeholder=""
                                                             />
                                                         </div>
-                                                        <a
-                                                            style="
-                                                                cursor: pointer;
-                                                                text-decoration: none;
-                                                            "
-                                                            @click.prevent="
-                                                                unlinkUser(org)
-                                                            "
-                                                            ><i
-                                                                class="fa fa-chain-broken fa-2x"
-                                                            ></i
-                                                            >&nbsp;Unlink</a
-                                                        >
+                                                        <div class="col-sm-2">
+                                                            <a
+                                                                style="
+                                                                    cursor: pointer;
+                                                                    text-decoration: none;
+                                                                "
+                                                                @click.prevent="
+                                                                    unlinkUser(
+                                                                        org
+                                                                    )
+                                                                "
+                                                                ><i
+                                                                    class="fa fa-chain-broken fa-2x"
+                                                                ></i
+                                                                >&nbsp;Unlink</a
+                                                            >
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div
                                                     v-for="orgReq in orgRequest_pending"
                                                     :key="orgReq.id"
                                                 >
-                                                    <div class="form-group">
+                                                    <div
+                                                        class="form-group row mb-3"
+                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-2 control-label"
@@ -535,27 +519,50 @@
                                                         >
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </FormSection>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div :id="oTab" class="tab-pane fade">
-                                <ProposalDashTable
-                                    ref="proposals_table"
-                                    level="internal"
-                                    :url="proposals_url"
-                                />
-                                <ApprovalDashTable
-                                    ref="approvals_table"
-                                    level="internal"
-                                    :url="approvals_url"
-                                />
-                                <ComplianceDashTable
-                                    ref="compliance_table"
-                                    level="internal"
-                                    :url="compliance_url"
-                                />
+                            <div
+                                :id="oTab"
+                                class="tab-pane fade"
+                                role="tabpanel"
+                                aria-labelledby="pills-other-tab"
+                            >
+                                <FormSection
+                                    :form-collapse="false"
+                                    label="Applications"
+                                    index="applications"
+                                >
+                                    <ProposalDashTable
+                                        ref="proposals_table"
+                                        level="internal"
+                                        :url="proposals_url"
+                                    />
+                                </FormSection>
+                                <FormSection
+                                    :form-collapse="false"
+                                    label="Licences"
+                                    index="approvals"
+                                >
+                                    <ApprovalDashTable
+                                        ref="approvals_table"
+                                        level="internal"
+                                        :url="approvals_url"
+                                    />
+                                </FormSection>
+                                <FormSection
+                                    :form-collapse="false"
+                                    label="Compliances"
+                                    index="compliances"
+                                >
+                                    <ComplianceDashTable
+                                        ref="compliance_table"
+                                        level="internal"
+                                        :url="compliance_url"
+                                    />
+                                </FormSection>
                             </div>
                         </div>
                     </div>
@@ -567,6 +574,7 @@
 
 <script>
 import { api_endpoints, helpers } from '@/utils/hooks';
+import FormSection from '@/components/forms/section_toggle.vue';
 import ProposalDashTable from '@common-utils/proposals_dashboard.vue';
 import ApprovalDashTable from '@common-utils/approvals_dashboard.vue';
 import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
@@ -576,6 +584,7 @@ export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'User',
     components: {
+        FormSection,
         ProposalDashTable,
         ApprovalDashTable,
         ComplianceDashTable,
