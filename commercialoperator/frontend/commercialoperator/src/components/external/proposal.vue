@@ -122,116 +122,102 @@
                 <input type="hidden" name="proposal_id" :value="1" />
 
                 <div class="row" style="margin-bottom: 50px">
-                    <div class="container">
-                        <div class="row" style="margin-bottom: 50px">
+                    <div
+                        class="navbar navbar-nav navbar-fixed-bottom ms-auto align-items-end"
+                        style="background-color: #f5f5f5"
+                    >
+                        <div>
                             <div
-                                class="navbar navbar-fixed-bottom"
-                                style="background-color: #f5f5f5"
+                                v-if="proposal && !proposal.readonly"
+                                class="container-fluid"
                             >
-                                <div class="navbar-inner">
-                                    <div
-                                        v-if="proposal && !proposal.readonly"
-                                        class="container"
+                                <p class="pull-right" style="margin-top: 5px">
+                                    <button
+                                        v-if="saveExitProposal"
+                                        type="button"
+                                        class="btn btn-primary"
+                                        disabled
                                     >
-                                        <p
-                                            class="pull-right"
-                                            style="margin-top: 5px"
-                                        >
-                                            <button
-                                                v-if="saveExitProposal"
-                                                type="button"
-                                                class="btn btn-primary"
-                                                disabled
-                                            >
-                                                Save and Exit&nbsp;
-                                                <i
-                                                    class="fa fa-circle-o-notch fa-spin fa-fw"
-                                                ></i>
-                                            </button>
-                                            <input
-                                                v-else
-                                                type="button"
-                                                class="btn btn-primary"
-                                                value="Save and Exit"
-                                                :disabled="
-                                                    savingProposal ||
-                                                    paySubmitting
-                                                "
-                                                @click.prevent="save_exit"
-                                            />
-                                            <button
-                                                v-if="savingProposal"
-                                                type="button"
-                                                class="btn btn-primary"
-                                                disabled
-                                            >
-                                                Save and Continue&nbsp;
-                                                <i
-                                                    class="fa fa-circle-o-notch fa-spin fa-fw"
-                                                ></i>
-                                            </button>
-                                            <input
-                                                v-else
-                                                type="button"
-                                                class="btn btn-primary"
-                                                value="Save and Continue"
-                                                :disabled="
-                                                    saveExitProposal ||
-                                                    paySubmitting
-                                                "
-                                                @click.prevent="save"
-                                            />
+                                        Save and Exit&nbsp;
+                                        <i
+                                            class="fa fa-circle-o-notch fa-spin fa-fw"
+                                        ></i>
+                                    </button>
+                                    <input
+                                        v-else
+                                        type="button"
+                                        class="btn btn-primary me-2"
+                                        value="Save and Exit"
+                                        :disabled="
+                                            savingProposal || paySubmitting
+                                        "
+                                        @click.prevent="save_exit"
+                                    />
+                                    <button
+                                        v-if="savingProposal"
+                                        type="button"
+                                        class="btn btn-primary me-2"
+                                        disabled
+                                    >
+                                        Save and Continue&nbsp;
+                                        <i
+                                            class="fa fa-circle-o-notch fa-spin fa-fw"
+                                        ></i>
+                                    </button>
+                                    <input
+                                        v-else
+                                        type="button"
+                                        class="btn btn-primary me-2"
+                                        value="Save and Continue"
+                                        :disabled="
+                                            saveExitProposal || paySubmitting
+                                        "
+                                        @click.prevent="save"
+                                    />
 
-                                            <button
-                                                v-if="paySubmitting"
-                                                type="button"
-                                                class="btn btn-primary"
-                                                disabled
-                                            >
-                                                {{ submit_text() }}&nbsp;
-                                                <i
-                                                    class="fa fa-circle-o-notch fa-spin fa-fw"
-                                                ></i>
-                                            </button>
-                                            <input
-                                                v-else
-                                                type="button"
-                                                class="btn btn-primary"
-                                                :value="submit_text()"
-                                                :disabled="
-                                                    !trainingCompleted ||
-                                                    saveExitProposal ||
-                                                    savingProposal
-                                                "
-                                                :title="
-                                                    completed_online_training
-                                                "
-                                                @click.prevent="submit"
-                                            />
-                                            <input
-                                                id="save_and_continue_btn"
-                                                type="hidden"
-                                                class="btn btn-primary"
-                                                value="Save Without Confirmation"
-                                                @click.prevent="save_wo_confirm"
-                                            />
-                                        </p>
-                                    </div>
-                                    <div v-else class="container">
-                                        <p
-                                            class="pull-right"
-                                            style="margin-top: 5px"
-                                        >
-                                            <router-link
-                                                class="btn btn-primary"
-                                                :to="{
-                                                    name: 'external-proposals-dash',
-                                                }"
-                                                >Back to Dashboard</router-link
-                                            >
-                                        </p>
-                                    </div>
-                                </div>
+                                    <button
+                                        v-if="paySubmitting"
+                                        type="button"
+                                        class="btn btn-primary me-2"
+                                        disabled
+                                    >
+                                        {{ submit_text() }}&nbsp;
+                                        <i
+                                            class="fa fa-circle-o-notch fa-spin fa-fw"
+                                        ></i>
+                                    </button>
+                                    <input
+                                        v-else
+                                        type="button"
+                                        class="btn btn-primary me-2"
+                                        :value="submit_text()"
+                                        :disabled="
+                                            !trainingCompleted ||
+                                            saveExitProposal ||
+                                            savingProposal
+                                        "
+                                        :title="completed_online_training"
+                                        @click.prevent="submit"
+                                    />
+                                    <input
+                                        id="save_and_continue_btn"
+                                        type="hidden"
+                                        class="btn btn-primary me-2"
+                                        value="Save Without Confirmation"
+                                        @click.prevent="save_wo_confirm"
+                                    />
+                                </p>
+                            </div>
+                            <div v-else class="container-fluid">
+                                <p class="float-end" style="margin-top: 5px">
+                                    <router-link
+                                        class="btn btn-primary me-2"
+                                        :to="{
+                                            name: 'external-proposals-dash',
+                                        }"
+                                        >Back to Dashboard</router-link
+                                    >
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -240,12 +226,14 @@
         </form>
     </div>
 </template>
+
 <script>
 import ProposalTClass from '../form_tclass.vue';
 import ProposalFilming from '../form_filming.vue';
 import ProposalEvent from '../form_event.vue';
 import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+
 export default {
     name: 'ExternalProposal',
     components: {
