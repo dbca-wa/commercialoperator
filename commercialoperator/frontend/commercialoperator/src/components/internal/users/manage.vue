@@ -121,54 +121,11 @@
                                                             />
                                                         </div>
                                                     </div>
-                                                    <!--
-                                          <div class="form-group">
-                                            <div class="col-sm-12">
-                                                <button v-if="!updatingPersonal" class="pull-right btn btn-primary" @click.prevent="updatePersonal()">Update</button>
-                                                <button v-else disabled class="pull-right btn btn-primary"><i class="fa fa-spin fa-spinner"></i>&nbsp;Updating</button>
-                                            </div>
-                                          </div>
-                                          -->
                                                 </form>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!--
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="panel panel-default">
-                                  <div class="panel-heading">
-                                    <h3 class="panel-title">Identification
-                                        <a class="panelClicker" :href="'#'+idBody" data-toggle="collapse"  data-parent="#userInfo" expanded="false" :aria-controls="idBody">
-                                            <span class="glyphicon glyphicon-chevron-up pull-right "></span>
-                                        </a>
-                                    </h3>
-                                  </div>
-                                  <div class="panel-body collapse in" :id="idBody">
-                                      <form class="form-horizontal" name="id_form" method="post">
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Identification</label>
-                                            <div class="col-sm-6">
-                                                <img v-if="user.identification" width="100%" name="identification" v-bind:src="user.identification.file" />
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <div class="col-sm-12">
-                                                <button v-if="!uploadingID" class="pull-right btn btn-primary" @click.prevent="uploadID()">Upload</button>
-                                                <button v-else disabled class="pull-right btn btn-primary"><i class="fa fa-spin fa-spinner"></i>&nbsp;Uploading</button>
-                                                <span class="pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px">{{uploadedIDFileName}}</span>
-                                                <span class="btn btn-primary btn-file pull-right">
-                                                    Select ID to Upload<input type="file" ref="uploadedID" @change="readFileID()"/>
-                                                </span>
-                                            </div>
-                                          </div>
-                                       </form>
-                                  </div>
-                                </div>
-                            </div>
-                        </div>
-                        -->
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="panel panel-default">
