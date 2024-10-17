@@ -109,7 +109,7 @@
             </div>
             <div class="col-md-1"></div>
             <div class="col-md-8">
-                <div class="row">
+                <div class="">
                     <div class="card">
                         <div class="card-header">
                             <h3>Compliance with Requirements</h3>
@@ -121,7 +121,7 @@
                                         class="form-horizontal"
                                         name="compliance_form"
                                     >
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
                                                 for=""
                                                 class="col-sm-3 control-label"
@@ -131,9 +131,9 @@
                                                 {{ compliance.requirement }}
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="details"
                                                 class="col-sm-3 control-label"
                                                 >Details</label
                                             >
@@ -147,9 +147,9 @@
                                                 ></textarea>
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <label
-                                                for=""
+                                                for="document"
                                                 class="col-sm-3 control-label"
                                                 >Documents</label
                                             >
@@ -162,6 +162,7 @@
                                                     <a
                                                         :href="d[1]"
                                                         target="_blank"
+                                                        name="document"
                                                         class="control-label pull-left"
                                                         >{{ d[0] }}</a
                                                     >
