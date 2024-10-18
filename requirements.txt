@@ -1,56 +1,102 @@
-Django==3.2.25
-git+https://github.com/dbca-wa/ledger_api_client.git#egg=ledger_api_client
-git+https://github.com/dbca-wa/webtemplate2.git#egg=webtemplate_dbca
-django-extensions==3.2.3 #~=3.2
-coverage==6.5.0 # Last version supported by coveralls
-coveralls==3.3.1 #~=3.3
-reportlab==4.2.2 #~=4.1
-django-braces==1.15.0 #~=1.15.0
-django-datatables-view==1.20.0 #~=1.20
-django-reversion==5.0.12 #~=5.0
-django-reversion-compare==0.15.0 #~=0.15.0 # Last version to support Python 3.7
-git+https://github.com/xzzy/django-preserialize.git#egg=django-preserialize
-django-countries==7.5.1 #~=7.5
-django-cron==0.6.0 # This project is no longer maintained
-django-dynamic-fixture==3.1.3
-openpyxl==3.1.3 #~=3.1 # version conflict tabulator
-datapackage~=1.15 #~=1.15 # version conflict rfc3986
-python-dateutil==2.8.2 #~=2.8 # version conflict rfc3986
-py4j==0.10.9.7 #~=0.10
-djangorestframework==3.15.1 #~=3.15.1 # Last version to support Python 3.7
-djangorestframework-gis==1.0 #~=1.0
-djangorestframework-csv==3.0.0 #~=3.0
-pycountry==22.3.5 #~=22.3.5 # Last version to support Python 3.7
-six>=1.16.0
-django-ical==1.8.3 #~=1.9
-django-taggit==4.0.0
-geojson==3.1.0 #~=3.1
-unicodecsv==0.14.1 # A Python 2.7 drop-in replacement from 2015
-PyPDF2==3.0.1 # Development continues here: https://pypi.org/project/pypdf/
-django-extra-fields==3.0.2 # Deprecated
-django-crispy-forms==2.0 # Last version to support Django 3.2
-django-reset-migrations==0.4.0 #~=0.4
-django-ckeditor==6.3.2 #~=6.3.2 # Last version to support Python 3.7
-djangorestframework-datatables==0.7.0 #~=0.7
-django-confy==1.0.4
-xlwt==1.3.0
-xlsxwriter==3.2.0 #~=3.2
-gunicorn==21.2.0 #~=21.2
-dj-static==0.0.6
-mixer==7.2.2 #~=7.2
-django-dirtyfields==1.9.2 #~=1.9
-django-multiselectfield==0.1.12
-django-debug-toolbar==3.8.1 #~=3.8.1 # Last version to support Python 3.7
-dj-database-url==2.2.0 #~=2.1
-werkzeug==2.2.3 #~=2.2.3 # Last version to support Python 3.7
-phonenumbers==8.13.43 #~=8.13
-django-treebeard==4.5.1 #~=4.5.1 # Last version to support Python 3.7
-psycopg2-binary>=2.9.4
-django-widget-tweaks~=1.5
-whitenoise==5.3.0
-git+https://github.com/dbca-wa/django-media-serv.git#egg=django_media_serv
-python-decouple==3.8 #~=3.8
-git+https://github.com/dbca-wa/appmonitor_client.git#egg=appmonitor_client
-git+https://github.com/dbca-wa/django5-utils-six.git#egg=django5_six
-django-phonenumber-field~=7.3
-babel~=2.14
+appmonitor-client @ git+https://github.com/dbca-wa/appmonitor_client.git@af2475bd5811a8f879371df420f0f6246db888f4 ; python_version >= "3.12" and python_version < "4.0"
+asgiref==3.8.1 ; python_version >= "3.12" and python_version < "4.0"
+attrs==24.2.0 ; python_version >= "3.12" and python_version < "4.0"
+babel==2.16.0 ; python_version >= "3.12" and python_version < "4.0"
+boto3==1.35.43 ; python_version >= "3.12" and python_version < "4.0"
+botocore==1.35.43 ; python_version >= "3.12" and python_version < "4.0"
+cached-property==1.5.2 ; python_version >= "3.12" and python_version < "4.0"
+certifi==2024.8.30 ; python_version >= "3.12" and python_version < "4.0"
+chardet==5.2.0 ; python_version >= "3.12" and python_version < "4"
+charset-normalizer==3.4.0 ; python_version >= "3.12" and python_version < "4.0"
+click==8.1.7 ; python_version >= "3.12" and python_version < "4.0"
+colorama==0.4.6 ; python_version >= "3.12" and python_version < "4.0" and platform_system == "Windows"
+coverage==6.5.0 ; python_version >= "3.12" and python_version < "4.0"
+coveralls==3.3.1 ; python_version >= "3.12" and python_version < "4.0"
+dataflows-tabulator==1.54.3 ; python_version >= "3.12" and python_version < "4.0"
+datapackage==1.15.4 ; python_version >= "3.12" and python_version < "4.0"
+diff-match-patch==20230430 ; python_version >= "3.12" and python_version < "4.0"
+dj-database-url==2.2.0 ; python_version >= "3.12" and python_version < "4.0"
+dj-static==0.0.6 ; python_version >= "3.12" and python_version < "4.0"
+django-braces==1.16.0 ; python_version >= "3.12" and python_version < "4.0"
+django-ckeditor==6.7.1 ; python_version >= "3.12" and python_version < "4.0"
+django-confy==1.0.4 ; python_version >= "3.12" and python_version < "4.0"
+django-countries==7.6.1 ; python_version >= "3.12" and python_version < "4.0"
+django-crispy-forms==2.0 ; python_version >= "3.12" and python_version < "4.0"
+django-cron==0.6.0 ; python_version >= "3.12" and python_version < "4.0"
+django-datatables-view==1.20.0 ; python_version >= "3.12" and python_version < "4.0"
+django-dirtyfields==1.9.3 ; python_version >= "3.12" and python_version < "4.0"
+django-dynamic-fixture==3.1.3 ; python_version >= "3.12" and python_version < "4.0"
+django-extensions==3.2.3 ; python_version >= "3.12" and python_version < "4.0"
+django-extra-fields==3.0.2 ; python_version >= "3.12" and python_version < "4.0"
+django-filter==23.5 ; python_version >= "3.12" and python_version < "4.0"
+django-ical==1.9.2 ; python_version >= "3.12" and python_version < "4.0"
+django-js-asset==2.2.0 ; python_version >= "3.12" and python_version < "4.0"
+django-media-serv @ git+https://github.com/dbca-wa/django-media-serv.git@2b3876c20c6445a8356848db3eb9850ddfe4ba9e ; python_version >= "3.12" and python_version < "4.0"
+django-multiselectfield==0.1.13 ; python_version >= "3.12" and python_version < "4.0"
+django-phonenumber-field==7.3.0 ; python_version >= "3.12" and python_version < "4.0"
+django-preserialize @ git+https://github.com/xzzy/django-preserialize.git@dbf5755dba7c75264120fedbfac976777975879e ; python_version >= "3.12" and python_version < "4.0"
+django-recurrence==1.11.1 ; python_version >= "3.12" and python_version < "4.0"
+django-reset-migrations==0.4.0 ; python_version >= "3.12" and python_version < "4.0"
+django-reversion-compare==0.15.0 ; python_version >= "3.12" and python_version < "4.0"
+django-reversion==5.0.12 ; python_version >= "3.12" and python_version < "4.0"
+django-taggit==4.0.0 ; python_version >= "3.12" and python_version < "4.0"
+django-treebeard==4.7.1 ; python_version >= "3.12" and python_version < "4.0"
+django-widget-tweaks==1.5.0 ; python_version >= "3.12" and python_version < "4.0"
+django5-six @ git+https://github.com/dbca-wa/django5-utils-six.git@cea09d14209de46156b50d7fb3c2bdf040d2dacb ; python_version >= "3.12" and python_version < "4.0"
+django==3.2.25 ; python_version >= "3.12" and python_version < "4.0"
+djangorestframework-csv==3.0.2 ; python_version >= "3.12" and python_version < "4.0"
+djangorestframework-datatables==0.7.2 ; python_version >= "3.12" and python_version < "4.0"
+djangorestframework-gis==1.1 ; python_version >= "3.12" and python_version < "4.0"
+djangorestframework==3.15.1 ; python_version >= "3.12" and python_version < "4.0"
+docopt==0.6.2 ; python_version >= "3.12" and python_version < "4.0"
+et-xmlfile==1.1.0 ; python_version >= "3.12" and python_version < "4.0"
+faker==12.0.1 ; python_version >= "3.12" and python_version < "4.0"
+geojson==3.1.0 ; python_version >= "3.12" and python_version < "4.0"
+greenlet==3.1.1 ; python_version < "3.13" and (platform_machine == "aarch64" or platform_machine == "ppc64le" or platform_machine == "x86_64" or platform_machine == "amd64" or platform_machine == "AMD64" or platform_machine == "win32" or platform_machine == "WIN32") and python_version >= "3.12"
+gunicorn==21.2.0 ; python_version >= "3.12" and python_version < "4.0"
+icalendar==6.0.1 ; python_version >= "3.12" and python_version < "4.0"
+idna==3.10 ; python_version >= "3.12" and python_version < "4.0"
+ijson==3.3.0 ; python_version >= "3.12" and python_version < "4.0"
+isodate==0.7.2 ; python_version >= "3.12" and python_version < "4.0"
+jmespath==1.0.1 ; python_version >= "3.12" and python_version < "4.0"
+jsonlines==4.0.0 ; python_version >= "3.12" and python_version < "4.0"
+jsonpointer==3.0.0 ; python_version >= "3.12" and python_version < "4.0"
+jsonschema-specifications==2024.10.1 ; python_version >= "3.12" and python_version < "4.0"
+jsonschema==4.23.0 ; python_version >= "3.12" and python_version < "4.0"
+ledger-api-client @ git+https://github.com/dbca-wa/ledger_api_client.git@0264a892230be487d639614f6367f8b5a50317f1 ; python_version >= "3.12" and python_version < "4.0"
+linear-tsv==1.1.0 ; python_version >= "3.12" and python_version < "4.0"
+markupsafe==3.0.1 ; python_version >= "3.12" and python_version < "4.0"
+mixer==7.2.2 ; python_version >= "3.12" and python_version < "4.0"
+openpyxl==3.1.3 ; python_version >= "3.12" and python_version < "4.0"
+packaging==24.1 ; python_version >= "3.12" and python_version < "4.0"
+phonenumbers==8.13.47 ; python_version >= "3.12" and python_version < "4.0"
+pillow==11.0.0 ; python_version >= "3.12" and python_version < "4"
+psycopg2-binary==2.9.10 ; python_version >= "3.12" and python_version < "4.0"
+py4j==0.10.9.7 ; python_version >= "3.12" and python_version < "4.0"
+pycountry==22.3.5 ; python_version >= "3.12" and python_version < "4"
+pypdf2==3.0.1 ; python_version >= "3.12" and python_version < "4.0"
+python-dateutil==2.9.0.post0 ; python_version >= "3.12" and python_version < "4.0"
+python-decouple==3.8 ; python_version >= "3.12" and python_version < "4.0"
+pytz==2024.2 ; python_version >= "3.12" and python_version < "4.0"
+referencing==0.35.1 ; python_version >= "3.12" and python_version < "4.0"
+reportlab==4.2.5 ; python_version >= "3.12" and python_version < "4"
+requests==2.32.3 ; python_version >= "3.12" and python_version < "4.0"
+rfc3986==2.0.0 ; python_version >= "3.12" and python_version < "4.0"
+rpds-py==0.20.0 ; python_version >= "3.12" and python_version < "4.0"
+s3transfer==0.10.3 ; python_version >= "3.12" and python_version < "4.0"
+setuptools==75.2.0 ; python_version >= "3.12" and python_version < "4"
+six==1.16.0 ; python_version >= "3.12" and python_version < "4.0"
+sqlalchemy==2.0.36 ; python_version >= "3.12" and python_version < "4.0"
+sqlparse==0.5.1 ; python_version >= "3.12" and python_version < "4.0"
+static3==0.7.0 ; python_version >= "3.12" and python_version < "4.0"
+tableschema==1.20.11 ; python_version >= "3.12" and python_version < "4.0"
+typing-extensions==4.12.2 ; python_version >= "3.12" and python_version < "4.0"
+tzdata==2024.2 ; python_version >= "3.12" and python_version < "4.0"
+unicodecsv==0.14.1 ; python_version >= "3.12" and python_version < "4.0"
+urllib3==2.2.3 ; python_version >= "3.12" and python_version < "4.0"
+webtemplate-dbca @ git+https://github.com/dbca-wa/webtemplate2.git@663d1cd27b9bbae85ae9d035a023794dd97daeb6 ; python_version >= "3.12" and python_version < "4.0"
+werkzeug==2.3.8 ; python_version >= "3.12" and python_version < "4.0"
+whitenoise==5.3.0 ; python_version >= "3.12" and python_version < "4"
+xlrd==2.0.1 ; python_version >= "3.12" and python_version < "4.0"
+xlsxwriter==3.2.0 ; python_version >= "3.12" and python_version < "4.0"
+xlwt==1.3.0 ; python_version >= "3.12" and python_version < "4.0"
