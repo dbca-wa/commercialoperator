@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "asi@dbca.wa.gov.au",
+  "license": "Apache License 2.0",
   "private": true,
   "scripts": {
     "build": "vue-cli-service build",
