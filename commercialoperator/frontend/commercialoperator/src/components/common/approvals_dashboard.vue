@@ -2,177 +2,155 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Licences
-                        <small v-if="is_external"
-                            >View existing licences and amend or renew
-                            them</small
-                        >
-                        <a
-                            :href="'#' + pBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="pBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Status</label>
+                            <select
+                                v-model="filterProposalStatus"
+                                class="form-control"
+                            >
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in approval_status"
+                                    :key="s"
+                                    :value="s"
+                                >
+                                    {{ s }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Licence Type</label>
+                            <select
+                                v-model="filterApplicationType"
+                                class="form-control"
+                            >
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in application_types"
+                                    :key="s"
+                                    :value="s"
+                                >
+                                    {{ s }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div :id="pBody" class="panel-body collapse in">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Status</label>
-                                <select
-                                    v-model="filterProposalStatus"
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Start From</label>
+                            <div
+                                ref="startDateFromPicker"
+                                class="input-group date"
+                            >
+                                <input
+                                    v-model="filterStartFrom"
+                                    type="date"
                                     class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in approval_status"
-                                        :key="s"
-                                        :value="s"
-                                    >
-                                        {{ s }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Licence Type</label>
-                                <select
-                                    v-model="filterApplicationType"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in application_types"
-                                        :key="s"
-                                        :value="s"
-                                    >
-                                        {{ s }}
-                                    </option>
-                                </select>
+                                    placeholder="DD/MM/YYYY"
+                                />
+                                <span class="input-group-addon">
+                                    <span
+                                        class="glyphicon glyphicon-calendar"
+                                    ></span>
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Start From</label>
-                                <div
-                                    ref="startDateFromPicker"
-                                    class="input-group date"
-                                >
-                                    <input
-                                        v-model="filterStartFrom"
-                                        type="date"
-                                        class="form-control"
-                                        placeholder="DD/MM/YYYY"
-                                    />
-                                    <span class="input-group-addon">
-                                        <span
-                                            class="glyphicon glyphicon-calendar"
-                                        ></span>
-                                    </span>
-                                </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Start To</label>
+                            <div
+                                ref="startDateToPicker"
+                                class="input-group date"
+                            >
+                                <input
+                                    v-model="filterStartTo"
+                                    type="date"
+                                    class="form-control"
+                                    placeholder="DD/MM/YYYY"
+                                />
+                                <span class="input-group-addon">
+                                    <span
+                                        class="glyphicon glyphicon-calendar"
+                                    ></span>
+                                </span>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Start To</label>
-                                <div
-                                    ref="startDateToPicker"
-                                    class="input-group date"
-                                >
-                                    <input
-                                        v-model="filterStartTo"
-                                        type="date"
-                                        class="form-control"
-                                        placeholder="DD/MM/YYYY"
-                                    />
-                                    <span class="input-group-addon">
-                                        <span
-                                            class="glyphicon glyphicon-calendar"
-                                        ></span>
-                                    </span>
-                                </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Expiry From</label>
+                            <div
+                                ref="expiryDateFromPicker"
+                                class="input-group date"
+                            >
+                                <input
+                                    v-model="filterExpiryFrom"
+                                    type="date"
+                                    class="form-control"
+                                    placeholder="DD/MM/YYYY"
+                                />
+                                <span class="input-group-addon">
+                                    <span
+                                        class="glyphicon glyphicon-calendar"
+                                    ></span>
+                                </span>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Expiry From</label>
-                                <div
-                                    ref="expiryDateFromPicker"
-                                    class="input-group date"
-                                >
-                                    <input
-                                        v-model="filterExpiryFrom"
-                                        type="date"
-                                        class="form-control"
-                                        placeholder="DD/MM/YYYY"
-                                    />
-                                    <span class="input-group-addon">
-                                        <span
-                                            class="glyphicon glyphicon-calendar"
-                                        ></span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Expiry To</label>
-                                <div
-                                    ref="expiryDateToPicker"
-                                    class="input-group date"
-                                >
-                                    <input
-                                        v-model="filterExpiryTo"
-                                        type="date"
-                                        class="form-control"
-                                        placeholder="DD/MM/YYYY"
-                                    />
-                                    <span class="input-group-addon">
-                                        <span
-                                            class="glyphicon glyphicon-calendar"
-                                        ></span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div v-if="is_internal" class="col-md-3">
-                            <div class="form-group">
-                                <label />
-                                <div>
-                                    <button
-                                        style="width: 80%"
-                                        class="btn btn-primary top-buffer-s"
-                                        :disabled="disabled"
-                                        @click.prevent="createEClassLicence()"
-                                    >
-                                        New E Class licence
-                                    </button>
-                                </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Expiry To</label>
+                            <div
+                                ref="expiryDateToPicker"
+                                class="input-group date"
+                            >
+                                <input
+                                    v-model="filterExpiryTo"
+                                    type="date"
+                                    class="form-control"
+                                    placeholder="DD/MM/YYYY"
+                                />
+                                <span class="input-group-addon">
+                                    <span
+                                        class="glyphicon glyphicon-calendar"
+                                    ></span>
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-lg-12" style="margin-top: 25px">
-                            <datatable
-                                :id="datatable_id"
-                                ref="proposal_datatable"
-                                :dt-options="proposal_options"
-                                :dt-headers="proposal_headers"
-                            />
+                    <div v-if="is_internal" class="col-md-3">
+                        <div class="form-group">
+                            <label />
+                            <div>
+                                <button
+                                    style="width: 80%"
+                                    class="btn btn-primary top-buffer-s"
+                                    :disabled="disabled"
+                                    @click.prevent="createEClassLicence()"
+                                >
+                                    New E Class licence
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12" style="margin-top: 25px">
+                        <datatable
+                            :id="datatable_id"
+                            ref="proposal_datatable"
+                            :dt-options="proposal_options"
+                            :dt-headers="proposal_headers"
+                        />
                     </div>
                 </div>
             </div>

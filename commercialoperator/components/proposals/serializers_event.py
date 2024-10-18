@@ -19,12 +19,8 @@ from rest_framework import serializers
 
 
 class ProposalEventActivitiesSerializer(serializers.ModelSerializer):
-    commencement_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
-    completion_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
+    commencement_date = serializers.DateField(required=False, allow_null=True)
+    completion_date = serializers.DateField(required=False, allow_null=True)
     max_num_months_ahead = serializers.SerializerMethodField()
     last_event_application_fee_date = serializers.SerializerMethodField()
 
@@ -71,12 +67,8 @@ class ProposalEventVehiclesVesselsSerializer(serializers.ModelSerializer):
 
 
 class ProposalEventOtherDetailsSerializer(serializers.ModelSerializer):
-    insurance_expiry = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
-    training_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
+    insurance_expiry = serializers.DateField(required=False, allow_null=True)
+    training_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = ProposalEventOtherDetails
@@ -133,9 +125,7 @@ class SaveProposalEventsParksSerializer(serializers.ModelSerializer):
 
 
 class AbseilingClimbingActivitySerializer(serializers.ModelSerializer):
-    expiry_date = serializers.DateField(
-        format="%d/%m/%Y", input_formats=["%d/%m/%Y"], required=False, allow_null=True
-    )
+    expiry_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = AbseilingClimbingActivity

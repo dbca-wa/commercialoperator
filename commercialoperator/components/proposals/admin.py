@@ -23,7 +23,7 @@ from commercialoperator.components.main.models import (
 from reversion.admin import VersionAdmin
 from django.conf.urls import url
 from django.http import HttpResponseRedirect
-from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
+from commercialoperator.components.stubs.models import ReferralRecipientGroupMembers
 from commercialoperator.utils import create_helppage_object
 
 
@@ -58,13 +58,14 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalAssessorGroupAdminForm
-    readonly_fields = ["default", "staff_members"]
+    readonly_fields = [
+        "default",
+    ]
 
     fields = (
         "name",
         "region",
         "default",
-        "staff_members",
     )
 
     def get_actions(self, request):
@@ -85,24 +86,17 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
             return False
         return super(ProposalAssessorGroupAdmin, self).has_add_permission(request)
 
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
-        )
-
 
 @admin.register(models.ProposalApproverGroup)
 class ProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.ProposalApproverGroupAdminForm
-    readonly_fields = ["default", "staff_members"]
 
     fields = (
         "name",
         "region",
         "default",
-        "staff_members",
     )
 
     def get_actions(self, request):
@@ -122,11 +116,6 @@ class ProposalApproverGroupAdmin(admin.ModelAdmin):
         if self.model.objects.count() > 0:
             return False
         return super(ProposalApproverGroupAdmin, self).has_add_permission(request)
-
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
-        )
 
 
 @admin.register(models.ProposalStandardRequirement)
@@ -389,28 +378,29 @@ class GlobalSettingsAdmin(admin.ModelAdmin):
     ordering = ("key",)
 
 
+class ReferralRecipientGroupMembersInline(admin.TabularInline):
+    model = ReferralRecipientGroupMembers
+    extra = 0
+    can_delete = False
+
+
 @admin.register(models.ReferralRecipientGroup)
 class ReferralRecipientGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ("members",)
     list_display = ["name"]
     exclude = ("site",)
     actions = None
-    readonly_fields = ["staff_members"]
-    fields = (
-        "name",
-        "staff_members",
-    )
+    fields = ("name",)
+
+    inlines = [
+        ReferralRecipientGroupMembersInline,
+    ]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(ReferralRecipientGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
-        )
-
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
 
 
@@ -421,10 +411,8 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
     exclude = ("site",)
     actions = None
     ordering = ("id",)
-    readonly_fields = ["staff_members"]
     fields = (
         "name",
-        "staff_members",
         "default",
     )
 
@@ -433,11 +421,6 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
             kwargs["queryset"] = EmailUser.objects.filter(is_staff=True)
         return super(QAOfficerGroupAdmin, self).formfield_for_manytomany(
             db_field, request, **kwargs
-        )
-
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )
 
 
@@ -464,12 +447,10 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.DistrictProposalAssessorGroupAdminForm
-    readonly_fields = ["staff_members"]
     fields = (
         "name",
         "district",
         "default",
-        "staff_members",
     )
 
     def get_actions(self, request):
@@ -485,23 +466,16 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
             request, obj
         )
 
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
-        )
-
 
 @admin.register(models.DistrictProposalApproverGroup)
 class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
     filter_horizontal = ("members",)
     form = forms.DistrictProposalApproverGroupAdminForm
-    readonly_fields = ["staff_members"]
     fields = (
         "name",
         "district",
         "default",
-        "staff_members",
     )
 
     def get_actions(self, request):
@@ -515,9 +489,4 @@ class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
             return False
         return super(DistrictProposalApproverGroupAdmin, self).has_delete_permission(
             request, obj
-        )
-
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
         )

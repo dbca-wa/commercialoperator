@@ -3,24 +3,12 @@
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Safety<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#otherInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Safety"
+                    index="safety"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -48,6 +36,9 @@
                                             style="width: 70%"
                                         >
                                             <textarea
+                                                v-if="
+                                                    proposal.filming_other_details
+                                                "
                                                 v-model="
                                                     proposal
                                                         .filming_other_details
@@ -79,29 +70,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Other <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + oBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="oBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="oBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Other"
+                    index="other"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -122,6 +101,9 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="
+                                                proposal.filming_other_details
+                                            "
                                             v-model="
                                                 proposal.filming_other_details
                                                     .other_comments
@@ -145,30 +127,18 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
 
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Payment of Fees and Charges<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + mBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="mBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="mBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Payment of Fees and Charges"
+                    index="payment_of_fees_and_charges"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -191,6 +161,7 @@
                                 <div class="row">&nbsp;</div>
                                 <div
                                     v-if="
+                                        proposal.filming_other_details &&
                                         proposal.filming_other_details
                                             .camping_fee_waived
                                     "
@@ -212,6 +183,9 @@
                                             style="margin-bottom: 5px"
                                         >
                                             <input
+                                                v-if="
+                                                    proposal.filming_other_details
+                                                "
                                                 v-model="
                                                     proposal
                                                         .filming_other_details
@@ -228,6 +202,7 @@
                                 </div>
                                 <div
                                     v-if="
+                                        proposal.filming_other_details &&
                                         proposal.filming_other_details
                                             .camping_fee_waived
                                     "
@@ -247,29 +222,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Insurance <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + iBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="iBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="iBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Insurance"
+                    index="insurance"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -332,6 +295,9 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                v-if="
+                                                    proposal.filming_other_details
+                                                "
                                                 v-model="
                                                     proposal
                                                         .filming_other_details
@@ -354,29 +320,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Deed Poll<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + dBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="dBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="dBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Deed Poll"
+                    index="deed_poll"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -429,16 +383,19 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import FileField from '@/components/forms/filefield.vue';
+
 export default {
     components: {
+        FormSection,
         FileField,
     },
     props: {

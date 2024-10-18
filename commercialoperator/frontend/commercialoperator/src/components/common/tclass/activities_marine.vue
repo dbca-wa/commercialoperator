@@ -3,25 +3,12 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Activities and Location
-                        <small> (marine-based activities)</small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + pBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            :expanded="true"
-                            :aria-controls="pBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="pBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Activities and Location"
+                    index="activities_and_location"
+                    subtitle="(Trails)"
+                >
                     <div class="">
                         <div class="borderDecoration col-sm-12">
                             <form v-if="park_error_list">
@@ -135,7 +122,7 @@
                         </div>
                         <div class="form-horizontal col-sm-12"></div>
                     </div>
-                </div>
+                </FormSection>
                 <div>
                     <editMarineParkActivities
                         ref="edit_activities"
@@ -152,6 +139,7 @@
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import VesselTable from '@/components/common/vessel_table.vue';
 import editMarineParkActivities from './edit_marine_park_activities.vue';
 import FileField from './required_docs.vue';
@@ -159,6 +147,7 @@ import TreeSelect from '@/components/forms/treeview.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     components: {
+        FormSection,
         VesselTable,
         editMarineParkActivities,
         FileField,

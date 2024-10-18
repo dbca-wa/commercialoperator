@@ -6,7 +6,7 @@
                     <a
                         id="pills-applicant-tab"
                         class="nav-link active"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-applicant"
                         role="tab"
                         aria-controls="pills-applicant"
@@ -19,7 +19,7 @@
                     <a
                         id="pills-activity-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-activity"
                         role="tab"
                         aria-controls="pills-activity"
@@ -32,7 +32,7 @@
                     <a
                         id="pills-access-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-access"
                         role="tab"
                         aria-controls="pills-access"
@@ -45,7 +45,7 @@
                     <a
                         id="pills-equipment-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-equipment"
                         role="tab"
                         aria-controls="pills-equipment"
@@ -58,7 +58,7 @@
                     <a
                         id="pills-other-details-tab"
                         class="nav-link"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href="#pills-other-details"
                         role="tab"
                         aria-controls="pills-other-details"
@@ -71,7 +71,7 @@
                     <a
                         id="pills-confirm-tab"
                         class="nav-link disabled"
-                        data-toggle="pill"
+                        data-bs-toggle="pill"
                         href=""
                         role="tab"
                         aria-controls="pills-confirm"
@@ -84,7 +84,7 @@
             <div id="pills-tabContent" class="tab-content">
                 <div
                     id="pills-applicant"
-                    class="tab-pane fade"
+                    class="tab-pane fade active show"
                     role="tabpanel"
                     aria-labelledby="pills-applicant-tab"
                 >
@@ -216,7 +216,6 @@ import Profile from '@/components/user/profile.vue';
 import Organisation from '@/components/external/organisations/manage.vue';
 import Applicant from '@/components/common/tclass/applicant.vue';
 import Assessment from '@/components/common/tclass/assessment.vue';
-
 import ApprovalType from '@/components/common/filming/approval_type.vue';
 import Activity from '@/components/common/filming/activity.vue';
 import Access from '@/components/common/filming/access.vue';
@@ -304,7 +303,6 @@ export default {
     },
     mounted: function () {
         let vm = this;
-        $('#pills-tab a[href="#pills-applicant"]').tab('show');
         vm.set_tabs();
         vm.eventListener();
         vm.form = document.forms.new_proposal;

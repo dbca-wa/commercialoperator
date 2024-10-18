@@ -27,7 +27,6 @@
         </div>
         <editTrail
             ref="edit_trail"
-            :trail_id="trail_id"
             :is_internal="is_internal"
             @refreshFromResponse="refreshFromResponse"
         ></editTrail>
@@ -35,8 +34,6 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-require('select2/dist/css/select2.min.css');
-require('select2-bootstrap-theme/dist/select2-bootstrap.min.css');
 
 import editTrail from './edit_trail_activity.vue';
 import { api_endpoints } from '@/utils/hooks';
@@ -178,7 +175,7 @@ export default {
                     proposal: vm.proposal.id,
                 };
                 this.$refs.edit_trail.trail = new_trail_another;
-                this.$refs.edit_trail.trail_action = 'add';
+                this.$refs.edit_trail.localTrailAction = 'add';
 
                 this.$refs.edit_trail.isModalOpen = true;
             });
@@ -193,24 +190,27 @@ export default {
         },
         discardTrail: function (trail_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Trail',
                 text: 'Are you sure you want to discard this trail?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Trail',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_event_trail(trail_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your trail has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your trail has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.park_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {

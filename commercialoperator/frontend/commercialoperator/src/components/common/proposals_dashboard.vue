@@ -2,148 +2,126 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Applications
-                        <small v-if="is_external"
-                            >View existing applications and lodge new
-                            ones</small
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Status</label>
+                            <select
+                                v-model="filterProposalStatus"
+                                class="form-control"
+                            >
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in proposal_status"
+                                    :key="s.value"
+                                    :value="s.value"
+                                >
+                                    {{ s.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Submitter</label>
+                            <select
+                                v-model="filterProposalSubmitter"
+                                class="form-control"
+                            >
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in proposal_submitters"
+                                    :key="s.email"
+                                    :value="s.email"
+                                >
+                                    {{ s.search_term }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div v-if="is_external" class="col-md-6">
+                        <router-link
+                            style="margin-top: 25px"
+                            class="btn btn-primary pull-right"
+                            :to="{ name: 'apply_proposal' }"
+                            >New Application</router-link
                         >
-                        <a
-                            :href="'#' + pBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="pBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
+                    </div>
                 </div>
-                <div :id="pBody" class="panel-body collapse in">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Status</label>
-                                <select
-                                    v-model="filterProposalStatus"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_status"
-                                        :key="s.value"
-                                        :value="s.value"
-                                    >
-                                        {{ s.name }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Submitter</label>
-                                <select
-                                    v-model="filterProposalSubmitter"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_submitters"
-                                        :key="s.email"
-                                        :value="s.email"
-                                    >
-                                        {{ s.search_term }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div v-if="is_external" class="col-md-6">
-                            <router-link
-                                style="margin-top: 25px"
-                                class="btn btn-primary pull-right"
-                                :to="{ name: 'apply_proposal' }"
-                                >New Application</router-link
-                            >
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="">Lodged From</label>
+                        <div
+                            ref="proposalDateFromPicker"
+                            class="input-group date"
+                        >
+                            <input
+                                v-model="filterProposalLodgedFrom"
+                                type="date"
+                                class="form-control"
+                                placeholder="DD/MM/YYYY"
+                            />
+                            <span class="input-group-addon">
+                                <span
+                                    class="glyphicon glyphicon-calendar"
+                                ></span>
+                            </span>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label for="">Lodged From</label>
-                            <div
-                                ref="proposalDateFromPicker"
-                                class="input-group date"
-                            >
-                                <input
-                                    v-model="filterProposalLodgedFrom"
-                                    type="date"
-                                    class="form-control"
-                                    placeholder="DD/MM/YYYY"
-                                />
-                                <span class="input-group-addon">
-                                    <span
-                                        class="glyphicon glyphicon-calendar"
-                                    ></span>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="">Lodged To</label>
-                            <div
-                                ref="proposalDateToPicker"
-                                class="input-group date"
-                            >
-                                <input
-                                    v-model="filterProposalLodgedTo"
-                                    type="date"
-                                    class="form-control"
-                                    placeholder="DD/MM/YYYY"
-                                />
-                                <span class="input-group-addon">
-                                    <span
-                                        class="glyphicon glyphicon-calendar"
-                                    ></span>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Licence Type</label>
-                                <select
-                                    v-model="filterApplicationType"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in application_types"
-                                        :key="s"
-                                        :value="s"
-                                    >
-                                        {{ s }}
-                                    </option>
-                                </select>
-                            </div>
+                    <div class="col-md-3">
+                        <label for="">Lodged To</label>
+                        <div
+                            ref="proposalDateToPicker"
+                            class="input-group date"
+                        >
+                            <input
+                                v-model="filterProposalLodgedTo"
+                                type="date"
+                                class="form-control"
+                                placeholder="DD/MM/YYYY"
+                            />
+                            <span class="input-group-addon">
+                                <span
+                                    class="glyphicon glyphicon-calendar"
+                                ></span>
+                            </span>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <datatable
-                                v-if="level == 'external'"
-                                :id="datatable_id"
-                                ref="proposal_datatable"
-                                :dt-options="proposal_ex_options"
-                                :dt-headers="proposal_ex_headers"
-                            />
-                            <datatable
-                                v-else
-                                :id="datatable_id"
-                                ref="proposal_datatable"
-                                :dt-options="proposal_options"
-                                :dt-headers="proposal_headers"
-                            />
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="">Licence Type</label>
+                            <select
+                                v-model="filterApplicationType"
+                                class="form-control"
+                            >
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in application_types"
+                                    :key="s"
+                                    :value="s"
+                                >
+                                    {{ s }}
+                                </option>
+                            </select>
                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <datatable
+                            v-if="level == 'external'"
+                            :id="datatable_id"
+                            ref="proposal_datatable"
+                            :dt-options="proposal_ex_options"
+                            :dt-headers="proposal_ex_headers"
+                        />
+                        <datatable
+                            v-else
+                            :id="datatable_id"
+                            ref="proposal_datatable"
+                            :dt-options="proposal_options"
+                            :dt-headers="proposal_headers"
+                        />
                     </div>
                 </div>
             </div>
@@ -153,8 +131,6 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import Vue from 'vue';
-require('select2/dist/css/select2.min.css');
-require('select2-bootstrap-theme/dist/select2-bootstrap.min.css');
 
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
@@ -287,16 +263,18 @@ export default {
                         data: 'submitter',
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
-                            if (data) {
-                                return `${data.first_name} ${data.last_name}`;
+                            if (data && data.full_name) {
+                                return `${data.full_name}`;
                             }
                             return '';
                         },
                         name: 'submitter__email',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'customer_status',
@@ -428,16 +406,18 @@ export default {
                         data: 'submitter',
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
-                            if (data) {
-                                return `${data.first_name} ${data.last_name}`;
+                            if (data && data.full_name) {
+                                return `${data.full_name}`;
                             }
                             return '';
                         },
                         name: 'submitter__email',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
                         name: 'applicant',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'processing_status',
@@ -456,6 +436,7 @@ export default {
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'event_name',

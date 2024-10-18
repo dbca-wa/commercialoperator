@@ -9,10 +9,10 @@
                     :comms_add_url="comms_add_url"
                     :disable_add_entry="false"
                 />
-                <div class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Submission</div>
-                        <div class="panel-body panel-collapse">
+                <div class="">
+                    <div class="card mb-3">
+                        <div class="card-header">Submission</div>
+                        <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <strong>Submitted by</strong><br />
@@ -35,10 +35,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Workflow</div>
-                        <div class="panel-body panel-collapse">
+                <div class="">
+                    <div class="card mb-3">
+                        <div class="card-header">Workflow</div>
+                        <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <strong>Status</strong><br />
@@ -108,21 +108,21 @@
             </div>
             <div class="col-md-1"></div>
             <div class="col-md-8">
-                <div class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
+                <div class="">
+                    <div class="card mb-3">
+                        <div class="card-header">
                             <h3>Organisation Access Request</h3>
                         </div>
-                        <div class="panel-body panel-collapse">
+                        <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <form
                                         class="form-horizontal"
                                         name="access_form"
                                     >
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="name"
                                                 class="col-sm-3 control-label"
                                                 >Organisation</label
                                             >
@@ -137,9 +137,9 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="abn"
                                                 class="col-sm-3 control-label"
                                                 >ABN</label
                                             >
@@ -154,7 +154,7 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
                                                 for=""
                                                 class="col-sm-3 control-label"
@@ -174,11 +174,11 @@
                                             </div>
                                         </div>
                                         <div
-                                            class="form-group"
+                                            class="form-group row mb-3"
                                             style="margin-top: 50px"
                                         >
                                             <label
-                                                for=""
+                                                for="phone"
                                                 class="col-sm-3 control-label"
                                                 >Phone</label
                                             >
@@ -196,9 +196,9 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
-                                                for=""
+                                                for="mobile"
                                                 class="col-sm-3 control-label"
                                                 >Mobile</label
                                             >
@@ -216,9 +216,9 @@
                                                 />
                                             </div>
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group row">
                                             <label
-                                                for=""
+                                                for="email"
                                                 class="col-sm-3 control-label"
                                                 >Email</label
                                             >

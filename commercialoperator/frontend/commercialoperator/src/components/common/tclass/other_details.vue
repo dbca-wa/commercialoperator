@@ -3,24 +3,12 @@
     <div id="userInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Tourism Accreditation <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + pBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="pBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="pBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Tourism Accreditation"
+                    index="tourism_accreditation"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <label class="control-label"
@@ -79,29 +67,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Licence Term <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Licence Term"
+                    index="licence_term"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -198,29 +174,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Moorings <small>(marine-based activities)</small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + mBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="mBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="mBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Moorings"
+                    index="moorings"
+                    subtitle="(marine-based activities)"
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -283,29 +247,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Insurance <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + iBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="iBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="iBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Insurance"
+                    index="insurance"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -388,29 +340,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Other <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + oBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="oBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="oBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Other"
+                    index="other"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -456,29 +396,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Park Entry and Camping Fees <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + cBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="cBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="cBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Park Entry and Camping Fees"
+                    index="park_entry_fees"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="row">
@@ -606,29 +534,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Deed Poll<small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + dBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="dBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="dBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Deed Poll"
+                    index="dee_poll"
+                    subtitle=""
+                >
                     <div class="">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group">
@@ -681,18 +597,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import Accreditation from './accreditation_type.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { helpers } from '@/utils/hooks';
 export default {
     components: {
+        FormSection,
         FileField,
         Accreditation,
     },
@@ -987,7 +905,7 @@ export default {
             // Intialise select2
             $(vm.$refs.preferred_licence_period)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select preferred licence term',
                 })

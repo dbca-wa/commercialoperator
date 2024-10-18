@@ -32,7 +32,7 @@
                                         >
                                             <option
                                                 v-for="t in trails_list"
-                                                v-bind:key="t.id"
+                                                :key="t.id"
                                                 :value="t.id"
                                             >
                                                 {{ t.name }}
@@ -188,7 +188,6 @@ export default {
             trail_id: Number,
             section_id: Number,
             events_trail_id: Number,
-            //access_types: null,
             state: 'proposed_park',
             issuingPark: false,
             trails_list: [],
@@ -208,6 +207,7 @@ export default {
                 keepInvalid: true,
                 allowInputToggle: true,
             },
+            localTrailAction: JSON.parse(JSON.stringify(this.trail_action)),
         };
     },
     computed: {
@@ -240,6 +240,14 @@ export default {
 
             // Note: I added this return statement. It didn't exist before.
             return trail_list;
+        },
+    },
+    watch: {
+        trail_action: {
+            handler(newVal) {
+                this.localTrailAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -386,7 +394,7 @@ export default {
 
             formData.append('data', JSON.stringify(trail));
             vm.issuingPark = true;
-            if (vm.trail_action == 'add' && vm.trail_id == null) {
+            if (vm.localTrailAction == 'add' && vm.trail_id == null) {
                 vm.$http
                     .post(api_endpoints.proposal_events_trails, formData, {
                         emulateJSON: true,
@@ -396,11 +404,11 @@ export default {
                             vm.issuingPark = false;
                             vm.trail = {};
                             vm.close();
-                            swal(
-                                'Created',
-                                'New trail record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New trail record has been created',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -426,11 +434,11 @@ export default {
                             vm.issuingPark = false;
                             vm.trail = {};
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Park details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Park details has been saved.',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -474,7 +482,7 @@ export default {
             let vm = this;
             $(vm.$refs.events_trail)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
                 })
@@ -488,7 +496,7 @@ export default {
                 });
             $(vm.$refs.events_section)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select section',
                 })
@@ -503,7 +511,7 @@ export default {
             //Initialise select2 for Activity types
             $(vm.$refs.activities_select)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Activities',
                 })

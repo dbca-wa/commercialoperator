@@ -129,13 +129,16 @@ module.exports = {
         return result;
     },
     dtPopoverCellFn: function (cell) {
-        $(cell)
-            .find('[data-toggle="popover"]')
-            .popover()
-            .on('click', function (e) {
+        const popover = $(cell).find('[data-toggle="popover"]');
+        if (popover.length) {
+            popover.popover().on('click', function (e) {
                 e.preventDefault();
                 return true;
             });
+        } else {
+            // TODO:
+            console.error('No popover for cell', cell);
+        }
     },
     enablePopovers: function () {
         let popoverTriggerList = [].slice.call(

@@ -1,33 +1,28 @@
 <template>
-<div class="container" id="internalDash">
-    <ApprovalDashTable level="internal" :url="approvals_url"/>
-</div>
+    <div id="internalDash" class="container">
+        <FormSection :form-collapse="false" label="Licences" index="approvals">
+            <ApprovalDashTable level="internal" :url="approvals_url" />
+        </FormSection>
+    </div>
 </template>
 <script>
-import ApprovalDashTable from '@common-utils/approvals_dashboard.vue'
-import {
-  api_endpoints,
-  helpers
-}
-from '@/utils/hooks'
+import FormSection from '@/components/forms/section_toggle.vue';
+import ApprovalDashTable from '@common-utils/approvals_dashboard.vue';
+import { api_endpoints } from '@/utils/hooks';
 export default {
     name: 'InternalApprovalDashboard',
-    data() {
-        let vm = this;
-        return {
-            //approvals_url: api_endpoints.approvals,
-            approvals_url: api_endpoints.approvals_paginated_external,
-        }
-    
-    },
-    watch: {},
     components: {
+        FormSection,
         ApprovalDashTable,
     },
-    computed: {
+    data() {
+        return {
+            approvals_url: api_endpoints.approvals_paginated_external,
+        };
     },
+    computed: {},
+    watch: {},
+    mounted: function () {},
     methods: {},
-    mounted: function () {
-    }
-}
+};
 </script>

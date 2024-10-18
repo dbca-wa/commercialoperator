@@ -5,7 +5,7 @@
 	"workspaceFolder": "/data/data/projects/commercialoperator",
 	"mounts": ["type=bind,source=/data/,target=/data/",
 	           "type=bind,source=/data/data/containerhome/,target=/home/container/"
-	          ],	
+	          ],
 	"appPort": [ "7012:8080","9106:9106","9107:9107","9108:9108","9109:9109","9110:9110"],
 	"runArgs": ["--env-file","${localEnv:HOME}/vscode-env/commercialoperator.env",
 		   "--hostname","commercialoperator-dev"

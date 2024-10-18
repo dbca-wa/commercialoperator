@@ -80,25 +80,28 @@ class ProposalTypeSerializer(serializers.ModelSerializer):
 class EmailUserSerializer(EmailUserRoSerializer):
     pass
 
+
 class EmailUserAppViewBaseSerializer(EmailUserSerializer):
     dob = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()
     mobile_number = serializers.SerializerMethodField()
 
-    def get_dob(self,obj):
+    def get_dob(self, obj):
         emailuser = retrieve_email_user(obj)
-        return emailuser.dob.strftime('%d/%m/%Y') if emailuser.dob else None
+        if not emailuser:
+            return None
+        return emailuser.dob.strftime("%d/%m/%Y") if emailuser.dob else None
 
-    def get_email(self,obj):
+    def get_email(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.email if emailuser else None
 
-    def get_phone_number(self,obj):
+    def get_phone_number(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.phone_number if emailuser else None
 
-    def get_mobile_number(self,obj):
+    def get_mobile_number(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.mobile_number if emailuser else None
 
@@ -125,6 +128,8 @@ class EmailUserAppViewSerializer(EmailUserAppViewBaseSerializer):
 
     def get_residential_address(self, obj):
         emailuser = retrieve_email_user(obj)
+        if not emailuser:
+            return None
         return (
             UserAddressSerializer(emailuser.residential_address).data
             if emailuser.residential_address
@@ -831,7 +836,7 @@ class InternalProposalSerializer(BaseProposalSerializer):
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    submitter = EmailUserAppViewSerializer()
+    submitter = EmailUserAppViewSerializer(source='submitter_id')
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
@@ -1082,13 +1087,9 @@ class DTReferralSerializer(serializers.ModelSerializer):
         )
 
     def get_submitter(self,obj):
-        return EmailUserSerializer(obj.proposal.submitter).data
+        return EmailUserSerializer(obj.proposal.submitter_id).data
 
-    # def get_document(self,obj):
-    #     docs =  [[d.name,d._file.url] for d in obj.referral_documents.all()]
-    #     return docs[0] if docs else None
     def get_document(self,obj):
-        #doc = obj.referral_documents.last()
         return [obj.document.name, obj.document._file.url] if obj.document else None
 
     def get_can_user_process(self,obj):
@@ -1530,13 +1531,12 @@ class ProposalEventSerializer(BaseProposalSerializer):
 
 
 class InternalEventProposalSerializer(BaseProposalSerializer):
-    #applicant = ApplicantSerializer()
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
-    submitter = EmailUserAppViewSerializer()
+    submitter = EmailUserAppViewSerializer(source='submitter_id')
     proposaldeclineddetails = ProposalDeclinedDetailsSerializer()
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
@@ -1841,7 +1841,7 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
     district_name = serializers.CharField(read_only=True)
     proposal_lodgement_date = serializers.CharField(source='proposal.lodgement_date')
     proposal_lodgement_number = serializers.CharField(source='proposal.lodgement_number')
-    submitter = serializers.SerializerMethodField()
+    applicant = EmailUserSerializer(source="proposal.applicant_id")
     submitter = EmailUserSerializer(source="proposal.submitter_id")
     assigned_officer = serializers.CharField(source='assigned_officer.get_full_name', allow_null=True)
 

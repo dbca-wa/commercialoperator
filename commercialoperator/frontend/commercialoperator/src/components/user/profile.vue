@@ -19,7 +19,7 @@
                                 <a
                                     :disabled="!completedProfile"
                                     href="/"
-                                    class="btn btn-primary pull-right"
+                                    class="btn btn-primary float-end"
                                     >Continue</a
                                 >
                             </div>
@@ -30,39 +30,29 @@
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <i
-                                v-if="
-                                    showCompletion && profile.personal_details
-                                "
-                                class="fa fa-check fa-2x pull-left"
-                                style="color: green"
-                            ></i>
-                            <i
-                                v-else-if="
-                                    showCompletion && !profile.personal_details
-                                "
-                                class="fa fa-times fa-2x pull-left"
-                                style="color: red"
-                            ></i>
-                            <h3 class="panel-title">
-                                Personal Details
-                                <small>Provide your personal details</small>
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + pBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="pBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="pBody" class="panel-body collapse in">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Personal Details"
+                            index="personal_details"
+                            :subtitle="
+                                showCompletion && !profile.personal_details
+                                    ? ''
+                                    : 'Provide your personal details'
+                            "
+                            :subtitle-class="
+                                showCompletion && !profile.personal_details
+                                    ? 'fa fa-times fa-2x float-start'
+                                    : 'text-muted'
+                            "
+                            :custom-color="
+                                showCompletion && profile.personal_details
+                                    ? 'green'
+                                    : showCompletion &&
+                                        !profile.personal_details
+                                      ? 'red'
+                                      : 'black'
+                            "
+                        >
                             <form
                                 class="form-horizontal"
                                 name="personal_form"
@@ -79,7 +69,7 @@
                                         <strong>{{ item }}</strong>
                                     </div></alert
                                 >
-                                <div class="form-group">
+                                <div class="form-group row mb-3">
                                     <div class="col-sm-3"></div>
                                     <div class="col-sm-6">
                                         <p>
@@ -97,8 +87,10 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Given name"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Given name(s)</label
                                     >
                                     <div class="col-sm-6">
@@ -112,8 +104,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Surname"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Surname</label
                                     >
                                     <div class="col-sm-6">
@@ -128,47 +122,35 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <i
-                                v-if="showCompletion && profile.address_details"
-                                class="fa fa-check fa-2x pull-left"
-                                style="color: green"
-                            ></i>
-                            <i
-                                v-else-if="
-                                    showCompletion && !profile.address_details
-                                "
-                                class="fa fa-times fa-2x pull-left"
-                                style="color: red"
-                            ></i>
-                            <h3 class="panel-title">
-                                Address Details
-                                <small>Provide your address details</small>
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + adBody"
-                                    data-toggle="collapse"
-                                    expanded="false"
-                                    data-parent="#userInfo"
-                                    :aria-controls="adBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
-                            v-if="loading.length == 0"
-                            :id="adBody"
-                            class="panel-body collapse"
+                        <FormSection
+                            :form-collapse="false"
+                            label="Address Details"
+                            index="address_details"
+                            :subtitle="
+                                showCompletion && !profile.personal_details
+                                    ? ''
+                                    : 'Provide your address details'
+                            "
+                            :subtitle-class="
+                                showCompletion && !profile.personal_details
+                                    ? 'fa fa-times fa-2x float-start'
+                                    : 'text-muted'
+                            "
+                            :custom-color="
+                                showCompletion && profile.personal_details
+                                    ? 'green'
+                                    : showCompletion &&
+                                        !profile.personal_details
+                                      ? 'red'
+                                      : 'black'
+                            "
                         >
                             <form
                                 class="form-horizontal"
@@ -186,8 +168,10 @@
                                         <strong>{{ item }}</strong>
                                     </div></alert
                                 >
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Street"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Street</label
                                     >
                                     <div class="col-sm-6">
@@ -204,8 +188,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Town/Suburb"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Town/Suburb</label
                                     >
                                     <div class="col-sm-6">
@@ -222,8 +208,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="State"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >State</label
                                     >
                                     <div class="col-sm-3">
@@ -239,7 +227,9 @@
                                             placeholder=""
                                         />
                                     </div>
-                                    <label for="" class="col-sm-1 control-label"
+                                    <label
+                                        for="Postcode"
+                                        class="col-sm-1 control-label text-nowrap"
                                         >Postcode</label
                                     >
                                     <div class="col-sm-2">
@@ -256,8 +246,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Country"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Country</label
                                     >
                                     <div class="col-sm-4">
@@ -280,11 +272,11 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-sm-12">
                                         <button
                                             v-if="!updatingAddress"
-                                            class="pull-right btn btn-primary"
+                                            class="btn btn-primary float-end"
                                             @click.prevent="updateAddress()"
                                         >
                                             Update
@@ -292,7 +284,7 @@
                                         <button
                                             v-else
                                             disabled
-                                            class="pull-right btn btn-primary"
+                                            class="btn btn-primary float-end"
                                         >
                                             <i class="fa fa-spin fa-spinner"></i
                                             >&nbsp;Updating
@@ -300,44 +292,36 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <i
-                                v-if="showCompletion && profile.contact_details"
-                                class="fa fa-check fa-2x pull-left"
-                                style="color: green"
-                            ></i>
-                            <i
-                                v-else-if="
-                                    showCompletion && !profile.contact_details
-                                "
-                                class="fa fa-times fa-2x pull-left"
-                                style="color: red"
-                            ></i>
-                            <h3 class="panel-title">
-                                Contact Details
-                                <small>Provide your contact details</small>
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + cBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="false"
-                                    :aria-controls="cBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="cBody" class="panel-body collapse">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Contact Details"
+                            index="contact_details"
+                            :subtitle="
+                                showCompletion && !profile.personal_details
+                                    ? ''
+                                    : 'Provide your contact details'
+                            "
+                            :subtitle-class="
+                                showCompletion && !profile.personal_details
+                                    ? 'fa fa-times fa-2x float-start'
+                                    : 'text-muted'
+                            "
+                            :custom-color="
+                                showCompletion && profile.personal_details
+                                    ? 'green'
+                                    : showCompletion &&
+                                        !profile.personal_details
+                                      ? 'red'
+                                      : 'black'
+                            "
+                        >
                             <form
                                 class="form-horizontal"
                                 action="index.html"
@@ -354,8 +338,10 @@
                                         <strong>{{ item }}</strong>
                                     </div></alert
                                 >
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Phone"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Phone (work)</label
                                     >
                                     <div
@@ -383,8 +369,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="Mobile"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Mobile</label
                                     >
                                     <div
@@ -412,8 +400,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row">
+                                    <label
+                                        for="Email"
+                                        class="col-sm-3 control-label text-nowrap"
                                         >Email</label
                                     >
                                     <div class="col-sm-6">
@@ -427,11 +417,11 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-sm-12">
                                         <button
                                             v-if="!updatingContact"
-                                            class="pull-right btn btn-primary"
+                                            class="btn btn-primary float-end"
                                             @click.prevent="updateContact()"
                                         >
                                             Update
@@ -439,7 +429,7 @@
                                         <button
                                             v-else
                                             disabled
-                                            class="pull-right btn btn-primary"
+                                            class="btn btn-primary float-end"
                                         >
                                             <i class="fa fa-spin fa-spinner"></i
                                             >&nbsp;Updating
@@ -447,7 +437,7 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -455,34 +445,20 @@
             <div v-if="profile.is_staff" class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                System Settings
-                                <small
-                                    >Set up preferences in using this
-                                    system</small
-                                >
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + sBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="false"
-                                    :aria-controls="sBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="sBody" class="panel-body collapse">
+                        <FormSection
+                            :form-collapse="false"
+                            label="System settings"
+                            index="system_settings"
+                            subtitle="
+                                Set up preferences in using this system
+                            "
+                        >
                             <form
                                 class="form-horizontal"
                                 action="index.html"
                                 method="post"
                             >
-                                <div class="form-group">
+                                <div class="form-group row mb-3">
                                     <label for="" class="col-sm-3"
                                         >Park Entry Fees dashboard view</label
                                     >
@@ -511,11 +487,11 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group row">
                                     <div class="col-sm-12">
                                         <button
                                             v-if="!updatingSystemSettings"
-                                            class="pull-right btn btn-primary"
+                                            class="btn btn-primary float-end"
                                             @click.prevent="
                                                 updateSystemSettings()
                                             "
@@ -525,7 +501,7 @@
                                         <button
                                             v-else
                                             disabled
-                                            class="pull-right btn btn-primary"
+                                            class="btn btn-primary float-end"
                                         >
                                             <i class="fa fa-spin fa-spinner"></i
                                             >&nbsp;Updating
@@ -533,7 +509,7 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -541,36 +517,24 @@
             <div v-if="!isApplication" class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Organisation
-                                <small
-                                    >Link to the organisations you are an
-                                    employee of and for which you are managing
-                                    licences</small
-                                >
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + oBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="oBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="oBody" class="panel-body collapse">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Organisation"
+                            index="organisation"
+                            subtitle="
+                                Link to the organisations you are an employee of
+                                and for which you are managing licences
+                            "
+                        >
                             <form
                                 class="form-horizontal"
                                 name="orgForm"
                                 method="post"
                             >
-                                <div class="form-group">
-                                    <label for="" class="col-sm-5 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="behalf_of_org"
+                                        class="col-sm-5 control-label text-nowrap"
                                         >Do you manage licences on behalf of an
                                         organisation?
                                         <i
@@ -615,12 +579,12 @@
                                 </div>
                                 <div
                                     v-if="managesOrg == 'Yes'"
-                                    class="form-group"
+                                    class="form-group row mb-3"
                                 >
                                     <div class="col-sm-12">
                                         <button
                                             v-if="hasOrgs && !addingCompany"
-                                            class="btn btn-primary pull-right"
+                                            class="btn btn-primary float-end"
                                             @click.prevent="addCompany()"
                                         >
                                             Add Another Organisation
@@ -632,10 +596,10 @@
                                     v-for="org in profile.commercialoperator_organisations"
                                     :key="org.id"
                                 >
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="organisation"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >Organisation</label
                                         >
                                         <div class="col-sm-3">
@@ -649,8 +613,8 @@
                                             />
                                         </div>
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="abn_acn"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >ABN/ACN</label
                                         >
                                         <div class="col-sm-3">
@@ -659,21 +623,23 @@
                                                 type="text"
                                                 disabled
                                                 class="form-control"
-                                                name="organisation"
+                                                name="abn_acn"
                                                 placeholder=""
                                             />
                                         </div>
-                                        <a
-                                            style="
-                                                cursor: pointer;
-                                                text-decoration: none;
-                                            "
-                                            @click.prevent="unlinkUser(org)"
-                                            ><i
-                                                class="fa fa-chain-broken fa-2x"
-                                            ></i
-                                            >&nbsp;Unlink</a
-                                        >
+                                        <div class="col-sm-2">
+                                            <a
+                                                style="
+                                                    cursor: pointer;
+                                                    text-decoration: none;
+                                                "
+                                                @click.prevent="unlinkUser(org)"
+                                                ><i
+                                                    class="fa fa-chain-broken fa-2x"
+                                                ></i
+                                                >&nbsp;Unlink</a
+                                            >
+                                        </div>
                                     </div>
                                 </div>
 
@@ -681,10 +647,10 @@
                                     v-for="orgReq in orgRequest_list"
                                     :key="orgReq.name"
                                 >
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="organisation"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >Organisation</label
                                         >
                                         <div class="col-sm-3">
@@ -698,8 +664,8 @@
                                             />
                                         </div>
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="abn_acn"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >ABN/ACN</label
                                         >
                                         <div class="col-sm-3">
@@ -708,7 +674,7 @@
                                                 type="text"
                                                 disabled
                                                 class="form-control"
-                                                name="organisation"
+                                                name="abn_acn"
                                                 placeholder=""
                                             />
                                         </div>
@@ -720,10 +686,10 @@
 
                                 <div v-if="managesOrg == 'Consultant'">
                                     <h3>New Organisation (as consultant)</h3>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="organisation"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >Organisation</label
                                         >
                                         <div class="col-sm-6">
@@ -738,8 +704,8 @@
                                     </div>
                                     <div class="form-group">
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="abn"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >ABN/ACN</label
                                         >
                                         <div class="col-sm-6">
@@ -763,7 +729,7 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             class="col-sm-12"
                                             style="text-align: left"
@@ -802,7 +768,7 @@
                                         <div class="col-sm-12">
                                             <button
                                                 v-if="!registeringOrg"
-                                                class="btn btn-primary pull-left"
+                                                class="btn btn-primary float-start"
                                                 @click.prevent="
                                                     orgConsultRequest()
                                                 "
@@ -812,7 +778,7 @@
                                             <button
                                                 v-else
                                                 disabled
-                                                class="btn btn-primary pull-right"
+                                                class="btn btn-primary float-end"
                                             >
                                                 <i
                                                     class="fa fa-spin fa-spinner"
@@ -828,10 +794,10 @@
                                     style="margin-top: 15px"
                                 >
                                     <h3>New Organisation</h3>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="organisation"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >Organisation</label
                                         >
                                         <div class="col-sm-6">
@@ -844,10 +810,10 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="abn"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >ABN/ACN
                                             <i
                                                 class="fa fa-question-circle"
@@ -885,7 +851,7 @@
                                             newOrg.exists &&
                                             newOrg.detailsChecked
                                         "
-                                        class="form-group"
+                                        class="form-group row mb-3"
                                     >
                                         <label
                                             class="col-sm-12"
@@ -902,8 +868,8 @@
                                             }})
                                         </label>
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="pin1"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >Pin 1</label
                                         >
                                         <div class="col-sm-2">
@@ -911,13 +877,13 @@
                                                 v-model="newOrg.pin1"
                                                 type="text"
                                                 class="form-control"
-                                                name="abn"
+                                                name="pin1"
                                                 placeholder=""
                                             />
                                         </div>
                                         <label
-                                            for=""
-                                            class="col-sm-2 control-label"
+                                            for="pin2"
+                                            class="col-sm-2 control-label text-nowrap"
                                             >Pin 2</label
                                         >
                                         <div class="col-sm-2">
@@ -925,7 +891,7 @@
                                                 v-model="newOrg.pin2"
                                                 type="text"
                                                 class="form-control"
-                                                name="abn"
+                                                name="pin2"
                                                 placeholder=""
                                             />
                                         </div>
@@ -937,7 +903,7 @@
                                                 "
                                                 disabled
                                                 title="Please complete all the personal details."
-                                                class="btn btn-primary pull-left"
+                                                class="btn btn-primary float-start"
                                             >
                                                 Validate
                                             </button>
@@ -947,14 +913,14 @@
                                                     !validatingPins &&
                                                     completedProfile
                                                 "
-                                                class="btn btn-primary pull-left"
+                                                class="btn btn-primary float-start"
                                                 @click.prevent="validatePins()"
                                             >
                                                 Validate
                                             </button>
                                             <button
                                                 v-else
-                                                class="btn btn-primary pull-left"
+                                                class="btn btn-primary float-start"
                                             >
                                                 <i
                                                     class="fa fa-spin fa-spinner"
@@ -968,7 +934,7 @@
                                             !newOrg.exists &&
                                             newOrg.detailsChecked
                                         "
-                                        class="form-group"
+                                        class="form-group row mb-3"
                                     >
                                         <label
                                             class="col-sm-12"
@@ -982,7 +948,7 @@
                                         </label>
                                         <div class="col-sm-12">
                                             <span
-                                                class="btn btn-primary btn-file pull-left"
+                                                class="btn btn-primary btn-file float-start"
                                             >
                                                 Attach File
                                                 <input
@@ -992,7 +958,7 @@
                                                 />
                                             </span>
                                             <span
-                                                class="pull-left"
+                                                class="float-start"
                                                 style="
                                                     margin-left: 10px;
                                                     margin-top: 10px;
@@ -1013,14 +979,14 @@
                                                 v-if="!completedProfile"
                                                 disabled
                                                 title="Please complete details"
-                                                class="btn btn-primary pull-right"
+                                                class="btn btn-primary float-end"
                                             >
                                                 Submit
                                             </button>
                                             <button
                                                 v-else-if="!registeringOrg"
                                                 :disabled="!isFileUploaded"
-                                                class="btn btn-primary pull-right"
+                                                class="btn btn-primary float-end"
                                                 @click.prevent="orgRequest()"
                                             >
                                                 Submit
@@ -1028,7 +994,7 @@
                                             <button
                                                 v-else
                                                 disabled
-                                                class="btn btn-primary pull-right"
+                                                class="btn btn-primary float-end"
                                             >
                                                 <i
                                                     class="fa fa-spin fa-spinner"
@@ -1039,7 +1005,7 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -1051,9 +1017,14 @@
 import Vue from 'vue';
 import $ from 'jquery';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Profile',
+    components: {
+        FormSection,
+    },
     beforeRouteEnter: function (to, from, next) {
         Vue.http.get(api_endpoints.profile).then(
             (response) => {

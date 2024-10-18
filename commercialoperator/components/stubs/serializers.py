@@ -69,13 +69,6 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
             return email_user.organisation
         return None
 
-    def to_representation(self, instance):
-        if settings.DEV_EMAILUSER_REPLACEMENT_ID and not retrieve_email_user(instance):
-            # For dev purposes, replace the email user id with the replacement id if the email user does not exist in ledger
-            instance = settings.DEV_EMAILUSER_REPLACEMENT_ID
-        repr = super().to_representation(instance)
-        return repr
-
 
 class OrganisationSerializer(serializers.ModelSerializer):
     """This serializer is used to serialize the organisation details coming from the ledger API."""
@@ -175,19 +168,7 @@ class OrganisationListSerializer(OrganisationSerializer):
 
 class SegregationBaseSerializer(serializers.ModelSerializer):
     """Base class for serializing the data of different models.
-        Provides common methods for the serializers.
+    Provides common methods for the serializers.
     """
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-
-        if not settings.DEBUG or not settings.DEV_EMAILUSER_REPLACEMENT_ID:
-            return ret
-
-        allowed_assessors = ret.get("allowed_assessors", None)
-        if allowed_assessors:
-            ret["allowed_assessors"] = [
-                dict(t) for t in {tuple(d.items()) for d in allowed_assessors}
-            ]
-
-        return ret
+    pass

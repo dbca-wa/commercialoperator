@@ -1,7 +1,8 @@
 import logging
 
 from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.encoding import smart_text
+from django.forms import ValidationError
+from django.utils.encoding import smart_text, smart_str
 from django.urls import reverse
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -12,6 +13,7 @@ from commercialoperator.components.bookings.awaiting_payment_invoice_pdf import 
     create_awaiting_payment_invoice_pdf_bytes,
 )
 from datetime import datetime
+
 
 logger = logging.getLogger(__name__)
 
@@ -304,8 +306,6 @@ def send_referral_email_notification(referral, recipients, request, reminder=Fal
         "proposed_start_date": proposed_start_date,
     }
 
-    # msg = email.send(referral.referral.email, context=context)
-    # recipients = list(ReferralRecipientGroup.objects.get(name=referral.email_group).members.all().values_list('email', flat=True))
     msg = email.send(recipients, context=context)
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_referral_email(msg, referral, sender=sender)
@@ -940,7 +940,8 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
     else:
         text = smart_text(email_message)
         subject = ""
-        to = proposal.applicant.email
+        to = referral.proposal.applicant_email
+        # to = referral.proposal.applicant.email
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
@@ -952,8 +953,8 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
         "subject": subject,
         "text": text,
         "proposal": referral.proposal,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
@@ -1008,8 +1009,8 @@ def _log_proposal_email(
         "subject": subject,
         "text": text,
         "proposal": proposal,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
@@ -1058,11 +1059,9 @@ def _log_org_email(email_message, organisation, customer, sender=None):
     else:
         text = smart_text(email_message)
         subject = ""
-        to = customer
+        to = customer or ""
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = customer
 
     staff = sender
 
@@ -1070,8 +1069,8 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         "subject": subject,
         "text": text,
         "organisation": organisation,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,

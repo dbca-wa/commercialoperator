@@ -10,10 +10,10 @@
                     :comms_add_url="comms_add_url"
                     :disable_add_entry="false"
                 />
-                <div v-if="canSeeSubmission" class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Submission</div>
-                        <div class="panel-body panel-collapse">
+                <div v-if="canSeeSubmission">
+                    <div class="card mb-3">
+                        <div class="card-header">Submission</div>
+                        <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <strong>Submitted by</strong><br />
@@ -41,10 +41,10 @@
                     </div>
                 </div>
 
-                <div v-if="canSeeSubmission" class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">History</div>
-                        <div class="panel-body panel-collapse">
+                <div v-if="canSeeSubmission">
+                    <div class="card mb-3">
+                        <div class="card-header">History</div>
+                        <div class="card-body">
                             <table class="table small-table">
                                 <tr>
                                     <th>Last Modified</th>
@@ -75,10 +75,10 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Workflow</div>
-                        <div class="panel-body panel-collapse">
+                <div>
+                    <div class="card mb-3">
+                        <div class="card-header">Workflow</div>
+                        <div class="card-body">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <strong>Status</strong><br />
@@ -406,7 +406,6 @@
                                             class="row"
                                         >
                                             <div class="col-sm-12">
-                                                <!-- <button  v-if="proposal.application_type=='Filming' && proposal.filming_approval_type=='lawful_authority'" style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="proposal.can_user_edit" @click.prevent="sendToDistricts()">Send to Districts</button><br/> -->
                                                 <button
                                                     v-if="sendingToDistrict"
                                                     style="width: 80%"
@@ -534,12 +533,6 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <!--
-                                        <div v-if="isQAOfficerAssessmentCompleted" class="col-sm-12">
-                                            <button style="width:80%;" class="btn btn-primary top-buffer-s" :disabled="true" @click.prevent="withQAOfficer()">Completed: {{QAOfficerAssessmentCompletedBy}}</button>
-                                        </div>
-                                        -->
-
                                             <div
                                                 v-if="
                                                     isQAOfficerAssessmentCompleted
@@ -737,7 +730,6 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <!-- v-if="!proposal.proposed_decline_status" -->
                                             <div class="col-sm-12">
                                                 <button
                                                     style="width: 80%"
@@ -830,7 +822,6 @@
                 </div>
             </div>
             <div v-if="!comparing" class="col-md-1"></div>
-            <!--<div class="col-md-8">-->
             <div :class="class_ncols">
                 <div class="row">
                     <template
@@ -888,6 +879,7 @@
                                         "
                                         id="proposalStart"
                                         ref="tclass"
+                                        :key="keyProposalTClass"
                                         :proposal="proposal"
                                         :can-edit-activities="canEditActivities"
                                         :is_internal="true"
@@ -902,6 +894,7 @@
                                         "
                                         id="proposalStart"
                                         ref="filming"
+                                        :key="keyProposalFilming"
                                         :proposal="proposal"
                                         :can-edit-activities="canEditActivities"
                                         :can-edit-period="canEditPeriod"
@@ -917,6 +910,7 @@
                                         "
                                         id="proposalStart"
                                         ref="event"
+                                        :key="keyProposalEvent"
                                         :proposal="proposal"
                                         :can-edit-activities="canEditActivities"
                                         :can-edit-period="canEditPeriod"
@@ -945,43 +939,33 @@
                                     >
                                         <div
                                             v-if="hasAssessorMode"
-                                            class="navbar navbar-fixed-bottom"
+                                            class="navbar navbar-nav navbar-fixed-bottom ms-auto align-items-end"
                                             style="background-color: #f5f5f5"
                                         >
-                                            <div class="navbar-inner">
+                                            <div>
                                                 <div
                                                     v-if="hasAssessorMode"
-                                                    class="container"
+                                                    class="container-fluid"
                                                 >
-                                                    <p class="pull-right">
-                                                        <button
-                                                            v-if="
-                                                                savingProposal
-                                                            "
-                                                            class="btn btn-primary pull-right"
-                                                            style="
-                                                                margin-top: 5px;
-                                                            "
-                                                            disabled
-                                                        >
-                                                            Save Changes&nbsp;
-                                                            <i
-                                                                class="fa fa-circle-o-notch fa-spin fa-fw"
-                                                            ></i>
-                                                        </button>
-                                                        <button
-                                                            v-else
-                                                            class="btn btn-primary pull-right"
-                                                            style="
-                                                                margin-top: 5px;
-                                                            "
-                                                            @click.prevent="
-                                                                save()
-                                                            "
-                                                        >
-                                                            Save Changes
-                                                        </button>
-                                                    </p>
+                                                    <button
+                                                        v-if="savingProposal"
+                                                        class="btn btn-primary"
+                                                        style="margin-top: 5px"
+                                                        disabled
+                                                    >
+                                                        Save Changes&nbsp;
+                                                        <i
+                                                            class="fa fa-circle-o-notch fa-spin fa-fw"
+                                                        ></i>
+                                                    </button>
+                                                    <button
+                                                        v-else
+                                                        class="btn btn-primary"
+                                                        style="margin-top: 5px"
+                                                        @click.prevent="save()"
+                                                    >
+                                                        Save Changes
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -1041,6 +1025,7 @@ import OnHold from './proposal_onhold.vue';
 import WithQAOfficer from './proposal_qaofficer.vue';
 import FilmingDistrictProposalsTable from '@common-utils/filming_district_proposals_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 export default {
     name: 'InternalProposal',
     components: {
@@ -1095,7 +1080,6 @@ export default {
                     vm.proposal = res.body;
                     vm.fetchProposalParks(to.params.proposal_id);
                     vm.original_proposal = helpers.copyObject(res.body);
-                    // vm.proposal.org_applicant.address = vm.proposal.org_applicant.address != null ? vm.proposal.org_applicant.address : {};
                     vm.proposal.selected_trails_activities = [];
                     vm.proposal.selected_parks_activities = [];
                     vm.proposal.marine_parks_activities = [];
@@ -1189,6 +1173,9 @@ export default {
             comparing: false,
             sendingToDistrict: false,
             sendingToKensington: false,
+            keyProposalFilming: uuid(),
+            keyProposalEvent: uuid(),
+            keyProposalTClass: uuid(),
         };
     },
     computed: {
@@ -1376,22 +1363,13 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchReferralRecipientGroups();
+        this.$nextTick(() => {
+            vm.initialiseSelects();
+        });
     },
     updated: function () {
         let vm = this;
-        // if (!vm.panelClickersInitialised){
-        //     $('.panelClicker[data-toggle="collapse"]').on('click', function () {
-        //         var chev = $(this).children()[0];
-        //         window.setTimeout(function () {
-        //             $(chev).toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
-        //         },100);
-        //     });
-        //     vm.panelClickersInitialised = true;
-        // }
         this.$nextTick(() => {
-            //vm.initialiseOrgContactTable();
-            vm.initialiseSelects();
-
             if (typeof vm.$refs.tclass !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 vm.proposal.selected_parks_activities =
@@ -1403,7 +1381,6 @@ export default {
             }
             if (typeof vm.$refs.event !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
-
                 vm.proposal.selected_trails_activities =
                     vm.$refs.event.$refs.event_activities.selected_trails_activities;
             }
@@ -1505,7 +1482,6 @@ export default {
             this.$refs.proposed_approval.isModalOpen = true;
         },
         issueProposal: function () {
-            //this.$refs.proposed_approval.approval = helpers.copyObject(this.proposal.proposed_issuance_approval);
             this.$refs.proposed_approval.approval =
                 this.proposal.proposed_issuance_approval != null
                     ? helpers.copyObject(
@@ -1527,7 +1503,6 @@ export default {
         sendToDistricts: function () {
             console.log('hello');
             let vm = this;
-            //vm.save_wo();
             let formData = new FormData(vm.form);
             formData.append(
                 'selected_parks_activities',
@@ -1559,19 +1534,19 @@ export default {
                                     response.body
                                 );
                                 vm.proposal = response.body;
-                                swal(
-                                    'Sent',
-                                    'The proposal has been sent to Districts',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Sent',
+                                    text: 'The proposal has been sent to Districts',
+                                    icon: 'success',
+                                });
                             },
                             (error) => {
                                 console.log(error);
-                                swal(
-                                    'Error',
-                                    helpers.apiVueResourceError(error),
-                                    'error'
-                                );
+                                swal.fire({
+                                    title: 'Error',
+                                    text: helpers.apiVueResourceError(error),
+                                    icon: 'error',
+                                });
                                 vm.sendingToDistrict = false;
                             }
                         );
@@ -1613,19 +1588,19 @@ export default {
                                     response.body
                                 );
                                 vm.proposal = response.body;
-                                swal(
-                                    'Sent',
-                                    'The proposal has been sent to Kensington',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Sent',
+                                    text: 'The proposal has been sent to Kensington',
+                                    icon: 'success',
+                                });
                             },
                             (error) => {
                                 console.log(error);
-                                swal(
-                                    'Error',
-                                    helpers.apiVueResourceError(error),
-                                    'error'
-                                );
+                                swal.fire({
+                                    title: 'Error',
+                                    text: helpers.apiVueResourceError(error),
+                                    icon: 'error',
+                                });
                                 vm.sendingToKensington = false;
                             }
                         );
@@ -1748,11 +1723,11 @@ export default {
                     (error) => {
                         vm.proposal = helpers.copyObject(vm.original_proposal);
                         vm.updateAssignedOfficerSelect();
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -1822,11 +1797,11 @@ export default {
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchProposalParks(vm.proposal.id);
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             } else {
@@ -1858,11 +1833,11 @@ export default {
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchProposalParks(vm.proposal.id);
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             }
@@ -1890,7 +1865,6 @@ export default {
                 vm.$http.post(vm.proposal_form_url, formData).then(
                     () => {
                         //save Proposal before changing status so that unsaved assessor data is saved.
-
                         let data = {
                             status: status,
                             approver_comment: vm.approver_comment,
@@ -1931,11 +1905,13 @@ export default {
                                             ? vm.proposal.org_applicant.address
                                             : {};
                                     vm.fetchProposalParks(vm.proposal.id);
-                                    swal(
-                                        'Application Error',
-                                        helpers.apiVueResourceError(error),
-                                        'error'
-                                    );
+                                    swal.fire({
+                                        title: 'Application Error',
+                                        text: helpers.apiVueResourceError(
+                                            error
+                                        ),
+                                        icon: 'error',
+                                    });
                                 }
                             );
                         vm.changingStatus = false;
@@ -1984,11 +1960,11 @@ export default {
                             vm.proposal = helpers.copyObject(
                                 vm.original_proposal
                             );
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                         }
                     );
             } else {
@@ -2027,11 +2003,11 @@ export default {
                                 vm.original_proposal
                             );
                             vm.fetchProposalParks(vm.proposal.id);
-                            swal(
-                                'Application Error',
-                                helpers.apiVueResourceError(error),
-                                'error'
-                            );
+                            swal.fire({
+                                title: 'Application Error',
+                                text: helpers.apiVueResourceError(error),
+                                icon: 'error',
+                            });
                             vm.changingStatus = false;
                         }
                     );
@@ -2078,7 +2054,7 @@ export default {
             // Assigned officer select
             $(vm.$refs.assigned_officer)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Officer',
                 })
@@ -2111,7 +2087,7 @@ export default {
             if (!vm.initialisedSelects) {
                 $(vm.$refs.referral_recipient_groups)
                     .select2({
-                        theme: 'bootstrap',
+                        theme: 'bootstrap-5',
                         allowClear: true,
                         placeholder: 'Select Referral',
                     })
@@ -2168,14 +2144,13 @@ export default {
                                 );
                                 vm.proposal = response.body;
                                 vm.fetchProposalParks(vm.proposal.id);
-                                swal(
-                                    'Referral Sent',
-                                    //'The referral has been sent to '+vm.department_users.find(d => d.email == vm.selected_referral).name,
-                                    // 'The referral has been sent to '+vm.referral_recipient_groups.find(d => d.email == vm.selected_referral).name,
-                                    'The referral has been sent to ' +
+                                swal.fire({
+                                    title: 'Referral Sent',
+                                    text:
+                                        'The referral has been sent to ' +
                                         vm.selected_referral,
-                                    'success'
-                                );
+                                    icon: 'success',
+                                });
                                 $(vm.$refs.referral_recipient_groups)
                                     .val(null)
                                     .trigger('change');
@@ -2184,11 +2159,11 @@ export default {
                             },
                             (error) => {
                                 console.log(error);
-                                swal(
-                                    'Referral Error',
-                                    helpers.apiVueResourceError(error),
-                                    'error'
-                                );
+                                swal.fire({
+                                    title: 'Referral Error',
+                                    text: helpers.apiVueResourceError(error),
+                                    icon: 'error',
+                                });
                                 vm.sendingReferral = false;
                             }
                         );
@@ -2213,18 +2188,21 @@ export default {
                         );
                         vm.proposal = response.body;
                         vm.fetchProposalParks(vm.proposal.id);
-                        swal(
-                            'Referral Reminder',
-                            'A reminder has been sent to ' + r.referral,
-                            'success'
+                        swal.fire({
+                            title: 'Referral Reminder',
+                            text: 'A reminder has been sent to ' + r.referral,
+                            icon: 'success',
+                        });
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
                         );
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -2245,18 +2223,22 @@ export default {
                         );
                         vm.proposal = response.body;
                         vm.fetchProposalParks(vm.proposal.id);
-                        swal(
-                            'Referral Resent',
-                            'The referral has been resent to ' + r.referral,
-                            'success'
+                        swal.fire({
+                            title: 'Referral Resent',
+                            text:
+                                'The referral has been resent to ' + r.referral,
+                            icon: 'success',
+                        });
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
                         );
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -2277,20 +2259,43 @@ export default {
                         );
                         vm.proposal = response.body;
                         vm.fetchProposalParks(vm.proposal.id);
-                        swal(
-                            'Referral Recall',
-                            'The referall has been recalled from ' + r.referral,
-                            'success'
+                        swal.fire({
+                            title: 'Referral Recall',
+                            text:
+                                'The referral has been recalled from ' +
+                                r.referral,
+                            icon: 'success',
+                        });
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
                         );
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
+        },
+        /**
+         * Refreshes the key for the given application type, or all if not specified
+         * @param application_type The application type to refresh the key for
+         */
+        refreshApplicationTypeKey: function (application_type) {
+            let vm = this;
+            if (application_type == vm.application_type_filming) {
+                vm.keyProposalFilming = uuid();
+            } else if (application_type == vm.application_type_event) {
+                vm.keyProposalEvent = uuid();
+            } else if (application_type == vm.application_type_tclass) {
+                vm.keyProposalTClass = uuid();
+            } else {
+                vm.keyProposalFilming = uuid();
+                vm.keyProposalEvent = uuid();
+                vm.keyProposalTClass = uuid();
+            }
         },
     },
 };

@@ -5,6 +5,14 @@ from ledger_api_client.order import (
     Order as LedgerOrder,
 )  # Exists in ledger_api_client.order, but is empty
 
+import json
+import decimal
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return str(o)
+        return super().default(o)
 
 class ErsatzQuerySet(models.QuerySet):
     def filter(self, *args: Any, **kwargs: Any):

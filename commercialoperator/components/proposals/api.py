@@ -14,6 +14,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.pagination import PageNumberPagination
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.utils import (
+    get_proposal_serializer_by_application_type,
     save_proponent_data,
     save_assessor_data,
     proposal_submit,
@@ -161,11 +162,6 @@ class GetEmptyList(views.APIView):
         return Response([])
 
 
-# class DatatablesFilterBackend(BaseFilterBackend):
-#
-#   def filter_queryset(self, request, queryset, view):
-#       queryset = super(DatatablesFilterBackend, self).filter_queryset(request, queryset, view)
-#       return queryset
 
 """
 1. internal_proposal.json
@@ -196,12 +192,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
-        def get_choice(status, choices=Proposal.PROCESSING_STATUS_CHOICES):
-            for i in choices:
-                if i[1] == status:
-                    return i[0]
-            return None
-
         # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
         regions = request.GET.get("regions")
         if regions:
@@ -224,7 +214,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(park_bookings__park__id__in=[park])
 
             if payment_method:
-                # queryset = queryset.filter(invoices__payment_method=payment_method)
                 queryset = queryset.filter(
                     Q(invoices__payment_method=payment_method)
                     | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING)
@@ -233,11 +222,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             if payment_status:
                 ids = []
                 if payment_status.lower() == "overdue":
-                    # for i in ParkBooking.objects.all():
-                    #    if (i.booking.invoices.last() and i.booking.invoices.last().payment_status=='Unpaid') or \
-                    #        not i.booking.invoices.last() and \
-                    #        i.booking.invoices.last() and i.booking.deferred_payment_date and i.booking.deferred_payment_date < timezone.now().date():
-                    #        ids.append(i.id)
                     ids = list(
                         ParkBooking.objects.filter(
                             (
@@ -255,9 +239,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                         ).values_list("id", flat=True)
                     )
                 elif payment_status.lower() == "unpaid":
-                    # for i in ParkBooking.objects.all():
-                    #    if (i.booking.invoices.last() and i.booking.invoices.last().payment_status.lower()=='unpaid') or not i.booking.invoices.last():
-                    #        ids.append(i.id)
                     ids = list(
                         ParkBooking.objects.filter(
                             Q(
@@ -267,9 +248,6 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                         ).values_list("id", flat=True)
                     )
                 else:
-                    # for i in ParkBooking.objects.all():
-                    #    if i.booking.invoices.last() and i.booking.invoices.last().payment_status and i.booking.invoices.last().payment_status.lower()==payment_status.lower().replace('_',' '):
-                    #        ids.append(i.id)
                     ids = list(
                         ParkBooking.objects.filter(
                             booking__invoices__property_cache__payment_status__iexact=payment_status.lower().replace(
@@ -400,33 +378,16 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             request, queryset, view
         )
         setattr(view, "_datatables_total_count", total_count)
+
         return queryset
 
 
-# class ProposalRenderer(DatatablesRenderer):
-#    def render(self, data, accepted_media_type=None, renderer_context=None):
-#        if 'view' in renderer_context and hasattr(renderer_context['view'], '_datatables_total_count'):
-#            data['recordsTotal'] = renderer_context['view']._datatables_total_count
-#            #data.pop('recordsTotal')
-#            #data.pop('recordsFiltered')
-#        return super(ProposalRenderer, self).render(data, accepted_media_type, renderer_context)
-
-
-# from django.utils.decorators import method_decorator
-# from django.views.decorators.cache import cache_page
 class ProposalPaginatedViewSet(viewsets.ModelViewSet):
-    # queryset = Proposal.objects.all()
-    # filter_backends = (DatatablesFilterBackend,)
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     queryset = Proposal.objects.none()
     serializer_class = ListProposalSerializer
     page_size = 10
-
-    #    @method_decorator(cache_page(60))
-    #    def dispatch(self, *args, **kwargs):
-    #        return super(ListProposalViewSet, self).dispatch(*args, **kwargs)
 
     @property
     def excluded_type(self):
@@ -461,7 +422,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         http://localhost:8499/api/proposal_paginated/proposal_paginated_internal/?format=datatables&draw=1&length=2
         """
         qs = self.get_queryset()
-        # qs = self.filter_queryset(self.request, qs, self)
         qs = self.filter_queryset(qs)
 
         # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
@@ -854,11 +814,13 @@ class ProposalViewSet(viewsets.ModelViewSet):
             self.get_queryset()
             .filter(submitter__isnull=False)
             .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
             .distinct("submitter_email")
             .values_list(
                 "submitter_first_name", "submitter_last_name", "submitter_email"
             )
         )
+
         submitters = [
             dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
             for i in submitter_qs
@@ -1685,46 +1647,20 @@ class ProposalViewSet(viewsets.ModelViewSet):
     )
     def internal_proposal(self, request, *args, **kwargs):
         instance = self.get_object()
-        # instance.submitter_id = 1
-
-        serializer = InternalProposalSerializer(instance, context={"request": request})
-        if instance.application_type.name == ApplicationType.TCLASS:
-            serializer = InternalProposalSerializer(
-                instance, context={"request": request}
-            )
-        elif instance.application_type.name == ApplicationType.FILMING:
-            serializer = InternalFilmingProposalSerializer(
-                instance, context={"request": request}
-            )
-        elif instance.application_type.name == ApplicationType.EVENT:
-            serializer = InternalEventProposalSerializer(
-                instance, context={"request": request}
-            )
+        serializer = get_proposal_serializer_by_application_type(
+            instance, context={"request": request}
+        )
         return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
+    @basic_exception_handler
     @renderer_classes((JSONRenderer,))
     def submit(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            # instance.submit(request,self)
-            proposal_submit(instance, request)
-            instance.save()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-            # return redirect(reverse('external'))
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        proposal_submit(instance, request)
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -2195,34 +2131,18 @@ class ProposalViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
     @action(methods=["post"], detail=True)
+    @basic_exception_handler
     def assesor_send_referral(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = SendReferralSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            # text=serializer.validated_data['text']
-            # instance.send_referral(request,serializer.validated_data['email'])
-            instance.send_referral(
-                request,
-                serializer.validated_data["email_group"],
-                serializer.validated_data["text"],
-            )
-            serializer = InternalProposalSerializer(
-                instance, context={"request": request}
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        serializer = SendReferralSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance.send_referral(
+            request,
+            serializer.validated_data["email_group"],
+            serializer.validated_data["text"],
+        )
+        serializer = InternalProposalSerializer(instance, context={"request": request})
+        return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
@@ -2561,6 +2481,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
                 )
             )
             .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
             .order_by("submitter_email")
             .distinct("submitter_email")
             .values_list(
@@ -2696,23 +2617,14 @@ class ReferralViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def remind(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.remind(request)
-            serializer = InternalProposalSerializer(
-                instance.proposal, context={"request": request}
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        instance.remind(request)
+        serializer = get_proposal_serializer_by_application_type(
+            instance.proposal, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -2720,23 +2632,14 @@ class ReferralViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def recall(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.recall(request)
-            serializer = InternalProposalSerializer(
-                instance.proposal, context={"request": request}
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        instance.recall(request)
+        serializer = get_proposal_serializer_by_application_type(
+            instance.proposal, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -2744,23 +2647,14 @@ class ReferralViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def resend(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.resend(request)
-            serializer = InternalProposalSerializer(
-                instance.proposal, context={"request": request}
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        instance.resend(request)
+        serializer = get_proposal_serializer_by_application_type(
+            instance.proposal, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
     def send_referral(self, request, *args, **kwargs):
@@ -3641,6 +3535,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
                 )
             )
             .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
             .order_by("submitter_email")
             .distinct("submitter_email")
             .values_list(
@@ -3742,23 +3637,23 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             user_id = user.id
             # user_id = 132360  # A real user id for testing
-            # user_assessor_groups = user.districtproposalassessorgroup_set.all()
             user_assessor_groups = retrieve_user_groups(
                 "districtproposalassessorgroup", user_id
             )
-            # user_approver_groups = user.districtproposalapprovergroup_set.all()
             user_approver_groups = retrieve_user_groups(
                 "districtproposalapprovergroup", user_id
             )
 
-            qs = [
-                d.id
-                for d in DistrictProposal.objects.all()
-                if d.assessor_group in user_assessor_groups
-                or d.approver_group in user_approver_groups
-            ]
-            queryset = DistrictProposal.objects.filter(id__in=qs)
-            return queryset
+            return (
+                DistrictProposal.objects.with_approver_group_id()
+                .filter(approver_group_id__in=user_approver_groups)
+                .union(
+                    DistrictProposal.objects.with_assessor_group_id().filter(
+                        assessor_group_id__in=user_assessor_groups
+                    )
+                )
+            )
+
         return DistrictProposal.objects.none()
 
     @action(

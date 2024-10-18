@@ -4,35 +4,19 @@
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Organisation Details
-                                <small>
-                                    - View and update the organisation's
-                                    details</small
-                                >
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + pBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="pBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="pBody" class="panel-body collapse in">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Organisation Details"
+                            index="organisation_details"
+                            subtitle="View and update the organisation's details"
+                        >
                             <form
                                 class="form-horizontal"
                                 name="personal_form"
                                 method="post"
                             >
                                 <div v-if="org">
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -48,7 +32,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -64,7 +48,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -81,7 +65,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -98,11 +82,11 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div class="form-group row">
                                         <div class="col-sm-12">
                                             <button
                                                 v-if="!updatingDetails"
-                                                class="pull-right btn btn-primary"
+                                                class="btn btn-primary float-end"
                                                 @click.prevent="updateDetails()"
                                             >
                                                 Update
@@ -110,7 +94,7 @@
                                             <button
                                                 v-else
                                                 disabled
-                                                class="pull-right btn btn-primary"
+                                                class="btn btn-primary float-end"
                                             >
                                                 <i
                                                     class="fa fa-spin fa-spinner"
@@ -121,38 +105,18 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Address Details
-                                <small>
-                                    - View and update the organisation's address
-                                    details</small
-                                >
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + adBody"
-                                    data-toggle="collapse"
-                                    expanded="false"
-                                    data-parent="#userInfo"
-                                    :aria-controls="adBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
-                            v-if="loading.length == 0"
-                            :id="adBody"
-                            class="panel-body collapse"
+                        <FormSection
+                            :form-collapse="false"
+                            label="Address Details"
+                            index="address_details"
+                            subtitle="View and update the organisation's address details"
                         >
                             <form
                                 class="form-horizontal"
@@ -160,7 +124,7 @@
                                 method="post"
                             >
                                 <div v-if="org">
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -176,7 +140,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -192,7 +156,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -222,7 +186,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-3 control-label"
@@ -244,11 +208,11 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row">
                                         <div class="col-sm-12">
                                             <button
                                                 v-if="!updatingAddress"
-                                                class="pull-right btn btn-primary"
+                                                class="btn btn-primary float-end"
                                                 @click.prevent="updateAddress()"
                                             >
                                                 Update
@@ -256,7 +220,7 @@
                                             <button
                                                 v-else
                                                 disabled
-                                                class="pull-right btn btn-primary"
+                                                class="btn btn-primary float-end"
                                             >
                                                 <i
                                                     class="fa fa-spin fa-spinner"
@@ -267,35 +231,20 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
             <div v-if="!isApplication" class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Linked User Accounts<small>
-                                    Manage the user accounts linked to the
-                                    organisation</small
-                                >
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + oBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="oBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="oBody" class="panel-body collapse">
-                            <div class="col-sm-12 row">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Linked User Accounts"
+                            index="linked_user_accounts"
+                            subtitle="Manage the user accounts linked to the organisation"
+                        >
+                            <div class="col-sm-12 row mb-3">
                                 Use the Organisation Administrator pin codes if
                                 you want the new user to be linked as
                                 organisation administrator.<br />
@@ -308,7 +257,7 @@
                                 method="post"
                             >
                                 <div class="col-sm-6 row">
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-6 control-label"
@@ -321,7 +270,7 @@
                                             }}</label>
                                         </div>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group row mb-3">
                                         <label
                                             for=""
                                             class="col-sm-6 control-label"
@@ -337,7 +286,7 @@
                                 </div>
                                 <div class="col-sm-6 row">
                                     <div
-                                        class="form-group"
+                                        class="form-group row mb-3"
                                         :disabled="!myorgperms.is_admin"
                                     >
                                         <label
@@ -354,7 +303,7 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="form-group"
+                                        class="form-group row mb-3"
                                         :disabled="!myorgperms.is_admin"
                                     >
                                         <label
@@ -372,8 +321,8 @@
                                 </div>
                             </form>
                             <div>
-                                <div class="col-sm-12 row">
-                                    <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group row">
                                         <div class="col-sm-12 top-buffer-s">
                                             It is the responsibility of the
                                             organisation administrator to manage
@@ -384,7 +333,7 @@
                                             Branch on (08) 9219 9978.
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    <div class="form-group row">
                                         <div class="col-sm-12 top-buffer-s">
                                             Please ensure the pin codes are not
                                             provided to people that are not
@@ -393,7 +342,7 @@
                                             behalf of this organisation.
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    <div class="form-group row mb-3">
                                         <div class="col-sm-12 top-buffer-s">
                                             The list of accounts linked to the
                                             organisation is controlled by the
@@ -404,15 +353,19 @@
                                 </div>
                             </div>
                             <div>
-                                <datatable
-                                    id="organisation_contacts_datatable_ref"
-                                    ref="contacts_datatable_user"
-                                    v-model="filterOrgContactStatus"
-                                    :dt-options="contacts_options_ref"
-                                    :dt-headers="contacts_headers_ref"
-                                />
+                                <div class="col-sm-12">
+                                    <div class="form-group row">
+                                        <datatable
+                                            id="organisation_contacts_datatable_ref"
+                                            ref="contacts_datatable_user"
+                                            v-model="filterOrgContactStatus"
+                                            :dt-options="contacts_options_ref"
+                                            :dt-headers="contacts_headers_ref"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -426,12 +379,14 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import utils from '../utils';
 import api from '../api';
+import FormSection from '@/components/forms/section_toggle.vue';
 import AddContact from '@common-utils/add_contact.vue';
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Organisation',
     components: {
         datatable,
+        FormSection,
         AddContact,
     },
     beforeRouteEnter: function (to, from, next) {

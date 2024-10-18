@@ -3,24 +3,12 @@
     <div id="activityInfo" class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Filming Details <small></small>
-                        <a
-                            class="panelClicker"
-                            :href="'#' + lBody"
-                            data-toggle="collapse"
-                            data-parent="#activityInfo"
-                            expanded="true"
-                            :aria-controls="lBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-                <div :id="lBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="Filming Details"
+                    index="filming_details"
+                    subtitle=""
+                >
                     <div class="">
                         <div
                             class="form-horizontal col-sm-12 borderDecoration"
@@ -43,11 +31,12 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                v-if="proposal.filming_activity"
                                                 v-model="
                                                     proposal.filming_activity
                                                         .commencement_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="commencement_date"
                                                 placeholder="Commencement date"
@@ -71,11 +60,12 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                v-if="proposal.filming_activity"
                                                 v-model="
                                                     proposal.filming_activity
                                                         .completion_date
                                                 "
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="completion_date"
                                                 placeholder="Completion date"
@@ -108,6 +98,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <input
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .activity_title
@@ -135,6 +126,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <input
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .previous_contact_person
@@ -160,9 +152,6 @@
                                         class="col-sm-9"
                                         style="margin-bottom: 5px"
                                     >
-                                        <!-- <select style="width:100%" class="form-control input-sm" multiple ref="filmSponsorshipSelect" v-model="proposal.filming_activity.sponsorship">
-                                        <option v-for="s in sponsorship_choices" :value="s.key">{{s.value}}</option>
-                                    </select> -->
                                         <ul class="list-inline">
                                             <li
                                                 v-for="s in sponsorship_choices"
@@ -170,6 +159,9 @@
                                                 class="form-check list-inline-item"
                                             >
                                                 <input
+                                                    v-if="
+                                                        proposal.filming_activity
+                                                    "
                                                     ref="Radio"
                                                     v-model="
                                                         proposal
@@ -198,8 +190,9 @@
                                 </div>
                                 <div
                                     v-if="
+                                        proposal.filming_activity &&
                                         proposal.filming_activity.sponsorship ==
-                                        'other'
+                                            'other'
                                     "
                                     class="row"
                                 >
@@ -215,6 +208,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .sponsorship_details
@@ -238,6 +232,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            v-if="proposal.filming_activity"
                                             v-model="
                                                 proposal.filming_activity
                                                     .production_description
@@ -263,6 +258,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            v-if="proposal.filming_activity"
                                             ref="film_type_select"
                                             v-model="
                                                 proposal.filming_activity
@@ -298,6 +294,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            v-if="proposal.filming_activity"
                                             ref="filmPurposeSelect"
                                             v-model="
                                                 proposal.filming_activity
@@ -357,6 +354,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            v-if="proposal.filming_activity"
                                             ref="filmUsageSelect"
                                             v-model="
                                                 proposal.filming_activity
@@ -405,17 +403,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-require('select2/dist/css/select2.min.css');
-require('select2-bootstrap-theme/dist/select2-bootstrap.min.css');
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
     name: 'FilmingActivity',
+    components: {
+        FormSection,
+    },
     props: {
         proposal: {
             type: Object,
@@ -544,7 +545,7 @@ export default {
             // Initialise select2 for Film Type
             $(vm.$refs.film_type_select)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Film Type',
                 })
@@ -559,7 +560,7 @@ export default {
             // Initialise select2 for Film Purpose
             $(vm.$refs.filmPurposeSelect)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Film Purpose',
                 })
@@ -574,7 +575,7 @@ export default {
             // Initialise select2 for Film Usage
             $(vm.$refs.filmUsageSelect)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Film Usage',
                 })
@@ -607,4 +608,4 @@ export default {
 };
 </script>
 
-<style lang="css" scoped></style>
+<!-- <style lang="css" scoped></style> -->

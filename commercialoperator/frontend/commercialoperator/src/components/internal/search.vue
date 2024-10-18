@@ -3,23 +3,11 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Search Organisations
-                            <a
-                                :href="'#' + oBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="oBody"
-                            >
-                                <span
-                                    class="glyphicon glyphicon-chevron-up pull-right"
-                                ></span>
-                            </a>
-                        </h3>
-                    </div>
-                    <div :id="oBody" class="panel-body collapse in">
+                    <FormSection
+                        :form-collapse="false"
+                        label="Search Organisation"
+                        index="search_organisation"
+                    >
                         <div class="row">
                             <form name="searchOrganisationForm">
                                 <div class="col-md-4">
@@ -48,30 +36,18 @@
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </FormSection>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Search User
-                            <a
-                                :href="'#' + uBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="uBody"
-                            >
-                                <span
-                                    class="glyphicon glyphicon-chevron-up pull-right"
-                                ></span>
-                            </a>
-                        </h3>
-                    </div>
-                    <div :id="uBody" class="panel-body collapse in">
+                    <FormSection
+                        :form-collapse="false"
+                        label="Search User"
+                        index="search_user"
+                    >
                         <div class="row">
                             <form name="searchUserForm">
                                 <div class="">
@@ -108,30 +84,18 @@
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </FormSection>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Search Keywords
-                            <a
-                                :href="'#' + kBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="kBody"
-                            >
-                                <span
-                                    class="glyphicon glyphicon-chevron-up pull-right"
-                                ></span>
-                            </a>
-                        </h3>
-                    </div>
-                    <div :id="kBody" class="panel-body collapse in">
+                    <FormSection
+                        :form-collapse="false"
+                        label="Filter"
+                        index="filter"
+                    >
                         <div class="row">
                             <div>
                                 <div class="form-group">
@@ -290,30 +254,18 @@
                                 />
                             </div>
                         </div>
-                    </div>
+                    </FormSection>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Search Reference Number
-                            <a
-                                :href="'#' + rBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="rBody"
-                            >
-                                <span
-                                    class="glyphicon glyphicon-chevron-up pull-right"
-                                ></span>
-                            </a>
-                        </h3>
-                    </div>
-                    <div :id="rBody" class="panel-body collapse in">
+                    <FormSection
+                        :form-collapse="false"
+                        label="Reference"
+                        index="reference"
+                    >
                         <div class="row">
                             <label for="" class="control-label col-lg-12"
                                 >Reference</label
@@ -340,7 +292,7 @@
                                 ><strong>{{ errorString }}</strong></alert
                             >
                         </div>
-                    </div>
+                    </FormSection>
                 </div>
             </div>
         </div>
@@ -350,6 +302,7 @@
 import $ from 'jquery';
 import datatable from '@/utils/vue/datatable.vue';
 import alert from '@vue-utils/alert.vue';
+import FormSection from '@/components/forms/section_toggle.vue';
 import TextFilteredField from '@/components/forms/text-filtered.vue';
 import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
@@ -358,6 +311,7 @@ export default {
     name: 'ExternalDashboard',
     components: {
         alert,
+        FormSection,
         datatable,
         TextFilteredField,
         TextFilteredOrgField,
@@ -480,7 +434,7 @@ export default {
             // Initialise select2 for region
             $(vm.$refs.searchOrg)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Organisation',
                 })

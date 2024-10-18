@@ -1,33 +1,32 @@
 <template>
-<div class="container" id="internalDash">
-    <ComplianceDashTable level="internal" :url="compliances_url"/>
-</div>
+    <div id="internalDash" class="container">
+        <FormSection
+            :form-collapse="false"
+            label="Compliance with requirements"
+            index="compliance_with_requirements"
+        >
+            <ComplianceDashTable level="internal" :url="compliances_url" />
+        </FormSection>
+    </div>
 </template>
 <script>
-import ComplianceDashTable from '@common-utils/compliances_dashboard.vue'
-import {
-  api_endpoints,
-  helpers
-}
-from '@/utils/hooks'
+import FormSection from '@/components/forms/section_toggle.vue';
+import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
+import { api_endpoints } from '@/utils/hooks';
 export default {
     name: 'InternalCompliancesDashboard',
-    data() {
-        let vm = this;
-        return {
-            //compliances_url: api_endpoints.compliances,
-            compliances_url: api_endpoints.compliances_paginated_external,
-        }
-    
-    },
-    watch: {},
     components: {
+        FormSection,
         ComplianceDashTable,
     },
-    computed: {
+    data() {
+        return {
+            compliances_url: api_endpoints.compliances_paginated_external,
+        };
     },
+    computed: {},
+    watch: {},
+    mounted: function () {},
     methods: {},
-    mounted: function () {
-    }
-}
+};
 </script>

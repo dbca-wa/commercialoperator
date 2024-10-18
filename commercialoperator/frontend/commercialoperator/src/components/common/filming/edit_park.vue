@@ -468,11 +468,11 @@ export default {
                             vm.issuingPark = false;
                             vm.park = {};
                             vm.close();
-                            swal(
-                                'Created',
-                                'New park record has been created.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New park record has been created',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -498,11 +498,11 @@ export default {
                             vm.issuingPark = false;
                             vm.park = {};
                             vm.close();
-                            swal(
-                                'Saved',
-                                'Park details has been saved.',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Park details has been saved',
+                                icon: 'success',
+                            });
                             vm.$emit('refreshFromResponse', response);
                         },
                         (error) => {
@@ -548,7 +548,7 @@ export default {
             let vm = this;
             $(vm.$refs.filming_park)
                 .select2({
-                    theme: 'bootstrap',
+                    theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
                 })

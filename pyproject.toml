@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "commercialoperator"
+version = "1.0.0"
+description = "The Commercial Operator Licensing System allows to apply for a license, or to comply with a license or condition."
+authors = ["DBCA <asi@dbca.wa.gov.au>"]
+license = "Apache License 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "3.2.25"
+ledger-api-client = {git = "https://github.com/dbca-wa/ledger_api_client.git"}
+webtemplate-dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
+django-extensions = ">=3.2.3"
+coverage = ">=6.5.0"
+coveralls = ">=3.3.1"
+reportlab = ">=4.2.2"
+django-braces = ">=1.15.0"
+django-datatables-view = ">=1.20.0"
+django-reversion = ">=5.0.12"
+django-reversion-compare = ">=0.15.0"
+django-countries = ">=7.5.1"
+django-cron = ">=0.6.0"
+django-dynamic-fixture = ">=3.1.3"
+django-preserialize = {git = "https://github.com/xzzy/django-preserialize.git"}
+openpyxl = "3.1.3"
+datapackage = ">=1.15,<2.0"
+python-dateutil = ">=2.8.2"
+py4j = ">=0.10.9.7"
+djangorestframework = ">=3.15.1"
+djangorestframework-gis = ">=1.0"
+djangorestframework-csv = ">=3.0.0"
+pycountry = ">=22.3.5"
+six = ">=1.16.0"
+django-ical = ">=1.8.3"
+django-taggit = ">=4.0.0"
+geojson = ">=3.1.0"
+unicodecsv = ">=0.14.1"
+pypdf2 = ">=3.0.1"
+django-extra-fields = ">=3.0.2"
+django-crispy-forms = ">=2.0"
+django-reset-migrations = ">=0.4.0"
+django-ckeditor = ">=6.3.2"
+djangorestframework-datatables = ">=0.7.0"
+django-confy = ">=1.0.4"
+xlwt = ">=1.3.0"
+xlsxwriter = ">=3.2.0"
+gunicorn = ">=23.0.0"
+dj-static = ">=0.0.6"
+mixer = ">=7.2.2"
+django-dirtyfields = ">=1.9.2"
+django-multiselectfield = ">=0.1.12"
+dj-database-url = ">=2.2.0"
+werkzeug = ">=2.2.3"
+phonenumbers = ">=8.13.43"
+django-treebeard = ">=4.5.1"
+psycopg2-binary = ">=2.9.10"
+django-widget-tweaks = ">=1.5,<2.0"
+whitenoise = ">=5.3.0"
+django-media-serv = {git = "https://github.com/dbca-wa/django-media-serv.git"}
+python_decouple = ">=3.8"
+appmonitor-client = {git = "https://github.com/dbca-wa/appmonitor_client.git"}
+django5-six = {git = "https://github.com/dbca-wa/django5-utils-six.git"}
+django-phonenumber-field = ">=7.3,<8.0"
+babel = ">=2.14,<3.0"
+
+[tool.poetry.dev-dependencies]
+django-debug-toolbar = ">=3.8"
+ipdb = ">=0.13"
+pylint = ">=2.13"
+flake8 = ">=6.1"
+autopep8 = ">=2.0"
+black = ">=23.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -3,7 +3,6 @@
         <div class="col-sm-12">
             <div class="row">
                 <div v-if="canEditActivities" class="col-md-3">
-                    <!-- <button style="margin-top:25px;" class="btn btn-primary pull-right">New Application</button> -->
                     <input
                         type="button"
                         style="margin-top: 25px"
@@ -32,7 +31,7 @@
                         :id="'proposal' + proposal.id"
                         ref="event_park_maps"
                         :proposal_id="proposal.id"
-                        is-repeatable="true"
+                        :is-repeatable="true"
                         name="event_park_maps"
                         :readonly="!canEditActivities"
                     ></FileField>
@@ -52,7 +51,6 @@
         </div>
         <editPark
             ref="edit_park"
-            :park_id="park_id"
             :is_internal="is_internal"
             :is_external="is_external"
             @refreshFromResponse="refreshFromResponse"
@@ -195,7 +193,7 @@ export default {
                     proposal: vm.proposal.id,
                 };
                 this.$refs.edit_park.park = new_park_another;
-                this.$refs.edit_park.park_action = 'add';
+                this.$refs.edit_park.localParkAction = 'add';
 
                 this.$refs.edit_park.isModalOpen = true;
             });
@@ -210,24 +208,27 @@ export default {
         },
         discardPark: function (park_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Park',
                 text: 'Are you sure you want to discard this park?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Park',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_event_park(park_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your park has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your park has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.park_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
