@@ -32,6 +32,8 @@ from ledger_api_client.utils import (
     use_existing_basket_from_invoice,
     create_checkout_session,
 )
+from commercialoperator.components.stubs.classes import DecimalEncoder
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
 from ledger_api_client.utils import calculate_excl_gst
 
@@ -981,47 +983,7 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
     return lines
 
 
-# def create_filmingfee_lines(request, proposal, invoice_text=None, vouchers=[], internal=False):
-#
-#    if proposal.filming_activity.num_filming_days == 1:
-#        licence_fee = proposal.application_type.filming_fee_full_day if 'motion_film' in proposal.filming_activity.film_type else proposal.application_type.photography_fee_full_day
-#        licence_text =  'Full day'
-#    elif proposal.filming_activity.num_filming_days > 1 and proposal.filming_activity.num_filming_days < 4:
-#        full_day_fee = proposal.application_type.filming_fee_full_day if 'motion_film' in proposal.filming_activity.film_type else proposal.application_type.photography_fee_full_day
-#        subsequent_day_fee = proposal.application_type.filming_fee_subsequent_day if 'motion_film' in proposal.filming_activity.film_type else proposal.application_type.photography_fee_subsequent_day
-#        licence_fee = full_day_fee + (subsequent_day_fee * (proposal.filming_activity.num_filming_days-1))
-#        licence_text = '{} days'.format(proposal.filming_activity.num_filming_days)
-#    elif proposal.filming_activity.num_filming_days >= 4:
-#        licence_fee = proposal.application_type.filming_fee_4days if 'motion_film' in proposal.filming_activity.film_type else proposal.application_type.photography_fee_full_4days
-#        licence_text = '4 days or more'.format(proposal.filming_activity.num_filming_days)
-#
-#    application_fee = proposal.application_type.application_fee
-#    filming_period = '{} - {}'.format(proposal.filming_activity.commencement_date, proposal.filming_activity.completion_date)
-#
-#    lines = [
-#        {
-#            'ledger_description': 'Filming/Photography Application Fee - {}'.format(proposal.lodgement_number),
-#            'oracle_code': proposal.application_type.oracle_code_licence,
-#            'price_incl_tax':  application_fee,
-#            'price_excl_tax':  application_fee if proposal.application_type.is_gst_exempt else calculate_excl_gst(application_fee),
-#            'quantity': 1
-#        },
-#        {
-#            'ledger_description': 'Filming/Photography Licence Fee ({} - {}) - {}'.format(licence_text, filming_period, proposal.lodgement_number),
-#            'oracle_code': proposal.application_type.oracle_code_licence,
-#            'price_incl_tax':  licence_fee,
-#            'price_excl_tax':  licence_fee if proposal.application_type.is_gst_exempt else calculate_excl_gst(licence_fee),
-#            'quantity': 1
-#        },
-#    ]
-#
-#    return lines
-
-
-# def get_basket(request):
-#     return get_cookie_basket(settings.OSCAR_BASKET_COOKIE_OPEN, request)
-
-
+@basic_exception_handler
 def checkout(
     request,
     proposal,
@@ -1039,8 +1001,11 @@ def checkout(
         "custom_basket": True,
     }
 
-    basket, basket_hash = create_basket_session(request, basket_params)
-    # fallback_url = request.build_absolute_uri('/')
+    # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
+    basket_params = json.loads(json.dumps(basket_params, cls=DecimalEncoder))
+
+    basket, basket_hash = create_basket_session(request, request.user.id, basket_params)
+
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri(
@@ -1052,29 +1017,16 @@ def checkout(
         "return_preload_url": request.build_absolute_uri(
             reverse(return_url_ns)
         ),  # 'http://mooring-ria-jm.dbca.wa.gov.au/success/'
-        #'fallback_url': fallback_url,
-        #'return_url': fallback_url,
-        #'return_preload_url': fallback_url,
         "force_redirect": True,
-        #'proxy': proxy,
         "invoice_text": invoice_text,  # 'Reservation for Jawaid Mushtaq from 2019-05-17 to 2019-05-19 at RIA 005'
-        #'invoice_reference': '05572565342',
     }
-    #    if not internal:
-    #        checkout_params['check_url'] = request.build_absolute_uri('/api/booking/{}/booking_checkout_status.json'.format(booking.id))
-    # if internal or request.user.is_anonymous():
+
     if proxy or request.user.is_anonymous():
-        # checkout_params['basket_owner'] = booking.customer.id
         checkout_params["basket_owner"] = proposal.submitter_id
 
     create_checkout_session(request, checkout_params)
 
-    #    if internal:
-    #        response = place_order_submission(request)
-    #    else:
     response = HttpResponseRedirect(reverse("checkout:index"))
-    # inject the current basket into the redirect response cookies
-    # or else, anonymous users will be directionless
     response.set_cookie(
         settings.OSCAR_BASKET_COOKIE_OPEN,
         basket_hash,
@@ -1083,17 +1035,6 @@ def checkout(
         httponly=True,
     )
 
-    #    if booking.cost_total < 0:
-    #        response = HttpResponseRedirect('/refund-payment')
-    #        response.set_cookie(
-    #            settings.OSCAR_BASKET_COOKIE_OPEN, basket_hash,
-    #            max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-    #            secure=settings.OSCAR_BASKET_COOKIE_SECURE, httponly=True
-    #        )
-    #
-    # Zero booking costs
-    # if booking.cost_total < 1 and booking.cost_total > -1:
-    # if invoice_text == 'Application Fee' and proposal.application_type.name=='T Class' and proposal.org_applicant and proposal.allow_full_discount:
     if invoice_text == "Application Fee" and proposal.allow_full_discount:
         response = HttpResponseRedirect(reverse("zero_fee_success"))
         response.set_cookie(
