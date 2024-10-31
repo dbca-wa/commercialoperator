@@ -194,7 +194,7 @@ if not VALID_SYSTEMS:
 
 CRON_CLASSES = [
     'commercialoperator.cron.OracleIntegrationCronJob',
-    'appmonitor_client.cron.CronJobAppMonitorClient',
+    #'appmonitor_client.cron.CronJobAppMonitorClient',
 ]
 
 
