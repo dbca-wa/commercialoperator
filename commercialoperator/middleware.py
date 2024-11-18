@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.shortcuts import redirect
-from django.utils.http import urlquote_plus
+# from django.utils.http import urlquote_plus
+from urllib.parse import quote_plus as urlquote_plus
 
 import re
 
