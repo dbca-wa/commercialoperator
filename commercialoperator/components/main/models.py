@@ -4,7 +4,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from django.contrib.postgres.fields.jsonb import JSONField
+# from django.contrib.postgres.fields.jsonb import JSONField
+from django.db.models import JSONField
 
 from commercialoperator.components.stubs.utils import retrieve_email_user
 

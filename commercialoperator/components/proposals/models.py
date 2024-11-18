@@ -7,7 +7,8 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
-from django.contrib.postgres.fields.jsonb import JSONField
+# from django.contrib.postgres.fields.jsonb import JSONField
+from django.db.models import JSONField
 from django.utils import timezone
 from django.conf import settings
 from taggit.models import TaggedItemBase
@@ -5328,7 +5329,8 @@ class ProposalAssessmentAnswer(RevisionedMixin):
     question = models.ForeignKey(
         ChecklistQuestion, related_name="answers", on_delete=models.CASCADE
     )
-    answer = models.NullBooleanField()
+    # answer = models.NullBooleanField()
+    answer = models.BooleanField(null=True, blank=True)
     assessment = models.ForeignKey(
         ProposalAssessment,
         related_name="answers",
@@ -7914,7 +7916,8 @@ class ProposalEventManagement(models.Model):
 
 
 class ProposalEventVehiclesVessels(models.Model):
-    hired_or_owned = models.NullBooleanField(null=True)
+    # hired_or_owned = models.NullBooleanField(null=True)
+    hired_or_owned = models.BooleanField(null=True, blank=True)
     proposal = models.OneToOneField(
         Proposal,
         related_name="event_vehicles_vessels",

@@ -21,7 +21,7 @@ from commercialoperator.components.main.models import (
     LicencePeriod,
 )
 from reversion.admin import VersionAdmin
-from django.conf.urls import url
+from django.urls import re_path as url
 from django.http import HttpResponseRedirect
 from commercialoperator.components.stubs.models import ReferralRecipientGroupMembers
 from commercialoperator.utils import create_helppage_object
