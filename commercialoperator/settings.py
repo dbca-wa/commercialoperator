@@ -209,6 +209,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 DEV_APP_BUILD_URL = env("DEV_APP_BUILD_URL")
 
 TIME_ZONE = "Australia/Perth"
+USE_TZ = True
 
 if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
