@@ -34,6 +34,8 @@ class OrganisationRequestAdmin(EmailUserFieldAdminBase):
 class OrganisationAccessGroupMemberInline(admin.TabularInline):
     model = OrganisationAccessGroupMembers
     extra = 0
+    verbose_name = "Organisation Access Group Member"
+    verbose_name_plural = "Organisation Access Group Members"
 
 
 @admin.register(models.OrganisationAccessGroup)

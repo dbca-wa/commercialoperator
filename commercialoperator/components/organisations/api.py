@@ -1058,7 +1058,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class OrganisationAccessGroupMembers(views.APIView):
+class OrganisationAccessGroupMembersView(views.APIView):
 
     renderer_classes = [
         JSONRenderer,

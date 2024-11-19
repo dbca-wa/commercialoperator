@@ -202,7 +202,7 @@ api_patterns = [
     ),
     url(
         r"^api/organisation_access_group_members",
-        org_api.OrganisationAccessGroupMembers.as_view(),
+        org_api.OrganisationAccessGroupMembersView.as_view(),
         name="organisation-access-group-members",
     ),
     url(r"^api/", include(router.urls)),
