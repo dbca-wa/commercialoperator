@@ -36,6 +36,7 @@ class CreateInvoiceBasket(Ersatz, LedgerOrder):
 
     class Meta:
         managed = False
+        app_label = "cols_segregation_app"
 
 
 class Order(Ersatz):
@@ -43,6 +44,7 @@ class Order(Ersatz):
 
     class Meta:
         managed = False
+        app_label = "cols_segregation_app"
 
 
 class CashTransaction(Ersatz):
@@ -50,6 +52,7 @@ class CashTransaction(Ersatz):
 
     class Meta:
         managed = False
+        app_label = "cols_segregation_app"
 
 
 class BpointTransaction(Ersatz):
@@ -57,6 +60,7 @@ class BpointTransaction(Ersatz):
 
     class Meta:
         managed = False
+        app_label = "cols_segregation_app"
 
 
 class BpayTransaction(Ersatz):
@@ -64,6 +68,7 @@ class BpayTransaction(Ersatz):
 
     class Meta:
         managed = False
+        app_label = "cols_segregation_app"
 
 
 class Invoice(Ersatz):
@@ -71,3 +76,4 @@ class Invoice(Ersatz):
 
     class Meta:
         managed = False
+        app_label = "cols_segregation_app"
