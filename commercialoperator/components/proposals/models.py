@@ -6400,7 +6400,7 @@ def search_reference(reference_number):
         raise ValidationError("Record with provided reference number does not exist")
 
 
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field as RichTextField
 
 
 class HelpPage(models.Model):

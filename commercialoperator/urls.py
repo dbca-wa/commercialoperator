@@ -466,6 +466,7 @@ urlpatterns = (
             organisation_views.OrganisationHistoryCompareView.as_view(),
             name="organisation_history",
         ),
+        url("ckeditor5/", include('django_ckeditor_5.urls')),
     ]
     + ledger_patterns
     + media_serv_patterns

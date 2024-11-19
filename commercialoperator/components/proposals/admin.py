@@ -130,7 +130,7 @@ class ProposalStandardRequirementAdmin(admin.ModelAdmin):
     ]
 
 
-# @admin.register(models.HelpPage)
+@admin.register(models.HelpPage)
 class HelpPageAdmin(admin.ModelAdmin):
     list_display = ["application_type", "help_type", "description", "version"]
     form = forms.CommercialOperatorHelpPageAdminForm

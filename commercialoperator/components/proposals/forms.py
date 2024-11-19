@@ -9,7 +9,7 @@ from commercialoperator.components.proposals.models import (
     DistrictProposalApproverGroup,
 )
 from commercialoperator.components.main.models import SystemMaintenance
-from ckeditor.widgets import CKEditorWidget
+from django_ckeditor_5.widgets import CKEditor5Widget as CKEditorWidget
 from django.conf import settings
 import pytz
 from datetime import datetime, timedelta
