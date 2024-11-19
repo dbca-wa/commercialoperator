@@ -1,4 +1,5 @@
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.managed_models import SystemGroup
 from django.conf import settings
 
 import logging
@@ -13,20 +14,12 @@ def belongs_to(user, group_name):
     :param group_name:
     :return:
     """
-    return user.groups().filter(name=group_name).exists()
 
-
-# def is_model_backend(request):
-#    # Return True if user logged in via single sign-on (i.e. an internal)
-#    return 'ModelBackend' in request.session.get('_auth_user_backend')
-
-# def is_email_auth_backend(request):
-#    # Return True if user logged in via social_auth (i.e. an external user signing in with a login-token)
-#    return 'EmailAuth' in request.session.get('_auth_user_backend')
+    system_group = SystemGroup.objects.filter(name=group_name).first()
+    return system_group and user.id in system_group.get_system_group_member_ids()
 
 
 def is_commercialoperator_admin(request):
-    # logger.info('settings.ADMIN_GROUP: {}'.format(settings.ADMIN_GROUP))
     return (
         request.user.is_authenticated
         and in_dbca_domain(request)
