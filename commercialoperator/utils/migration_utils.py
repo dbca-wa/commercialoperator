@@ -97,9 +97,9 @@ class OrganisationReader():
         reader._create_organisation_data()
         reader.create_licences()
 
-        ./manage_co.py add_users
-        ./manage_co.py add_orgs
-        ./manage_co.py add_licences
+        ./manage.py add_users
+        ./manage.py add_orgs
+        ./manage.py add_licences
     """
 
     def __init__(self, filename):

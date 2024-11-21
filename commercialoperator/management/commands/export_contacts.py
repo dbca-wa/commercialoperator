@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Export Orgnisation contacts - ./manage_co.py export_contacts > /tmp/contacts.csv'
+    help = 'Export Orgnisation contacts - ./manage.py export_contacts > /tmp/contacts.csv'
 
     def handle(self, *args, **options):
         for i in Organisation.objects.all():
