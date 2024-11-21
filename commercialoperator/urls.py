@@ -196,13 +196,15 @@ urlpatterns = [
     url(r'^history/helppage/(?P<pk>\d+)/$', proposal_views.HelpPageHistoryCompareView.as_view(), name='helppage_history'),
     url(r'^history/organisation/(?P<pk>\d+)/$', organisation_views.OrganisationHistoryCompareView.as_view(), name='organisation_history'),
 
+    url(r'^private-media/', views.getPrivateFile, name='view_private_file'),
 
-] + ledger_patterns + media_serv_patterns
+] + ledger_patterns #+ media_serv_patterns
 
 # if settings.DEBUG:  # Serve media locally in development.
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.SHOW_DEBUG_TOOLBAR:
     import debug_toolbar
