@@ -1,0 +1,916 @@
+diff --git a/commercialoperator/migrations/0001_initial.py b/commercialoperator/migrations/0001_initial.py
+index 47b4fa4..b0c205a 100644
+--- a/commercialoperator/migrations/0001_initial.py
++++ b/commercialoperator/migrations/0001_initial.py
+@@ -20,8 +20,9 @@ class Migration(migrations.Migration):
+     initial = True
+ 
+     dependencies = [
+-        ('taggit', '0002_auto_20150616_2121'),
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # ('taggit', '0002_auto_20150616_2121'),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency('ledger_api_client.EmailUserRO'),
+         # ('accounts', '0021_emailuser_position_title'),
+         ('sites', '0002_alter_domain_unique'),
+     ]
+@@ -110,7 +111,9 @@ class Migration(migrations.Migration):
+                 ('expiry_time', models.DateTimeField(blank=True, null=True)),
+                 ('payment_type', models.SmallIntegerField(choices=[(0, 'Internet booking'), (1, 'Reception booking'), (2, 'Black booking'), (3, 'Temporary reservation')], default=0)),
+                 ('cost', models.DecimalField(decimal_places=2, default='0.00', max_digits=8)),
+-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_application_fee', to=settings.AUTH_USER_MODEL)),
++                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_application_fee', to=settings.AUTH_USER_MODEL)),
++                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_application_fee', to='ledger_api_client.EmailUserRO')),
++                ('created_by_id', models.IntegerField(blank=True, null=True)),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -191,7 +194,8 @@ class Migration(migrations.Migration):
+                 ('when', models.DateTimeField(auto_now_add=True)),
+                 ('what', models.TextField()),
+                 ('approval', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='action_logs', to='commercialoperator.Approval')),
+-                ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('who_id', models.IntegerField()),
+             ],
+             options={
+                 'ordering': ('-when',),
+@@ -207,7 +211,8 @@ class Migration(migrations.Migration):
+                 ('expiry_time', models.DateTimeField(blank=True, null=True)),
+                 ('booking_type', models.SmallIntegerField(choices=[(0, 'Internet booking'), (1, 'Reception booking'), (2, 'Black booking'), (3, 'Temporary reservation')], default=0)),
+                 ('admission_number', models.CharField(blank=True, default='', max_length=9)),
+-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_booking', to=settings.AUTH_USER_MODEL)),
++                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_booking', to=settings.AUTH_USER_MODEL)),
++                ('created_by_id', models.IntegerField(blank=True, null=True)),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -254,7 +259,8 @@ class Migration(migrations.Migration):
+                 ('reminder_sent', models.BooleanField(default=False)),
+                 ('post_reminder_sent', models.BooleanField(default=False)),
+                 ('approval', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='compliances', to='commercialoperator.Approval')),
+-                ('assigned_to', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_compliance_assignments', to=settings.AUTH_USER_MODEL)),
++                # ('assigned_to', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_compliance_assignments', to=settings.AUTH_USER_MODEL)),
++                ('assigned_to_id', models.IntegerField(blank=True, null=True)),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -293,7 +299,8 @@ class Migration(migrations.Migration):
+                 ('when', models.DateTimeField(auto_now_add=True)),
+                 ('what', models.TextField()),
+                 ('compliance', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='action_logs', to='commercialoperator.Compliance')),
+-                ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('who_id', models.IntegerField()),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -364,11 +371,32 @@ class Migration(migrations.Migration):
+                 ('user_pin_two', models.CharField(blank=True, max_length=50)),
+             ],
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="OrganisationAccessGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_organisationaccessgroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='OrganisationAccessGroup',
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.OrganisationAccessGroupMembers')),
+                 ('site', models.OneToOneField(default='1', on_delete=django.db.models.deletion.CASCADE, to='sites.Site')),
+             ],
+             options={
+@@ -382,7 +410,8 @@ class Migration(migrations.Migration):
+                 ('when', models.DateTimeField(auto_now_add=True)),
+                 ('what', models.TextField()),
+                 ('organisation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='action_logs', to='commercialoperator.Organisation')),
+-                ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('who_id', models.IntegerField()),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -421,8 +450,10 @@ class Migration(migrations.Migration):
+                 ('status', models.CharField(choices=[('with_assessor', 'With Assessor'), ('approved', 'Approved'), ('declined', 'Declined')], default='with_assessor', max_length=100)),
+                 ('lodgement_date', models.DateTimeField(auto_now_add=True)),
+                 ('role', models.CharField(choices=[('employee', 'Employee'), ('consultant', 'Consultant')], default='employee', max_length=100)),
+-                ('assigned_officer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='org_request_assignee', to=settings.AUTH_USER_MODEL)),
+-                ('requester', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('assigned_officer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='org_request_assignee', to=settings.AUTH_USER_MODEL)),
++                ('assigned_officer_id', models.IntegerField(blank=True, null=True)),
++                # ('requester', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('requester_id', models.IntegerField()),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -430,7 +461,8 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('reason', models.TextField(blank=True)),
+-                ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('officer_id', models.IntegerField()),
+                 ('request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.OrganisationRequest')),
+             ],
+         ),
+@@ -451,7 +483,8 @@ class Migration(migrations.Migration):
+                 ('when', models.DateTimeField(auto_now_add=True)),
+                 ('what', models.TextField()),
+                 ('request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='action_logs', to='commercialoperator.OrganisationRequest')),
+-                ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('who_id', models.IntegerField()),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -577,13 +610,34 @@ class Migration(migrations.Migration):
+                 ('first_name', models.CharField(blank=True, default='', max_length=24)),
+             ],
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="ProposalApproverGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_proposalapprovergroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='ProposalApproverGroup',
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('name', models.CharField(max_length=255)),
+                 ('default', models.BooleanField(default=False)),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.ProposalApproverGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'Application Approver Group',
+@@ -612,13 +666,34 @@ class Migration(migrations.Migration):
+                 'verbose_name_plural': 'Assessment answers',
+             },
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="ProposalAssessorGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_proposalassessorgroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='ProposalAssessorGroup',
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('name', models.CharField(max_length=255)),
+                 ('default', models.BooleanField(default=False)),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.ProposalAssessorGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'Application Assessor Group',
+@@ -631,7 +706,8 @@ class Migration(migrations.Migration):
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('reason', models.TextField(blank=True)),
+                 ('cc_email', models.TextField(null=True)),
+-                ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('officer_id', models.IntegerField()),
+                 ('proposal', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.Proposal')),
+             ],
+         ),
+@@ -667,7 +743,8 @@ class Migration(migrations.Migration):
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('comment', models.TextField(blank=True)),
+                 ('documents', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='onhold_documents', to='commercialoperator.ProposalDocument')),
+-                ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('officer_id', models.IntegerField()),
+                 ('proposal', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.Proposal')),
+             ],
+         ),
+@@ -816,7 +893,8 @@ class Migration(migrations.Migration):
+                 ('when', models.DateTimeField(auto_now_add=True)),
+                 ('what', models.TextField()),
+                 ('proposal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='action_logs', to='commercialoperator.Proposal')),
+-                ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('who', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('who_id', models.IntegerField()),
+             ],
+             options={
+                 'ordering': ('-when',),
+@@ -836,13 +914,34 @@ class Migration(migrations.Migration):
+                 ('proposal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='qaofficer_documents', to='commercialoperator.Proposal')),
+             ],
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="QAOfficerGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_qaofficergroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='QAOfficerGroup',
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('name', models.CharField(max_length=30, unique=True)),
+                 ('default', models.BooleanField(default=False)),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.QAOfficerGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'QA group',
+@@ -861,9 +960,11 @@ class Migration(migrations.Migration):
+                 ('qaofficer_text', models.TextField(blank=True)),
+                 ('document', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='qaofficer_referral_document', to='commercialoperator.QAOfficerDocument')),
+                 ('proposal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='qaofficer_referrals', to='commercialoperator.Proposal')),
+-                ('qaofficer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='qaofficers', to=settings.AUTH_USER_MODEL)),
++                # ('qaofficer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='qaofficers', to=settings.AUTH_USER_MODEL)),
++                ('qaofficer_id', models.IntegerField(blank=True, null=True)),
+                 ('qaofficer_group', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='qaofficer_groups', to='commercialoperator.QAOfficerGroup')),
+-                ('sent_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assessor_qaofficer_referrals', to=settings.AUTH_USER_MODEL)),
++                # ('sent_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assessor_qaofficer_referrals', to=settings.AUTH_USER_MODEL)),
++                ('sent_by_id', models.IntegerField()),
+             ],
+             options={
+                 'ordering': ('-lodged_on',),
+@@ -909,12 +1010,33 @@ class Migration(migrations.Migration):
+                 ('referral', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='referral_documents', to='commercialoperator.Referral')),
+             ],
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="ReferralRecipientGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_referralrecipientgroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='ReferralRecipientGroup',
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('name', models.CharField(max_length=30, unique=True)),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.ReferralRecipientGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'Referral group',
+@@ -988,7 +1110,7 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('content_object', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.ProposalApproverGroup')),
+-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalapprovergroupactivities_items', to='taggit.Tag')),
++                # ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalapprovergroupactivities_items', to='taggit.Tag')),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -996,7 +1118,7 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('content_object', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.ProposalApproverGroup')),
+-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalapprovergroupregions_items', to='taggit.Tag')),
++                # ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalapprovergroupregions_items', to='taggit.Tag')),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -1004,7 +1126,7 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('content_object', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.ProposalAssessorGroup')),
+-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalassessorgroupactivities_items', to='taggit.Tag')),
++                # ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalassessorgroupactivities_items', to='taggit.Tag')),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -1012,7 +1134,7 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('content_object', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.ProposalAssessorGroup')),
+-                ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalassessorgroupregions_items', to='taggit.Tag')),
++                # ('tag', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_taggedproposalassessorgroupregions_items', to='taggit.Tag')),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -1044,7 +1166,8 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('organisation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.Organisation')),
+-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('user_id', models.IntegerField()),
+             ],
+         ),
+         migrations.CreateModel(
+@@ -1108,7 +1231,8 @@ class Migration(migrations.Migration):
+                 ('date_last_reminded', models.DateField(blank=True, null=True)),
+                 ('comment', models.TextField(blank=True)),
+                 ('purpose', models.TextField(blank=True)),
+-                ('assigned_assessor', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('assigned_assessor', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('assigned_assessor_id', models.IntegerField(blank=True, null=True)),
+             ],
+             bases=('commercialoperator.proposalrequest',),
+         ),
+@@ -1175,8 +1299,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='referral',
+-            name='referral',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_referalls', to=settings.AUTH_USER_MODEL),
++            # name='referral',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_referalls', to=settings.AUTH_USER_MODEL),
++            name='referral_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='referral',
+@@ -1185,8 +1311,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='referral',
+-            name='sent_by',
+-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_assessor_referrals', to=settings.AUTH_USER_MODEL),
++            # name='sent_by',
++            # field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_assessor_referrals', to=settings.AUTH_USER_MODEL),
++            name='sent_by_id',
++            field=models.IntegerField(),
+         ),
+         migrations.AddField(
+             model_name='proposaltrailsection',
+@@ -1215,8 +1343,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='proposalrequest',
+-            name='officer',
+-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
++            # name='officer',
++            # field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
++            name='officer_id',
++            field=models.IntegerField(null=True),
+         ),
+         migrations.AddField(
+             model_name='proposalrequest',
+@@ -1245,8 +1375,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='proposalassessment',
+-            name='submitter',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='proposal_assessment', to=settings.AUTH_USER_MODEL),
++            # name='submitter',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='proposal_assessment', to=settings.AUTH_USER_MODEL),
++            name='submitter_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='proposalapprovergroup',
+@@ -1285,13 +1417,17 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='proposal',
+-            name='assigned_approver',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_proposals_approvals', to=settings.AUTH_USER_MODEL),
++            # name='assigned_approver',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_proposals_approvals', to=settings.AUTH_USER_MODEL),
++            name='assigned_approver_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='proposal',
+-            name='assigned_officer',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_proposals_assigned', to=settings.AUTH_USER_MODEL),
++            # name='assigned_officer',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_proposals_assigned', to=settings.AUTH_USER_MODEL),
++            name='assigned_officer_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='proposal',
+@@ -1310,8 +1446,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='proposal',
+-            name='proxy_applicant',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_proxy', to=settings.AUTH_USER_MODEL),
++            # name='proxy_applicant',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_proxy', to=settings.AUTH_USER_MODEL),
++            name='proxy_applicant_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='proposal',
+@@ -1320,8 +1458,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='proposal',
+-            name='submitter',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_proposals', to=settings.AUTH_USER_MODEL),
++            # name='submitter',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_proposals', to=settings.AUTH_USER_MODEL),
++            name='submitter_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='parkentry',
+@@ -1330,8 +1470,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='organisation',
+-            name='delegates',
+-            field=models.ManyToManyField(blank=True, related_name='commercialoperator_organisations', through='commercialoperator.UserDelegation', to=settings.AUTH_USER_MODEL),
++            # name='delegates',
++            # field=models.ManyToManyField(blank=True, related_name='commercialoperator_organisations', through='commercialoperator.UserDelegation', to=settings.AUTH_USER_MODEL),
++            name='delegates_id',
++            field=models.IntegerField(blank=True),
+         ),
+         migrations.AddField(
+             model_name='organisation',
+@@ -1356,8 +1498,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='comprequest',
+-            name='officer',
+-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
++            # name='officer',
++            # field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
++            name='officer_id',
++            field=models.IntegerField(null=True),
+         ),
+         migrations.AddField(
+             model_name='compliance',
+@@ -1371,18 +1515,24 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='compliance',
+-            name='submitter',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_compliances', to=settings.AUTH_USER_MODEL),
++            # name='submitter',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_compliances', to=settings.AUTH_USER_MODEL),
++            name='submitter_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='communicationslogentry',
+-            name='customer',
+-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL),
++            # name='customer',
++            # field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL),
++            name='customer_id',
++            field=models.IntegerField(null=True),
+         ),
+         migrations.AddField(
+             model_name='communicationslogentry',
+-            name='staff',
+-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL),
++            # name='staff',
++            # field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to=settings.AUTH_USER_MODEL),
++            name='staff_id',
++            field=models.IntegerField(null=True),
+         ),
+         migrations.AddField(
+             model_name='booking',
+@@ -1411,8 +1561,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='approval',
+-            name='proxy_applicant',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='proxy_approvals', to=settings.AUTH_USER_MODEL),
++            # name='proxy_applicant',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='proxy_approvals', to=settings.AUTH_USER_MODEL),
++            name='proxy_applicant_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='approval',
+@@ -1426,8 +1578,10 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='approval',
+-            name='submitter',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='commercialoperator_approvals', to=settings.AUTH_USER_MODEL),
++            # name='submitter',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='commercialoperator_approvals', to=settings.AUTH_USER_MODEL),
++            name='submitter_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+         migrations.AddField(
+             model_name='applicationfee',
+diff --git a/commercialoperator/migrations/0004_paymentofficergroup.py b/commercialoperator/migrations/0004_paymentofficergroup.py
+index 3134297..dc561de 100644
+--- a/commercialoperator/migrations/0004_paymentofficergroup.py
++++ b/commercialoperator/migrations/0004_paymentofficergroup.py
+@@ -4,12 +4,13 @@ from __future__ import unicode_literals
+ 
+ from django.conf import settings
+ from django.db import migrations, models
++import django.db.models.deletion
+ 
+ 
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0003_proposalassessmentanswer_text_answer'),
+     ]
+ 
+@@ -20,7 +21,8 @@ class Migration(migrations.Migration):
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('name', models.CharField(max_length=30, unique=True)),
+                 ('default', models.BooleanField(default=False)),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.PaymentOfficerGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'Payment Officer Group',
+diff --git a/commercialoperator/migrations/0013_auto_20191212_1110.py b/commercialoperator/migrations/0013_auto_20191212_1110.py
+index 48b05b5..4e4a3cc 100644
+--- a/commercialoperator/migrations/0013_auto_20191212_1110.py
++++ b/commercialoperator/migrations/0013_auto_20191212_1110.py
+@@ -12,7 +12,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0012_merge_20191209_2210'),
+     ]
+ 
+@@ -22,7 +22,8 @@ class Migration(migrations.Migration):
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                 ('one_row_per_park', models.BooleanField(default=False)),
+-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='system_settings', to=settings.AUTH_USER_MODEL, unique=True)),
++                # ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='system_settings', to=settings.AUTH_USER_MODEL, unique=True)),
++                ('user_id', models.IntegerField()),
+             ],
+             options={
+                 'verbose_name_plural': 'User System Settings',
+diff --git a/commercialoperator/migrations/0021_auto_20200603_1642.py b/commercialoperator/migrations/0021_auto_20200603_1642.py
+index 68f7be4..c6c07e5 100644
+--- a/commercialoperator/migrations/0021_auto_20200603_1642.py
++++ b/commercialoperator/migrations/0021_auto_20200603_1642.py
+@@ -12,7 +12,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0020_auto_20200207_1140'),
+     ]
+ 
+@@ -89,7 +89,9 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AddField(
+             model_name='applicationfeediscount',
+-            name='user',
+-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_by_fee_discount', to=settings.AUTH_USER_MODEL),
++            # name='user',
++            # field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_by_fee_discount', to=settings.AUTH_USER_MODEL),
++            name='user_id',
++            field=models.IntegerField(),
+         ),
+     ]
+diff --git a/commercialoperator/migrations/0034_districtproposal_districtproposalapprovergroup_districtproposalassessorgroup.py b/commercialoperator/migrations/0034_districtproposal_districtproposalapprovergroup_districtproposalassessorgroup.py
+index 08bfe79..2d97f22 100644
+--- a/commercialoperator/migrations/0034_districtproposal_districtproposalapprovergroup_districtproposalassessorgroup.py
++++ b/commercialoperator/migrations/0034_districtproposal_districtproposalapprovergroup_districtproposalassessorgroup.py
+@@ -11,7 +11,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0033_auto_20200402_1732'),
+     ]
+ 
+@@ -23,13 +23,35 @@ class Migration(migrations.Migration):
+                 ('processing_status', models.CharField(choices=[('with_assessor', 'With Assessor'), ('with_referral', 'With Referral'), ('with_assessor_requirements', 'With Assessor (Requirements)'), ('with_approver', 'With Approver'), ('declined', 'Declined'), ('approved', 'Approved'), ('discarded', 'Discarded')], default='with_assessor', max_length=30, verbose_name='Processing Status')),
+                 ('proposed_issuance_approval', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                 ('proposed_decline_status', models.BooleanField(default=False)),
+-                ('assigned_approver', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator__district_proposals_approvals', to=settings.AUTH_USER_MODEL)),
+-                ('assigned_officer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_district_proposals_assigned', to=settings.AUTH_USER_MODEL)),
++                # ('assigned_approver', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator__district_proposals_approvals', to=settings.AUTH_USER_MODEL)),
++                ('assigned_approver_id', models.IntegerField(blank=True, null=True)),
++                # ('assigned_officer', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_district_proposals_assigned', to=settings.AUTH_USER_MODEL)),
++                ('assigned_officer_id', models.IntegerField(blank=True, null=True)),
+                 ('district', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='proposals', to='commercialoperator.District')),
+                 ('proposal', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='district_proposals', to='commercialoperator.Proposal')),
+                 ('proposal_park', models.ManyToManyField(null=True, to='commercialoperator.ProposalFilmingParks')),
+             ],
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="DistrictProposalApproverGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_districtproposalapprovergroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='DistrictProposalApproverGroup',
+             fields=[
+@@ -37,13 +59,34 @@ class Migration(migrations.Migration):
+                 ('name', models.CharField(max_length=255)),
+                 ('default', models.BooleanField(default=False)),
+                 ('district', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.District')),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.DistrictProposalApproverGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'District Approver Group',
+                 'verbose_name_plural': 'District Approver Group',
+             },
+         ),
++        # Create model
++        migrations.CreateModel(
++            name="DistrictProposalAssessorGroupMembers",
++            fields=[
++                (
++                    "id",
++                    models.AutoField(
++                        auto_created=True,
++                        primary_key=True,
++                        serialize=False,
++                        verbose_name="ID",
++                    ),
++                ),
++            ],
++            options={
++                "db_table": "commercialoperator_districtproposalassessorgroup_members",
++                "abstract": False,
++                "managed": False,
++            },
++        ),
+         migrations.CreateModel(
+             name='DistrictProposalAssessorGroup',
+             fields=[
+@@ -51,7 +94,8 @@ class Migration(migrations.Migration):
+                 ('name', models.CharField(max_length=255)),
+                 ('default', models.BooleanField(default=False)),
+                 ('district', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.District')),
+-                ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                # ('members', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
++                ('members', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='commercialoperator.DistrictProposalAssessorGroupMembers')),
+             ],
+             options={
+                 'verbose_name': 'District Assessor Group',
+diff --git a/commercialoperator/migrations/0035_districtproposaldeclineddetails.py b/commercialoperator/migrations/0035_districtproposaldeclineddetails.py
+index 503f35a..a043efd 100644
+--- a/commercialoperator/migrations/0035_districtproposaldeclineddetails.py
++++ b/commercialoperator/migrations/0035_districtproposaldeclineddetails.py
+@@ -10,7 +10,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0034_districtproposal_districtproposalapprovergroup_districtproposalassessorgroup'),
+     ]
+ 
+@@ -22,7 +22,8 @@ class Migration(migrations.Migration):
+                 ('reason', models.TextField(blank=True)),
+                 ('cc_email', models.TextField(null=True)),
+                 ('district_proposal', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.DistrictProposal')),
+-                ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('officer_id', models.IntegerField()),
+             ],
+         ),
+     ]
+diff --git a/commercialoperator/migrations/0061_compliancefee_compliancefeeinvoice.py b/commercialoperator/migrations/0061_compliancefee_compliancefeeinvoice.py
+index 57f3231..1dc6615 100644
+--- a/commercialoperator/migrations/0061_compliancefee_compliancefeeinvoice.py
++++ b/commercialoperator/migrations/0061_compliancefee_compliancefeeinvoice.py
+@@ -10,7 +10,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0060_districtproposal_district_approval'),
+     ]
+ 
+@@ -26,7 +26,8 @@ class Migration(migrations.Migration):
+                 ('payment_type', models.SmallIntegerField(choices=[(0, 'Internet booking'), (1, 'Reception booking'), (2, 'Black booking'), (3, 'Temporary reservation')], default=0)),
+                 ('cost', models.DecimalField(decimal_places=2, default='0.00', max_digits=8)),
+                 ('compliance', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='compliance_fees', to='commercialoperator.Compliance')),
+-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_compliance_fee', to=settings.AUTH_USER_MODEL)),
++                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_compliance_fee', to=settings.AUTH_USER_MODEL)),
++                ('created_by_id', models.IntegerField(blank=True, null=True)),
+             ],
+         ),
+         migrations.CreateModel(
+diff --git a/commercialoperator/migrations/0066_auto_20200702_2344.py b/commercialoperator/migrations/0066_auto_20200702_2344.py
+index 711b948..9b05462 100644
+--- a/commercialoperator/migrations/0066_auto_20200702_2344.py
++++ b/commercialoperator/migrations/0066_auto_20200702_2344.py
+@@ -10,7 +10,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0065_auto_20200702_1957'),
+     ]
+ 
+@@ -27,7 +27,8 @@ class Migration(migrations.Migration):
+                 ('cost', models.DecimalField(decimal_places=2, default='0.00', max_digits=8)),
+                 ('deferred_payment_date', models.DateField(blank=True, null=True)),
+                 ('payment_due_notification_sent', models.BooleanField(default=False)),
+-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_filming_fee', to=settings.AUTH_USER_MODEL)),
++                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_filming_fee', to=settings.AUTH_USER_MODEL)),
++                ('created_by_id', models.IntegerField(blank=True, null=True)),
+                 ('proposal', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='filming_fees', to='commercialoperator.Compliance')),
+             ],
+         ),
+diff --git a/commercialoperator/migrations/0103_referral_assigned_officer.py b/commercialoperator/migrations/0103_referral_assigned_officer.py
+index 8cbfe39..24905a9 100644
+--- a/commercialoperator/migrations/0103_referral_assigned_officer.py
++++ b/commercialoperator/migrations/0103_referral_assigned_officer.py
+@@ -1,6 +1,7 @@
+ # -*- coding: utf-8 -*-
+ # Generated by Django 1.10.8 on 2021-01-04 07:38
+ from __future__ import unicode_literals
++from os import name
+ 
+ from django.conf import settings
+ from django.db import migrations, models
+@@ -10,14 +11,16 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0102_merge_20201125_2332'),
+     ]
+ 
+     operations = [
+         migrations.AddField(
+             model_name='referral',
+-            name='assigned_officer',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_referrals_assigned', to=settings.AUTH_USER_MODEL),
++            # name='assigned_officer',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_referrals_assigned', to=settings.AUTH_USER_MODEL),
++            name='assigned_officer_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+     ]
+diff --git a/commercialoperator/migrations/0107_auto_20210305_1100.py b/commercialoperator/migrations/0107_auto_20210305_1100.py
+index 88cb521..3b209aa 100644
+--- a/commercialoperator/migrations/0107_auto_20210305_1100.py
++++ b/commercialoperator/migrations/0107_auto_20210305_1100.py
+@@ -22,7 +22,9 @@ class Migration(migrations.Migration):
+         ),
+         migrations.AlterField(
+             model_name='districtproposal',
+-            name='assigned_approver',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_district_proposals_approvals', to=settings.AUTH_USER_MODEL),
++            # name='assigned_approver',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_district_proposals_approvals', to=settings.AUTH_USER_MODEL),
++            name='assigned_approver_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+     ]
+diff --git a/commercialoperator/migrations/0108_auto_20210505_0806.py b/commercialoperator/migrations/0108_auto_20210505_0806.py
+index 9bbfc55..4b1cf90 100644
+--- a/commercialoperator/migrations/0108_auto_20210505_0806.py
++++ b/commercialoperator/migrations/0108_auto_20210505_0806.py
+@@ -1,6 +1,7 @@
+ # -*- coding: utf-8 -*-
+ # Generated by Django 1.11.29 on 2021-05-05 00:06
+ from __future__ import unicode_literals
++from os import name
+ 
+ from django.conf import settings
+ from django.db import migrations, models
+@@ -10,14 +11,16 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0107_auto_20210305_1100'),
+     ]
+ 
+     operations = [
+         migrations.AddField(
+             model_name='proposal',
+-            name='approved_by',
+-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_approved_by', to=settings.AUTH_USER_MODEL),
++            # name='approved_by',
++            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='commercialoperator_approved_by', to=settings.AUTH_USER_MODEL),
++            name='approved_by_id',
++            field=models.IntegerField(blank=True, null=True),
+         ),
+     ]
+diff --git a/commercialoperator/migrations/0126_organisationcontactdeclineddetails.py b/commercialoperator/migrations/0126_organisationcontactdeclineddetails.py
+index e857f07..31171a5 100644
+--- a/commercialoperator/migrations/0126_organisationcontactdeclineddetails.py
++++ b/commercialoperator/migrations/0126_organisationcontactdeclineddetails.py
+@@ -10,7 +10,7 @@ import django.db.models.deletion
+ class Migration(migrations.Migration):
+ 
+     dependencies = [
+-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
++        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+         ('commercialoperator', '0125_auto_20210902_1231'),
+     ]
+ 
+@@ -19,7 +19,8 @@ class Migration(migrations.Migration):
+             name='OrganisationContactDeclinedDetails',
+             fields=[
+                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+-                ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                # ('officer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
++                ('officer_id', models.IntegerField()),
+                 ('request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='commercialoperator.OrganisationContact')),
+             ],
+         ),
