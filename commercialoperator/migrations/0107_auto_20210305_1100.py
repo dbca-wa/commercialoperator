@@ -22,9 +22,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='districtproposal',
-            # name='assigned_approver',
-            # field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_district_proposals_approvals', to=settings.AUTH_USER_MODEL),
-            name='assigned_approver_id',
-            field=models.IntegerField(blank=True, null=True),
+            name='assigned_approver',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='commercialoperator_district_proposals_approvals', to=settings.AUTH_USER_MODEL),
         ),
     ]
