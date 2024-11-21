@@ -76,6 +76,7 @@ INSTALLED_APPS += [
     "reversion_compare",
     "webtemplate_dbca",
     "ledger_api_client",
+    "django_cron",
     "commercialoperator",
     "commercialoperator.components.main",
     "commercialoperator.components.organisations",
@@ -93,6 +94,9 @@ INSTALLED_APPS += [
     "multiselectfield",
     "appmonitor_client",
 ]
+
+# Not using django cron
+INSTALLED_APPS.pop(INSTALLED_APPS.index("django_cron"))
 
 ADD_REVERSION_ADMIN = True
 
