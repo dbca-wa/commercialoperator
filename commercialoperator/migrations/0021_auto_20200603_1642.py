@@ -12,7 +12,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('commercialoperator', '0020_auto_20200207_1140'),
     ]
 
@@ -89,7 +89,9 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='applicationfeediscount',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_by_fee_discount', to=settings.AUTH_USER_MODEL),
+            # name='user',
+            # field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='created_by_fee_discount', to=settings.AUTH_USER_MODEL),
+            name='user_id',
+            field=models.IntegerField(),
         ),
     ]

@@ -10,7 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('commercialoperator', '0060_districtproposal_district_approval'),
     ]
 
@@ -26,7 +26,8 @@ class Migration(migrations.Migration):
                 ('payment_type', models.SmallIntegerField(choices=[(0, 'Internet booking'), (1, 'Reception booking'), (2, 'Black booking'), (3, 'Temporary reservation')], default=0)),
                 ('cost', models.DecimalField(decimal_places=2, default='0.00', max_digits=8)),
                 ('compliance', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='compliance_fees', to='commercialoperator.Compliance')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_compliance_fee', to=settings.AUTH_USER_MODEL)),
+                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_compliance_fee', to=settings.AUTH_USER_MODEL)),
+                ('created_by_id', models.IntegerField(blank=True, null=True)),
             ],
         ),
         migrations.CreateModel(

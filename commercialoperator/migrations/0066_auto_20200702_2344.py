@@ -10,7 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        # migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('commercialoperator', '0065_auto_20200702_1957'),
     ]
 
@@ -27,7 +27,8 @@ class Migration(migrations.Migration):
                 ('cost', models.DecimalField(decimal_places=2, default='0.00', max_digits=8)),
                 ('deferred_payment_date', models.DateField(blank=True, null=True)),
                 ('payment_due_notification_sent', models.BooleanField(default=False)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_filming_fee', to=settings.AUTH_USER_MODEL)),
+                # ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='created_by_filming_fee', to=settings.AUTH_USER_MODEL)),
+                ('created_by_id', models.IntegerField(blank=True, null=True)),
                 ('proposal', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='filming_fees', to='commercialoperator.Compliance')),
             ],
         ),
