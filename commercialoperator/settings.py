@@ -85,6 +85,7 @@ INSTALLED_APPS += [
     "commercialoperator.components.approvals",
     "commercialoperator.components.compliances",
     "commercialoperator.components.bookings",
+    "commercialoperator.components.stubs",
     "taggit",
     "rest_framework",
     "rest_framework_datatables",

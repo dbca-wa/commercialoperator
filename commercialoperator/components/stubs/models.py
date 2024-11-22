@@ -1,5 +1,5 @@
-"""Actual replacement models for ledger models
-    TODO: Need to be placed in a proper location
+"""Replacement or substitute ("stub") models for ledger models, fields, or foreign keys
+    that are not available anymore after segregating cols from the ledger database.
 """
 
 from django.db import models
@@ -20,6 +20,7 @@ class EmailUserLogEntryManager(models.Manager):
         logger.error("EmailUserLogEntry model does not exist during segregation")
 
         return False
+
 
 class EmailUserLogEntry(CommunicationsLogEntry):
     objects = EmailUserLogEntryManager()
