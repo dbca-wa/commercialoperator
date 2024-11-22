@@ -21,7 +21,7 @@ BUILD_TAG=dbcawa/commercialoperator:$date_var
 #npm run build &&
 #cd ../../../ &&
 #source venv/bin/activate &&
-#./manage_co.py collectstatic --no-input &&
+#./manage.py collectstatic --no-input &&
 docker image build $NO_CACHE --tag $BUILD_TAG . &&
 echo $BUILD_TAG &&
 docker push $BUILD_TAG

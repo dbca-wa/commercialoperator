@@ -91,13 +91,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install the project (ensure that frontend projects have been built prior to this step).
 FROM python_libs_cols
-COPY --chown=oim:oim  gunicorn.ini manage_co.py ./
+COPY --chown=oim:oim  gunicorn.ini manage.py ./
 RUN touch /app/.env
 COPY .git ./.git
 COPY --chown=oim:oim commercialoperator ./commercialoperator
 #RUN cd /app/commercialoperator/frontend/commercialoperator; npm install
 #RUN cd /app/commercialoperator/frontend/commercialoperator; npm run build
-#RUN python manage_co.py collectstatic --noinput
+#RUN python manage.py collectstatic --noinput
 
 RUN mkdir /app/tmp/
 RUN chmod 777 /app/tmp/

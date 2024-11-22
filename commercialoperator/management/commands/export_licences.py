@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Export licences - ./manage_co.py export_licences'
+    help = 'Export licences - ./manage.py export_licences'
 
     def handle(self, *args, **options):
 

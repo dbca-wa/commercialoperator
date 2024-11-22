@@ -2,7 +2,7 @@ import logging
 
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.forms import ValidationError
-from django.utils.encoding import smart_text, smart_str
+from django.utils.encoding import smart_str as smart_text
 from django.urls import reverse
 from django.conf import settings
 from django.core.files.storage import default_storage

@@ -7,7 +7,9 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
-from django.contrib.postgres.fields.jsonb import JSONField
+
+# from django.contrib.postgres.fields.jsonb import JSONField
+from django.db.models import JSONField
 from django.utils import timezone
 from django.conf import settings
 from taggit.models import TaggedItemBase
@@ -151,6 +153,10 @@ def application_type_choicelist():
         return (("T Class", "T Class"),)
 
 
+def default_proposaltype_schema():
+    return [{}]
+
+
 class ProposalType(models.Model):
     # name = models.CharField(verbose_name='Application name (eg. commercialoperator, Apiary)', max_length=24)
     # application_type = models.ForeignKey(ApplicationType, related_name='aplication_types')
@@ -162,7 +168,7 @@ class ProposalType(models.Model):
         choices=application_type_choicelist(),
         default="T Class",
     )
-    schema = JSONField(default=[{}])
+    schema = JSONField(default=default_proposaltype_schema)
     # activities = TaggableManager(verbose_name="Activities",help_text="A comma-separated list of activities.")
     # site = models.OneToOneField(Site, default='1')
     replaced_by = models.ForeignKey(
@@ -905,7 +911,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     fee_invoice_reference = models.CharField(
         max_length=50, null=True, blank=True, default=""
     )
-    property_cache = JSONField(null=True, blank=True, default={})
+    property_cache = JSONField(null=True, blank=True, default=dict)
 
     class Meta:
         app_label = "commercialoperator"
@@ -3947,6 +3953,10 @@ class ProposalLogEntry(CommunicationsLogEntry):
         super(ProposalLogEntry, self).save(**kwargs)
 
 
+def default_proposalotherdetails_mooring():
+    return [""]
+
+
 class ProposalOtherDetails(models.Model):
     preferred_licence_period = models.CharField(
         "Preferred licence period",
@@ -3958,7 +3968,7 @@ class ProposalOtherDetails(models.Model):
     nominated_start_date = models.DateField(blank=True, null=True)
     insurance_expiry = models.DateField(blank=True, null=True)
     other_comments = models.TextField(blank=True)
-    mooring = JSONField(default=[""])
+    mooring = JSONField(default=default_proposalotherdetails_mooring)
     # if credit facilities for payment of fees is required
     credit_fees = models.BooleanField(default=False)
     # if credit/ cash payment docket books are required
@@ -5328,7 +5338,8 @@ class ProposalAssessmentAnswer(RevisionedMixin):
     question = models.ForeignKey(
         ChecklistQuestion, related_name="answers", on_delete=models.CASCADE
     )
-    answer = models.NullBooleanField()
+    # answer = models.NullBooleanField()
+    answer = models.BooleanField(null=True, blank=True)
     assessment = models.ForeignKey(
         ProposalAssessment,
         related_name="answers",
@@ -6389,7 +6400,7 @@ def search_reference(reference_number):
         raise ValidationError("Record with provided reference number does not exist")
 
 
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field as RichTextField
 
 
 class HelpPage(models.Model):
@@ -7914,7 +7925,8 @@ class ProposalEventManagement(models.Model):
 
 
 class ProposalEventVehiclesVessels(models.Model):
-    hired_or_owned = models.NullBooleanField(null=True)
+    # hired_or_owned = models.NullBooleanField(null=True)
+    hired_or_owned = models.BooleanField(null=True, blank=True)
     proposal = models.OneToOneField(
         Proposal,
         related_name="event_vehicles_vessels",
@@ -7958,7 +7970,7 @@ class ProposalEventsParks(models.Model):
     park = models.ForeignKey(
         Park, related_name="events_proposal", on_delete=models.CASCADE
     )
-    activities_assessor = models.ManyToManyField(Activity, null=True, blank=True)
+    activities_assessor = models.ManyToManyField(Activity, blank=True)
     event_activities = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
@@ -8127,7 +8139,7 @@ class ProposalEventsTrails(models.Model):
     section = models.ForeignKey(
         Section, related_name="events_proposal", null=True, on_delete=models.CASCADE
     )
-    activities_assessor = models.ManyToManyField(Activity, blank=True, null=True)
+    activities_assessor = models.ManyToManyField(Activity, blank=True)
     event_trail_activities = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):

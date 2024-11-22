@@ -1,7 +1,9 @@
 from datetime import timedelta
 from django.db import models
 from django.utils import timezone
-from django.contrib.postgres.fields.jsonb import JSONField
+
+# from django.contrib.postgres.fields.jsonb import JSONField
+from django.db.models import JSONField
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
 from commercialoperator.components.main.mixins import RevisionedMixin
 from commercialoperator.components.proposals.models import Proposal
@@ -428,7 +430,7 @@ class BookingInvoice(RevisionedMixin):
     )  # duplicating from ledger Invoice model to allow easier filtering on payment dashboard
     deferred_payment_date = models.DateField(blank=True, null=True)
     payment_due_notification_sent = models.BooleanField(default=False)
-    property_cache = JSONField(null=True, blank=True, default={})
+    property_cache = JSONField(null=True, blank=True, default=dict)
 
     def __str__(self):
         return "Booking {} : Invoice #{}".format(self.id, self.invoice_reference)
@@ -679,6 +681,10 @@ class ComplianceFeeInvoice(RevisionedMixin):
         return False
 
 
+def default_filmingfee_lines():
+    return [""]
+
+
 class FilmingFee(Payment):
     """For Application Type Filming"""
 
@@ -713,8 +719,8 @@ class FilmingFee(Payment):
     )
     deferred_payment_date = models.DateField(blank=True, null=True)
     payment_due_notification_sent = models.BooleanField(default=False)
-    lines = JSONField(default=[""])
-    lines_aggregated = JSONField(default=[])
+    lines = JSONField(default=default_filmingfee_lines)
+    lines_aggregated = JSONField(default=list)
 
     def __str__(self):
         return "Proposal {} : Invoice {}".format(

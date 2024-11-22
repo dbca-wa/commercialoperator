@@ -4,7 +4,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from django.contrib.postgres.fields.jsonb import JSONField
+# from django.contrib.postgres.fields.jsonb import JSONField
+from django.db.models import JSONField
 
 from commercialoperator.components.stubs.utils import retrieve_email_user
 
@@ -649,8 +650,8 @@ class UserSystemSettings(models.Model):
     one_row_per_park = models.BooleanField(
         default=False
     )  # Setting for user if they want to see Payment (Park Entry Fees Dashboard) by one row per park or one row per booking
-    user = models.ForeignKey(
-        EmailUser, unique=True, related_name="system_settings", on_delete=models.CASCADE
+    user = models.OneToOneField(
+        EmailUser, related_name="system_settings", on_delete=models.CASCADE
     )
     event_training_completed = models.BooleanField(default=False)
     event_training_date = models.DateField(blank=True, null=True)

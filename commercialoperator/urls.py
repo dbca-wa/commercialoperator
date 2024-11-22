@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.conf.urls import url, include
+from django.urls import re_path as url
+from django.conf.urls import include
 from django.conf.urls.static import static
 from rest_framework import routers
 
@@ -201,7 +202,7 @@ api_patterns = [
     ),
     url(
         r"^api/organisation_access_group_members",
-        org_api.OrganisationAccessGroupMembers.as_view(),
+        org_api.OrganisationAccessGroupMembersView.as_view(),
         name="organisation-access-group-members",
     ),
     url(r"^api/", include(router.urls)),
@@ -465,6 +466,7 @@ urlpatterns = (
             organisation_views.OrganisationHistoryCompareView.as_view(),
             name="organisation_history",
         ),
+        url("ckeditor5/", include('django_ckeditor_5.urls')),
     ]
     + ledger_patterns
     + media_serv_patterns
