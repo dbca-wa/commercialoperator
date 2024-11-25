@@ -412,6 +412,9 @@ class ReferralRecipientGroupMembersInline(admin.TabularInline):
     model = ReferralRecipientGroupMembers
     extra = 0
     can_delete = False
+    raw_id_fields = ("emailuser",)
+    verbose_name = "Referral Recipient Group Member"
+    verbose_name_plural = "Referral Recipient Group Members"
 
 
 @admin.register(models.ReferralRecipientGroup)

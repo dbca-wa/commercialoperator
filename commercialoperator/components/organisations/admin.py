@@ -31,9 +31,10 @@ class OrganisationRequestAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "requester", "abn", "status"]
 
 
-class OrganisationAccessGroupMemberInline(admin.TabularInline):
+class OrganisationAccessGroupMembersInline(admin.TabularInline):
     model = OrganisationAccessGroupMembers
     extra = 0
+    raw_id_fields = ["emailuser"]
     verbose_name = "Organisation Access Group Member"
     verbose_name_plural = "Organisation Access Group Members"
 
@@ -46,7 +47,7 @@ class OrganisationAccessGroupAdmin(admin.ModelAdmin):
     actions = None
     readonly_fields = ["staff_members"]
     fields = ("staff_members",)
-    inlines = [OrganisationAccessGroupMemberInline]
+    inlines = [OrganisationAccessGroupMembersInline]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
