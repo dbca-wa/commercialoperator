@@ -14,6 +14,12 @@ from django.conf import settings
 import pytz
 from datetime import datetime, timedelta
 
+import logging
+
+from commercialoperator.components.stubs.utils import retrieve_group_members
+
+logger = logging.getLogger(__name__)
+
 
 class ProposalAssessorGroupAdminForm(forms.ModelForm):
     class Meta:
@@ -58,23 +64,15 @@ class ProposalApproverGroupAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProposalApproverGroupAdminForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            # Note: adding the members here programmatically does not work yet
-            self.fields["members"] = forms.ModelMultipleChoiceField(
-                queryset=EmailUser.objects.filter(is_staff=True),
-                required=True,
-                widget=forms.SelectMultiple,
-            )
-            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(ProposalApproverGroupAdminForm, self).clean()
         if self.instance:
             try:
-                original_members = ProposalApproverGroup.objects.get(
-                    id=self.instance.id
-                ).members.all()
-                current_members = self.cleaned_data.get("members")
+                original_members = retrieve_group_members(
+                    ProposalApproverGroup.objects.get(id=self.instance.id)
+                )
+                current_members = self.cleaned_data.get("members") or []
                 for o in original_members:
                     if o not in current_members:
                         if self.instance.member_is_assigned(o):
@@ -84,7 +82,7 @@ class ProposalApproverGroupAdminForm(forms.ModelForm):
                                 )
                             )
             except:
-                pass
+                logger.exception("Error in ProposalApproverGroupAdminForm.clean")
 
 
 class CommercialOperatorHelpPageAdminForm(forms.ModelForm):

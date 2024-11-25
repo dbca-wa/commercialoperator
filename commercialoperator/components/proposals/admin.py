@@ -23,7 +23,13 @@ from commercialoperator.components.main.models import (
 from reversion.admin import VersionAdmin
 from django.urls import re_path as url
 from django.http import HttpResponseRedirect
-from commercialoperator.components.stubs.models import ReferralRecipientGroupMembers
+from commercialoperator.components.stubs.models import (
+    DistrictProposalApproverGroupMembers,
+    DistrictProposalAssessorGroupMembers,
+    ProposalApproverGroupMembers,
+    ProposalAssessorGroupMembers,
+    ReferralRecipientGroupMembers,
+)
 from commercialoperator.utils import create_helppage_object
 
 
@@ -53,10 +59,18 @@ class ProposalAdmin(VersionAdmin):
     ]
 
 
+class ProposalAssessorGroupMembersInline(admin.TabularInline):
+    model = ProposalAssessorGroupMembers
+    extra = 0
+    can_delete = False
+    raw_id_fields = ("emailuser",)
+    verbose_name = "Proposal Assessor Group Member"
+    verbose_name_plural = "Proposal Assessor Group Members"
+
+
 @admin.register(models.ProposalAssessorGroup)
 class ProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
-    filter_horizontal = ("members",)
     form = forms.ProposalAssessorGroupAdminForm
     readonly_fields = [
         "default",
@@ -67,6 +81,10 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
         "region",
         "default",
     )
+
+    inlines = [
+        ProposalAssessorGroupMembersInline,
+    ]
 
     def get_actions(self, request):
         actions = super(ProposalAssessorGroupAdmin, self).get_actions(request)
@@ -87,10 +105,18 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
         return super(ProposalAssessorGroupAdmin, self).has_add_permission(request)
 
 
+class ProposalApproverGroupMembersInline(admin.TabularInline):
+    model = ProposalApproverGroupMembers
+    extra = 0
+    can_delete = False
+    raw_id_fields = ("emailuser",)
+    verbose_name = "Proposal Approver Group Member"
+    verbose_name_plural = "Proposal Approver Group Members"
+
+
 @admin.register(models.ProposalApproverGroup)
 class ProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
-    filter_horizontal = ("members",)
     form = forms.ProposalApproverGroupAdminForm
 
     fields = (
@@ -98,6 +124,10 @@ class ProposalApproverGroupAdmin(admin.ModelAdmin):
         "region",
         "default",
     )
+
+    inlines = [
+        ProposalApproverGroupMembersInline,
+    ]
 
     def get_actions(self, request):
         actions = super(ProposalApproverGroupAdmin, self).get_actions(request)
@@ -442,16 +472,28 @@ class SectionAdmin(admin.ModelAdmin):
     list_display = [f.name for f in ApplicationFeeInvoice._meta.fields]
 
 
+class DistrictProposalAssessorGroupMembersInline(admin.TabularInline):
+    model = DistrictProposalAssessorGroupMembers
+    extra = 0
+    can_delete = False
+    raw_id_fields = ("emailuser",)
+    verbose_name = "District Proposal Assessor Group Member"
+    verbose_name_plural = "District Proposal Assessor Group Members"
+
+
 @admin.register(models.DistrictProposalAssessorGroup)
 class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
-    filter_horizontal = ("members",)
     form = forms.DistrictProposalAssessorGroupAdminForm
     fields = (
         "name",
         "district",
         "default",
     )
+
+    inlines = [
+        DistrictProposalAssessorGroupMembersInline,
+    ]
 
     def get_actions(self, request):
         actions = super(DistrictProposalAssessorGroupAdmin, self).get_actions(request)
@@ -467,16 +509,28 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
         )
 
 
+class DistrictProposalApproverGroupMembersInline(admin.TabularInline):
+    model = DistrictProposalApproverGroupMembers
+    extra = 0
+    can_delete = False
+    raw_id_fields = ("emailuser",)
+    verbose_name = "District Proposal Approver Group Member"
+    verbose_name_plural = "District Proposal Approver Group Members"
+
+
 @admin.register(models.DistrictProposalApproverGroup)
 class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
     list_display = ["name", "default"]
-    filter_horizontal = ("members",)
     form = forms.DistrictProposalApproverGroupAdminForm
     fields = (
         "name",
         "district",
         "default",
     )
+
+    inlines = [
+        DistrictProposalApproverGroupMembersInline,
+    ]
 
     def get_actions(self, request):
         actions = super(DistrictProposalApproverGroupAdmin, self).get_actions(request)
