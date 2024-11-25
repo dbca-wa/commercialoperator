@@ -96,7 +96,7 @@ class Organisation(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return str(f"Organisation ID: {self.organisation_id}")
+        return str(f"{self.name} (ABN: {self.abn})")
 
     @classmethod
     def organisations_user_can_admin(cls, user_id):
