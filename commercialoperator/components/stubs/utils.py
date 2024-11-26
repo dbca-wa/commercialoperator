@@ -25,15 +25,11 @@ def retrieve_email_user(email_user_id):
     )
     email_user = cache.get(cache_key)
 
-    if settings.DEBUG and email_user == EmailUser.DoesNotExist.__name__:
-        return None
-    elif email_user is None:
+    if email_user is None:
         try:
             email_user = EmailUser.objects.get(id=email_user_id)
         except EmailUser.DoesNotExist:
-            # logger.error(f"EmailUser with id {email_user_id} does not exist")
-            if settings.DEBUG:
-                cache.set(cache_key, EmailUser.DoesNotExist.__name__, cache_timeout)
+            logger.error(f"EmailUser with id {email_user_id} does not exist")
             return None
         else:
             cache.set(cache_key, email_user, cache_timeout)
