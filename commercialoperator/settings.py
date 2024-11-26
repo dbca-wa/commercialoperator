@@ -18,7 +18,6 @@ ROOT_URLCONF = "commercialoperator.urls"
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
 SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
-DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
 BUILD_TAG = env(
