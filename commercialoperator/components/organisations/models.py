@@ -936,6 +936,7 @@ class OrganisationRequest(models.Model):
 
     class Meta:
         app_label = "commercialoperator"
+        ordering = ["name"]
 
     def accept(self, request):
         self.status = "approved"
