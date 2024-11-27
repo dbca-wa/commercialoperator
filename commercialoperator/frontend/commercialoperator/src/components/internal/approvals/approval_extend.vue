@@ -9,7 +9,10 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="approvalForm">
+                    <form
+                        class="needs-validation form-horizontal"
+                        name="extendApprovalForm"
+                    >
                         <alert :show.sync="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
@@ -29,7 +32,11 @@
                                             name="extend_details"
                                             class="form-control"
                                             style="width: 70%"
+                                            required
                                         ></textarea>
+                                        <div class="invalid-feedback">
+                                            Please provide extend details
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -101,8 +108,7 @@ export default {
     },
     mounted: function () {
         let vm = this;
-        vm.form = document.forms.approvalForm;
-        vm.addFormValidations();
+        vm.form = document.forms.extendApprovalForm;
         this.$nextTick(() => {
             vm.eventListeners();
         });
@@ -110,9 +116,7 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
-                vm.sendData();
-            }
+            vm.validateForm();
         },
         cancel: function () {
             this.close();
@@ -122,7 +126,8 @@ export default {
             this.approval = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
+            this.form.reset();
+            this.form.classList.remove('was-validated');
         },
         sendData: function () {
             let vm = this;
@@ -145,11 +150,11 @@ export default {
                     (response) => {
                         vm.issuingApproval = false;
                         vm.close();
-                        swal(
-                            'Extended',
-                            'Licence has been extended',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Extended',
+                            text: 'Licence has been extended',
+                            type: 'success',
+                        });
                         vm.$emit('refreshFromResponse', response);
                     },
                     (error) => {
@@ -159,36 +164,19 @@ export default {
                     }
                 );
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    extend_details: 'required',
-                },
-                messages: {},
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
+        validateForm: function () {
+            const vm = this;
+
+            if (vm.form.checkValidity()) {
+                console.log('extendApprovalForm is valid');
+                vm.sendData();
+            } else {
+                console.log('extendApprovalForm is invalid');
+                vm.form.classList.add('was-validated');
+                $(vm.form).find(':invalid').first().focus();
+            }
+
+            return false;
         },
         eventListeners: function () {},
     },

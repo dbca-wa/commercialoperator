@@ -9,7 +9,7 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="approvalForm">
+                    <form class="form-horizontal" name="surrenderApprovalForm">
                         <alert :show.sync="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
@@ -37,7 +37,11 @@
                                                 class="form-control"
                                                 name="surrender_date"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                             />
+                                            <div class="invalid-feedback">
+                                                Please enter a valid date
+                                            </div>
                                             <span class="input-group-addon">
                                                 <span
                                                     class="glyphicon glyphicon-calendar"
@@ -63,7 +67,11 @@
                                             name="surrender_details"
                                             class="form-control"
                                             style="width: 70%"
+                                            required
                                         ></textarea>
+                                        <div class="invalid-feedback">
+                                            Please provide surrender details
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -142,8 +150,7 @@ export default {
     },
     mounted: function () {
         let vm = this;
-        vm.form = document.forms.approvalForm;
-        vm.addFormValidations();
+        vm.form = document.forms.surrenderApprovalForm;
         this.$nextTick(() => {
             vm.eventListeners();
         });
@@ -151,9 +158,7 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
-                vm.sendData();
-            }
+            vm.validateForm();
         },
         cancel: function () {
             this.close();
@@ -163,7 +168,8 @@ export default {
             this.approval = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
+            this.form.reset();
+            this.form.classList.remove('was-validated');
         },
         fetchContact: function (id) {
             let vm = this;
@@ -212,39 +218,19 @@ export default {
                     }
                 );
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    to_date: 'required',
-                    surrender_details: 'required',
-                },
-                messages: {
-                    surrender_details: 'Field is required',
-                },
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
+        validateForm: function () {
+            const vm = this;
+
+            if (vm.form.checkValidity()) {
+                console.log('surrenderApprovalForm is valid');
+                vm.sendData();
+            } else {
+                console.log('surrenderApprovalForm is invalid');
+                vm.form.classList.add('was-validated');
+                $(vm.form).find(':invalid').first().focus();
+            }
+
+            return false;
         },
         eventListeners: function () {},
     },
