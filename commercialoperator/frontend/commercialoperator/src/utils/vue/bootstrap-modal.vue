@@ -1,47 +1,61 @@
-<template id="bootstrap-modal">
+<template>
     <div v-show="show" :transition="transition">
-        <div class="modal" @click.self="clickMask">
+        <div
+            :id="id"
+            class="modal"
+            data-bs-backdrop="static"
+            data-bs-keyboard="false"
+            tabindex="-1"
+            role="dialog"
+            aria-hidden="true"
+            @click.self="clickMask"
+        >
             <div class="modal-dialog" :class="modalClass" role="document">
                 <div class="modal-content">
-                    <!--Header-->
                     <slot name="header">
                         <div class="modal-header">
-                            <a type="button" class="close" @click="cancel">x</a>
                             <h4 class="modal-title">
-                                <slot name="title">
-                                    {{ title }}
-                                </slot>
+                                <slot name="title">{{ title }}</slot>
                             </h4>
+                            <button
+                                type="button"
+                                class="btn-close btn-close-white"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                                @click="cancel"
+                            ></button>
                         </div>
                     </slot>
-                    <!--Container-->
                     <div class="modal-body">
                         <slot></slot>
                     </div>
-                    <!--Footer-->
                     <div class="modal-footer">
                         <slot name="footer">
                             <button
-                                id="okBtn"
-                                type="button"
-                                :class="okClass"
-                                @click="ok"
-                            >
-                                {{ okText }}
-                            </button>
-                            <button
                                 type="button"
                                 :class="cancelClass"
+                                class="licensing-btn mb-1"
                                 @click="cancel"
                             >
                                 {{ cancelText }}
+                            </button>
+                            <button
+                                v-if="okText"
+                                id="okBtn"
+                                type="button"
+                                class="btn-primary mb-1"
+                                :class="okClass"
+                                :disabled="okDisabled"
+                                @click="ok"
+                            >
+                                {{ okText }}
                             </button>
                         </slot>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop in"></div>
+        <div class="modal-backdrop show"></div>
     </div>
 </template>
 
@@ -50,6 +64,7 @@
  * Bootstrap Style Modal Component for Vue
  * Depend on Bootstrap.css
  */
+import { v4 as uuid } from 'uuid';
 
 export default {
     props: {
@@ -62,6 +77,10 @@ export default {
             default: false,
         },
         large: {
+            type: Boolean,
+            default: false,
+        },
+        extraLarge: {
             type: Boolean,
             default: false,
         },
@@ -79,7 +98,7 @@ export default {
         },
         okText: {
             type: String,
-            default: 'OK',
+            default: 'Confirm',
         },
         cancelText: {
             type: String,
@@ -87,28 +106,40 @@ export default {
         },
         okClass: {
             type: String,
-            default: 'btn btn-default',
+            default: 'btn btn-primary',
         },
         cancelClass: {
             type: String,
-            default: 'btn btn-default',
+            default: 'btn btn-secondary',
         },
         closeWhenOK: {
             type: Boolean,
             default: false,
         },
+        okDisabled: {
+            type: Boolean,
+            default: false,
+        },
+        scrollable: {
+            type: Boolean,
+            default: false,
+        },
     },
+    emits: ['created', 'mounted', 'ok', 'cancel'],
     data() {
         return {
             duration: null,
+            id: uuid(),
         };
     },
     computed: {
         modalClass() {
             return {
+                'modal-xl': this.extraLarge,
                 'modal-lg': this.large,
                 'modal-sm': this.small,
                 'modal-full': this.full,
+                'modal-dialog-scrollable': this.scrollable,
             };
         },
         show: function () {
@@ -129,12 +160,16 @@ export default {
             }
         },
     },
-    created() {
+    created: function () {
         if (this.show) {
             document.body.className += ' modal-open';
         }
+        this.$emit('created');
     },
-    beforeDestroy() {
+    mounted: function () {
+        this.$emit('mounted');
+    },
+    beforeUnmount() {
         document.body.className = document.body.className.replace(
             /\s?modal-open/,
             ''
@@ -164,51 +199,75 @@ export default {
 .modal {
     display: block;
 }
+
 .modal .btn {
     margin-bottom: 0px;
 }
+
 .modal-header {
     border-top-left-radius: 0.3rem;
     border-top-right-radius: 0.3rem;
+    background-color: #226fbb;
+    color: #fff;
+    background: #3580ca
+        url('../../../../../../staticfiles/img/parks-bg-banner.gif') repeat-x
+        center bottom;
 }
+
+.btn-close {
+    color: #eee;
+}
+
 .modal-footer {
     border-bottom-left-radius: 0.3rem;
     border-bottom-right-radius: 0.3rem;
 }
-.modal-body,
-.modal-footer,
-.modal-header {
+
+.modal-body {
+    background-color: #fff;
+    color: #333333;
+}
+
+.modal-footer {
     /*background-color: #F5F5F5;
         color: #333333;*/
     background-color: #efefef;
     color: #333333;
 }
+
 .modal-transition {
     transition: all 0.6s ease;
 }
+
 .modal-leave {
     border-radius: 1px !important;
 }
+
 .modal-transition .modal-dialog,
 .modal-transition .modal-backdrop {
     transition: all 0.5s ease;
 }
+
 .modal-enter .modal-dialog,
 .modal-leave .modal-dialog {
     opacity: 0;
     transform: translateY(-30%);
 }
+
 .modal-enter .modal-backdrop,
 .modal-leave .modal-backdrop {
     opacity: 0;
 }
+
 .close {
     font-size: 2.5rem;
     opacity: 0.3;
 }
+
 .close:hover {
     opacity: 0.7;
 }
+
 #okBtn {
     margin-bottom: 0px;
 }
