@@ -28,6 +28,7 @@ from commercialoperator.components.stubs.models import (
     DistrictProposalAssessorGroupMembers,
     ProposalApproverGroupMembers,
     ProposalAssessorGroupMembers,
+    QAOfficerGroupMembers,
     ReferralRecipientGroupMembers,
 )
 from commercialoperator.utils import create_helppage_object
@@ -437,6 +438,15 @@ class ReferralRecipientGroupAdmin(admin.ModelAdmin):
         )
 
 
+class QAOfficerGroupMembersInline(admin.TabularInline):
+    model = QAOfficerGroupMembers
+    extra = 0
+    can_delete = False
+    raw_id_fields = ("emailuser",)
+    verbose_name = "QA Officer Group Member"
+    verbose_name_plural = "QA Officer Group Members"
+
+
 @admin.register(models.QAOfficerGroup)
 class QAOfficerGroupAdmin(admin.ModelAdmin):
     filter_horizontal = ("members",)
@@ -448,6 +458,10 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
         "name",
         "default",
     )
+
+    inlines = [
+        QAOfficerGroupMembersInline,
+    ]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "members":
