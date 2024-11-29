@@ -29,7 +29,8 @@ class OrganisationAdmin(EmailUserFieldAdminBase):
 @admin.register(models.OrganisationRequest)
 class OrganisationRequestAdmin(EmailUserFieldAdminBase):
     list_display = ["name", "requester", "abn", "status"]
-
+    raw_id_fields = ["requester", "assigned_officer"]
+    ordering = ["-lodgement_date"]
 
 class OrganisationAccessGroupMembersInline(admin.TabularInline):
     model = OrganisationAccessGroupMembers
