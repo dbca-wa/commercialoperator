@@ -32,6 +32,7 @@ class OrganisationRequestAdmin(EmailUserFieldAdminBase):
     raw_id_fields = ["requester", "assigned_officer"]
     ordering = ["-lodgement_date"]
 
+
 class OrganisationAccessGroupMembersInline(admin.TabularInline):
     model = OrganisationAccessGroupMembers
     extra = 0

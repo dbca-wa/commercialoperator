@@ -944,23 +944,6 @@ class OrganisationRequest(models.Model):
         app_label = "commercialoperator"
         ordering = ["name"]
 
-    def save(self, *args, **kwargs):
-        from django.db import router
-        router.db_for_write(self.__class__, instance=self)
-        self._meta.__dict__
-        router.db_for_write(self.__class__)
-        router.db_for_write(self.__class__, instance=self)
-        self._state.adding # True
-        self._state.db # ledger_db
-        # self._state.db = "test"
-        OrganisationRequest.objects.first()._state.db # default
-        OrganisationRequest.objects.first()._state.adding # False
-        router.db_for_write(self.__class__, instance=OrganisationRequest.objects.first())
-        router.__dict__
-
-        super(self.__class__, self).save(*args, **kwargs)
-        # super(self.__class__, self).save(using="default", **kwargs)
-
     def accept(self, request):
         self.status = "approved"
         self.save()
