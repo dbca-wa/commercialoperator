@@ -151,17 +151,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.35.67"
+version = "1.35.71"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.35.67-py3-none-any.whl", hash = "sha256:db4d8736ef9b0f1972740d464d77edbdf35cd9dcddf9291c645691920f8fa50d"},
-    {file = "boto3-1.35.67.tar.gz", hash = "sha256:4eb793c45123fbca1b2b152ce0d18272d19126cf89809cd6698bf2dfc66270fb"},
+    {file = "boto3-1.35.71-py3-none-any.whl", hash = "sha256:e2969a246bb3208122b3c349c49cc6604c6fc3fc2b2f65d99d3e8ccd745b0c16"},
+    {file = "boto3-1.35.71.tar.gz", hash = "sha256:3ed7172b3d4fceb6218bb0ec3668c4d40c03690939c2fca4f22bb875d741a07f"},
 ]
 
 [package.dependencies]
-botocore = ">=1.35.67,<1.36.0"
+botocore = ">=1.35.71,<1.36.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -170,13 +170,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.35.67"
+version = "1.35.71"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.35.67-py3-none-any.whl", hash = "sha256:c83983c196b4452dd7f298e68a9a224bc8fd58075b60133532848813826611af"},
-    {file = "botocore-1.35.67.tar.gz", hash = "sha256:d782e02f2949889cf97a140a89cd5e9363d0e4b0153db51faf7fc16305c6e0e1"},
+    {file = "botocore-1.35.71-py3-none-any.whl", hash = "sha256:fc46e7ab1df3cef66dfba1633f4da77c75e07365b36f03bd64a3793634be8fc1"},
+    {file = "botocore-1.35.71.tar.gz", hash = "sha256:f9fa058e0393660c3fe53c1e044751beb64b586def0bd2212448a7c328b0cbba"},
 ]
 
 [package.dependencies]
@@ -1223,13 +1223,13 @@ tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "icalendar"
-version = "6.0.1"
+version = "6.1.0"
 description = "iCalendar parser/generator"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "icalendar-6.0.1-py3-none-any.whl", hash = "sha256:9bf3d69203bd0366a9a29a8b0e220574580b86d7918afcb628fc6920287922f3"},
-    {file = "icalendar-6.0.1.tar.gz", hash = "sha256:1ff44825d7b41c3f77eac9e09cc67a770dd3c2377430c23b0eb7d91603088892"},
+    {file = "icalendar-6.1.0-py3-none-any.whl", hash = "sha256:46c09b774a6e6948495dafcb166dc15135c8259d0ae25491f154cbc822714b69"},
+    {file = "icalendar-6.1.0.tar.gz", hash = "sha256:43c2db8632959d634f4e48f6e6131e706bf2cdddad488cf0b72fda079b796bad"},
 ]
 
 [package.dependencies]
@@ -1538,7 +1538,7 @@ django-crispy-forms = "*"
 type = "git"
 url = "https://github.com/dbca-wa/ledger_api_client.git"
 reference = "HEAD"
-resolved_reference = "5f7089d6cc1a459f42d3c1039ccc024897b9b83a"
+resolved_reference = "c015414d7de820fa157eb721a634758627316422"
 
 [[package]]
 name = "linear-tsv"
