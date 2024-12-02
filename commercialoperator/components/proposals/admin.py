@@ -55,6 +55,14 @@ class AmendmentReasonAdmin(admin.ModelAdmin):
 
 @admin.register(models.Proposal)
 class ProposalAdmin(VersionAdmin):
+    raw_id_fields = (
+        "submitter",
+        "org_applicant",
+        "proxy_applicant",
+        "assigned_officer",
+        "assigned_approver",
+        "approved_by",
+    )
     inlines = [
         ProposalDocumentInline,
     ]
