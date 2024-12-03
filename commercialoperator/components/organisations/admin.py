@@ -1,17 +1,25 @@
+from tabnanny import verbose
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.organisations import models
 from commercialoperator.components.organisations.forms import (
     OrganisationAccessGroupAdminForm,
 )
-from commercialoperator.components.stubs.admin import EmailUserFieldAdminBase
 from commercialoperator.components.stubs.models import OrganisationAccessGroupMembers
 
 
+class UserDelegationAdminInline(admin.TabularInline):
+    model = models.UserDelegation
+    extra = 0
+    raw_id_fields = ("user",)
+    verbose_name = "User Delegation"
+    verbose_name_plural = "User Delegations"
+
+
 @admin.register(models.Organisation)
-class OrganisationAdmin(EmailUserFieldAdminBase):
+class OrganisationAdmin(admin.ModelAdmin):
     list_display = [
-        "organisation",
+        "organisation_id",
         "admin_pin_one",
         "admin_pin_two",
         "user_pin_one",
@@ -25,9 +33,11 @@ class OrganisationAdmin(EmailUserFieldAdminBase):
         "user_pin_two",
     )
 
+    inlines = [UserDelegationAdminInline]
+
 
 @admin.register(models.OrganisationRequest)
-class OrganisationRequestAdmin(EmailUserFieldAdminBase):
+class OrganisationRequestAdmin(admin.ModelAdmin):
     list_display = ["name", "requester", "abn", "status"]
     raw_id_fields = ["requester", "assigned_officer"]
     ordering = ["-lodgement_date"]
