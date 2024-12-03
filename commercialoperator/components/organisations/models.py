@@ -83,7 +83,7 @@ class Organisation(models.Model):
         null=True,
     )
     last_event_application_fee_date = models.DateField(
-        "The last date a fee was charged for an Eventi Application",
+        "The last date a fee was charged for an Event Application",
         blank=True,
         null=True,
     )
