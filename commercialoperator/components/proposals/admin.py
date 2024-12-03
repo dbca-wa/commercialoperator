@@ -1,7 +1,10 @@
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals import models
-from commercialoperator.components.bookings.models import ApplicationFeeInvoice
+from commercialoperator.components.bookings.models import (
+    ApplicationFee,
+    ApplicationFeeInvoice,
+)
 from commercialoperator.components.proposals import forms
 from commercialoperator.components.main.models import (
     SystemMaintenance,
@@ -492,9 +495,15 @@ class QuestionAdmin(admin.ModelAdmin):
     ordering = ("question_text",)
 
 
+@admin.register(ApplicationFee)
+class ApplicationFeeAdmin(admin.ModelAdmin):
+    raw_id_fields = ("proposal", "created_by")
+
+
 @admin.register(ApplicationFeeInvoice)
 class SectionAdmin(admin.ModelAdmin):
     list_display = [f.name for f in ApplicationFeeInvoice._meta.fields]
+    raw_id_fields = ("application_fee",)
 
 
 class DistrictProposalAssessorGroupMembersInline(admin.TabularInline):
