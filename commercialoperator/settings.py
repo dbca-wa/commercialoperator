@@ -422,6 +422,7 @@ CACHE_TIMEOUT_NEVER = None
 # Cache keys
 CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
+CACHE_KEY_LEDGER_USER_INFO = "ledger-user-info-{}"
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"

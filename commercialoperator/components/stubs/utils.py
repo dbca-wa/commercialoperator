@@ -10,6 +10,7 @@ from ledger_api_client.utils import (
     update_payments as ledger_update_payments,
     get_all_organisation,
 )
+from ledger_api_client.common import get_ledger_user_info_by_id
 
 import logging
 
@@ -226,6 +227,25 @@ def retrieve_organisation_delegate_ids(organisation_id):
     ).values_list("user_id", flat=True)
 
     return delegate_ids
+
+
+def retrieve_ledger_user_info_by_id(email_user_id):
+    """Queries ledger user info, that contains user details or information status"""
+
+    cache_key = settings.CACHE_KEY_LEDGER_USER_INFO.format(email_user_id)
+    cache_timeout = settings.CACHE_TIMEOUT_5_SECONDS
+
+    user_info = cache.get(cache_key)
+
+    if user_info is None:
+        user_info = get_ledger_user_info_by_id(f"{email_user_id}")
+        if user_info.get("status", None) != status.HTTP_200_OK:
+            return {}
+
+        cache.set(cache_key, user_info, cache_timeout)
+        return user_info
+    else:
+        return user_info
 
 
 class ListAsQuerySet(list):

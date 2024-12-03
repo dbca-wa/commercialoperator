@@ -19,11 +19,14 @@ from commercialoperator.components.stubs.models import (
     EmailUserAction,
     EmailUserLogEntry,
 )
-from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
+from commercialoperator.components.stubs.utils import (
+    retrieve_delegate_organisation_ids,
+    retrieve_ledger_user_info_by_id,
+)
 from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin
 from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers, status
-from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.helpers import is_payment_admin
 from ledger_api_client.utils import get_organisation
 from django.utils import timezone
@@ -40,10 +43,43 @@ class DocumentSerializer(serializers.ModelSerializer):
         fields = ("id", "description", "file", "name", "uploaded_date")
 
 
-class UserAddressSerializer(serializers.ModelSerializer):
+class UserAddressSerializer(serializers.Serializer):
+    id = serializers.SerializerMethodField()
+    line1 = serializers.SerializerMethodField()
+    locality = serializers.SerializerMethodField()
+    state = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    postcode = serializers.SerializerMethodField()
+
     class Meta:
-        model = Address
         fields = ("id", "line1", "locality", "state", "country", "postcode")
+
+    @staticmethod
+    def get_user_residential_address(user_id):
+        return (
+            retrieve_ledger_user_info_by_id(user_id)
+            .get("user", {})
+            .get("residential_address", {})
+        )
+
+    def get_id(self, obj):
+        # Not a model serializer, return residential_address_id
+        return obj.residential_address_id
+
+    def get_line1(self, obj):
+        return self.get_user_residential_address(obj.id).get("line1")
+
+    def get_locality(self, obj):
+        return self.get_user_residential_address(obj.id).get("locality")
+
+    def get_state(self, obj):
+        return self.get_user_residential_address(obj.id).get("state")
+
+    def get_country(self, obj):
+        return self.get_user_residential_address(obj.id).get("country")
+
+    def get_postcode(self, obj):
+        return self.get_user_residential_address(obj.id).get("postcode")
 
 
 class UserSystemSettingsSerializer(serializers.ModelSerializer):
@@ -170,7 +206,7 @@ class UserFilterSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     commercialoperator_organisations = serializers.SerializerMethodField()
-    residential_address = UserAddressSerializer()
+    residential_address = UserAddressSerializer(source="*")
     personal_details = serializers.SerializerMethodField()
     address_details = serializers.SerializerMethodField()
     contact_details = serializers.SerializerMethodField()
@@ -209,7 +245,9 @@ class UserSerializer(serializers.ModelSerializer):
         return True if obj.last_name and obj.first_name else False
 
     def get_address_details(self, obj):
-        return True if obj.residential_address else False
+        user_obj = retrieve_ledger_user_info_by_id(obj.id).get("user", {})
+
+        return bool(user_obj.get("residential_address", {}))
 
     def get_contact_details(self, obj):
         if obj.mobile_number and obj.email:
@@ -247,11 +285,11 @@ class UserSerializer(serializers.ModelSerializer):
                 # Get the organisation object from ledger
                 ledger_organisation = organisations_response.get("data", [])
                 # Add the cols organisation model id to the ledger organisation object
-                commercialoperator_organisation = Organisation.objects.get(organisation_id=org_id)
-                ledger_organisation["id"] = commercialoperator_organisation.id
-                commercialoperator_organisations.append(
-                    ledger_organisation
+                commercialoperator_organisation = Organisation.objects.get(
+                    organisation_id=org_id
                 )
+                ledger_organisation["id"] = commercialoperator_organisation.id
+                commercialoperator_organisations.append(ledger_organisation)
                 # Note: Set a cache here
             else:
                 raise serializers.ValidationError(
