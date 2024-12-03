@@ -38,7 +38,7 @@ class OrganisationAdmin(admin.ModelAdmin):
 
 @admin.register(models.OrganisationRequest)
 class OrganisationRequestAdmin(admin.ModelAdmin):
-    list_display = ["name", "requester", "abn", "status"]
+    list_display = ["name", "requester_id", "abn", "status"]
     raw_id_fields = ["requester", "assigned_officer"]
     ordering = ["-lodgement_date"]
 
