@@ -821,7 +821,8 @@ class UserDelegation(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return "Org: {}, User: {}".format(self.organisation, self.user)
+        user = retrieve_email_user(self.user_id)
+        return f"Org: {self.organisation}, User: {user}"
 
 
 class OrganisationAction(UserAction):
