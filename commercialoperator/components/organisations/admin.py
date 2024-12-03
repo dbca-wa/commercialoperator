@@ -57,8 +57,6 @@ class OrganisationAccessGroupAdmin(admin.ModelAdmin):
     form = OrganisationAccessGroupAdminForm
     exclude = ("site",)
     actions = None
-    readonly_fields = ["staff_members"]
-    fields = ("staff_members",)
     inlines = [OrganisationAccessGroupMembersInline]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
@@ -73,8 +71,3 @@ class OrganisationAccessGroupAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-    def staff_members(self, obj):
-        return ", ".join(
-            [m.get_full_name() for m in EmailUser.objects.filter(is_staff=True)]
-        )
