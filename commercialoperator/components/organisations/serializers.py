@@ -103,12 +103,17 @@ class DelegateSerializer(serializers.ModelSerializer):
 
 
 class OrganisationSerializer(serializers.ModelSerializer):
-    address = OrganisationAddressSerializer(read_only=True)
+    organisation_name = serializers.CharField(source="name")
+    organisation_abn = serializers.CharField(source="abn")
+    organisation_address = OrganisationAddressSerializer(
+        source="address", read_only=True
+    )
+    organisation_email = serializers.EmailField(source="email")
     pins = serializers.SerializerMethodField(read_only=True)
     delegates = serializers.SerializerMethodField(read_only=True)
     organisation = serializers.IntegerField(source="organisation_id")
     organisation_id = serializers.IntegerField()
-    trading_name = serializers.SerializerMethodField(read_only=True)
+    organisation_trading_name = serializers.SerializerMethodField(read_only=True)
     apply_application_discount = serializers.SerializerMethodField(read_only=True)
     application_discount = serializers.SerializerMethodField(read_only=True)
     apply_licence_discount = serializers.SerializerMethodField(read_only=True)
@@ -124,11 +129,11 @@ class OrganisationSerializer(serializers.ModelSerializer):
         model = Organisation
         fields = (
             "id",
-            "name",
-            "trading_name",
-            "abn",
-            "address",
-            "email",
+            "organisation_name",
+            "organisation_trading_name",
+            "organisation_abn",
+            "organisation_address",
+            "organisation_email",
             "organisation",
             "organisation_id",
             "phone_number",
@@ -142,12 +147,6 @@ class OrganisationSerializer(serializers.ModelSerializer):
             "max_num_months_ahead",
             "last_event_application_fee_date",
         )
-
-    # def to_representation(self, instance):
-    #     if settings.DEV_EMAILUSER_REPLACEMENT_ID and not get_organisation(instance):
-    #         # For dev purposes, replace the organisation id with the replacement id if the organisation does not exist in ledger
-    #         instance = settings.DEV_ORGANISATION_REPLACEMENT_ID
-    #     return super().to_representation(instance)
 
     def get_apply_application_discount(self, obj):
         return obj.apply_application_discount
@@ -207,7 +206,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
 
         return delegates
 
-    def get_trading_name(self, obj):
+    def get_organisation_trading_name(self, obj):
         organisation_response = get_organisation(obj.organisation_id)
         if organisation_response["status"] == status.HTTP_200_OK:
             return organisation_response["data"]["organisation_trading_name"]
