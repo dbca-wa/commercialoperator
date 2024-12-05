@@ -3,7 +3,9 @@
         <div class="row">
             <div class="col-md-10 col-md-offset-1">
                 <div class="row">
-                    <h3>{{ org.name }} - {{ org.abn }}</h3>
+                    <h3>
+                        {{ org.organisation_name }} - {{ org.organisation_abn }}
+                    </h3>
                     <div class="col-md-3">
                         <CommsLogs
                             :comms_url="comms_url"
@@ -75,7 +77,7 @@
                                                         <div class="col-sm-9">
                                                             <input
                                                                 v-model="
-                                                                    org.name
+                                                                    org.organisation_name
                                                                 "
                                                                 type="text"
                                                                 class="form-control"
@@ -95,7 +97,7 @@
                                                         <div class="col-sm-9">
                                                             <input
                                                                 v-model="
-                                                                    org.trading_name
+                                                                    org.organisation_trading_name
                                                                 "
                                                                 type="text"
                                                                 class="form-control"
@@ -115,7 +117,7 @@
                                                         <div class="col-sm-9">
                                                             <input
                                                                 v-model="
-                                                                    org.abn
+                                                                    org.organisation_abn
                                                                 "
                                                                 type="text"
                                                                 class="form-control"
@@ -138,7 +140,7 @@
                                                         <div class="col-sm-6">
                                                             <input
                                                                 v-model="
-                                                                    org.email
+                                                                    org.organisation_email
                                                                 "
                                                                 type="text"
                                                                 class="form-control"
@@ -501,7 +503,8 @@
                                                         <div class="col-sm-6">
                                                             <input
                                                                 v-model="
-                                                                    org.address
+                                                                    org
+                                                                        .organisation_address
                                                                         .line1
                                                                 "
                                                                 type="text"
@@ -522,7 +525,8 @@
                                                         <div class="col-sm-6">
                                                             <input
                                                                 v-model="
-                                                                    org.address
+                                                                    org
+                                                                        .organisation_address
                                                                         .locality
                                                                 "
                                                                 type="text"
@@ -543,7 +547,8 @@
                                                         <div class="col-sm-3">
                                                             <input
                                                                 v-model="
-                                                                    org.address
+                                                                    org
+                                                                        .organisation_address
                                                                         .state
                                                                 "
                                                                 type="text"
@@ -560,7 +565,8 @@
                                                         <div class="col-sm-3">
                                                             <input
                                                                 v-model="
-                                                                    org.address
+                                                                    org
+                                                                        .organisation_address
                                                                         .postcode
                                                                 "
                                                                 type="text"
@@ -581,7 +587,8 @@
                                                         <div class="col-sm-4">
                                                             <select
                                                                 v-model="
-                                                                    org.address
+                                                                    org
+                                                                        .organisation_address
                                                                         .country
                                                                 "
                                                                 class="form-control"
@@ -973,7 +980,10 @@ export default {
                 vm.countries = data[0];
                 vm.org = data[1];
                 vm.profile = data[2];
-                vm.org.address = vm.org.address != null ? vm.org.address : {};
+                vm.org.organisation_address =
+                    vm.org.organisation_address != null
+                        ? vm.org.organisation_address
+                        : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
                 vm.is_commercialoperator_admin =
                     vm.profile.is_commercialoperator_admin;
@@ -993,7 +1003,10 @@ export default {
                 vm.is_commercialoperator_admin =
                     vm.profile.is_commercialoperator_admin;
                 vm.is_org_access_member = vm.profile.is_org_access_member;
-                vm.org.address = vm.org.address != null ? vm.org.address : {};
+                vm.org.organisation_address =
+                    vm.org.organisation_address != null
+                        ? vm.org.organisation_address
+                        : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
             });
         });
@@ -1011,7 +1024,7 @@ export default {
             dTab: 'dTab' + vm._uid,
             oTab: 'oTab' + vm._uid,
             org: {
-                address: {},
+                organisation_address: {},
             },
             loading: [],
             countries: [],
@@ -2111,8 +2124,8 @@ export default {
                     (response) => {
                         vm.updatingDetails = false;
                         vm.org = response.body;
-                        if (vm.org.address == null) {
-                            vm.org.address = {};
+                        if (vm.org.organisation_address == null) {
+                            vm.org.organisation_address = {};
                         }
                         swal.fire({
                             title: 'Saved',
@@ -2193,7 +2206,7 @@ export default {
                         api_endpoints.organisations,
                         vm.org.id + '/update_address'
                     ),
-                    JSON.stringify(vm.org.address),
+                    JSON.stringify(vm.org.organisation_address),
                     {
                         emulateJSON: true,
                     }
@@ -2207,8 +2220,8 @@ export default {
                             text: 'Address details have been saved',
                             icon: 'success',
                         });
-                        if (vm.org.address == null) {
-                            vm.org.address = {};
+                        if (vm.org.organisation_address == null) {
+                            vm.org.organisation_address = {};
                         }
                     },
                     (error) => {
