@@ -287,38 +287,35 @@ class MyOrganisationsSerializer(serializers.ModelSerializer):
 
 
 class DetailsSerializer(serializers.ModelSerializer):
-    # Note: Below four fields are commented out because they do not exist on the model
-    # name = serializers.CharField(
-    #     max_length=255,
-    #     default="",
-    # )
-    # trading_name = serializers.CharField(
-    #     source="ledger_organisation_trading_name",
-    #     required=False,
-    #     allow_blank=True,
-    #     allow_null=True,
-    # )
-    # email = serializers.EmailField(
-    #     required=False,
-    #     allow_blank=True,
-    #     allow_null=True,
-    # )
-    # abn = serializers.CharField(
-    #     max_length=11,
-    #     required=False,
-    #     allow_blank=True,
-    #     allow_null=True,
-    # )
+    organisation_name = serializers.CharField(
+        max_length=255,
+        default="",
+    )
+    organisation_trading_name = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+    organisation_email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+    organisation_abn = serializers.CharField(
+        max_length=11,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
 
     class Meta:
-        # model = ledger_organisation
         model = Organisation
         fields = (
             "id",
-            "name",
-            # "trading_name", # Commented out because it does not exist on model
-            "email",
-            "abn",
+            "organisation_name",
+            "organisation_trading_name",
+            "organisation_email",
+            "organisation_abn",
         )
 
     def validate(self, data):

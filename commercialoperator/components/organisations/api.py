@@ -596,7 +596,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                     "message": "You do not have permission to update this organisation."
                 },
             )
-        # Note: Calling this function doesn't update the ledger name, trading name, email entries.
         response_ledger = update_organisation_obj(request.data)
         response_ledger_status = response_ledger.get("status", None)
         if not response_ledger_status == status.HTTP_200_OK:
