@@ -1,10 +1,16 @@
 from rest_framework import filters
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class LedgerOrganisationFilterBackend(filters.SearchFilter):
     def filter_queryset(self, request, queryset, view):
         search_fields = view.search_fields
         search_term = request.GET.get("search")
+        if not search_term:
+            logger.warning("No search term provided")
+            return queryset
 
         if isinstance(queryset, list):
             search_dict = {f"{field}": search_term for field in search_fields}
