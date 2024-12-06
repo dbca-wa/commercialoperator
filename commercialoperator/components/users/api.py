@@ -126,7 +126,7 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = UserAddressSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if instance.residential_address:
+        if instance.residential_address_id:
             # address = Address.objects.filter(id=instance.residential_address.id)
             account_details_response = get_account_details(request, str(instance.id))
             if account_details_response.status_code != status.HTTP_200_OK:
