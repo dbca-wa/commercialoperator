@@ -42,6 +42,9 @@ from commercialoperator.helpers import is_customer
 
 # from commercialoperator.components.approvals.email import send_referral_email_notification
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def update_approval_doc_filename(instance, filename):
     return "{}/proposals/{}/approvals/{}".format(
@@ -222,7 +225,7 @@ class Approval(RevisionedMixin):
                     if num_months <= num_expiry_months
                 ]
         else:
-            logger.warn(
+            logger.warning(
                 f"Expiry not set: Cannot create Notification Dates for Approval {self.lodgement_number}"
             )
 

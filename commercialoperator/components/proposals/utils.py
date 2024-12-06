@@ -1364,7 +1364,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
             else:
-                logger.warn(
+                logger.warning(
                     "Possible duplicate Accreditation Type for Application {}".format(
                         instance.lodgement_number
                     )

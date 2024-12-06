@@ -5873,7 +5873,7 @@ def duplicate_object(self):
                 try:
                     related_object.save()
                 except Exception as e:
-                    logger.warn(e)
+                    logger.warning(e)
 
                 text = str(related_object)
                 text = (text[:40] + "..") if len(text) > 40 else text

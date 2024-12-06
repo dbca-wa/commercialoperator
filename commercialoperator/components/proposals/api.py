@@ -621,7 +621,7 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset.exclude(application_type=self.excluded_type)
-        # logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+        # logger.warning("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
 

@@ -36,7 +36,7 @@ def enable_rewewals(lodgement_numbers):
     )
 
     if not qs.exists():
-        logger.warn(f"Approval(s) not found - Exiting ...")
+        logger.warning(f"Approval(s) not found - Exiting ...")
 
     for idx, a in enumerate(qs):
         if a.status == "current" or a.status == "suspended":
@@ -46,8 +46,8 @@ def enable_rewewals(lodgement_numbers):
                 a.renewal_sent = True
                 a.save()
 
-                logger.warn(f"Approval updated: {a}")
+                logger.warning(f"Approval updated: {a}")
             except Exception as e:
                 logger.error(f"{e}")
         else:
-            logger.warn(f"Approval status incorrect - not updated: {a}")
+            logger.warning(f"Approval status incorrect - not updated: {a}")
