@@ -596,6 +596,12 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                     "message": "You do not have permission to update this organisation."
                 },
             )
+
+        serializer = DetailsSerializer(
+            instance, data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+
         response_ledger = update_organisation_obj(request.data)
         response_ledger_status = response_ledger.get("status", None)
         if not response_ledger_status == status.HTTP_200_OK:
@@ -608,10 +614,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
         )
 
-        serializer = DetailsSerializer(
-            instance, data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
         if is_internal(request) and "apply_application_discount" in request.data:
@@ -645,7 +647,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-
     @action(
         methods=[
             "POST",
@@ -654,10 +655,12 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     @basic_exception_handler
     def update_address(self, request, *args, **kwargs):
+        raise NotImplementedError(
+            "Updating addresses needs to be implemented in ledger api client"
+        )
         instance = self.get_object()
         request.data["organisation_id"] = instance.organisation_id
         return self.update_details(request, *args, **kwargs)
-
 
     @action(
         methods=[

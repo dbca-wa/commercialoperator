@@ -2230,7 +2230,7 @@ export default {
                             title: 'Error',
                             text:
                                 'Address details cannot be saved because of the following error: ' +
-                                error.body.message,
+                                (error.body.message || error.body.detail),
                             icon: 'error',
                         });
                         vm.updatingAddress = false;
