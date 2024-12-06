@@ -112,6 +112,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         serializer = UserSerializer(instance, context={"request": request})
+
+        raise NotImplementedError("Need to implement contact update in ledger")
         return Response(serializer.data)
 
     @action(
