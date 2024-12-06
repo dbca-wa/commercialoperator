@@ -1,5 +1,8 @@
 from django.conf import settings
 from django.db.models import Q
+from commercialoperator.components.main.mixins import (
+    RetrieveUserResidentialAddressMixin,
+)
 from commercialoperator.components.organisations.models import (
     Organisation,
 )
@@ -43,7 +46,9 @@ class DocumentSerializer(serializers.ModelSerializer):
         fields = ("id", "description", "file", "name", "uploaded_date")
 
 
-class UserAddressSerializer(serializers.Serializer):
+class UserAddressSerializer(
+    serializers.Serializer, RetrieveUserResidentialAddressMixin
+):
     id = serializers.SerializerMethodField()
     line1 = serializers.SerializerMethodField()
     locality = serializers.SerializerMethodField()
@@ -53,14 +58,6 @@ class UserAddressSerializer(serializers.Serializer):
 
     class Meta:
         fields = ("id", "line1", "locality", "state", "country", "postcode")
-
-    @staticmethod
-    def get_user_residential_address(user_id):
-        return (
-            retrieve_ledger_user_info_by_id(user_id)
-            .get("user", {})
-            .get("residential_address", {})
-        )
 
     def get_id(self, obj):
         # Not a model serializer, return residential_address_id

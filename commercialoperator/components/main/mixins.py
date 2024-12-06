@@ -2,6 +2,10 @@ from django.db import models
 from reversion.models import Version
 from reversion import revisions
 
+from commercialoperator.components.stubs.utils import (
+    retrieve_ledger_user_info_by_id,
+)
+
 
 class RevisionedMixin(models.Model):
     """
@@ -29,3 +33,13 @@ class RevisionedMixin(models.Model):
 
     class Meta:
         abstract = True
+
+
+class RetrieveUserResidentialAddressMixin:
+    @staticmethod
+    def get_user_residential_address(user_id):
+        return (
+            retrieve_ledger_user_info_by_id(user_id)
+            .get("user", {})
+            .get("residential_address", {})
+        )
