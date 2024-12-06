@@ -130,11 +130,9 @@ class EmailUserAppViewSerializer(EmailUserAppViewBaseSerializer):
         emailuser = retrieve_email_user(obj)
         if not emailuser:
             return None
-        return (
-            UserAddressSerializer(emailuser.residential_address).data
-            if emailuser.residential_address
-            else None
-        )
+
+        return UserAddressSerializer(emailuser).data
+
 
 
 class ProposalApplicantDetailsSerializer(serializers.ModelSerializer):

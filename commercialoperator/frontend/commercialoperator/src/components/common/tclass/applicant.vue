@@ -20,7 +20,8 @@
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.name
+                                                proposal.org_applicant
+                                                    .organisation_name
                                             "
                                             disabled
                                             type="text"
@@ -39,7 +40,7 @@
                                         <input
                                             v-model="
                                                 proposal.org_applicant
-                                                    .trading_name
+                                                    .organisation_trading_name
                                             "
                                             disabled
                                             type="text"
@@ -56,7 +57,10 @@
                                     >
                                     <div class="col-sm-6">
                                         <input
-                                            v-model="proposal.org_applicant.abn"
+                                            v-model="
+                                                proposal.org_applicant
+                                                    .organisation_abn
+                                            "
                                             disabled
                                             type="text"
                                             class="form-control"
@@ -121,7 +125,7 @@
                         <FormSection
                             v-if="
                                 applicantType == 'ORG' &&
-                                proposal.org_applicant.address
+                                proposal.org_applicant.organisation_address
                             "
                             :form-collapse="false"
                             label="Address Details"
@@ -136,8 +140,8 @@
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
-                                                    .line1
+                                                proposal.org_applicant
+                                                    .organisation_address.line1
                                             "
                                             disabled
                                             type="text"
@@ -154,7 +158,8 @@
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
+                                                proposal.org_applicant
+                                                    .organisation_address
                                                     .locality
                                             "
                                             disabled
@@ -172,8 +177,8 @@
                                     <div class="col-sm-2">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
-                                                    .state
+                                                proposal.org_applicant
+                                                    .organisation_address.state
                                             "
                                             disabled
                                             type="text"
@@ -188,7 +193,8 @@
                                     <div class="col-sm-2">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
+                                                proposal.org_applicant
+                                                    .organisation_address
                                                     .postcode
                                             "
                                             disabled
@@ -206,7 +212,8 @@
                                     <div class="col-sm-4">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
+                                                proposal.org_applicant
+                                                    .organisation_address
                                                     .country
                                             "
                                             disabled
