@@ -162,7 +162,6 @@ class GetEmptyList(views.APIView):
         return Response([])
 
 
-
 """
 1. internal_proposal.json
 2. regions.json
@@ -3029,11 +3028,9 @@ class AmendmentRequestReasonChoicesView(views.APIView):
 
     def get(self, request, format=None):
         choices_list = []
-        # choices = AmendmentRequest.REASON_CHOICES
         choices = AmendmentReason.objects.all()
         if choices:
             for c in choices:
-                # choices_list.append({'key': c[0],'value': c[1]})
                 choices_list.append({"key": c.id, "value": c.reason})
         return Response(choices_list)
 
