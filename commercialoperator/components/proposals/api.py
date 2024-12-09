@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 from django.conf import settings
 from django.utils import timezone
 from rest_framework import viewsets, serializers, status, views
@@ -2996,12 +2997,21 @@ class AccreditationTypeView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        # choices = ProposalOtherDetails.ACCREDITATION_TYPE_CHOICES
-        choices = ProposalAccreditation.ACCREDITATION_TYPE_CHOICES
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c[0], "value": c[1]})
+        choices_list = cache.get(settings.CACHE_KEY_ACCREDITATION_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = ProposalAccreditation.ACCREDITATION_TYPE_CHOICES
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c[0], "value": c[1]})
+
+            cache.set(
+                settings.CACHE_KEY_ACCREDITATION_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
+
         return Response(choices_list)
 
 
@@ -3012,11 +3022,20 @@ class LicencePeriodChoicesView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        choices = LicencePeriod.LICENCE_PERIOD_CHOICES
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c[0], "value": c[1]})
+        choices_list = cache.get(settings.CACHE_KEY_LICENCE_PERIOD_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = LicencePeriod.LICENCE_PERIOD_CHOICES
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c[0], "value": c[1]})
+
+            cache.set(
+                settings.CACHE_KEY_LICENCE_PERIOD_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
         return Response(choices_list)
 
 
@@ -3027,11 +3046,20 @@ class AmendmentRequestReasonChoicesView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        choices = AmendmentReason.objects.all()
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c.id, "value": c.reason})
+        choices_list = cache.get(settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES)
+        if choices_list is None:
+            choices_list = []
+            choices = AmendmentReason.objects.all()
+
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c.id, "value": c.reason})
+
+            cache.set(
+                settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
         return Response(choices_list)
 
 
@@ -3042,11 +3070,21 @@ class FilmingLicenceChargeView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        choices = Proposal.FILMING_LICENCE_CHARGE_CHOICES
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c[0], "value": c[1]})
+        choices_list = cache.get(settings.CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = Proposal.FILMING_LICENCE_CHARGE_CHOICES
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c[0], "value": c[1]})
+
+            cache.set(
+                settings.CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
+
         return Response(choices_list)
 
 

@@ -1,5 +1,7 @@
 import json
 import traceback
+from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -47,11 +49,18 @@ class GetCountries(views.APIView):
     renderer_classes = [
         JSONRenderer,
     ]
-
     def get(self, request, format=None):
-        country_list = []
-        for country in list(countries):
-            country_list.append({"name": country.name, "code": country.code})
+        country_list = cache.get(settings.CACHE_KEY_COUNTRY_LIST)
+        if not country_list:
+            country_list = []
+            for country in list(countries):
+                country_list.append({"name": country.name, "code": country.code})
+            cache.set(
+                settings.CACHE_KEY_COUNTRY_LIST,
+                country_list,
+                settings.CACHE_TIMEOUT_2_HOURS,
+            )
+
         return Response(country_list)
 
 

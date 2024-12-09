@@ -423,6 +423,12 @@ CACHE_TIMEOUT_NEVER = None
 CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
 CACHE_KEY_LEDGER_USER_INFO = "ledger-user-info-{}"
+CACHE_KEY_COUNTRY_LIST = "country_list"
+CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES = "amendment_request_reason_choices"
+CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES = "compliance_amendment_reason_choices"
+CACHE_KEY_ACCREDITATION_CHOICES = "accreditation_choices"
+CACHE_KEY_LICENCE_PERIOD_CHOICES = "licence_period_choices"
+CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES = "filming_licence_charge_choices"
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"

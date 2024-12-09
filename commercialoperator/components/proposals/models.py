@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
+from django.core.cache import cache
 
 # from django.contrib.postgres.fields.jsonb import JSONField
 from django.db.models import JSONField
@@ -4063,6 +4064,10 @@ class ProposalAccreditation(models.Model):
     class Meta:
         app_label = "commercialoperator"
 
+    def save(self, *args, **kwargs):
+        super(ProposalAccreditation, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_ACCREDITATION_CHOICES)
+
 
 class ProposalPark(models.Model):
     park = models.ForeignKey(
@@ -4344,6 +4349,10 @@ class AmendmentReason(models.Model):
 
     def __str__(self):
         return self.reason
+
+    def save(self, *args, **kwargs):
+        super(AmendmentReason, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES)
 
 
 class AmendmentRequest(ProposalRequest):

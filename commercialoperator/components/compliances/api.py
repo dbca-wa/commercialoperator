@@ -2,6 +2,8 @@ import traceback
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
+from django.conf import settings
 from rest_framework import viewsets, serializers, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
@@ -510,9 +512,18 @@ class ComplianceAmendmentReasonChoicesView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        choices = ComplianceAmendmentReason.objects.all()
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c.id, "value": c.reason})
+        choices_list = cache.get(settings.CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = ComplianceAmendmentReason.objects.all()
+
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c.id, "value": c.reason})
+            cache.set(
+                settings.CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
         return Response(choices_list)

@@ -1,5 +1,7 @@
 import os
 
+from django.core.cache import cache
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -99,6 +101,10 @@ class LicencePeriod(models.Model):
 
     def __str__(self):
         return f"{self.licence_period} - {self.renewal_month}"
+
+    def save(self, *args, **kwargs):
+        super(LicencePeriod, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_LICENCE_PERIOD_CHOICES)
 
     @property
     def notification_months_tolist(self):
