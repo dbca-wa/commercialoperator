@@ -39,21 +39,10 @@ RUN chown -R oim.oim /app
 #ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/bin
 #ENV PATH $NODE_PATH:$PATH
 
-# Health checks for kubernetes 
-RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin/health_check.sh -O /bin/health_check.sh
-RUN chmod 755 /bin/health_check.sh
-
-# scheduler
-RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin-python/scheduler/scheduler.py -O /bin/scheduler.py
-RUN chmod 755 /bin/scheduler.py
-
-# Add azcopy to container
-RUN mkdir /tmp/azcopy/
-RUN wget https://aka.ms/downloadazcopy-v10-linux -O /tmp/azcopy/azcopy.tar.gz
-RUN cd /tmp/azcopy/ ; tar -xzvf azcopy.tar.gz
-RUN cp /tmp/azcopy/azcopy_linux_amd64_10.26.0/azcopy /bin/azcopy
-RUN chmod 755 /bin/azcopy
-
+# Default Scripts
+RUN wget https://raw.githubusercontent.com/dbca-wa/wagov_utils/main/wagov_utils/bin/default_script_installer.sh -O /tmp/default_script_installer.sh
+RUN chmod 755 /tmp/default_script_installer.sh
+RUN /tmp/default_script_installer.sh
 
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
