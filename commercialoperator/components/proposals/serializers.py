@@ -64,18 +64,14 @@ from rest_framework import serializers
 
 
 class ProposalTypeSerializer(serializers.ModelSerializer):
-    activities = serializers.SerializerMethodField()
     class Meta:
         model = ProposalType
         fields = (
             'id',
             'schema',
-            'activities'
         )
 
 
-    def get_activities(self,obj):
-        return obj.activities.names()
 
 class EmailUserSerializer(EmailUserRoSerializer):
     pass
