@@ -511,7 +511,6 @@ class ComplianceAmendmentReasonChoicesView(views.APIView):
 
     def get(self, request, format=None):
         choices_list = []
-        # choices = ComplianceAmendmentRequest.REASON_CHOICES
         choices = ComplianceAmendmentReason.objects.all()
         if choices:
             for c in choices:
