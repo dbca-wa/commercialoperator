@@ -1,6 +1,9 @@
 from rest_framework import filters
 
+from django.db.models import Q
+
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -8,9 +11,12 @@ class LedgerOrganisationFilterBackend(filters.SearchFilter):
     def filter_queryset(self, request, queryset, view):
         search_fields = view.search_fields
         search_term = request.GET.get("search")
-        if not search_term:
+        if search_term is None:
             logger.warning("No search term provided")
             return queryset
+        if len(search_term) <= 1:
+            logger.warning("Search term too short")
+            return []
 
         if isinstance(queryset, list):
             search_dict = {f"{field}": search_term for field in search_fields}
@@ -27,10 +33,13 @@ class LedgerOrganisationFilterBackend(filters.SearchFilter):
                 ):
                     queryset.remove(qs)
         else:
-            # TODO: Proper filter implementation
             search_dict = {
                 f"{field}__icontains": search_term for field in search_fields
             }
-            queryset.filter(**search_dict)
+            queryset.filter(Q(**search_dict))
+            # Do we ever land in this branch of the conditional?
+            raise NotImplementedError(
+                "This filter_queryset implementation is not yet implemented"
+            )
 
         return queryset

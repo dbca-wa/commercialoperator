@@ -12,11 +12,11 @@
                             <form name="searchOrganisationForm">
                                 <div class="col-md-4">
                                     <div class="form-group">
+                                        <!-- Omitting the label for being redundant information -->
                                         <label
                                             class="control-label"
                                             for="Organisation"
-                                            >Search Organisation</label
-                                        >
+                                        ></label>
 
                                         <TextFilteredOrgField
                                             id="id_org"
@@ -53,11 +53,11 @@
                                 <div class="">
                                     <div class="col-md-4">
                                         <div class="form-group">
+                                            <!-- Omitting the label for being redundant information -->
                                             <label
                                                 class="control-label"
                                                 for="User"
-                                                >Search User</label
-                                            >
+                                            ></label>
 
                                             <TextFilteredField
                                                 id="id_holder"

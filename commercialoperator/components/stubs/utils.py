@@ -9,6 +9,7 @@ from ledger_api_client.utils import (
     oracle_parser as ledger_oracle_parser,
     update_payments as ledger_update_payments,
     get_all_organisation,
+    get_search_organisation,
 )
 from ledger_api_client.common import get_ledger_user_info_by_id
 
@@ -265,9 +266,25 @@ def filter_organisation_list(view, request, *args, **kwargs):
     from commercialoperator.components.stubs.models import LedgerOrganisation
 
     queryset = view.get_queryset()
-    ledger_organisation_response = get_all_organisation()
+
+    search_term = request.query_params.get("search", None)
+    if search_term is None:
+        ledger_organisation_response = get_all_organisation()
+    elif search_term.isdigit():
+        logger.debug("Searching for organisation ABN")
+        # Function signature: get_search_organisation(organisation_name, organisation_abn)
+        ledger_organisation_response = get_search_organisation(None, search_term)
+    else:
+        logger.debug("Searching for organisation name")
+        ledger_organisation_response = get_search_organisation(search_term, None)
+
     if ledger_organisation_response["status"] == status.HTTP_200_OK:
         ledger_organisations = ledger_organisation_response["data"]
+    else:
+        logger.debug(
+            f"Failed to retrieve organisations from ledger: {ledger_organisation_response.get("message", "")}"
+        )
+        return LedgerOrganisation.objects.none()
 
     org_ids = queryset.values_list("organisation_id", flat=True)
 
@@ -278,6 +295,6 @@ def filter_organisation_list(view, request, *args, **kwargs):
     organisations = [LedgerOrganisation(**org_dict) for org_dict in organisation_dicts]
     organisations = view.filter_queryset(
         ListAsQuerySet(organisations, model=LedgerOrganisation)
-    )
+    )[:10]
 
     return organisations

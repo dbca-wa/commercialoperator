@@ -673,17 +673,13 @@ class OrganisationViewSet(viewsets.ModelViewSet):
 
 
 class OrganisationListFilterView(generics.ListAPIView):
-    """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
-
     queryset = Organisation.objects.none()
     serializer_class = LedgerOrganisationFilterSerializer
-    # filter_backends = (filters.SearchFilter,)
     filter_backends = (LedgerOrganisationFilterBackend,)
     search_fields = (
-        # "name",
-        # "trading_name",
         "organisation_name",
         "organisation_trading_name",
+        "organisation_abn",
     )
 
     def get_queryset(self):

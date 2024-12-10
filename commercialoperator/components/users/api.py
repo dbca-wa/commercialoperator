@@ -1,8 +1,10 @@
+import email
 import json
 import traceback
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Concat
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
@@ -49,6 +51,7 @@ class GetCountries(views.APIView):
     renderer_classes = [
         JSONRenderer,
     ]
+
     def get(self, request, format=None):
         country_list = cache.get(settings.CACHE_KEY_COUNTRY_LIST)
         if not country_list:
@@ -88,6 +91,28 @@ class UserListFilterView(generics.ListAPIView):
             qs = EmailUser.objects.filter(Q(id=user.id))
             return qs
         return EmailUser.objects.none()
+
+    @basic_exception_handler
+    def list(self, request, *args, **kwargs):
+        search_term = request.GET.get("search", "")
+
+        # TODO: Custom filter to start filtering at 2 characters
+        queryset = self.get_queryset().annotate(
+            full_name=Concat("first_name", Value(" "), "last_name")
+        )
+        queryset = queryset.filter(
+            Q(first_name__icontains=search_term)
+            | Q(last_name__icontains=search_term)
+            | Q(email__icontains=search_term)
+            | Q(full_name__icontains=search_term)
+        )[:10]
+
+        if not is_internal(request):
+            serializer = self.serializer_class(queryset, many=True)
+        else:
+            serializer = self.serializer_class(queryset, many=True)
+
+        return Response(serializer.data)
 
     queryset = get_queryset
     serializer_class = UserFilterSerializer
@@ -188,16 +213,13 @@ class UserViewSet(viewsets.ModelViewSet):
     @basic_exception_handler
     def update_system_settings(self, request, *args, **kwargs):
         instance = self.get_object()
-        user_setting, created = UserSystemSettings.objects.get_or_create(
-            user=instance
-        )
+        user_setting, created = UserSystemSettings.objects.get_or_create(user=instance)
         serializer = UserSystemSettingsSerializer(user_setting, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         instance = self.get_object()
         serializer = UserSerializer(instance, context={"request": request})
         return Response(serializer.data)
-
 
     @action(
         methods=[
