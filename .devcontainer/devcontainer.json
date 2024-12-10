@@ -1,5 +1,5 @@
 {
-	"name": "Boranga Development",
+	"name": "Commercial Operator Development",
 	"image": "dbcawa/docker_app_dev:commercialoperator_seg_dev_latest",
 	"remoteUser": "container",
 	"workspaceFolder": "/data/data/projects/commercialoperator",
