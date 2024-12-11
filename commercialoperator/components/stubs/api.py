@@ -12,10 +12,10 @@ class LedgerOrganisationFilterBackend(filters.SearchFilter):
         search_fields = view.search_fields
         search_term = request.GET.get("search")
         if search_term is None:
-            logger.warning("No search term provided")
+            logger.warning("No organisation search term provided")
             return queryset
         if len(search_term) <= 1:
-            logger.warning("Search term too short")
+            logger.warning("Organisation search term too short")
             return []
 
         if isinstance(queryset, list):

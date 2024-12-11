@@ -35,6 +35,10 @@ from commercialoperator.components.organisations.serializers import (
 from commercialoperator.components.main.models import UserSystemSettings
 from commercialoperator.helpers import is_customer, is_internal
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # class DepartmentUserList(views.APIView):
 #     renderer_classes = [JSONRenderer,]
 #     def get(self, request, format=None):
@@ -80,9 +84,29 @@ class GetProfile(views.APIView):
 from rest_framework import filters
 
 
-class UserListFilterView(generics.ListAPIView):
-    """https://cop-internal.dbca.wa.gov.au/api/filtered_users?search=russell"""
+class UserListFilterBackend(filters.SearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        search_fields = view.search_fields
+        search_term = request.GET.get("search", "")
+        if search_term is None:
+            logger.debug("No user search term provided")
+            return queryset
+        if len(search_term) <= 1:
+            logger.debug("User search term too short")
+            return []
 
+        search_dict = {f"{field}__icontains": search_term for field in search_fields}
+
+        if all(f in search_fields for f in ["first_name", "last_name"]):
+            queryset = queryset.annotate(
+                full_name=Concat("first_name", Value(" "), "last_name")
+            )
+            search_dict["full_name__icontains"] = search_term
+
+        return queryset.filter(Q(**search_dict, _connector=Q.OR))[:10]
+
+
+class UserListFilterView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
@@ -94,18 +118,8 @@ class UserListFilterView(generics.ListAPIView):
 
     @basic_exception_handler
     def list(self, request, *args, **kwargs):
-        search_term = request.GET.get("search", "")
-
-        # TODO: Custom filter to start filtering at 2 characters
-        queryset = self.get_queryset().annotate(
-            full_name=Concat("first_name", Value(" "), "last_name")
-        )
-        queryset = queryset.filter(
-            Q(first_name__icontains=search_term)
-            | Q(last_name__icontains=search_term)
-            | Q(email__icontains=search_term)
-            | Q(full_name__icontains=search_term)
-        )[:10]
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
 
         if not is_internal(request):
             serializer = self.serializer_class(queryset, many=True)
@@ -116,7 +130,7 @@ class UserListFilterView(generics.ListAPIView):
 
     queryset = get_queryset
     serializer_class = UserFilterSerializer
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (UserListFilterBackend,)
     search_fields = ("email", "first_name", "last_name")
 
 
