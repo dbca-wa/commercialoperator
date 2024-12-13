@@ -1,6 +1,7 @@
 import re
 from django.db import transaction
 from django.utils import timezone
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -1830,3 +1831,80 @@ def get_proposal_serializer_by_application_type(instance, context):
     else:
         logger.debug("Get default InternalProposalSerializer")
         return InternalProposalSerializer(instance, context=context)
+
+
+def get_cached_application_types():
+    application_types = cache.get(settings.CACHE_KEY_APPLICATION_TYPES)
+
+    if application_types is None:
+        application_types = ApplicationType.objects.filter(visible=True).values_list(
+            "name", flat=True
+        )
+
+        cache.set(
+            settings.CACHE_KEY_APPLICATION_TYPES,
+            application_types,
+            settings.CACHE_TIMEOUT_24_HOURS,
+        )
+
+    return application_types
+
+
+def get_cached_proposal_submitters(view, queryset=None):
+    if not queryset:
+        queryset = view.get_queryset()
+    cache_key = settings.CACHE_KEY_PROPOSAL_SUBMITTERS.format(view.__class__.__name__)
+    submitters = cache.get(cache_key)
+
+    if submitters is None:
+        submitter_qs = (
+            queryset.filter(submitter__isnull=False)
+            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
+            .filter(submitter_exists=True)
+            .order_by("submitter_email")
+            .distinct("submitter_email")
+            .values_list(
+                "submitter_first_name", "submitter_last_name", "submitter_email"
+            )
+        )
+        submitters = [
+            dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
+            for i in submitter_qs
+        ]
+
+        cache.set(
+            cache_key,
+            submitters,
+            settings.CACHE_TIMEOUT_10_SECONDS,
+        )
+
+    return submitters
+
+
+def get_cached_proposal_processing_status(view, queryset=None):
+    if not queryset:
+        queryset = view.get_queryset()
+    cache_key = settings.CACHE_KEY_PROPOSAL_PROCESSING_STATUS.format(
+        view.__class__.__name__
+    )
+    processing_status = cache.get(cache_key)
+
+    if processing_status is None:
+        processing_status_qs = (
+            queryset.filter(proposal__processing_status__isnull=False)
+            .order_by("proposal__processing_status")
+            .distinct("proposal__processing_status")
+            .values_list("proposal__processing_status", flat=True)
+        )
+        processing_status = [
+            dict(value=i, name="{}".format(" ".join(i.split("_")).capitalize()))
+            for i in processing_status_qs
+        ]
+
+        cache.set(
+            cache_key,
+            processing_status,
+            settings.CACHE_TIMEOUT_10_SECONDS,
+        )
+
+    return processing_status

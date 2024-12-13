@@ -66,11 +66,6 @@ class EmailUserQuerySet(models.QuerySet):
         if not getattr(self.model, emailuser_fk_field_id, None):
             raise ValueError(f"Field {emailuser_fk_field} does not exist in the model")
 
-        emailuser_property_values = {
-            f"{emailuser_fk_field}_{property}": models.Value("")
-            for property in emailuser_properties
-        }
-
         emailuser_fk_field_ids = []
         emailuser_fk_field_property_values = {}
 
@@ -118,7 +113,7 @@ class EmailUserQuerySet(models.QuerySet):
             for property in emailuser_properties
         }
 
-        # Add the emailuser_fk_field_exists field, e.h. submitter_exists
+        # Add the emailuser_fk_field_exists field, e.g. submitter_exists
         self = self.annotate(
             **{
                 f"{emailuser_fk_field}_exists": models.Case(

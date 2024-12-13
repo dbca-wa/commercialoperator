@@ -6,7 +6,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-# from django.contrib.postgres.fields.jsonb import JSONField
+
 from django.db.models import JSONField
 
 from commercialoperator.components.stubs.utils import retrieve_email_user
@@ -405,6 +405,10 @@ class ApplicationType(models.Model):
     class Meta:
         ordering = ["order", "name"]
         app_label = "commercialoperator"
+
+    def save(self, *args, **kwargs):
+        super(ApplicationType, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_APPLICATION_TYPES)
 
     def __str__(self):
         return self.name
