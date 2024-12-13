@@ -20,11 +20,7 @@ logger = logging.getLogger(__name__)
 
 def retrieve_email_user(email_user_id):
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)
-    cache_timeout = (
-        settings.DEBUG
-        and settings.CACHE_TIMEOUT_24_HOURS
-        or settings.CACHE_TIMEOUT_5_SECONDS
-    )
+    cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
     email_user = cache.get(cache_key)
 
     if email_user is None:
@@ -32,10 +28,14 @@ def retrieve_email_user(email_user_id):
             email_user = EmailUser.objects.get(id=email_user_id)
         except EmailUser.DoesNotExist:
             logger.error(f"EmailUser with id {email_user_id} does not exist")
+            # Cache an empty EmailUser object to prevent repeated queries
+            cache.set(cache_key, EmailUser(), cache_timeout)
             return None
         else:
             cache.set(cache_key, email_user, cache_timeout)
             return email_user
+    elif not email_user.email:
+        return None
     else:
         return email_user
 
