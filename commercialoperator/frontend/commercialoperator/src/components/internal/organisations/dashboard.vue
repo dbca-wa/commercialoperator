@@ -217,7 +217,9 @@ export default {
                         .each(function (d, j) {
                             let applicationChoices = [];
                             $.each(d, (index, a) => {
-                                a != null && applicationChoices.indexOf(a) < 0
+                                a = a.trim();
+                                [null, ''].includes(a) == false &&
+                                applicationChoices.indexOf(a) < 0
                                     ? applicationChoices.push(a)
                                     : '';
                             });
