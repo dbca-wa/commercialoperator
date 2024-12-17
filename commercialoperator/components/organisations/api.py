@@ -9,6 +9,8 @@ from rest_framework import viewsets, serializers, status, generics, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework_datatables.filters import DatatablesFilterBackend
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import update_organisation_obj
 
@@ -699,9 +701,33 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Response(serializer.data)
 
 
+class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        applicant = request.GET.get("filter_applicant")
+        if applicant != "All":
+            raise serializers.ValidationError("Filtering by applicant is not supported")
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+
+        queryset = super(
+            OrganisationRequestDatatableFilterBackend, self
+        ).filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     queryset = OrganisationRequest.objects.none()
     serializer_class = OrganisationRequestSerializer
+    filter_backends = (OrganisationRequestDatatableFilterBackend,)
+    pagination_class = DatatablesPageNumberPagination
+    page_size = 10
+    ordering = ("lodgement_date",)
 
     def get_queryset(self):
         user = self.request.user
@@ -717,21 +743,17 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
+    @basic_exception_handler
     def datatable_list(self, request, *args, **kwargs):
         qs = self.get_queryset()
-        try:
-            serializer = OrganisationRequestDTSerializer(qs, many=True)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-        else:
-            return Response(serializer.data)
+        qs = self.filter_queryset(qs)
+
+        self.paginator.page_size = qs.count()
+        result_page = self.paginator.paginate_queryset(qs, request)
+        serializer = OrganisationRequestDTSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=[

@@ -456,6 +456,19 @@ class OrganisationRequestDTSerializer(OrganisationRequestSerializer):
             return ""
         return emailuser.get_full_name()
 
+    class Meta:
+        model = OrganisationRequest
+        fields = (
+            "id",
+            "name",
+            "requester",
+            "role",
+            "status",
+            "lodgement_date",
+            "assigned_officer",
+            "identification",
+        )
+
 
 class UserOrganisationSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="organisation.name")

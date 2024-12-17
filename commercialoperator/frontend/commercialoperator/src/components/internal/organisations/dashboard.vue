@@ -99,7 +99,7 @@ import Vue from 'vue';
 import $ from 'jquery';
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints } from '@/utils/hooks';
 export default {
     name: 'OrganisationAccessDashboard',
     components: {
@@ -126,14 +126,20 @@ export default {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
                 },
                 responsive: true,
+                serverSide: true,
                 processing: true,
                 order: [[0, 'desc']],
                 ajax: {
-                    url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_requests,
-                        'datatable_list'
-                    ),
-                    dataSrc: '',
+                    url: api_endpoints.organisation_requests,
+                    dataSrc: 'data',
+                    data: function (d) {
+                        d.filter_organisation = vm.filterOrganisation;
+                        d.filter_applicant = vm.filterApplicant;
+                        d.filter_role = vm.filterRole;
+                        d.filter_status = vm.filterStatus;
+
+                        return d;
+                    },
                 },
                 columns: [
                     {
