@@ -124,7 +124,7 @@
                                                 "
                                                 :delete_url="delete_url"
                                                 :proposal_id="proposal_id"
-                                                is-repeatable="true"
+                                                :is-repeatable="true"
                                                 name="requirements_file"
                                                 @refreshFromResponse="
                                                     refreshFromResponse
