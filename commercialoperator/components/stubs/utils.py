@@ -19,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 def retrieve_email_user(email_user_id):
+    if not email_user_id:
+        logger.error("Needs an email_user_id to retrieve an EmailUser object")
+        return None
+
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)
     cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
     email_user = cache.get(cache_key)
