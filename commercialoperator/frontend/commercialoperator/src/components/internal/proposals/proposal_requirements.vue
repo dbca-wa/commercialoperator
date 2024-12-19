@@ -2,42 +2,11 @@
     <div class="col-md-12">
         <div class="row">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        Requirements
-                        <a
-                            class="panelClicker"
-                            :href="'#' + panelBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="false"
-                            :aria-controls="panelBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-down pull-right"
-                            ></span>
-                        </a>
-                        <small
-                            v-if="
-                                proposal.application_type ==
-                                application_type_filming
-                            "
-                            ><br />Only add requirements that are additional to
-                            the general conditions in the Commercial Filming
-                            Handbook
-                            <a
-                                :href="commercial_filming_handbook"
-                                target="_blank"
-                                >here</a
-                            >. Please ensure each condition added references a
-                            specific park or district and is written in a format
-                            consistent with the handbook.</small
-                        >
-                    </h3>
-                </div>
-                <div
-                    :id="panelBody"
-                    class="panel-body panel-collapse collapse in"
+                <FormSection
+                    :form-collapse="false"
+                    label="Requirements"
+                    index="requirements"
+                    subtitle=""
                 >
                     <form
                         class="form-horizontal"
@@ -45,18 +14,42 @@
                         method="post"
                     >
                         <div class="col-sm-12">
-                            <button
+                            <div
                                 v-if="
-                                    hasAssessorMode ||
-                                    hasReferralMode ||
-                                    hasDistrictAssessorMode
+                                    proposal.application_type ==
+                                    application_type_filming
                                 "
-                                style="margin-bottom: 10px"
-                                class="btn btn-primary pull-right"
-                                @click.prevent="addRequirement()"
+                                class="row mb-1"
                             >
-                                Add Requirement
-                            </button>
+                                <small
+                                    ><br />Only add requirements that are
+                                    additional to the general conditions in the
+                                    Commercial Filming Handbook
+                                    <a
+                                        :href="commercial_filming_handbook"
+                                        target="_blank"
+                                        >here</a
+                                    >. Please ensure each condition added
+                                    references a specific park or district and
+                                    is written in a format consistent with the
+                                    handbook.</small
+                                >
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <button
+                                        v-if="
+                                            hasAssessorMode ||
+                                            hasReferralMode ||
+                                            hasDistrictAssessorMode
+                                        "
+                                        class="btn btn-primary mb-3 float-end"
+                                        @click.prevent="addRequirement()"
+                                    >
+                                        Add Requirement
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <datatable
                             :id="'requirements-datatable-' + _uid"
@@ -65,7 +58,7 @@
                             :dt-headers="requirement_headers"
                         />
                     </form>
-                </div>
+                </FormSection>
             </div>
         </div>
         <RequirementDetail
@@ -84,11 +77,14 @@
 import { api_endpoints, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import RequirementDetail from './proposal_add_requirement.vue';
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
     name: 'InternalProposalRequirements',
     components: {
         datatable,
         RequirementDetail,
+        FormSection,
     },
     props: {
         proposal: {
@@ -181,10 +177,10 @@ export default {
                                     '<a href="#" ' +
                                         'role="button" ' +
                                         'data-bs-toggle="popover" ' +
-                                        'data-trigger="click" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
+                                        'data-bs-trigger="click" ' +
+                                        'data-bs-placement="top auto"' +
+                                        'data-bs-html="true" ' +
+                                        'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
                             if (_.endsWith(truncated, ellipsis)) {
@@ -193,14 +189,13 @@ export default {
                                 });
                             }
 
-                            //return result;
                             return type == 'export' ? value : result;
                         },
                         createdCell: helpers.dtPopoverCellFn,
                     },
                     {
                         data: 'due_date',
-                        // eslint-disable-next-line no-unused-vars 
+                        // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
                             return data != '' && data != null
                                 ? moment(data).format('DD/MM/YYYY')
@@ -228,13 +223,13 @@ export default {
                         orderable: false,
                     },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (vm.proposal.assessor_mode.has_assessor_mode) {
                                 if (full.copied_from == null) {
                                     links += `<a href='#' class="editRequirement" data-id="${full.id}">Edit</a><br/>`;
                                 }
-                                //links +=  `<a href='#' class="editRequirement" data-id="${full.id}">Edit</a><br/>`;
                                 links += `<a href='#' class="deleteRequirement" data-id="${full.id}">Delete</a><br/>`;
                             } else if (
                                 vm.hasReferralMode &&
@@ -243,7 +238,6 @@ export default {
                                 if (full.copied_from == null) {
                                     links += `<a href='#' class="editRequirement" data-id="${full.id}">Edit</a><br/>`;
                                 }
-                                //links +=  `<a href='#' class="editRequirement" data-id="${full.id}">Edit</a><br/>`;
                                 links += `<a href='#' class="deleteRequirement" data-id="${full.id}">Delete</a><br/>`;
                             } else {
                                 if (
@@ -253,7 +247,6 @@ export default {
                                     if (full.copied_from == null) {
                                         links += `<a href='#' class="editRequirement" data-id="${full.id}">Edit</a><br/>`;
                                     }
-                                    //links +=  `<a href='#' class="editRequirement" data-id="${full.id}">Edit</a><br/>`;
                                     links += `<a href='#' class="deleteRequirement" data-id="${full.id}">Delete</a><br/>`;
                                 }
                             }
@@ -262,6 +255,7 @@ export default {
                         orderable: false,
                     },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             // TODO check permission to change the order
