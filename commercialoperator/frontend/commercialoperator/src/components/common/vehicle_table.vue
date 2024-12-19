@@ -14,7 +14,7 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-12" style="margin-top: 25px">
+                <div class="col-lg-12">
                     <datatable
                         :id="datatable_id"
                         ref="vehicle_datatable"
@@ -90,7 +90,7 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {

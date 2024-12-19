@@ -2,24 +2,12 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        District Applications
-                        <a
-                            :href="'#' + pBody"
-                            data-toggle="collapse"
-                            data-parent="#userInfo"
-                            expanded="true"
-                            :aria-controls="pBody"
-                        >
-                            <span
-                                class="glyphicon glyphicon-chevron-up pull-right"
-                            ></span>
-                        </a>
-                    </h3>
-                </div>
-
-                <div :id="pBody" class="panel-body collapse in">
+                <FormSection
+                    :form-collapse="false"
+                    label="District Applications"
+                    index="district_applications"
+                    subtitle=""
+                >
                     <div class="row">
                         <div class="col-lg-12" style="margin-top: 25px">
                             <datatable
@@ -30,17 +18,20 @@
                             />
                         </div>
                     </div>
-                </div>
+                </FormSection>
             </div>
         </div>
     </div>
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
     name: 'FilmingDistrictProposalTableDash',
     components: {
         datatable,
+        FormSection,
     },
     props: {
         proposal: {
@@ -73,7 +64,7 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {

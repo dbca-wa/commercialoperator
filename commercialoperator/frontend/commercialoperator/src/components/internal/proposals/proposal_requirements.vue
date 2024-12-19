@@ -146,7 +146,7 @@ export default {
                     dataSrc: '',
                 },
                 order: [],
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 // buttons:[
                 // 'excel', 'csv', ], //'copy'
                 buttons: [
@@ -180,7 +180,7 @@ export default {
                                 popTemplate = _.template(
                                     '<a href="#" ' +
                                         'role="button" ' +
-                                        'data-toggle="popover" ' +
+                                        'data-bs-toggle="popover" ' +
                                         'data-trigger="click" ' +
                                         'data-placement="top auto"' +
                                         'data-html="true" ' +
@@ -200,7 +200,7 @@ export default {
                     },
                     {
                         data: 'due_date',
-                        // eslint-disable-next-line no-unused-vars
+                        // eslint-disable-next-line no-unused-vars 
                         mRender: function (data, type, full) {
                             return data != '' && data != null
                                 ? moment(data).format('DD/MM/YYYY')

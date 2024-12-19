@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="row">
+                <div class="row mb-1">
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="">Status</label>
@@ -49,7 +49,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-3 mb-3">
                         <label for="">Lodged From</label>
                         <div
                             ref="proposalDateFromPicker"
@@ -245,7 +245,7 @@ export default {
                                 : '';
                     },
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {
@@ -389,7 +389,7 @@ export default {
                                 : '';
                     },
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {

@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="row">
+                <div class="row mb-1">
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="">Status</label>
@@ -22,7 +22,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="">Lodged From</label>
                         <div

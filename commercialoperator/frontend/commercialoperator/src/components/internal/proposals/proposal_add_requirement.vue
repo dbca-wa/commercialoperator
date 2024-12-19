@@ -95,7 +95,7 @@
                                         >
                                             <input
                                                 v-model="requirement.due_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="due_date"
                                                 placeholder="DD/MM/YYYY"
@@ -501,7 +501,7 @@ export default {
             this.$refs.filefield.reset_files();
             this.errors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.due_date).data('DateTimePicker').clear();
+            // $(this.$refs.due_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {
@@ -657,14 +657,14 @@ export default {
         eventListeners: function () {
             let vm = this;
             // Initialise Date Picker
-            $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.due_date).on('dp.change', function (e) {
-                if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
-                    vm.requirement.due_date = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.due_date).data('date') === '') {
-                    vm.requirement.due_date = '';
-                }
-            });
+            // $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.due_date).on('dp.change', function (e) {
+            //     if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
+            //         vm.requirement.due_date = e.date.format('DD/MM/YYYY');
+            //     } else if ($(vm.$refs.due_date).data('date') === '') {
+            //         vm.requirement.due_date = '';
+            //     }
+            // });
 
             // Intialise select2
             $(vm.$refs.standard_req)
