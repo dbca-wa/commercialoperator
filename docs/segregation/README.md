@@ -10,6 +10,8 @@ E.g.: ledger_prod_no_reversion.sql
 
 ## Export only tables relevant to the cols app into a file, e.g. ledger_prod.sql
 
+`pg_dump -U your_username -h your_hostname -W -t "auth_*" -t "commercialoperator_*" -t "django_*" ledger_prod > ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql`
+or (chose one)
 `pg_dump --column-inserts -t "auth_*" -t "commercialoperator_*" -t "django_*" -f ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql ledger_prod`
 
 `auth_`, `django_`, and `commercialoperator_` are the tables I went with. `auth_` might not be needed, but I wasn't sure at that time.
