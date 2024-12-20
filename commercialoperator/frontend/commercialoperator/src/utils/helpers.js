@@ -129,12 +129,12 @@ module.exports = {
         return result;
     },
     dtPopoverCellFn: function (cell) {
-        const popover = $(cell).find('[data-toggle="popover"]');
+        const popover = $(cell).find('[data-bs-toggle="popover"]');
         if (popover.length) {
-            popover.popover().on('click', function (e) {
-                e.preventDefault();
-                return true;
-            });
+            // popover.on('click', function (e) {
+            //     e.preventDefault();
+            //     return true;
+            // });
         } else {
             // TODO:
             console.error('No popover for cell', cell);
@@ -149,5 +149,113 @@ module.exports = {
             // eslint-disable-next-line no-unused-vars
             let popover = new bootstrap.Popover(popoverTriggerEl);
         });
+    },
+    /**
+     * Adds an ellipsis (...) to a string in a datatable cell if it exceeds a certain length
+     * @param {String} value The string to truncate
+     * @param {String=} title The title of the popover to invoke when the ellipsis is clicked
+     * @param {String=} trigger The trigger for the popover to invoke when the ellipsis is clicked
+     * @returns The truncated string with an ellipsis and a popover or the original string if it is shorter than the truncation length
+     */
+    addEllipsis: function (value, title = 'Information', trigger = 'click') {
+        var ellipsis = '...',
+            truncated = _.truncate(value, {
+                length: 25,
+                omission: ellipsis,
+                separator: ' ',
+            }),
+            result = '<span>' + truncated + '</span>',
+            // prettier-ignore
+            popTemplate = _.template(
+                '<a href="#" tabindex="0" ' +
+                    `data-bs-title="${title} ` +
+                    '" ' +
+                    'data-bs-template=\'' +
+                        '<div class="popover" role="tooltip">' +
+                            '<div class="arrow"></div>' +
+                            '<div class="row gx-0">' +
+                                '<div class="col-10 text-nowrap">' +
+                                    '<h3 class="popover-header"></h3>' +
+                                '</div>' +
+                                '<div class="col-2 text-nowrap close-button-background">' +
+                                    '<div type="button" id="close" class="popover-close float-end">' +
+                                        '<i class="fa fa-window-close pe-1 pt-1" aria-hidden="true"></i>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="popover-body"></div>' +
+                        '</div>\' ' +
+                    'role="button" ' +
+                    'data-bs-toggle="popover" ' +
+                    `data-bs-trigger="${trigger}" ` +
+                    'data-bs-placement="top" ' +
+                    'data-bs-html="true" ' +
+                    // Replace double quotation marks with HTML entities
+                    `data-bs-content="<%= text.replace(/"/g, '&quot;') %>" ` +
+                `><b>${ellipsis}</b></a>`
+            );
+
+        if (_.endsWith(truncated, ellipsis)) {
+            result =
+                `${truncated.slice(0, -ellipsis.length)}` +
+                popTemplate({
+                    text: value,
+                });
+        }
+
+        return result;
+    },
+    /**
+     * Initializes event listeners for ellipsis in a datatable
+     * @param {Object} table The datatable object to add the event listeners to
+     */
+    addEllipsisEventListeners: function (table) {
+        let vm = this;
+
+        //Internal Action shortcut listeners
+        table
+            .on('draw.dt', function () {
+                var popoverTriggerList = [].slice.call(
+                    document.querySelectorAll('a[data-bs-toggle="popover"]')
+                );
+                popoverTriggerList.map(function (popoverTriggerEl) {
+                    let popover = new bootstrap.Popover(popoverTriggerEl);
+                    // Listeners to hide popovers on 'x'-click
+                    table.on(
+                        'click',
+                        'a[data-bs-toggle="popover"]',
+                        function (e) {
+                            let attributes = e.currentTarget.attributes;
+                            let popoverId;
+                            if (attributes && attributes.length > 0) {
+                                popoverId =
+                                    attributes.getNamedItem(
+                                        'aria-describedby'
+                                    ).value;
+                            }
+
+                            if (
+                                popover.tip &&
+                                popover.tip.id == popoverId
+                            ) {
+                                // Ideally the listener would only be shown on popover show, but that does work okay for now
+                                $(`#${popoverId}`)
+                                    .find('.popover-close')
+                                    .off('click')
+                                    .on('click', () => popover.hide());
+                            }
+                        }
+                    );
+
+                    return popover;
+                });
+            })
+            .on('click', function (e) {
+                if (['...'].includes(e.target.textContent)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            });
     },
 };

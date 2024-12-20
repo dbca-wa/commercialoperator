@@ -78,6 +78,7 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import RequirementDetail from './proposal_add_requirement.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
+import '@/../../../static/commercialoperator/css/extra.css';
 
 export default {
     name: 'InternalProposalRequirements',
@@ -121,6 +122,7 @@ export default {
             panelBody: 'proposal-requirements-' + vm._uid,
             requirements: [],
             requirement_headers: [
+                '',
                 'Requirement',
                 'Due Date',
                 'Recurrence',
@@ -141,7 +143,7 @@ export default {
                     ),
                     dataSrc: '',
                 },
-                order: [],
+                order: [6, 'asc'],
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 // buttons:[
                 // 'excel', 'csv', ], //'copy'
@@ -163,35 +165,22 @@ export default {
                 ], //'copy'
                 columns: [
                     {
+                        data: 'id',
+                        className: 'dtr-control',
+                        orderable: false,
+                        targets: 0,
+                        render: function () {
+                            return '';
+                        },
+                    },
+                    {
                         data: 'requirement',
                         //orderable: false,
                         render: function (value, type) {
-                            var ellipsis = '...',
-                                truncated = _.truncate(value, {
-                                    length: 25,
-                                    omission: ellipsis,
-                                    separator: ' ',
-                                }),
-                                result = '<span>' + truncated + '</span>',
-                                popTemplate = _.template(
-                                    '<a href="#" ' +
-                                        'role="button" ' +
-                                        'data-bs-toggle="popover" ' +
-                                        'data-bs-trigger="click" ' +
-                                        'data-bs-placement="top auto"' +
-                                        'data-bs-html="true" ' +
-                                        'data-bs-content="<%= text %>" ' +
-                                        '>more</a>'
-                                );
-                            if (_.endsWith(truncated, ellipsis)) {
-                                result += popTemplate({
-                                    text: value,
-                                });
-                            }
+                            const result = helpers.addEllipsis(value, 'Requirement');
 
                             return type == 'export' ? value : result;
                         },
-                        createdCell: helpers.dtPopoverCellFn,
                     },
                     {
                         data: 'due_date',
@@ -374,6 +363,8 @@ export default {
         vm.fetchGlobalSettings();
         vm.$nextTick(() => {
             this.eventListeners();
+            const table = this.$refs.requirements_datatable.vmDataTable;
+            helpers.addEllipsisEventListeners(table);
         });
     },
     methods: {
@@ -563,6 +554,9 @@ export default {
         setApplicationWorkflowState(bool) {
             let vm = this;
             vm.$emit('refreshRequirements', bool);
+        },
+        handleClick: function (value) {
+            console.log('clicked', value);
         },
     },
 };
