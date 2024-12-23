@@ -210,8 +210,6 @@ module.exports = {
      * @param {Object} table The datatable object to add the event listeners to
      */
     addEllipsisEventListeners: function (table) {
-        let vm = this;
-
         //Internal Action shortcut listeners
         table
             .on('draw.dt', function () {
@@ -234,10 +232,7 @@ module.exports = {
                                     ).value;
                             }
 
-                            if (
-                                popover.tip &&
-                                popover.tip.id == popoverId
-                            ) {
+                            if (popover.tip && popover.tip.id == popoverId) {
                                 // Ideally the listener would only be shown on popover show, but that does work okay for now
                                 $(`#${popoverId}`)
                                     .find('.popover-close')
