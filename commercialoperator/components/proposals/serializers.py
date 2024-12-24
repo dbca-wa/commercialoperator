@@ -2121,42 +2121,28 @@ class ReferralSerializer(serializers.ModelSerializer):
             "email": self.context["request"].user.email,
         }
 
-    # def __init__(self,*args,**kwargs):
-    #     super(ReferralSerializer, self).__init__(*args, **kwargs)
-    #     self.fields['proposal'] = ReferralProposalSerializer(context={'request':self.context['request']})
-
     def __init__(self, *args, **kwargs):
         super(ReferralSerializer, self).__init__(*args, **kwargs)
+
         try:
-            if (
-                kwargs.get("context")["view"]
-                .get_object()
-                .proposal.application_type.name
-                == ApplicationType.TCLASS
-            ):
-                self.fields["proposal"] = ReferralProposalSerializer(
-                    context={"request": self.context["request"]}
-                )
-            elif (
-                kwargs.get("context")["view"]
-                .get_object()
-                .proposal.application_type.name
-                == ApplicationType.FILMING
-            ):
-                self.fields["proposal"] = FilmingReferralProposalSerializer(
-                    context={"request": self.context["request"]}
-                )
-            elif (
-                kwargs.get("context")["view"]
-                .get_object()
-                .proposal.application_type.name
-                == ApplicationType.EVENT
-            ):
-                self.fields["proposal"] = EventReferralProposalSerializer(
-                    context={"request": self.context["request"]}
-                )
+            parser_context = kwargs.get("context", {}).get("request", {}).parser_context
+            referral = parser_context["view"].get_object()
+            application_type_name = referral.proposal.application_type.name
         except:
             raise
+
+        if application_type_name == ApplicationType.TCLASS:
+            self.fields["proposal"] = ReferralProposalSerializer(
+                context={"request": self.context["request"]}
+            )
+        elif application_type_name == ApplicationType.FILMING:
+            self.fields["proposal"] = FilmingReferralProposalSerializer(
+                context={"request": self.context["request"]}
+            )
+        elif application_type_name == ApplicationType.EVENT:
+            self.fields["proposal"] = EventReferralProposalSerializer(
+                context={"request": self.context["request"]}
+            )
 
     def get_can_process(self, obj):
         request = self.context["request"]
