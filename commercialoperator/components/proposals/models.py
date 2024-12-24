@@ -1158,7 +1158,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         current_revision_id = Version.objects.get_for_object(self).first().revision_id
         versions = (
             Version.objects.get_for_object(self)
-            .select_related("revision__user")
+            .select_related("revision")
             .filter(
                 Q(revision__comment__icontains="status")
                 | Q(revision_id=current_revision_id)
