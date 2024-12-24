@@ -1363,13 +1363,11 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchReferralRecipientGroups();
-        this.$nextTick(() => {
-            vm.initialiseSelects();
-        });
     },
     updated: function () {
         let vm = this;
         this.$nextTick(() => {
+            vm.initialiseSelects();
             if (typeof vm.$refs.tclass !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 vm.proposal.selected_parks_activities =
