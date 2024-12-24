@@ -1125,6 +1125,7 @@ class DTReferralSerializer(serializers.ModelSerializer):
         source="proposal.lodgement_number"
     )
     proposal_event_name = serializers.CharField(source="proposal.event_name")
+    applicant = EmailUserSerializer(source="proposal.applicant_id")
     submitter = serializers.SerializerMethodField()
     region = serializers.CharField(source="region.name", read_only=True)
     referral = serializers.CharField(source="referral_group.name")
