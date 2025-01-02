@@ -4800,7 +4800,7 @@ class Referral(RevisionedMixin):
     @property
     def allowed_assessors(self):
         group = self.referral_group
-        return group.members.all() if group else []
+        return retrieve_group_members(group) if group else []
 
     def can_process(self, user):
         if self.processing_status == "with_referral":
@@ -8261,10 +8261,10 @@ reversion.register(ProposalDeclinedDetails)
 reversion.register(ProposalOnHold)
 reversion.register(ProposalStandardRequirement, follow=["proposalrequirement_set"])
 reversion.register(ProposalRequirement, follow=["compliance_requirement"])
-reversion.register(
-    ReferralRecipientGroup,
-    follow=["commercialoperator_referral_groups", "referral_assessment"],
-)
+# reversion.register(
+#     ReferralRecipientGroup,
+#     follow=["commercialoperator_referral_groups", "referral_assessment"],
+# )
 reversion.register(QAOfficerGroup, follow=["qaofficer_groups"])
 reversion.register(QAOfficerReferral)
 reversion.register(QAOfficerDocument, follow=["qaofficer_referral_document"])
