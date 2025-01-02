@@ -118,7 +118,6 @@ export default {
 
                             return result;
                         },
-                        createdCell: helpers.dtPopoverCellFn,
                     },
                     {
                         title: 'Attached Document',
@@ -162,18 +161,18 @@ export default {
                     (response) => {
                         vm.$emit('refreshFromResponse', response);
                         vm.table.ajax.reload();
-                        swal(
-                            'Referral Reminder',
-                            'A reminder has been sent to ' + user,
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Reminder',
+                            text: 'A reminder has been sent to ' + user,
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -190,18 +189,18 @@ export default {
                     (response) => {
                         vm.$emit('refreshFromResponse', response);
                         vm.table.ajax.reload();
-                        swal(
-                            'Referral Resent',
-                            'The referral has been resent to ' + user,
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Resent',
+                            text: 'The referral has been resent to ' + user,
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -219,18 +218,18 @@ export default {
                     (response) => {
                         vm.$emit('refreshFromResponse', response);
                         vm.table.ajax.reload();
-                        swal(
-                            'Referral Recall',
-                            'The referall has been recalled from ' + user,
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Recall',
+                            text: 'The referral has been recalled from ' + user,
+                            icon: 'success',
+                        });
                     },
                     (error) => {
-                        swal(
-                            'Application Error',
-                            helpers.apiVueResourceError(error),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Application Error',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
                     }
                 );
         },

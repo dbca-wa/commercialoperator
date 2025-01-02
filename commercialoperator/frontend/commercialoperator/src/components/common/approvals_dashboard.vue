@@ -429,7 +429,6 @@ export default {
                             }
                             return result;
                         },
-                        createdCell: helpers.dtPopoverCellFn,
                         name: 'licence_document__name',
                     },
                     {

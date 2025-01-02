@@ -101,45 +101,6 @@ module.exports = {
         // assumes api_string has trailing forward slash "/" character required for POST
         return api_string + addition;
     },
-    dtPopover: function (value, truncate_length = 30, trigger = 'hover') {
-        var ellipsis = '...',
-            truncated = _.truncate(value, {
-                length: truncate_length,
-                omission: ellipsis,
-                separator: ' ',
-            }),
-            result = '<span>' + truncated + '</span>',
-            popTemplate = _.template(
-                '<a href="#" ' +
-                    'role="button" ' +
-                    'data-toggle="popover" ' +
-                    'data-trigger="' +
-                    trigger +
-                    '" ' +
-                    'data-placement="top auto"' +
-                    'data-html="true" ' +
-                    'data-content="<%= text %>" ' +
-                    '>more</a>'
-            );
-        if (_.endsWith(truncated, ellipsis)) {
-            result += popTemplate({
-                text: value,
-            });
-        }
-        return result;
-    },
-    dtPopoverCellFn: function (cell) {
-        const popover = $(cell).find('[data-bs-toggle="popover"]');
-        if (popover.length) {
-            // popover.on('click', function (e) {
-            //     e.preventDefault();
-            //     return true;
-            // });
-        } else {
-            // TODO:
-            console.error('No popover for cell', cell);
-        }
-    },
     enablePopovers: function () {
         let popoverTriggerList = [].slice.call(
             document.querySelectorAll('[data-bs-toggle="popover"]')
