@@ -1176,7 +1176,7 @@ reversion.register(
     OrganisationRequest,
     follow=["action_logs", "organisationrequestdeclineddetails_set", "comms_logs"],
 )
-reversion.register(OrganisationAccessGroup)
+reversion.register(OrganisationAccessGroup, exclude=["members"])
 reversion.register(OrganisationRequestUserAction)
 reversion.register(OrganisationRequestDeclinedDetails)
 reversion.register(OrganisationRequestLogDocument)

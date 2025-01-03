@@ -28,14 +28,6 @@ class ProposalAssessorGroupAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProposalAssessorGroupAdminForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            # Note: adding the members here programmatically does not work yet
-            self.fields["members"] = forms.ModelMultipleChoiceField(
-                queryset=EmailUser.objects.filter(is_staff=True),
-                required=True,
-                widget=forms.SelectMultiple,
-            )
-            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(ProposalAssessorGroupAdminForm, self).clean()
@@ -158,17 +150,6 @@ class DistrictProposalAssessorGroupAdminForm(forms.ModelForm):
             "default",
         ]
 
-    def __init__(self, *args, **kwargs):
-        super(DistrictProposalAssessorGroupAdminForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            # Note: adding the members here programmatically does not work yet
-            self.fields["members"] = forms.ModelMultipleChoiceField(
-                queryset=EmailUser.objects.filter(is_staff=True),
-                required=True,
-                widget=forms.SelectMultiple,
-            )
-            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
-
     def clean(self):
         super(DistrictProposalAssessorGroupAdminForm, self).clean()
         if self.instance and DistrictProposalAssessorGroup.objects.all().exists():
@@ -193,17 +174,6 @@ class DistrictProposalApproverGroupAdminForm(forms.ModelForm):
     class Meta:
         model = DistrictProposalApproverGroup
         fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super(DistrictProposalApproverGroupAdminForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            # Note: adding the members here programmatically does not work yet
-            self.fields["members"] = forms.ModelMultipleChoiceField(
-                queryset=EmailUser.objects.filter(is_staff=True),
-                required=True,
-                widget=forms.SelectMultiple,
-            )
-            # self.fields["members"].queryset = EmailUser.objects.filter(is_staff=True)
 
     def clean(self):
         super(DistrictProposalApproverGroupAdminForm, self).clean()

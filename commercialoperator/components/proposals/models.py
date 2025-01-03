@@ -8261,11 +8261,12 @@ reversion.register(ProposalDeclinedDetails)
 reversion.register(ProposalOnHold)
 reversion.register(ProposalStandardRequirement, follow=["proposalrequirement_set"])
 reversion.register(ProposalRequirement, follow=["compliance_requirement"])
-# reversion.register(
-#     ReferralRecipientGroup,
-#     follow=["commercialoperator_referral_groups", "referral_assessment"],
-# )
-reversion.register(QAOfficerGroup, follow=["qaofficer_groups"])
+reversion.register(
+    ReferralRecipientGroup,
+    follow=["commercialoperator_referral_groups", "referral_assessment"],
+    exclude=["members"],
+)
+reversion.register(QAOfficerGroup, follow=["qaofficer_groups"], exclude=["members"])
 reversion.register(QAOfficerReferral)
 reversion.register(QAOfficerDocument, follow=["qaofficer_referral_document"])
 reversion.register(ProposalAccreditation)
