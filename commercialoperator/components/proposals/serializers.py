@@ -65,6 +65,10 @@ from commercialoperator.components.stubs.serializers import (
 )
 from rest_framework import serializers
 
+from datetime import datetime
+
+import logging
+logger = logging.getLogger(__name__)
 
 class ProposalTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -904,6 +908,7 @@ class InternalProposalSerializer(BaseProposalSerializer):
     referral_assessments = ProposalAssessmentSerializer(read_only=True, many=True)
     fee_invoice_url = serializers.SerializerMethodField()
     requirements_completed = serializers.SerializerMethodField()
+    proposed_issuance_approval = serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -1049,43 +1054,29 @@ class InternalProposalSerializer(BaseProposalSerializer):
     def get_marine_parks_activities(self, obj):
         return []
 
+    def get_proposed_issuance_approval(self, obj):
+        pia = obj.proposed_issuance_approval
+        try:
+            start_date_obj = datetime.strptime(pia.get("start_date"), "%d/%m/%Y")
+        except ValueError:
+            logger.warning("TODO: handle invalid date format")
+            start_date_str = None
+        else:
+            start_date_str = datetime.strftime(start_date_obj, "%Y-%m-%d")
 
-# class ReferralProposalSerializer(InternalProposalSerializer):
-#     def get_assessor_mode(self,obj):
-#         # TODO check if the proposal has been accepted or declined
-#         request = self.context['request']
-#         user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
-#         try:
-#             referral = Referral.objects.get(proposal=obj,referral=user)
-#         except:
-#             referral = None
-#         return {
-#             'assessor_mode': True,
-#             'assessor_can_assess': referral.can_assess_referral(user) if referral else None,
-#             'assessor_level': 'referral',
-#             'assessor_box_view': obj.assessor_comments_view(user)
-#         }
+        try:
+            expiry_date_obj = datetime.strptime(pia.get("expiry_date"), "%d/%m/%Y")
+        except ValueError:
+            expiry_date_str = None
+        else:
+            expiry_date_str = datetime.strftime(expiry_date_obj, "%Y-%m-%d")
 
-# class ReferralSerializer(serializers.ModelSerializer):
-#     processing_status = serializers.CharField(source='get_processing_status_display')
-#     latest_referrals = ProposalReferralSerializer(many=True)
-#     can_be_completed = serializers.BooleanField()
-#     can_process=serializers.SerializerMethodField()
-#     referral_assessment=ProposalAssessmentSerializer(read_only=True)
-
-
-#     class Meta:
-#         model = Referral
-#         fields = '__all__'
-
-#     def __init__(self,*args,**kwargs):
-#         super(ReferralSerializer, self).__init__(*args, **kwargs)
-#         self.fields['proposal'] = ReferralProposalSerializer(context={'request':self.context['request']})
-
-#     def get_can_process(self,obj):
-#         request = self.context['request']
-#         user = request.user._wrapped if hasattr(request.user,'_wrapped') else request.user
-#         return obj.can_process(user)
+        return {
+            "details": pia.get("details"),
+            "start_date": start_date_str,
+            "expiry_date": expiry_date_str,
+            "cc_email": pia.get("cc_email"),
+        }
 
 
 class ProposalUserActionSerializer(serializers.ModelSerializer):
@@ -1243,8 +1234,8 @@ class ProposalStandardRequirementSerializer(serializers.ModelSerializer):
 
 
 class ProposedApprovalSerializer(serializers.Serializer):
-    expiry_date = serializers.DateField()
-    start_date = serializers.DateField()
+    expiry_date = serializers.DateField(input_formats=["%Y-%m-%d"])
+    start_date = serializers.DateField(input_formats=["%Y-%m-%d"])
     details = serializers.CharField()
     cc_email = serializers.CharField(required=False, allow_null=True)
 
