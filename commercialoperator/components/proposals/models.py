@@ -326,7 +326,9 @@ class ProposalApproverGroup(models.Model):
 
     @property
     def members_email(self):
-        return [i.email for i in self.members.all()]
+        members = retrieve_group_members(self)
+        emailusers = [retrieve_email_user(i) for i in members]
+        return [u.email for u in emailusers]
 
 
 class DefaultDocument(Document):
