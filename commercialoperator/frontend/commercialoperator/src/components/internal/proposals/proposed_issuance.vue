@@ -41,7 +41,7 @@
                                         >
                                             <input
                                                 v-model="approval.start_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="start_date"
                                                 placeholder="DD/MM/YYYY"
@@ -90,7 +90,7 @@
                                             <input
                                                 ref="expiry_date"
                                                 v-model="approval.expiry_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="due_date"
                                                 placeholder="DD/MM/YYYY"
@@ -487,7 +487,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
@@ -502,52 +502,7 @@ export default {
                 },
             });
         },
-        eventListeners: function () {
-            let vm = this;
-            // Initialise Date Picker
-            $(vm.$refs.due_date).on('dp.change', function (e) {
-                if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
-                    if (
-                        $(vm.$refs.due_date).data('DateTimePicker').date() <
-                        $(vm.$refs.start_date).data('DateTimePicker').date()
-                    ) {
-                        vm.toDateError = true;
-                        vm.toDateErrorString =
-                            'Please select Expiry date that is after Start date';
-                        vm.approval.expiry_date = '';
-                    } else {
-                        vm.toDateError = false;
-                        vm.toDateErrorString = '';
-                        vm.approval.expiry_date = e.date.format('DD/MM/YYYY');
-                    }
-                    //vm.approval.expiry_date =  e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.due_date).data('date') === '') {
-                    vm.approval.expiry_date = '';
-                }
-            });
-            // $(vm.$refs.start_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.start_date).on('dp.change', function (e) {
-                if ($(vm.$refs.start_date).data('DateTimePicker').date()) {
-                    if (
-                        $(vm.$refs.due_date).data('DateTimePicker').date() !=
-                            null &&
-                        $(vm.$refs.due_date).data('DateTimePicker').date() <
-                            $(vm.$refs.start_date).data('DateTimePicker').date()
-                    ) {
-                        vm.startDateError = true;
-                        vm.startDateErrorString =
-                            'Please select Start date that is before Expiry date';
-                        vm.approval.start_date = '';
-                    } else {
-                        vm.startDateError = false;
-                        vm.startDateErrorString = '';
-                        vm.approval.start_date = e.date.format('DD/MM/YYYY');
-                    }
-                } else if ($(vm.$refs.start_date).data('date') === '') {
-                    vm.approval.start_date = '';
-                }
-            });
-        },
+        eventListeners: function () {},
     },
 };
 </script>
