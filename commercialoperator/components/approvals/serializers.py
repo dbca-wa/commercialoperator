@@ -148,6 +148,8 @@ class ApprovalSerializer(serializers.ModelSerializer):
     is_assessor = serializers.SerializerMethodField()
     is_approver = serializers.SerializerMethodField()
     requirement_docs = serializers.SerializerMethodField()
+    start_date = serializers.DateField(format="%Y-%m-%d")
+    expiry_date = serializers.DateField(format="%Y-%m-%d")
 
     class Meta:
         model = Approval
