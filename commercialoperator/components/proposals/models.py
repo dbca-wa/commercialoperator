@@ -2033,7 +2033,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             )
         elif self.processing_status == "with_approver":
             return self.__approver_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             )
         else:
             return False
@@ -2050,7 +2050,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             )
         elif self.processing_status == "with_approver":
             return self.__approver_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             )
         else:
             return False
@@ -2061,7 +2061,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             or self.processing_status == "with_assessor_requirements"
         ):
             return self.__assessor_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             )
         else:
             return False
@@ -2085,7 +2085,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             ):
                 return True
             elif self.__approver_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             ):
                 return True
             else:
