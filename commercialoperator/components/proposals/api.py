@@ -527,7 +527,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         ).values_list("email", flat=True)
 
         if request.user.email not in qa_officers:
-            return self.paginator.get_paginated_response([])
+            return Response([])
 
         qs = self.get_queryset()
         qs = qs.filter(qaofficer_referrals__gt=0)
