@@ -291,11 +291,11 @@ export default {
             members: [],
             // Filters
             logs_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_requests,
+                api_endpoints.organisation_request,
                 vm.$route.params.access_id + '/action_log'
             ),
             comms_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_requests,
+                api_endpoints.organisation_request,
                 vm.$route.params.access_id + '/comms_log'
             ),
             comms_add_url: helpers.add_endpoint_json(
