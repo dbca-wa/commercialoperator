@@ -2,7 +2,12 @@
     <div v-if="proposal" id="internalProposal" class="container">
         <div class="row" style="padding-bottom: 50px">
             <h3>Application: {{ proposal.lodgement_number }}</h3>
-            <h4>Application Type: {{ proposal.proposal_type }}</h4>
+            <h4>
+                Application Type: {{ proposal.application_type }}
+                {{
+                    proposal.proposal_type ? `(${proposal.proposal_type})` : ''
+                }}
+            </h4>
             <div v-if="!comparing" class="col-md-3">
                 <CommsLogs
                     :comms_url="comms_url"
