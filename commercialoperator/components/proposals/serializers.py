@@ -1056,10 +1056,13 @@ class InternalProposalSerializer(BaseProposalSerializer):
 
     def get_proposed_issuance_approval(self, obj):
         pia = obj.proposed_issuance_approval
+        if not pia:
+            return None
+
         try:
             start_date_obj = datetime.strptime(pia.get("start_date"), "%d/%m/%Y")
         except ValueError:
-            logger.warning("TODO: handle invalid date format")
+            logger.warning("Invalid start date format. Expecting dd/mm/YYYY")
             start_date_str = None
         else:
             start_date_str = datetime.strftime(start_date_obj, "%Y-%m-%d")
@@ -1067,6 +1070,7 @@ class InternalProposalSerializer(BaseProposalSerializer):
         try:
             expiry_date_obj = datetime.strptime(pia.get("expiry_date"), "%d/%m/%Y")
         except ValueError:
+            logger.warning("Invalid expiry date format. Expecting dd/mm/YYYY")
             expiry_date_str = None
         else:
             expiry_date_str = datetime.strftime(expiry_date_obj, "%Y-%m-%d")
