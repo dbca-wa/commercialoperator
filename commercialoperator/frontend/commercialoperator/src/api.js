@@ -6,6 +6,7 @@ var event = 'Event';
 module.exports = {
     organisations: '/api/organisations.json',
     filtered_organisations: '/api/filtered_organisations',
+    organisation_request: '/api/organisation_requests.json',
     organisation_requests:
         '/api/organisation_requests/datatable_list/?format=datatables',
     organisation_contacts: '/api/organisation_contacts.json',

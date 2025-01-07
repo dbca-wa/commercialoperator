@@ -705,7 +705,7 @@ class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
-        applicant = request.GET.get("filter_applicant")
+        applicant = request.GET.get("filter_applicant", "All")
         if applicant != "All":
             raise serializers.ValidationError("Filtering by applicant is not supported")
 

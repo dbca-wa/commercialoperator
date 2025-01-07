@@ -264,7 +264,7 @@ export default {
         Vue.http
             .get(
                 helpers.add_endpoint_json(
-                    api_endpoints.organisation_requests,
+                    api_endpoints.organisation_request,
                     to.params.access_id
                 )
             )
