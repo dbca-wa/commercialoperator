@@ -499,7 +499,7 @@ export default {
                 proposal: this.proposal_id,
             };
             this.$refs.filefield.reset_files();
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             // $(this.$refs.due_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
