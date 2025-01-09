@@ -92,6 +92,7 @@ RUN mkdir /app/tmp/
 RUN chmod 777 /app/tmp/
 COPY --chown=oim:oim  python-cron ./
 COPY --chown=oim:oim startup.sh /
+RUN chmod 755 /startup.sh
 # Cron start
 #RUN service rsyslog start
 #RUN chmod 0644 /etc/cron.d/dockercron
