@@ -9,6 +9,7 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import get_organisation
 from commercialoperator.components.compliances.models import (
     Compliance,
     ComplianceAmendmentRequest,
@@ -29,7 +30,6 @@ from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
 
-
 class CompliancePaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
@@ -48,6 +48,28 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         elif is_customer(self.request):
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
+
+            # NOTE: Tried to find out why in the external dashboard requirements where not shown for the customer.
+            # Compliance.objects.last()
+            # Compliance.objects.filter(Q(proposal__submitter_id=user.id))
+
+            # org_id = user_orgs[0]
+            # organisations_response = get_organisation(org_id)
+            # if organisations_response.get("status", None) == status.HTTP_200_OK:
+            #     # Get the organisation object from ledger
+            #     ledger_organisation = organisations_response.get("data", [])
+            #     # Add the cols organisation model id to the ledger organisation object
+            #     commercialoperator_organisation = Organisation.objects.get(
+            #         organisation_id=org_id
+            #     )
+            #     ledger_organisation["id"] = commercialoperator_organisation.id
+            #     commercialoperator_organisations.append(ledger_organisation)
+            #     # Note: Set a cache here
+            # else:
+            #     raise serializers.ValidationError(
+            #         f"Error retrieving organisations for user {obj.id}"
+            #     )
+
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
                 | Q(proposal__submitter_id=user.id)
