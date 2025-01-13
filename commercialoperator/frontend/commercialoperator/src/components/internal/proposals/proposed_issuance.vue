@@ -45,6 +45,7 @@
                                                 class="form-control"
                                                 name="start_date"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                             />
                                             <span class="input-group-addon">
                                                 <span
@@ -136,6 +137,7 @@
                                             name="approval_details"
                                             class="form-control"
                                             style="width: 70%"
+                                            required
                                         ></textarea>
                                     </div>
                                 </div>
@@ -313,7 +315,7 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.approvalForm;
-        vm.addFormValidations();
+        // vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListeners();
         });
@@ -363,26 +365,44 @@ export default {
             $('body').append(formElement);
             $(formElement).submit();
         },
+        validateForm: function (form) {
+            if (form.checkValidity() === false) {
+                form.classList.add('was-validated');
+                $(form).find(':invalid').first().focus();
+                return false;
+            }
+            form.classList.remove('was-validated');
 
+            return true;
+        },
         ok: function () {
             let vm = this;
-            if (vm.validateApprovalCC() && $(vm.form).valid()) {
+
+            // Check form validity
+            if (vm.validateForm(vm.form) && vm.validateApprovalCC()) {
+                console.log('Form is valid');
                 vm.sendData();
+            } else {
+                console.warn('Form is not valid');
             }
+
+            // if (vm.validateApprovalCC() && $(vm.form).valid()) {
+            //     vm.sendData();
+            // }
         },
         cancel: function () {
             this.close();
         },
         close: function () {
             this.isModalOpen = false;
-            this.approval = {};
+            // this.approval = {};
             this.hasErrors = false;
             this.toDateError = false;
             this.startDateError = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.due_date).val('');
-            $(this.$refs.start_date).val('');
-            this.validation_form.resetForm();
+            // $(this.$refs.due_date).val('');
+            // $(this.$refs.start_date).val('');
+            // this.validation_form.resetForm();
         },
         fetchContact: function (id) {
             let vm = this;
@@ -468,39 +488,6 @@ export default {
                     'Please ensure each CC email is valid and separated with a ,';
                 return false;
             }
-        },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    start_date: 'required',
-                    due_date: 'required',
-                    approval_details: 'required',
-                },
-                messages: {},
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    // $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
         },
         eventListeners: function () {},
     },
