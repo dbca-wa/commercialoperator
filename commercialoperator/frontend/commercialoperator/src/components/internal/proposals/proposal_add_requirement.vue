@@ -47,7 +47,10 @@
                                         v-if="requirement.standard"
                                         class="col-sm-9"
                                     >
-                                        <div style="width: 70% !important">
+                                        <div
+                                            v-if="requirements.length > 0"
+                                            style="width: 70% !important"
+                                        >
                                             <select
                                                 ref="standard_req"
                                                 v-model="
@@ -639,7 +642,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
