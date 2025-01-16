@@ -214,4 +214,16 @@ module.exports = {
                 }
             });
     },
+    validateForm: function (form) {
+        if (form.checkValidity() === false) {
+            form.classList.add('was-validated');
+            $(form).find(':invalid').first().focus();
+            console.log('Form is invalid');
+            return false;
+        }
+        form.classList.remove('was-validated');
+
+        console.log('Form is valid');
+        return true;
+    },
 };
