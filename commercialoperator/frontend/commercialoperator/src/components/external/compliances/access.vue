@@ -115,6 +115,7 @@
                                                         class="form-control"
                                                         name="detail"
                                                         placeholder=""
+                                                        required
                                                     ></textarea>
                                                 </div>
                                             </div>
@@ -146,7 +147,7 @@
                                                         >
                                                         <span
                                                             v-if="
-                                                                !isFinalisedi &&
+                                                                !isFinalised &&
                                                                 d.can_delete
                                                             "
                                                         >
@@ -399,6 +400,8 @@
 import $ from 'jquery';
 import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import alert from '@vue-utils/alert.vue';
+
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'externalCompliance',
@@ -407,7 +410,9 @@ export default {
             return moment(data).format('DD/MM/YYYY HH:mm:ss');
         },
     },
-    components: {},
+    components: {
+        alert,
+    },
     beforeRouteEnter: function (to, from, next) {
         Vue.http
             .get(
@@ -524,7 +529,6 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.complianceForm;
-        vm.addFormValidations();
     },
     methods: {
         uploadFile(target, file_obj) {
@@ -557,7 +561,7 @@ export default {
         },
         submit: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            if (helpers.validateForm(vm.form)) {
                 vm.sendData();
             }
         },
@@ -578,41 +582,6 @@ export default {
             this.attachAnother();
             vm.$router.push({ name: 'external-proposals-dash' }); //Navigate to dashboard
         },
-
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    detail: 'required',
-                },
-                messages: {
-                    detail: 'field is required',
-                },
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
-        },
-
         setAmendmentData: function (amendment_request) {
             this.amendment_request = amendment_request;
 
