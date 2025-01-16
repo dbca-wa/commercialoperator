@@ -365,30 +365,16 @@ export default {
             $('body').append(formElement);
             $(formElement).submit();
         },
-        validateForm: function (form) {
-            if (form.checkValidity() === false) {
-                form.classList.add('was-validated');
-                $(form).find(':invalid').first().focus();
-                return false;
-            }
-            form.classList.remove('was-validated');
-
-            return true;
-        },
         ok: function () {
             let vm = this;
 
             // Check form validity
-            if (vm.validateForm(vm.form) && vm.validateApprovalCC()) {
+            if (helpers.validateForm(vm.form) && vm.validateApprovalCC()) {
                 console.log('Form is valid');
                 vm.sendData();
             } else {
                 console.warn('Form is not valid');
             }
-
-            // if (vm.validateApprovalCC() && $(vm.form).valid()) {
-            //     vm.sendData();
-            // }
         },
         cancel: function () {
             this.close();
