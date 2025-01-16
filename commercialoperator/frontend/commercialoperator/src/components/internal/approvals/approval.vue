@@ -376,6 +376,7 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import Vue from 'vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Approval',

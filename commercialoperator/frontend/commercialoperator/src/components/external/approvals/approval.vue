@@ -6,43 +6,31 @@
             <div class="col-sm-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Holder
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + pBody"
-                                    data-toggle="collapse"
-                                    expanded="false"
-                                    data-parent="#userInfo"
-                                    :aria-controls="pBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="pBody" class="panel-body panel-collapse">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Holder"
+                            index="holder"
+                            subtitle=""
+                        >
                             <div class="row">
                                 <div class="col-sm-12">
                                     <form
                                         class="form-horizontal"
                                         name="approval_form"
                                     >
-                                        <div class="form-group">
+                                        <div class="form-group row mb-3">
                                             <label
                                                 v-if="
                                                     approval.applicant_type ==
                                                     'org_applicant'
                                                 "
-                                                for=""
+                                                for="name"
                                                 class="col-sm-3 control-label"
                                                 >Organisation</label
                                             >
                                             <label
                                                 v-else
-                                                for=""
+                                                for="name"
                                                 class="col-sm-3 control-label"
                                                 >Applicant</label
                                             >
@@ -62,10 +50,10 @@
                                                 approval.applicant_type ==
                                                 'org_applicant'
                                             "
-                                            class="form-group"
+                                            class="form-group row"
                                         >
                                             <label
-                                                for=""
+                                                for="abn"
                                                 class="col-sm-3 control-label"
                                                 >ABN</label
                                             >
@@ -83,41 +71,27 @@
                                     </form>
                                 </div>
                             </div>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Address Details
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + adBody"
-                                    data-toggle="collapse"
-                                    expanded="true"
-                                    data-parent="#userInfo"
-                                    :aria-controls="adBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
-                            v-if="loading.length == 0"
-                            :id="adBody"
-                            class="panel-body collapse"
+                        <FormSection
+                            :form-collapse="false"
+                            label="Address Details"
+                            index="address_details"
+                            subtitle=""
                         >
                             <form
                                 class="form-horizontal"
                                 action="index.html"
                                 method="post"
                             >
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="street"
+                                        class="col-sm-3 control-label"
                                         >Street</label
                                     >
                                     <div class="col-sm-6">
@@ -131,8 +105,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="suburb"
+                                        class="col-sm-3 control-label"
                                         >Town/Suburb</label
                                     >
                                     <div class="col-sm-6">
@@ -146,8 +122,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >State</label
                                     >
                                     <div class="col-sm-3">
@@ -160,7 +138,9 @@
                                             placeholder=""
                                         />
                                     </div>
-                                    <label for="" class="col-sm-1 control-label"
+                                    <label
+                                        for="postcode"
+                                        class="col-sm-1 control-label text-nowrap"
                                         >Postcode</label
                                     >
                                     <div class="col-sm-2">
@@ -174,8 +154,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row">
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >Country</label
                                     >
                                     <div class="col-sm-4">
@@ -189,84 +171,82 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Licence Details
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + oBody"
-                                    data-toggle="collapse"
-                                    expanded="true"
-                                    data-parent="#userInfo"
-                                    :aria-controls="oBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-down pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div
-                            v-if="loading.length == 0"
-                            :id="oBody"
-                            class="panel-body collapse"
+                        <FormSection
+                            :form-collapse="false"
+                            label="Licence Details"
+                            index="licence_details"
+                            subtitle=""
                         >
                             <form
                                 class="form-horizontal"
                                 action="index.html"
                                 method="post"
                             >
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="issue_date"
+                                        class="col-sm-3 control-label"
                                         >Issue Date</label
                                     >
                                     <div class="col-sm-6">
-                                        <label
-                                            for=""
-                                            class="control-label pull-left"
-                                            >{{
+                                        <input
+                                            :value="
                                                 approval.issue_date | formatDate
-                                            }}</label
-                                        >
+                                            "
+                                            type="text"
+                                            class="form-control control-label pull-left"
+                                            name="issue_date"
+                                            disabled
+                                        />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="start_date"
+                                        class="col-sm-3 control-label"
                                         >Start Date</label
                                     >
                                     <div class="col-sm-6">
-                                        <label
-                                            for=""
-                                            class="control-label pull-left"
-                                            >{{
+                                        <input
+                                            :value="
                                                 approval.start_date | formatDate
-                                            }}</label
-                                        >
+                                            "
+                                            type="text"
+                                            class="form-control control-label pull-left"
+                                            name="start_date"
+                                            disabled
+                                        />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row mb-3">
+                                    <label
+                                        for="expiry_date"
+                                        class="col-sm-3 control-label"
                                         >Expiry Date</label
                                     >
                                     <div class="col-sm-3">
-                                        <label
-                                            for=""
-                                            class="control-label pull-left"
-                                            >{{
+                                        <input
+                                            :value="
                                                 approval.expiry_date
                                                     | formatDate
-                                            }}</label
-                                        >
+                                            "
+                                            type="text"
+                                            class="form-control control-label pull-left"
+                                            name="expiry_date"
+                                            disabled
+                                        />
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                <div class="form-group row">
+                                    <label
+                                        for="licence_document"
+                                        class="col-sm-3 control-label"
                                         >Document</label
                                     >
                                     <div
@@ -309,7 +289,7 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -317,6 +297,7 @@
     </div>
 </template>
 <script>
+import FormSection from '@/components/forms/section_toggle.vue';
 import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 
@@ -328,7 +309,9 @@ export default {
             return moment(data).format('DD/MM/YYYY');
         },
     },
-    components: {},
+    components: {
+        FormSection,
+    },
     beforeRouteEnter: function (to, from, next) {
         Vue.http
             .get(
@@ -418,12 +401,13 @@ export default {
                 .then(
                     (response) => {
                         vm.applicant = response.body;
-                        vm.applicant.name = response.body.name;
-                        vm.applicant.abn = response.body.abn;
-                        if (response.body.address == null) {
+                        vm.applicant.name = response.body.organisation_name;
+                        vm.applicant.abn = response.body.organisation_abn;
+                        if (response.body.organisation_address == null) {
                             vm.applicant.address = vm.address_default;
                         } else {
-                            vm.applicant.address = response.body.address;
+                            vm.applicant.address =
+                                response.body.organisation_address;
                         }
                     },
                     (error) => {
