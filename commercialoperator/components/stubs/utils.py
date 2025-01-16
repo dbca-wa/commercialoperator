@@ -9,6 +9,7 @@ from ledger_api_client.utils import (
     oracle_parser as ledger_oracle_parser,
     update_payments as ledger_update_payments,
     get_all_organisation,
+    get_organisation,
     get_search_organisation,
 )
 from ledger_api_client.common import get_ledger_user_info_by_id
@@ -246,6 +247,41 @@ def retrieve_ledger_user_info_by_id(email_user_id):
         return user_info
     else:
         return user_info
+
+
+def retrieve_cols_organisations_from_ledger_org_ids(user):
+    """Takes a user object, retrieves the organisations that the user is a delegate of from the ledger
+    and adds the corresponding organisation model id to the ledger organisation object.
+    """
+
+    from commercialoperator.components.organisations.models import Organisation
+
+    user_id = user.id
+    # user_id = 163998  # An existing user id for testing
+    user_ledger_org_ids = retrieve_delegate_organisation_ids(user_id)
+
+    commercialoperator_organisations = []
+
+    for org_id in user_ledger_org_ids:
+        organisations_response = get_organisation(org_id)
+
+        if organisations_response.get("status", None) == status.HTTP_200_OK:
+            # Get the organisation object from ledger
+            ledger_organisation = organisations_response.get("data", [])
+            # Add the cols organisation model id to the ledger organisation object
+            commercialoperator_organisation = Organisation.objects.get(
+                organisation_id=org_id
+            )
+            ledger_organisation["id"] = commercialoperator_organisation.id
+            commercialoperator_organisations.append(ledger_organisation)
+            # Note: Set a cache here
+        else:
+            raise ValueError(f"Error retrieving organisations for user {user_id}")
+        logger.info(
+            f"Retrieved organisations for user {user_id}: {commercialoperator_organisations}"
+        )
+
+    return commercialoperator_organisations
 
 
 class ListAsQuerySet(list):

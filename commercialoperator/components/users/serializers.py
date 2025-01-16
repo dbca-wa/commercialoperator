@@ -23,7 +23,7 @@ from commercialoperator.components.stubs.models import (
     EmailUserLogEntry,
 )
 from commercialoperator.components.stubs.utils import (
-    retrieve_delegate_organisation_ids,
+    retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_ledger_user_info_by_id,
 )
 from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin
@@ -31,7 +31,6 @@ from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers, status
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.helpers import is_payment_admin
-from ledger_api_client.utils import get_organisation
 from django.utils import timezone
 from datetime import timedelta
 
@@ -270,31 +269,9 @@ class UserSerializer(serializers.ModelSerializer):
         return is_payment_admin(obj)
 
     def get_commercialoperator_organisations(self, obj):
-        # commercialoperator_organisations = obj.commercialoperator_organisations
-        user_id = obj.id
-        # user_id = 163998  # An existing user id for testing
-        organisation_ids = retrieve_delegate_organisation_ids(user_id)
-        commercialoperator_organisations = []
-
-        for org_id in organisation_ids:
-            organisations_response = get_organisation(org_id)
-            if organisations_response.get("status", None) == status.HTTP_200_OK:
-                # Get the organisation object from ledger
-                ledger_organisation = organisations_response.get("data", [])
-                # Add the cols organisation model id to the ledger organisation object
-                commercialoperator_organisation = Organisation.objects.get(
-                    organisation_id=org_id
-                )
-                ledger_organisation["id"] = commercialoperator_organisation.id
-                commercialoperator_organisations.append(ledger_organisation)
-                # Note: Set a cache here
-            else:
-                raise serializers.ValidationError(
-                    f"Error retrieving organisations for user {obj.id}"
-                )
-            logger.info(
-                f"Retrieved organisations for user {obj.id}: {commercialoperator_organisations}"
-            )
+        commercialoperator_organisations = (
+            retrieve_cols_organisations_from_ledger_org_ids(obj)
+        )
 
         serialized_orgs = UserOrganisationSerializer(
             commercialoperator_organisations, many=True, context={"user_id": obj.id}
