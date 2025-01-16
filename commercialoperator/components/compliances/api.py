@@ -82,9 +82,32 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         """
 
         qs = self.get_queryset().exclude(processing_status="future")
-        # qs = ProposalFilterBackend().filter_queryset(self.request, qs, self)
         qs = self.filter_queryset(qs)
-        # qs = qs.order_by('lodgement_number', '-issue_date').distinct('lodgement_number')
+
+        # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
+        applicant_id = request.GET.get("org_id")
+        if applicant_id:
+            qs = qs.filter(proposal__org_applicant_id=applicant_id)
+        submitter_id = request.GET.get("submitter_id", None)
+        if submitter_id:
+            qs = qs.filter(proposal__submitter_id=submitter_id)
+        self.paginator.page_size = qs.count()
+        result_page = self.paginator.paginate_queryset(qs, request)
+        serializer = ComplianceSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
+    def compliances_internal(self, request, *args, **kwargs):
+        """Same as external compliance endpoint but including future compliances"""
+        qs = self.get_queryset()
+        qs = self.filter_queryset(qs)
 
         # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
         applicant_id = request.GET.get("org_id")

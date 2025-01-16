@@ -63,6 +63,8 @@ module.exports = {
         '/api/approval_paginated/approvals_external/?format=datatables',
     compliances_paginated_external:
         '/api/compliance_paginated/compliances_external/?format=datatables',
+    compliances_paginated_internal:
+        '/api/compliance_paginated/compliances_internal/?format=datatables',
     proposals_paginated_internal:
         '/api/proposal_paginated/proposals_internal/?format=datatables',
     referrals_paginated_internal:
