@@ -483,12 +483,13 @@ export default {
                 .then(
                     (response) => {
                         vm.applicant = response.body;
-                        vm.applicant.name = response.body.name;
-                        vm.applicant.abn = response.body.abn;
-                        if (response.body.address == null) {
+                        vm.applicant.name = response.body.organisation_name;
+                        vm.applicant.abn = response.body.organisation_abn;
+                        if (response.body.organisation_address == null) {
                             vm.applicant.address = vm.address_default;
                         } else {
-                            vm.applicant.address = response.body.address;
+                            vm.applicant.address =
+                                response.body.organisation_address;
                         }
                     },
                     (error) => {
