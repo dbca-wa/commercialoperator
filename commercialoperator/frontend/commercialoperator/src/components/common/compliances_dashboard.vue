@@ -223,6 +223,8 @@ export default {
                     {
                         data: 'holder',
                         name: 'approval__org_applicant__organisation__name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name',
+                        // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
+                        searchable: false,
                     },
                     {
                         data: 'processing_status',
@@ -244,6 +246,8 @@ export default {
                     {
                         data: 'assigned_to',
                         name: 'assigned_to__first_name, assigned_to__last_name, assigned_to__email',
+                        // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
+                        searchable: false,
                     },
                     {
                         data: 'compliance_licence_name',
@@ -282,12 +286,11 @@ export default {
                         },
                         name: '',
                     },
-                    { data: 'reference', visible: false },
-                    { data: 'customer_status', visible: false },
-                    { data: 'can_user_view', visible: false },
-                    { data: 'can_process', visible: false },
-                    { data: 'fee_invoice_reference', visible: false },
-                    { data: 'fee_paid', visible: false },
+                    {
+                        data: 'reference',
+                        visible: false,
+                        name: 'lodgement_number',
+                    },
                 ],
                 processing: true,
             },
