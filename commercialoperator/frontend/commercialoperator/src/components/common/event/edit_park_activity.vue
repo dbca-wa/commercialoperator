@@ -193,7 +193,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.park_action == 'add'
+            return this.localParkAction == 'add'
                 ? 'Add a new Park or Reserve'
                 : 'Edit a Park or Reserve';
         },

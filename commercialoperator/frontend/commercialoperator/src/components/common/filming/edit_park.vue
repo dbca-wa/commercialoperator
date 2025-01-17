@@ -252,6 +252,7 @@ export default {
                 allowInputToggle: true,
             },
             selected_park_id: null,
+            localParkAction: JSON.parse(JSON.stringify(this.park_action)),
         };
     },
     computed: {
@@ -260,7 +261,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.park_action == 'add'
+            return this.localParkAction == 'add'
                 ? 'Add a new Park or Reserve'
                 : 'Edit a Park or Reserve';
         },
@@ -270,6 +271,14 @@ export default {
                       this.park_id +
                       '/delete_document/'
                 : '';
+        },
+    },
+    watch: {
+        park_action: {
+            handler(newVal) {
+                this.localParkAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -458,7 +467,7 @@ export default {
 
             formData.append('data', JSON.stringify(park));
             vm.issuingPark = true;
-            if (vm.park_action == 'add' && vm.park_id == null) {
+            if (vm.localParkAction == 'add' && vm.park_id == null) {
                 vm.$http
                     .post(api_endpoints.proposal_filming_parks, formData, {
                         emulateJSON: true,
