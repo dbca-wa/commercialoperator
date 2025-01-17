@@ -23,7 +23,10 @@
                                             >Park or Reserve</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="selected_park_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="filming_park"
                                             v-model="selected_park_id"
@@ -560,6 +563,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
+                    dropdownParent: $('#selected_park_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);
