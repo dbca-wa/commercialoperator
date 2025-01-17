@@ -11,7 +11,7 @@
                 <div v-if="hasAmendmentRequest" class="row" style="color: red">
                     <div class="col-lg-12 pull-right">
                         <div class="panel panel-default">
-                            <div class="panel-heading">
+                            <!-- <div class="panel-heading">
                                 <h3 class="panel-title" style="color: red">
                                     An amendment has been requested for this
                                     Compliance with Requirements
@@ -29,7 +29,13 @@
                                     </a>
                                 </h3>
                             </div>
-                            <div :id="oBody" class="panel-body collapse in">
+                            <div :id="oBody" class="panel-body collapse in"> -->
+                            <FormSection
+                                :form-collapse="false"
+                                label="An amendment has been requested for this Compliance with Requirements"
+                                index="amendment_request"
+                                subtitle=""
+                            >
                                 <div
                                     v-for="a in amendment_request"
                                     :key="a.text"
@@ -37,7 +43,7 @@
                                     <p>Reason: {{ a.reason }}</p>
                                     <p>Details: {{ a.text }}</p>
                                 </div>
-                            </div>
+                            </FormSection>
                         </div>
                     </div>
                 </div>
@@ -53,7 +59,7 @@
             <div class="col-md-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
+                        <!-- <div class="panel-heading">
                             <h3 class="panel-title">
                                 Compliance with Requirements
                                 <a
@@ -70,7 +76,13 @@
                                 </a>
                             </h3>
                         </div>
-                        <div :id="pdBody" class="panel-body panel-collapse in">
+                        <div :id="pdBody" class="panel-body panel-collapse in"> -->
+                        <FormSection
+                            :form-collapse="false"
+                            label="Compliance with Requirements"
+                            index="compliance"
+                            subtitle=""
+                        >
                             <div class="row">
                                 <div class="col-md-12">
                                     <form
@@ -389,7 +401,7 @@
                                     </form>
                                 </div>
                             </div>
-                        </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -401,6 +413,7 @@ import $ from 'jquery';
 import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
+import FormSection from '@/components/forms/section_toggle.vue';
 
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
@@ -412,6 +425,7 @@ export default {
     },
     components: {
         alert,
+        FormSection,
     },
     beforeRouteEnter: function (to, from, next) {
         Vue.http
