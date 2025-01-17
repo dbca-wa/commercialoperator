@@ -11,25 +11,6 @@
                 <div v-if="hasAmendmentRequest" class="row" style="color: red">
                     <div class="col-lg-12 pull-right">
                         <div class="panel panel-default">
-                            <!-- <div class="panel-heading">
-                                <h3 class="panel-title" style="color: red">
-                                    An amendment has been requested for this
-                                    Compliance with Requirements
-                                    <a
-                                        class="panelClicker"
-                                        :href="'#' + oBody"
-                                        data-toggle="collapse"
-                                        data-parent="#userInfo"
-                                        expanded="true"
-                                        :aria-controls="oBody"
-                                    >
-                                        <span
-                                            class="glyphicon glyphicon-chevron-down pull-right"
-                                        ></span>
-                                    </a>
-                                </h3>
-                            </div>
-                            <div :id="oBody" class="panel-body collapse in"> -->
                             <FormSection
                                 :form-collapse="false"
                                 label="An amendment has been requested for this Compliance with Requirements"
@@ -59,24 +40,6 @@
             <div class="col-md-12">
                 <div class="row">
                     <div class="panel panel-default">
-                        <!-- <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Compliance with Requirements
-                                <a
-                                    class="panelClicker"
-                                    :href="'#' + pdBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="pdBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="pdBody" class="panel-body panel-collapse in"> -->
                         <FormSection
                             :form-collapse="false"
                             label="Compliance with Requirements"
