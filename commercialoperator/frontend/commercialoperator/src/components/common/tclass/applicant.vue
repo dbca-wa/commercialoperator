@@ -14,7 +14,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Name</label
                                     >
                                     <div class="col-sm-6">
@@ -33,7 +35,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Trading Name</label
                                     >
                                     <div class="col-sm-6">
@@ -52,7 +56,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >ABN/ACN</label
                                     >
                                     <div class="col-sm-6">
@@ -81,7 +87,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Given Name(s)</label
                                     >
                                     <div class="col-sm-6">
@@ -98,7 +106,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Surname</label
                                     >
                                     <div class="col-sm-6">
@@ -134,7 +144,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="street"
+                                        class="col-sm-3 control-label"
                                         >Street</label
                                     >
                                     <div class="col-sm-6">
@@ -152,7 +164,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="suburb"
+                                        class="col-sm-3 control-label"
                                         >Town/Suburb</label
                                     >
                                     <div class="col-sm-6">
@@ -171,7 +185,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >State</label
                                     >
                                     <div class="col-sm-2">
@@ -187,7 +203,9 @@
                                             placeholder=""
                                         />
                                     </div>
-                                    <label for="" class="col-sm-2 control-label"
+                                    <label
+                                        for="postcode"
+                                        class="col-sm-2 control-label text-nowrap"
                                         >Postcode</label
                                     >
                                     <div class="col-sm-2">
@@ -206,7 +224,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >Country</label
                                     >
                                     <div class="col-sm-4">
@@ -237,7 +257,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="street"
+                                        class="col-sm-3 control-label"
                                         >Street</label
                                     >
                                     <div class="col-sm-6">
@@ -255,7 +277,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="suburb"
+                                        class="col-sm-3 control-label"
                                         >Town/Suburb</label
                                     >
                                     <div class="col-sm-6">
@@ -274,7 +298,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >State</label
                                     >
                                     <div class="col-sm-2">
@@ -290,7 +316,9 @@
                                             placeholder=""
                                         />
                                     </div>
-                                    <label for="" class="col-sm-2 control-label"
+                                    <label
+                                        for="postcode"
+                                        class="col-sm-2 control-label text-nowrap"
                                         >Postcode</label
                                     >
                                     <div class="col-sm-2">
@@ -309,7 +337,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >Country</label
                                     >
                                     <div class="col-sm-4">
@@ -362,7 +392,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantPhoneNumber"
+                                        class="col-sm-3 control-label"
                                         >Phone (work)</label
                                     >
                                     <div class="col-sm-6">
@@ -379,7 +411,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantMobileNumber"
+                                        class="col-sm-3 control-label"
                                         >Mobile</label
                                     >
                                     <div class="col-sm-6">
@@ -396,7 +430,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantEmail"
+                                        class="col-sm-3 control-label"
                                         >Email</label
                                     >
                                     <div class="col-sm-6">

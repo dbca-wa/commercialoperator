@@ -184,7 +184,7 @@
                                         </div>
                                         <label
                                             for=""
-                                            class="col-sm-1 control-label"
+                                            class="col-sm-1 control-label text-nowrap"
                                             >Postcode</label
                                         >
                                         <div class="col-sm-2">
