@@ -562,7 +562,7 @@ export default {
         submit: function () {
             let vm = this;
             if (helpers.validateForm(vm.form)) {
-                // vm.sendData();
+                vm.sendData();
             }
         },
 

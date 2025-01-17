@@ -131,7 +131,7 @@ export default {
         ok: function () {
             let vm = this;
             if (helpers.validateForm(vm.form)) {
-                // vm.sendData();
+                vm.sendData();
             }
         },
         cancel: function () {
