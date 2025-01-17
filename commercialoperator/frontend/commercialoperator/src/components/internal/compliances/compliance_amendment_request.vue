@@ -14,44 +14,61 @@
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Reason</label
-                                        >
-                                        <select
-                                            ref="reason"
-                                            v-model="amendment.reason"
-                                            class="form-control"
-                                            name="reason"
-                                        >
-                                            <option
-                                                v-for="r in reason_choices"
-                                                :key="r.key"
-                                                :value="r.key"
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <label
+                                                    class="control-label pull-left"
+                                                    for="Name"
+                                                    >Reason</label
+                                                >
+                                            </div>
+                                            <div
+                                                id="amendment_reason_modal"
+                                                class="col-sm-9"
                                             >
-                                                {{ r.value }}
-                                            </option>
-                                        </select>
+                                                <select
+                                                    ref="reason"
+                                                    v-model="amendment.reason"
+                                                    class="form-control"
+                                                    name="reason"
+                                                    required
+                                                >
+                                                    <option
+                                                        v-for="r in reason_choices"
+                                                        :key="r.key"
+                                                        :value="r.key"
+                                                    >
+                                                        {{ r.value }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Details</label
-                                        >
-                                        <textarea
-                                            v-model="amendment.text"
-                                            class="form-control"
-                                            name="name"
-                                        ></textarea>
+                                        <div class="row">
+                                            <div class="col-sm-3">
+                                                <label
+                                                    class="control-label pull-left"
+                                                    for="Name"
+                                                    >Details</label
+                                                >
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <textarea
+                                                    v-model="amendment.text"
+                                                    class="form-control"
+                                                    name="name"
+                                                    required
+                                                ></textarea>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -94,7 +111,6 @@ export default {
             reason_choices: {},
             hasErrors: false,
             errorString: '',
-            validation_form: null,
         };
     },
     computed: {
@@ -107,7 +123,6 @@ export default {
         let vm = this;
         vm.form = document.forms.amendForm;
         vm.fetchAmendmentChoices();
-        vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListerners();
         });
@@ -115,7 +130,7 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            if (helpers.validateForm(vm.form)) {
                 vm.sendData();
             }
         },
@@ -132,8 +147,6 @@ export default {
             this.hasErrors = false;
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
-
-            this.validation_form.resetForm();
         },
         fetchAmendmentChoices: function () {
             let vm = this;
@@ -160,11 +173,11 @@ export default {
                 )
                 .then(
                     (response) => {
-                        swal(
-                            'Sent',
-                            'An email has been sent to applicant with the request to amend this compliance',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Sent',
+                            text: 'An email has been sent to applicant with the request to amend this compliance',
+                            type: 'success',
+                        });
                         vm.amendingcompliance = true;
                         console.log(response);
                         vm.close();
@@ -179,39 +192,6 @@ export default {
                     }
                 );
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    reason: 'required',
-                },
-                messages: {
-                    reason: 'field is required',
-                },
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
-        },
         eventListerners: function () {
             let vm = this;
 
@@ -221,6 +201,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Reason',
+                    dropdownParent: $('#amendment_reason_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);
