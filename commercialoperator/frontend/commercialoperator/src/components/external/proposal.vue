@@ -16,7 +16,10 @@
                                 index="amendment_request"
                                 subtitle=""
                             >
-                                <div v-for="a in amendment_request" :key="a">
+                                <div
+                                    v-for="a in amendment_request"
+                                    :key="a.reason"
+                                >
                                     <p>Reason: {{ a.reason }}</p>
                                     <p>Details:</p>
                                     <p v-for="t in splitText(a.text)" :key="t">
