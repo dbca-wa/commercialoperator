@@ -143,28 +143,28 @@ export default {
                 .then(
                     (res) => {
                         if (!is_onhold) {
-                            swal(
-                                'Put Application On-hold',
-                                'Application On-hold',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Put Application On-hold',
+                                text: 'Application On-hold',
+                                icon: 'success',
+                            });
                         } else {
-                            swal(
-                                'Application On-hold Remove',
-                                'Application On-hold Removed',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Application On-hold Remove',
+                                text: 'Application On-hold Removed',
+                                icon: 'success',
+                            });
                         }
 
                         vm.proposal = res.body;
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
-                        swal(
-                            'Submit Error',
-                            helpers.apiVueResourceError(err),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Submit Error',
+                            text: helpers.apiVueResourceError(err),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -189,7 +189,7 @@ export default {
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
 
-            this.validation_form.resetForm();
+            // this.validation_form.resetForm();
         },
         addFormValidations: function () {},
         eventListerners: function () {},
