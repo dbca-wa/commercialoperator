@@ -3,19 +3,12 @@
         <div class="col-sm-12">
             <div class="row">
                 <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                            Park Entry Fees
-                            <a
-                                :href="'#' + pBody"
-                                data-toggle="collapse"
-                                data-parent="#userInfo"
-                                expanded="true"
-                                :aria-controls="pBody"
-                            ></a>
-                        </h3>
-                    </div>
-                    <div :id="pBody" class="panel-body collapse in">
+                    <FormSection
+                        :form-collapse="false"
+                        label="Park Entry Fees"
+                        index="payment"
+                        subtitle=""
+                    >
                         <form
                             method="post"
                             name="new_payment"
@@ -171,7 +164,7 @@
                                 Existing invoice
                             </button>
                         </form>
-                    </div>
+                    </FormSection>
                 </div>
             </div>
         </div>
@@ -181,11 +174,14 @@
 <script>
 import OrderTable from './order_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names, vue/component-definition-name-casing
     name: 'payment',
     components: {
         OrderTable,
+        FormSection,
     },
     props: {
         proposal: {
