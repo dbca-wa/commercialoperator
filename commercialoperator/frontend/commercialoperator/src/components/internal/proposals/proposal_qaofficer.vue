@@ -25,7 +25,7 @@
                                             style="width: 70%"
                                         >
                                             <TextArea
-                                                id="id_comments"
+                                                id="id-qaofficer-comments"
                                                 ref="comments"
                                                 :proposal_id="proposal_id"
                                                 :readonly="readonly"
@@ -135,7 +135,7 @@ export default {
     },
     mounted: function () {
         let vm = this;
-        vm.form = document.forms.onholdForm;
+        vm.form = document.forms.withqaForm;
         this.$nextTick(() => {
             vm.eventListerners();
         });

@@ -18,7 +18,7 @@
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
                                         <TextArea
-                                            id="id_comments"
+                                            id="id-onhold-comments"
                                             :proposal_id="proposal_id"
                                             :readonly="readonly"
                                             name="on_hold_comments"
