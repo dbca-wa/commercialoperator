@@ -153,12 +153,11 @@ export default {
             let vm = this;
             var is_with_qaofficer =
                 vm.processing_status == 'With QA Officer' ? true : false;
-            var form = document.forms.withqaForm;
             var data = {
                 with_qaofficer: is_with_qaofficer ? 'False' : 'True', // since wee need to do the reverse
                 file_input_name: 'qaofficer_file',
                 proposal: vm.proposal_id,
-                text: form.elements['_comments'].value, // getting the value from the text-area.vue field
+                text: vm.$refs.comments.localValue, // getting the value from the text-area.vue field
             };
             vm.$http
                 .post(

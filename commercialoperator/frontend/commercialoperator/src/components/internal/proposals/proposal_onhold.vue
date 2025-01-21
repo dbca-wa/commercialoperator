@@ -19,6 +19,7 @@
                                     <div class="form-group">
                                         <TextArea
                                             id="id-onhold-comments"
+                                            ref="on_hold_comments"
                                             :proposal_id="proposal_id"
                                             :readonly="readonly"
                                             name="on_hold_comments"
@@ -122,12 +123,11 @@ export default {
         save: function () {
             let vm = this;
             var is_onhold = vm.processing_status == 'On Hold' ? true : false;
-            var form = document.forms.onholdForm;
             var data = {
                 onhold: is_onhold ? 'False' : 'True', // since wee need to do the reverse
                 file_input_name: 'on_hold_file',
                 proposal: vm.proposal_id,
-                text: form.elements['on_hold_comments'].value, // getting the value from the text-area.vue field
+                text: vm.$refs.on_hold_comments.localValue, // getting the value from the text-area.vue field
             };
             vm.$http
                 .post(
