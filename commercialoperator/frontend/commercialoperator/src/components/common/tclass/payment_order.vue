@@ -69,13 +69,21 @@
                                 </div>
                             </div>
 
-                            <label>Licence</label
-                            ><v-select
+                            <label>Licence</label>
+                            <select
                                 v-model="selected_licence"
-                                :options="licences"
+                                class="form-control"
                                 :clearable="false"
                                 @change="proposal_parks()"
-                            />
+                            >
+                                <option
+                                    v-for="l in licences"
+                                    :key="l.value"
+                                    :value="l.value"
+                                >
+                                    {{ l.label }}
+                                </option>
+                            </select>
                             <OrderTable
                                 id="id_payment"
                                 ref="order_table"
