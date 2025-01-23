@@ -42,140 +42,121 @@
                             v-for="(row, row_idx) in table.tbody"
                             :key="row_idx"
                         >
-                            <!-- <div> -->
                             <td
                                 v-for="(value, index) in row"
-                                v-if="col_types[index] == 'select'"
                                 :key="index"
                                 width="30%"
                             >
-                                <!-- <div v-if="col_types[index] == 'select'"> -->
-                                <v-select
-                                    v-model="row[index]"
-                                    class="tbl_input"
-                                    :options="options"
-                                    :title="
-                                        'Adult Price: ' +
-                                        row[index] +
-                                        ', Child Price: ' +
-                                        row[index]
-                                    "
-                                    i
-                                    :disabled="disabled"
-                                    :clearable="false"
-                                    @change="
-                                        park_change(row[index], row, row_idx)
-                                    "
-                                />
-                                <!-- </div> -->
-                            </td>
-                            <td
-                                v-for="(value, index) in row"
-                                v-if="col_types[index] == 'date'"
-                                :key="index"
-                            >
-                                <!-- <div v-if="col_types[index] == 'date'"> -->
-                                <input
-                                    id="id_arrival_date"
-                                    v-model="row[index]"
-                                    class="tbl_input"
-                                    :type="col_types[index]"
-                                    :max="expiry_date"
-                                    :min="today()"
-                                    :required="isRequired"
-                                    :onclick="isClickable"
-                                    :disabled="row[0] == '' || row[0] == null"
-                                    @change="
-                                        date_change(row[index], row, row_idx)
-                                    "
-                                />
-                                <!-- </div> -->
-                            </td>
-                            <td
-                                v-for="(value, index) in row"
-                                v-if="col_types[index] == 'checkbox'"
-                                :key="index"
-                            >
-                                <!-- <div v-if="col_types[index] == 'checkbox'"> -->
-                                <!--<input :id="'id_checkbox_' + row_idx" class="tbl_input" :type="col_types[index]" v-on:input="row[index] = $event.target.checked"  :checked="row[index]" :checkbox="same_tour_group_checkbox[row_idx].checked" @change="calcPrice(row, row_idx, index)" :title="tooltip_same_group_tour(row, row_idx)" :disabled="same_tour_group_checkbox[row_idx].disabled"/>-->
-                                <input
-                                    :id="'id_checkbox_' + row_idx"
-                                    v-model="row[index]"
-                                    class="tbl_input"
-                                    :type="col_types[index]"
-                                    :checkbox="
-                                        same_tour_group_checkbox[row_idx]
-                                            .checked
-                                    "
-                                    :title="
-                                        tooltip_same_group_tour(row, row_idx)
-                                    "
-                                    :disabled="
-                                        same_tour_group_checkbox[row_idx]
-                                            .disabled
-                                    "
-                                    @change="calcPrice(row, row_idx, index)"
-                                />
-                                <!-- </div> -->
-                            </td>
-                            <td
-                                v-for="(value, index) in row"
-                                v-if="
-                                    col_types[index] == 'text' ||
-                                    col_types[index] == 'number'
-                                "
-                                :key="index"
-                            >
-                                <!-- <div
+                                <template v-if="col_types[index] == 'select'">
+                                    <v-select
+                                        v-model="row[index]"
+                                        class="tbl_input"
+                                        :options="options"
+                                        :title="
+                                            'Adult Price: ' +
+                                            row[index] +
+                                            ', Child Price: ' +
+                                            row[index]
+                                        "
+                                        i
+                                        :disabled="disabled"
+                                        :clearable="false"
+                                        @change="
+                                            park_change(
+                                                row[index],
+                                                row,
+                                                row_idx
+                                            )
+                                        "
+                                    />
+                                </template>
+                                <template v-if="col_types[index] == 'date'">
+                                    <input
+                                        id="id_arrival_date"
+                                        v-model="row[index]"
+                                        class="tbl_input"
+                                        :type="col_types[index]"
+                                        :max="expiry_date"
+                                        :min="today()"
+                                        :required="isRequired"
+                                        :onclick="isClickable"
+                                        :disabled="
+                                            row[0] == '' || row[0] == null
+                                        "
+                                        @change="
+                                            date_change(
+                                                row[index],
+                                                row,
+                                                row_idx
+                                            )
+                                        "
+                                    />
+                                </template>
+                                <template v-if="col_types[index] == 'checkbox'">
+                                    <!--<input :id="'id_checkbox_' + row_idx" class="tbl_input" :type="col_types[index]" v-on:input="row[index] = $event.target.checked"  :checked="row[index]" :checkbox="same_tour_group_checkbox[row_idx].checked" @change="calcPrice(row, row_idx, index)" :title="tooltip_same_group_tour(row, row_idx)" :disabled="same_tour_group_checkbox[row_idx].disabled"/>-->
+                                    <input
+                                        :id="'id_checkbox_' + row_idx"
+                                        v-model="row[index]"
+                                        class="tbl_input"
+                                        :type="col_types[index]"
+                                        :checkbox="
+                                            same_tour_group_checkbox[row_idx]
+                                                .checked
+                                        "
+                                        :title="
+                                            tooltip_same_group_tour(
+                                                row,
+                                                row_idx
+                                            )
+                                        "
+                                        :disabled="
+                                            same_tour_group_checkbox[row_idx]
+                                                .disabled
+                                        "
+                                        @change="calcPrice(row, row_idx, index)"
+                                    />
+                                </template>
+                                <template
                                     v-if="
                                         col_types[index] == 'text' ||
                                         col_types[index] == 'number'
                                     "
-                                > -->
-                                <input
-                                    v-model="row[index]"
-                                    :readonly="readonly"
-                                    class="tbl_input"
-                                    :type="col_types[index]"
-                                    min="0"
-                                    value="0"
-                                    :required="isRequired"
-                                    :onclick="isClickable"
-                                    :disabled="row[1] == ''"
-                                    @change="calcPrice(row, row_idx)"
-                                />
-                                <!-- </div> -->
-                            </td>
-                            <td
-                                v-for="(value, index) in row"
-                                v-if="col_types[index] == 'total'"
-                                :key="index"
-                            >
-                                <!-- <div v-if="col_types[index] == 'total'"> -->
-                                <div class="currencyinput">
+                                >
                                     <input
                                         v-model="row[index]"
+                                        :readonly="readonly"
                                         class="tbl_input"
                                         :type="col_types[index]"
                                         min="0"
                                         value="0"
-                                        disabled
+                                        :required="isRequired"
+                                        :onclick="isClickable"
+                                        :disabled="row[1] == ''"
+                                        @change="calcPrice(row, row_idx)"
                                     />
-                                </div>
-                                <!-- </div> -->
+                                </template>
+                                <template v-if="col_types[index] == 'total'">
+                                    <div class="currencyinput">
+                                        <input
+                                            v-model="row[index]"
+                                            class="tbl_input"
+                                            :type="col_types[index]"
+                                            min="0"
+                                            value="0"
+                                            disabled
+                                        />
+                                    </div>
+                                </template>
                             </td>
-                            <div>
-                                <td v-if="!readonly">
-                                    <a
-                                        class="fa fa-trash-o"
-                                        title="Delete row"
-                                        style="cursor: pointer; color: red"
-                                        :disabled="disabled"
-                                        @click="deleteRow(row, row_idx)"
-                                    ></a>
-                                </td>
-                            </div>
-                            <!-- </div> -->
+                            <td v-if="!readonly">
+                                <a
+                                    class="fa fa-trash-o"
+                                    title="Delete row"
+                                    style="cursor: pointer; color: red"
+                                    :disabled="disabled"
+                                    @click="deleteRow(row, row_idx)"
+                                ></a>
+                            </td>
                         </tr>
 
                         <tr>
