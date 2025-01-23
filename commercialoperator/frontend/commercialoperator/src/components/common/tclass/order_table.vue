@@ -4,12 +4,13 @@
             <label :id="id" for="label" class="inline">{{ label }}</label>
             <!-- the next line required for saving value JSON-ified table to application.data - creates an invisible field -->
             <textarea
-                readonly="readonly"
+                v-model="localValue"
+                :readonly="readonly"
                 class="form-control"
                 rows="5"
                 :name="name"
                 style="display: none"
-                >{{ value }}</textarea
+            ></textarea
             ><br />
 
             <div id="content-editable-table">
@@ -338,6 +339,7 @@ export default {
             regions: [],
             arrival_dates: [],
             region_arrival_map: [],
+            localValue: JSON.parse(JSON.stringify(this.value)),
         };
     },
 
@@ -357,6 +359,12 @@ export default {
         table: function () {
             this.update_arrival_dates();
             console.log('arrival_dates: ' + this.arrival_dates);
+        },
+        value: {
+            handler: function (value) {
+                this.localValue = value;
+            },
+            deep: true,
         },
     },
     beforeUpdate() {},
@@ -445,7 +453,7 @@ export default {
         updateTableJSON: function () {
             let vm = this;
             vm.tableJSON = JSON.stringify(vm.table);
-            vm.value = vm.tableJSON;
+            vm.localValue = vm.tableJSON;
         },
         addRow: function () {
             let vm = this;
