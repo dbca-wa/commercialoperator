@@ -44,7 +44,7 @@
                             :key="row_idx"
                         >
                             <td
-                                v-for="(value, index) in row"
+                                v-for="(_, index) in row"
                                 :key="index"
                                 width="30%"
                             >
