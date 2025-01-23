@@ -192,10 +192,11 @@ export default {
         FormSection,
     },
     props: {
-        proposal: {
-            type: Object,
-            required: true,
-        },
+        // I commented this out because a proposal is not passed in as a property
+        //     proposal: {
+        //         type: Object,
+        //         required: true,
+        //     },
     },
     data: function () {
         return {
