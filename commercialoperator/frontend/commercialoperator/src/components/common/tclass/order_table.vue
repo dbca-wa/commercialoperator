@@ -49,17 +49,15 @@
                                 width="30%"
                             >
                                 <template v-if="col_types[index] == 'select'">
-                                    <v-select
+                                    <select
                                         v-model="row[index]"
-                                        class="tbl_input"
-                                        :options="options"
+                                        class="tbl_input form-control"
                                         :title="
                                             'Adult Price: ' +
                                             row[index] +
                                             ', Child Price: ' +
                                             row[index]
                                         "
-                                        i
                                         :disabled="disabled"
                                         :clearable="false"
                                         @change="
@@ -69,13 +67,21 @@
                                                 row_idx
                                             )
                                         "
-                                    />
+                                    >
+                                        <option
+                                            v-for="o in options"
+                                            :key="o.value"
+                                            :value="o.value"
+                                        >
+                                            {{ o.label }}
+                                        </option>
+                                    </select>
                                 </template>
                                 <template v-if="col_types[index] == 'date'">
                                     <input
                                         id="id_arrival_date"
                                         v-model="row[index]"
-                                        class="tbl_input"
+                                        class="tbl_input form-control"
                                         :type="col_types[index]"
                                         :max="expiry_date"
                                         :min="today()"
@@ -98,7 +104,7 @@
                                     <input
                                         :id="'id_checkbox_' + row_idx"
                                         v-model="row[index]"
-                                        class="tbl_input"
+                                        class="tbl_input form-check-input"
                                         :type="col_types[index]"
                                         :checkbox="
                                             same_tour_group_checkbox[row_idx]
@@ -126,7 +132,7 @@
                                     <input
                                         v-model="row[index]"
                                         :readonly="readonly"
-                                        class="tbl_input"
+                                        class="tbl_input form-control"
                                         :type="col_types[index]"
                                         min="0"
                                         value="0"
@@ -140,7 +146,7 @@
                                     <div class="currencyinput">
                                         <input
                                             v-model="row[index]"
-                                            class="tbl_input"
+                                            class="tbl_input form-control"
                                             :type="col_types[index]"
                                             min="0"
                                             value="0"
@@ -167,7 +173,7 @@
                             <td align="left">
                                 <div class="currencyinput">
                                     <input
-                                        class="tbl_input"
+                                        class="tbl_input form-control"
                                         type="total"
                                         min="0"
                                         :value="total_price()"
@@ -195,10 +201,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
-import vSelect from 'vue-select';
-Vue.component('v-select', vSelect);
-
 export default {
     components: {},
     filters: {
