@@ -18,10 +18,10 @@
                     <thead v-if="table.thead.length">
                         <tr>
                             <th
-                                v-for="(heading, index) in table.thead"
+                                v-for="(heading, index) in tableHeader"
                                 :key="index"
                             >
-                                {{ table.thead[index] }}
+                                {{ tableHeader[index] }}
                                 <span
                                     v-if="
                                         table.thead[index] == 'Same tour group'
@@ -37,10 +37,9 @@
                             </th>
                         </tr>
                     </thead>
-
                     <tbody>
                         <tr
-                            v-for="(row, row_idx) in table.tbody"
+                            v-for="(row, row_idx) in filteredRows"
                             :key="row_idx"
                         >
                             <td
@@ -157,12 +156,15 @@
                             </td>
                             <td v-if="!readonly">
                                 <a
-                                    class="fa fa-trash-o"
                                     title="Delete row"
-                                    style="cursor: pointer; color: red"
                                     :disabled="disabled"
                                     @click="deleteRow(row, row_idx)"
-                                ></a>
+                                >
+                                    <i
+                                        class="fa fa-trash"
+                                        style="cursor: pointer; color: red"
+                                    ></i>
+                                </a>
                             </td>
                         </tr>
 
@@ -348,6 +350,20 @@ export default {
     computed: {
         wc_version: function () {
             return this.$root.wc_version;
+        },
+        tableHeader: function () {
+            if (!this.table.thead) {
+                return [];
+            }
+            if (!this.readonly) {
+                return [...this.table.thead, ...['Action']];
+            }
+            return this.table.thead;
+        },
+        filteredRows: function () {
+            return this.table.tbody.map((row) => {
+                return row.slice(0, this.table.thead.length);
+            });
         },
     },
     watch: {
