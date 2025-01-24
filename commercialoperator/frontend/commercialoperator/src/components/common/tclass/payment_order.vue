@@ -74,7 +74,7 @@
 
                             <label>Licence</label>
                             <select
-                                v-model="selected_licence"
+                                v-model="selected_licence_id"
                                 class="form-control"
                                 :clearable="false"
                                 @change="proposal_parks()"
@@ -214,15 +214,17 @@ export default {
             warnings: [],
             table_values: null,
             payment_method: null,
-            selected_licence: {
-                default: function () {
-                    return {
-                        value: String,
-                        label: String,
-                        expiry_date: String,
-                    };
-                },
-            },
+            selected_licence_id: null,
+            // I commented this data property out and changed selected_licence into a computed property based on selected_licence_id
+            // selected_licence: {
+            //     default: function () {
+            //         return {
+            //             value: String,
+            //             label: String,
+            //             expiry_date: String,
+            //         };
+            //     },
+            // },
         };
     },
     computed: {
@@ -234,6 +236,17 @@ export default {
         },
         csrf_token: function () {
             return helpers.getCookie('csrftoken');
+        },
+        selected_licence: function () {
+            return (
+                this.licences.find(
+                    (licence) => licence.value == this.selected_licence_id
+                ) || {
+                    value: null,
+                    label: null,
+                    expiry_date: null,
+                }
+            );
         },
     },
     watch: {
