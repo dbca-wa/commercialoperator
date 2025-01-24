@@ -22,7 +22,7 @@
                             />
 
                             <div
-                                v-if="errors.length > 0"
+                                v-if="formErrors.length > 0"
                                 id="error"
                                 style="
                                     margin: 10px;
@@ -33,7 +33,10 @@
                             >
                                 <b>Please correct errors in row(s):</b>
                                 <ul>
-                                    <li v-for="error in errors" :key="error.id">
+                                    <li
+                                        v-for="error in formErrors"
+                                        :key="error.id"
+                                    >
                                         {{ error.name }}: {{ error.label }}
                                     </li>
                                 </ul>
@@ -207,7 +210,7 @@ export default {
             land_parks: [],
             parks_available: false,
             licences: [],
-            errors: [],
+            formErrors: [],
             warnings: [],
             table_values: null,
             payment_method: null,
@@ -446,7 +449,7 @@ export default {
                                     vm.selected_licence.value +
                                     '/';
                             }
-                            if (vm.errors.length == 0) {
+                            if (vm.formErrors.length == 0) {
                                 form.submit();
                             } else {
                                 return;
@@ -471,7 +474,7 @@ export default {
                 } else {
                     form.action = '/payment/' + vm.selected_licence.value + '/';
                 }
-                if (vm.errors.length == 0) {
+                if (vm.formErrors.length == 0) {
                     form.submit();
                 } else {
                     return;
