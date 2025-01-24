@@ -9,7 +9,10 @@ from ledger_api_client.utils import (
     oracle_parser as ledger_oracle_parser,
     update_payments as ledger_update_payments,
     get_all_organisation,
+    get_organisation,
+    get_search_organisation,
 )
+from ledger_api_client.common import get_ledger_user_info_by_id
 
 import logging
 
@@ -17,27 +20,27 @@ logger = logging.getLogger(__name__)
 
 
 def retrieve_email_user(email_user_id):
+    if not email_user_id:
+        logger.error("Needs an email_user_id to retrieve an EmailUser object")
+        return None
+
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)
-    cache_timeout = (
-        settings.DEBUG
-        and settings.CACHE_TIMEOUT_24_HOURS
-        or settings.CACHE_TIMEOUT_5_SECONDS
-    )
+    cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
     email_user = cache.get(cache_key)
 
-    if settings.DEBUG and email_user == EmailUser.DoesNotExist.__name__:
-        return None
-    elif email_user is None:
+    if email_user is None:
         try:
             email_user = EmailUser.objects.get(id=email_user_id)
         except EmailUser.DoesNotExist:
-            # logger.error(f"EmailUser with id {email_user_id} does not exist")
-            if settings.DEBUG:
-                cache.set(cache_key, EmailUser.DoesNotExist.__name__, cache_timeout)
+            logger.error(f"EmailUser with id {email_user_id} does not exist")
+            # Cache an empty EmailUser object to prevent repeated queries
+            cache.set(cache_key, EmailUser(), cache_timeout)
             return None
         else:
             cache.set(cache_key, email_user, cache_timeout)
             return email_user
+    elif not email_user.email:
+        return None
     else:
         return email_user
 
@@ -67,11 +70,6 @@ class EmailUserQuerySet(models.QuerySet):
 
         if not getattr(self.model, emailuser_fk_field_id, None):
             raise ValueError(f"Field {emailuser_fk_field} does not exist in the model")
-
-        emailuser_property_values = {
-            f"{emailuser_fk_field}_{property}": models.Value("")
-            for property in emailuser_properties
-        }
 
         emailuser_fk_field_ids = []
         emailuser_fk_field_property_values = {}
@@ -120,7 +118,7 @@ class EmailUserQuerySet(models.QuerySet):
             for property in emailuser_properties
         }
 
-        # Add the emailuser_fk_field_exists field, e.h. submitter_exists
+        # Add the emailuser_fk_field_exists field, e.g. submitter_exists
         self = self.annotate(
             **{
                 f"{emailuser_fk_field}_exists": models.Case(
@@ -232,6 +230,60 @@ def retrieve_organisation_delegate_ids(organisation_id):
     return delegate_ids
 
 
+def retrieve_ledger_user_info_by_id(email_user_id):
+    """Queries ledger user info, that contains user details or information status"""
+
+    cache_key = settings.CACHE_KEY_LEDGER_USER_INFO.format(email_user_id)
+    cache_timeout = settings.CACHE_TIMEOUT_5_SECONDS
+
+    user_info = cache.get(cache_key)
+
+    if user_info is None:
+        user_info = get_ledger_user_info_by_id(f"{email_user_id}")
+        if user_info.get("status", None) != status.HTTP_200_OK:
+            return {}
+
+        cache.set(cache_key, user_info, cache_timeout)
+        return user_info
+    else:
+        return user_info
+
+
+def retrieve_cols_organisations_from_ledger_org_ids(user):
+    """Takes a user object, retrieves the organisations that the user is a delegate of from the ledger
+    and adds the corresponding organisation model id to the ledger organisation object.
+    """
+
+    from commercialoperator.components.organisations.models import Organisation
+
+    user_id = user.id
+    # user_id = 163998  # An existing user id for testing
+    user_ledger_org_ids = retrieve_delegate_organisation_ids(user_id)
+
+    commercialoperator_organisations = []
+
+    for org_id in user_ledger_org_ids:
+        organisations_response = get_organisation(org_id)
+
+        if organisations_response.get("status", None) == status.HTTP_200_OK:
+            # Get the organisation object from ledger
+            ledger_organisation = organisations_response.get("data", [])
+            # Add the cols organisation model id to the ledger organisation object
+            commercialoperator_organisation = Organisation.objects.get(
+                organisation_id=org_id
+            )
+            ledger_organisation["id"] = commercialoperator_organisation.id
+            commercialoperator_organisations.append(ledger_organisation)
+            # Note: Set a cache here
+        else:
+            raise ValueError(f"Error retrieving organisations for user {user_id}")
+        logger.info(
+            f"Retrieved organisations for user {user_id}: {commercialoperator_organisations}"
+        )
+
+    return commercialoperator_organisations
+
+
 class ListAsQuerySet(list):
 
     def __init__(self, *args, model, **kwargs):
@@ -249,9 +301,25 @@ def filter_organisation_list(view, request, *args, **kwargs):
     from commercialoperator.components.stubs.models import LedgerOrganisation
 
     queryset = view.get_queryset()
-    ledger_organisation_response = get_all_organisation()
+
+    search_term = request.query_params.get("search", None)
+    if search_term is None:
+        ledger_organisation_response = get_all_organisation()
+    elif search_term.isdigit():
+        logger.debug("Searching for organisation ABN")
+        # Function signature: get_search_organisation(organisation_name, organisation_abn)
+        ledger_organisation_response = get_search_organisation(None, search_term)
+    else:
+        logger.debug("Searching for organisation name")
+        ledger_organisation_response = get_search_organisation(search_term, None)
+
     if ledger_organisation_response["status"] == status.HTTP_200_OK:
         ledger_organisations = ledger_organisation_response["data"]
+    else:
+        logger.debug(
+            f"Failed to retrieve organisations from ledger: {ledger_organisation_response.get("message", "")}"
+        )
+        return LedgerOrganisation.objects.none()
 
     org_ids = queryset.values_list("organisation_id", flat=True)
 
@@ -262,6 +330,6 @@ def filter_organisation_list(view, request, *args, **kwargs):
     organisations = [LedgerOrganisation(**org_dict) for org_dict in organisation_dicts]
     organisations = view.filter_queryset(
         ListAsQuerySet(organisations, model=LedgerOrganisation)
-    )
+    )[:10]
 
     return organisations

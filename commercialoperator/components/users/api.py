@@ -1,6 +1,10 @@
+import email
 import json
 import traceback
-from django.db.models import Q
+from django.conf import settings
+from django.core.cache import cache
+from django.db.models import Q, Value
+from django.db.models.functions import Concat
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
@@ -31,6 +35,10 @@ from commercialoperator.components.organisations.serializers import (
 from commercialoperator.components.main.models import UserSystemSettings
 from commercialoperator.helpers import is_customer, is_internal
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # class DepartmentUserList(views.APIView):
 #     renderer_classes = [JSONRenderer,]
 #     def get(self, request, format=None):
@@ -49,9 +57,17 @@ class GetCountries(views.APIView):
     ]
 
     def get(self, request, format=None):
-        country_list = []
-        for country in list(countries):
-            country_list.append({"name": country.name, "code": country.code})
+        country_list = cache.get(settings.CACHE_KEY_COUNTRY_LIST)
+        if not country_list:
+            country_list = []
+            for country in list(countries):
+                country_list.append({"name": country.name, "code": country.code})
+            cache.set(
+                settings.CACHE_KEY_COUNTRY_LIST,
+                country_list,
+                settings.CACHE_TIMEOUT_2_HOURS,
+            )
+
         return Response(country_list)
 
 
@@ -68,9 +84,29 @@ class GetProfile(views.APIView):
 from rest_framework import filters
 
 
-class UserListFilterView(generics.ListAPIView):
-    """https://cop-internal.dbca.wa.gov.au/api/filtered_users?search=russell"""
+class UserListFilterBackend(filters.SearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        search_fields = view.search_fields
+        search_term = request.GET.get("search", "")
+        if search_term is None:
+            logger.debug("No user search term provided")
+            return queryset
+        if len(search_term) <= 1:
+            logger.debug("User search term too short")
+            return []
 
+        search_dict = {f"{field}__icontains": search_term for field in search_fields}
+
+        if all(f in search_fields for f in ["first_name", "last_name"]):
+            queryset = queryset.annotate(
+                full_name=Concat("first_name", Value(" "), "last_name")
+            )
+            search_dict["full_name__icontains"] = search_term
+
+        return queryset.filter(Q(**search_dict, _connector=Q.OR))[:10]
+
+
+class UserListFilterView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
@@ -80,9 +116,21 @@ class UserListFilterView(generics.ListAPIView):
             return qs
         return EmailUser.objects.none()
 
+    @basic_exception_handler
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+
+        if not is_internal(request):
+            serializer = self.serializer_class(queryset, many=True)
+        else:
+            serializer = self.serializer_class(queryset, many=True)
+
+        return Response(serializer.data)
+
     queryset = get_queryset
     serializer_class = UserFilterSerializer
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (UserListFilterBackend,)
     search_fields = ("email", "first_name", "last_name")
 
 
@@ -112,6 +160,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         serializer = UserSerializer(instance, context={"request": request})
+
+        raise NotImplementedError("Need to implement contact update in ledger")
         return Response(serializer.data)
 
     @action(
@@ -126,7 +176,7 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = UserAddressSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if instance.residential_address:
+        if instance.residential_address_id:
             # address = Address.objects.filter(id=instance.residential_address.id)
             account_details_response = get_account_details(request, str(instance.id))
             if account_details_response.status_code != status.HTTP_200_OK:
@@ -177,16 +227,13 @@ class UserViewSet(viewsets.ModelViewSet):
     @basic_exception_handler
     def update_system_settings(self, request, *args, **kwargs):
         instance = self.get_object()
-        user_setting, created = UserSystemSettings.objects.get_or_create(
-            user=instance
-        )
+        user_setting, created = UserSystemSettings.objects.get_or_create(user=instance)
         serializer = UserSystemSettingsSerializer(user_setting, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         instance = self.get_object()
         serializer = UserSerializer(instance, context={"request": request})
         return Response(serializer.data)
-
 
     @action(
         methods=[

@@ -117,3 +117,6 @@ commercialoperator/static/commercialoperator_vue/*
 *.csv
 *.xls*
 .DAV
+
+# ledger
+datasets/

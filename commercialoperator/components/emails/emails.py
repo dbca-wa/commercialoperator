@@ -100,8 +100,7 @@ class TemplateEmailBase(object):
         )
         msg.attach_alternative(html_body, "text/html")
         try:
-            if not settings.DISABLE_EMAIL:
-                msg.send(fail_silently=False)
+            msg.send(fail_silently=False)
             return msg
         except Exception as e:
             logger.exception(

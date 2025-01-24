@@ -18,7 +18,8 @@
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
                                         <TextArea
-                                            id="id_comments"
+                                            id="id-onhold-comments"
+                                            ref="on_hold_comments"
                                             :proposal_id="proposal_id"
                                             :readonly="readonly"
                                             name="on_hold_comments"
@@ -122,12 +123,11 @@ export default {
         save: function () {
             let vm = this;
             var is_onhold = vm.processing_status == 'On Hold' ? true : false;
-            var form = document.forms.onholdForm;
             var data = {
                 onhold: is_onhold ? 'False' : 'True', // since wee need to do the reverse
                 file_input_name: 'on_hold_file',
                 proposal: vm.proposal_id,
-                text: form.elements['on_hold_comments'].value, // getting the value from the text-area.vue field
+                text: vm.$refs.on_hold_comments.localValue, // getting the value from the text-area.vue field
             };
             vm.$http
                 .post(
@@ -143,28 +143,28 @@ export default {
                 .then(
                     (res) => {
                         if (!is_onhold) {
-                            swal(
-                                'Put Application On-hold',
-                                'Application On-hold',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Put Application On-hold',
+                                text: 'Application On-hold',
+                                icon: 'success',
+                            });
                         } else {
-                            swal(
-                                'Application On-hold Remove',
-                                'Application On-hold Removed',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Application On-hold Remove',
+                                text: 'Application On-hold Removed',
+                                icon: 'success',
+                            });
                         }
 
                         vm.proposal = res.body;
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
-                        swal(
-                            'Submit Error',
-                            helpers.apiVueResourceError(err),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Submit Error',
+                            text: helpers.apiVueResourceError(err),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -189,7 +189,7 @@ export default {
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
 
-            this.validation_form.resetForm();
+            // this.validation_form.resetForm();
         },
         addFormValidations: function () {},
         eventListerners: function () {},

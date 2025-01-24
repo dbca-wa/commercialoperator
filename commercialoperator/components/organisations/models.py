@@ -83,7 +83,7 @@ class Organisation(models.Model):
         null=True,
     )
     last_event_application_fee_date = models.DateField(
-        "The last date a fee was charged for an Eventi Application",
+        "The last date a fee was charged for an Event Application",
         blank=True,
         null=True,
     )
@@ -96,7 +96,7 @@ class Organisation(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return str(f"Organisation ID: {self.organisation_id}")
+        return str(f"{self.name} (ABN: {self.abn})")
 
     @classmethod
     def organisations_user_can_admin(cls, user_id):
@@ -108,13 +108,19 @@ class Organisation(models.Model):
 
         return (
             cls.objects.filter(
-                organisation_id__in=delegate_organisations, # delegates__user=user_id
-                contacts__email=emailuser.email, # contacts__user=user_id
-                contacts__user_status=OrganisationContact.USER_STATUS_CHOICES[2][0], # active
-                contacts__user_role=OrganisationContact.USER_ROLE_CHOICES[0][0], # organisation_admin
+                organisation_id__in=delegate_organisations,  # delegates__user=user_id
+                contacts__email=emailuser.email,  # contacts__user=user_id
+                contacts__user_status=OrganisationContact.USER_STATUS_CHOICES[2][
+                    0
+                ],  # active
+                contacts__user_role=OrganisationContact.USER_ROLE_CHOICES[0][
+                    0
+                ],  # organisation_admin
             )
             .distinct()
-            .only("id",)
+            .only(
+                "id",
+            )
         )
 
     def log_user_action(self, action, request):
@@ -815,7 +821,8 @@ class UserDelegation(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return "Org: {}, User: {}".format(self.organisation, self.user)
+        user = retrieve_email_user(self.user_id)
+        return f"Org: {self.organisation}, User: {user}"
 
 
 class OrganisationAction(UserAction):
@@ -936,6 +943,7 @@ class OrganisationRequest(models.Model):
 
     class Meta:
         app_label = "commercialoperator"
+        ordering = ["name"]
 
     def accept(self, request):
         self.status = "approved"
@@ -1168,7 +1176,7 @@ reversion.register(
     OrganisationRequest,
     follow=["action_logs", "organisationrequestdeclineddetails_set", "comms_logs"],
 )
-reversion.register(OrganisationAccessGroup)
+reversion.register(OrganisationAccessGroup, exclude=["members"])
 reversion.register(OrganisationRequestUserAction)
 reversion.register(OrganisationRequestDeclinedDetails)
 reversion.register(OrganisationRequestLogDocument)

@@ -2,7 +2,12 @@
     <div v-if="proposal" id="internalProposal" class="container">
         <div class="row" style="padding-bottom: 50px">
             <h3>Application: {{ proposal.lodgement_number }}</h3>
-            <h4>Application Type: {{ proposal.proposal_type }}</h4>
+            <h4>
+                Application Type: {{ proposal.application_type }}
+                {{
+                    proposal.proposal_type ? `(${proposal.proposal_type})` : ''
+                }}
+            </h4>
             <div v-if="!comparing" class="col-md-3">
                 <CommsLogs
                     :comms_url="comms_url"
@@ -1363,13 +1368,11 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchReferralRecipientGroups();
-        this.$nextTick(() => {
-            vm.initialiseSelects();
-        });
     },
     updated: function () {
         let vm = this;
         this.$nextTick(() => {
+            vm.initialiseSelects();
             if (typeof vm.$refs.tclass !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 vm.proposal.selected_parks_activities =

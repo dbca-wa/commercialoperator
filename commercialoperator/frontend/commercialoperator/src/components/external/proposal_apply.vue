@@ -8,33 +8,12 @@
                     method="post"
                 >
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Applicant
-                                <small
-                                    >The applicant will be the licensee.</small
-                                ><i
-                                    class="fa fa-question-circle"
-                                    data-toggle="tooltip"
-                                    data-placement="bottom"
-                                    style="color: blue"
-                                    title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate."
-                                    >&nbsp;</i
-                                >
-                                <a
-                                    :href="'#' + pBody"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo"
-                                    expanded="true"
-                                    :aria-controls="pBody"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="pBody" class="panel-body collapse in">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Applicant"
+                            index="license_applicant"
+                            subtitle="The applicant will be the licensee"
+                        >
                             <div class="col-sm-12">
                                 <div v-if="!isLoading" class="form-group">
                                     <div
@@ -44,6 +23,14 @@
                                                 .length > 0
                                         "
                                     >
+                                        <i
+                                            class="fa fa-question-circle"
+                                            data-toggle="tooltip"
+                                            data-placement="bottom"
+                                            style="color: blue"
+                                            title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate."
+                                            >&nbsp;</i
+                                        >
                                         <label>Do you apply </label>
                                         <br />
                                         <div
@@ -84,30 +71,19 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </FormSection>
                     </div>
 
                     <div
                         v-if="org_applicant != '' || yourself != ''"
                         class="panel panel-default"
                     >
-                        <div class="panel-heading">
-                            <h3 class="panel-title">
-                                Apply for
-                                <a
-                                    :href="'#' + pBody2"
-                                    data-toggle="collapse"
-                                    data-parent="#userInfo2"
-                                    expanded="true"
-                                    :aria-controls="pBody2"
-                                >
-                                    <span
-                                        class="glyphicon glyphicon-chevron-up pull-right"
-                                    ></span>
-                                </a>
-                            </h3>
-                        </div>
-                        <div :id="pBody2" class="panel-body collapse in">
+                        <FormSection
+                            :form-collapse="false"
+                            label="Apply for"
+                            index="license_apply_for"
+                            subtitle=""
+                        >
                             <div>
                                 <label for="" class="control-label"
                                     >Licence Type *
@@ -442,7 +418,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </FormSection>
                     </div>
 
                     <div v-show="has_active_proposals()" class="col-sm-12">
@@ -479,8 +455,12 @@
 <script>
 import { api_endpoints } from '@/utils/hooks';
 import utils from './utils';
+import FormSection from '@/components/forms/section_toggle.vue';
+
 export default {
-    components: {},
+    components: {
+        FormSection,
+    },
     beforeRouteEnter: function (to, from, next) {
         let initialisers = [utils.fetchProfile()];
         next((vm) => {

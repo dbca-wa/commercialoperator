@@ -7,6 +7,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def belongs_to_by_user_id(user_id, group_name):
+    system_group = SystemGroup.objects.filter(name=group_name).first()
+    return system_group and user_id in system_group.get_system_group_member_ids()
+
+
 def belongs_to(user, group_name):
     """
     Check if the user belongs to the given group.
@@ -15,15 +20,19 @@ def belongs_to(user, group_name):
     :return:
     """
 
-    system_group = SystemGroup.objects.filter(name=group_name).first()
-    return system_group and user.id in system_group.get_system_group_member_ids()
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+
+    return belongs_to_by_user_id(user.id, group_name)
 
 
 def is_commercialoperator_admin(request):
     return (
         request.user.is_authenticated
         and in_dbca_domain(request)
-        and (belongs_to(request.user, settings.ADMIN_GROUP))
+        and belongs_to(request.user, settings.ADMIN_GROUP)
     )
 
 

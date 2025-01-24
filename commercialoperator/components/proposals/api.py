@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 from django.conf import settings
 from django.utils import timezone
 from rest_framework import viewsets, serializers, status, views
@@ -18,6 +19,9 @@ from commercialoperator.components.proposals.utils import (
     save_proponent_data,
     save_assessor_data,
     proposal_submit,
+    get_cached_application_types,
+    get_cached_proposal_submitters,
+    get_cached_proposal_processing_status,
 )
 from commercialoperator.components.proposals.models import (
     searchKeyWords,
@@ -160,7 +164,6 @@ class GetEmptyList(views.APIView):
 
     def get(self, request, format=None):
         return Response([])
-
 
 
 """
@@ -524,7 +527,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         ).values_list("email", flat=True)
 
         if request.user.email not in qa_officers:
-            return self.paginator.get_paginated_response([])
+            return Response([])
 
         qs = self.get_queryset()
         qs = qs.filter(qaofficer_referrals__gt=0)
@@ -621,7 +624,7 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset.exclude(application_type=self.excluded_type)
-        # logger.warn("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
+        # logger.warning("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
 
 
@@ -796,41 +799,10 @@ class ProposalViewSet(viewsets.ModelViewSet):
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the internal/external dashboard filters"""
-        region_qs = (
-            self.get_queryset()
-            .filter(region__isnull=False)
-            .values_list("region__name", flat=True)
-            .distinct()
-        )
 
-        activity_qs = (
-            self.get_queryset()
-            .filter(activity__isnull=False)
-            .values_list("activity", flat=True)
-            .distinct()
-        )
-
-        submitter_qs = (
-            self.get_queryset()
-            .filter(submitter__isnull=False)
-            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
-            .filter(submitter_exists=True)
-            .distinct("submitter_email")
-            .values_list(
-                "submitter_first_name", "submitter_last_name", "submitter_email"
-            )
-        )
-
-        submitters = [
-            dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
-            for i in submitter_qs
-        ]
-        application_types = ApplicationType.objects.filter(visible=True).values_list(
-            "name", flat=True
-        )
+        submitters = get_cached_proposal_submitters(self)
+        application_types = get_cached_application_types()
         data = dict(
-            regions=region_qs,
-            activities=activity_qs,
             submitters=submitters,
             application_types=application_types,
             approval_status_choices=[i[1] for i in Approval.STATUS_CHOICES],
@@ -2449,67 +2421,17 @@ class ReferralViewSet(viewsets.ModelViewSet):
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""
-        # qs =  self.get_queryset().filter(referral=request.user)
-        qs = self.get_queryset()
-        region_qs = (
-            qs.filter(proposal__region__isnull=False)
-            .values_list("proposal__region__name", flat=True)
-            .distinct()
-        )
-        # district_qs =  qs.filter(proposal__district__isnull=False).values_list('proposal__district__name', flat=True).distinct()
-        activity_qs = (
-            qs.filter(proposal__activity__isnull=False)
-            .order_by("proposal__activity")
-            .distinct("proposal__activity")
-            .values_list("proposal__activity", flat=True)
-            .distinct()
-        )
-        # submitter_qs = (
-        #     qs.filter(proposal__submitter__isnull=False)
-        #     .order_by("proposal__submitter")
-        #     .distinct("proposal__submitter")
-        #     .values_list(
-        #         "proposal__submitter__first_name",
-        #         "proposal__submitter__last_name",
-        #         "proposal__submitter__email",
-        #     )
-        # )
-        submitter_qs = (
-            Proposal.objects.filter(
-                id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                    "proposal_id"
-                )
-            )
-            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
-            .filter(submitter_exists=True)
-            .order_by("submitter_email")
-            .distinct("submitter_email")
-            .values_list(
-                "submitter_first_name", "submitter_last_name", "submitter_email"
-            )
-        )
 
-        submitters = [
-            dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
-            for i in submitter_qs
-        ]
-        processing_status_qs = (
-            qs.filter(proposal__processing_status__isnull=False)
-            .order_by("proposal__processing_status")
-            .distinct("proposal__processing_status")
-            .values_list("proposal__processing_status", flat=True)
+        qs = self.get_queryset()
+        qs = Proposal.objects.filter(
+            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
+                "proposal_id"
+            )
         )
-        processing_status = [
-            dict(value=i, name="{}".format(" ".join(i.split("_")).capitalize()))
-            for i in processing_status_qs
-        ]
-        application_types = ApplicationType.objects.filter(visible=True).values_list(
-            "name", flat=True
-        )
+        submitters = get_cached_proposal_submitters(self, qs)
+        processing_status = get_cached_proposal_processing_status(self, qs)
+        application_types = get_cached_application_types()
         data = dict(
-            regions=region_qs,
-            # districts=district_qs,
-            activities=activity_qs,
             submitters=submitters,
             processing_status_choices=processing_status,
             application_types=application_types,
@@ -2997,12 +2919,21 @@ class AccreditationTypeView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        # choices = ProposalOtherDetails.ACCREDITATION_TYPE_CHOICES
-        choices = ProposalAccreditation.ACCREDITATION_TYPE_CHOICES
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c[0], "value": c[1]})
+        choices_list = cache.get(settings.CACHE_KEY_ACCREDITATION_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = ProposalAccreditation.ACCREDITATION_TYPE_CHOICES
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c[0], "value": c[1]})
+
+            cache.set(
+                settings.CACHE_KEY_ACCREDITATION_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
+
         return Response(choices_list)
 
 
@@ -3013,11 +2944,20 @@ class LicencePeriodChoicesView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        choices = LicencePeriod.LICENCE_PERIOD_CHOICES
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c[0], "value": c[1]})
+        choices_list = cache.get(settings.CACHE_KEY_LICENCE_PERIOD_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = LicencePeriod.LICENCE_PERIOD_CHOICES
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c[0], "value": c[1]})
+
+            cache.set(
+                settings.CACHE_KEY_LICENCE_PERIOD_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
         return Response(choices_list)
 
 
@@ -3028,13 +2968,20 @@ class AmendmentRequestReasonChoicesView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        # choices = AmendmentRequest.REASON_CHOICES
-        choices = AmendmentReason.objects.all()
-        if choices:
-            for c in choices:
-                # choices_list.append({'key': c[0],'value': c[1]})
-                choices_list.append({"key": c.id, "value": c.reason})
+        choices_list = cache.get(settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES)
+        if choices_list is None:
+            choices_list = []
+            choices = AmendmentReason.objects.all()
+
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c.id, "value": c.reason})
+
+            cache.set(
+                settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
         return Response(choices_list)
 
 
@@ -3045,11 +2992,21 @@ class FilmingLicenceChargeView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        choices = Proposal.FILMING_LICENCE_CHARGE_CHOICES
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c[0], "value": c[1]})
+        choices_list = cache.get(settings.CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = Proposal.FILMING_LICENCE_CHARGE_CHOICES
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c[0], "value": c[1]})
+
+            cache.set(
+                settings.CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
+
         return Response(choices_list)
 
 
@@ -3503,64 +3460,16 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""
+
         qs = self.get_queryset()
-        region_qs = (
-            qs.filter(proposal__region__isnull=False)
-            .values_list("proposal__region__name", flat=True)
-            .distinct()
-        )
-        # district_qs =  qs.filter(proposal__district__isnull=False).values_list('proposal__district__name', flat=True).distinct()
-        activity_qs = (
-            qs.filter(proposal__activity__isnull=False)
-            .order_by("proposal__activity")
-            .distinct("proposal__activity")
-            .values_list("proposal__activity", flat=True)
-            .distinct()
-        )
-
-        # submitter_qs = (
-        #     qs.filter(proposal__submitter__isnull=False)
-        #     .order_by("proposal__submitter")
-        #     .distinct("proposal__submitter")
-        #     .values_list(
-        #         "proposal__submitter__first_name",
-        #         "proposal__submitter__last_name",
-        #         "proposal__submitter__email",
-        #     )
-        # )
-        submitter_qs = (
-            Proposal.objects.filter(
-                id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                    "proposal_id"
-                )
-            )
-            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
-            .filter(submitter_exists=True)
-            .order_by("submitter_email")
-            .distinct("submitter_email")
-            .values_list(
-                "submitter_first_name", "submitter_last_name", "submitter_email"
+        qs = Proposal.objects.filter(
+            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
+                "proposal_id"
             )
         )
-
-        submitters = [
-            dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
-            for i in submitter_qs
-        ]
-        processing_status_qs = (
-            qs.filter(processing_status__isnull=False)
-            .order_by("processing_status")
-            .distinct("processing_status")
-            .values_list("processing_status", flat=True)
-        )
-        processing_status = [
-            dict(value=i, name="{}".format(" ".join(i.split("_")).capitalize()))
-            for i in processing_status_qs
-        ]
+        submitters = get_cached_proposal_submitters(self, qs)
+        processing_status = get_cached_proposal_processing_status(self, qs)
         data = dict(
-            regions=region_qs,
-            # districts=district_qs,
-            activities=activity_qs,
             submitters=submitters,
             processing_status_choices=processing_status,
         )

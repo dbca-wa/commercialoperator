@@ -65,11 +65,12 @@
                     name="name"
                     :filterable="false"
                     :options="options"
+                    placeholder="Start typing to search for an organisation"
                     @search="onSearch"
                 >
-                    <template slot="no-options">
-                        type to search users/organisations.
-                    </template>
+                    <template slot="no-options"
+                        >Search for name, trading name or ABN</template
+                    >
                     <template slot="option" slot-scope="option">
                         <div v-if="option.trading_name == ''" class="d-center">
                             {{ option.name }}

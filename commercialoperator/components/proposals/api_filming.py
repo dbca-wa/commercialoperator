@@ -59,7 +59,7 @@ class ProposalFilmingViewSet(viewsets.ModelViewSet):
             ).exclude(migrated=True)
             # queryset =  Proposal.objects.filter(region__isnull=False).filter( Q(applicant_id__in = user_orgs) | Q(submitter = user) )
             return queryset.exclude(application_type=self.excluded_type)
-        logger.warn(
+        logger.warning(
             "User is neither customer nor internal user: {} <{}>".format(
                 user.get_full_name(), user.email
             )

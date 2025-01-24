@@ -23,7 +23,11 @@
                                             >Park or Reserve</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <!-- Attach the select2 dropdown to this id -->
+                                    <div
+                                        id="pre_event_park_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="pre_event_park"
                                             v-model="pre_event_park_id"
@@ -410,7 +414,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
@@ -432,6 +436,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
+                    dropdownParent: $('#pre_event_park_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);

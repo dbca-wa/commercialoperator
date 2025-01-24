@@ -10,33 +10,23 @@
                 <div v-if="hasAmendmentRequest" class="row" style="color: red">
                     <div class="col-lg-12 pull-right">
                         <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title" style="color: red">
-                                    An amendment has been requested for this
-                                    Application
-                                    <a
-                                        class="panelClicker"
-                                        :href="'#' + pBody"
-                                        data-toggle="collapse"
-                                        data-parent="#userInfo"
-                                        expanded="true"
-                                        :aria-controls="pBody"
-                                    >
-                                        <span
-                                            class="glyphicon glyphicon-chevron-down pull-right"
-                                        ></span>
-                                    </a>
-                                </h3>
-                            </div>
-                            <div :id="pBody" class="panel-body collapse in">
-                                <div v-for="a in amendment_request" :key="a">
+                            <FormSection
+                                :form-collapse="false"
+                                label="An amendment has been requested for this Application"
+                                index="amendment_request"
+                                subtitle=""
+                            >
+                                <div
+                                    v-for="a in amendment_request"
+                                    :key="a.reason"
+                                >
                                     <p>Reason: {{ a.reason }}</p>
                                     <p>Details:</p>
                                     <p v-for="t in splitText(a.text)" :key="t">
                                         {{ t }}
                                     </p>
                                 </div>
-                            </div>
+                            </FormSection>
                         </div>
                     </div>
                 </div>
@@ -231,12 +221,14 @@
 import ProposalTClass from '../form_tclass.vue';
 import ProposalFilming from '../form_filming.vue';
 import ProposalEvent from '../form_event.vue';
+import FormSection from '@/components/forms/section_toggle.vue';
 import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 
 export default {
     name: 'ExternalProposal',
     components: {
+        FormSection,
         ProposalTClass,
         ProposalFilming,
         ProposalEvent,

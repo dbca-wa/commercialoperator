@@ -9,6 +9,8 @@ from rest_framework import viewsets, serializers, status, generics, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework_datatables.filters import DatatablesFilterBackend
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import update_organisation_obj
 
@@ -596,7 +598,12 @@ class OrganisationViewSet(viewsets.ModelViewSet):
                     "message": "You do not have permission to update this organisation."
                 },
             )
-        # Note: Calling this function doesn't update the ledger name, trading name, email entries.
+
+        serializer = DetailsSerializer(
+            instance, data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+
         response_ledger = update_organisation_obj(request.data)
         response_ledger_status = response_ledger.get("status", None)
         if not response_ledger_status == status.HTTP_200_OK:
@@ -609,10 +616,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
         )
 
-        serializer = DetailsSerializer(
-            instance, data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
         if is_internal(request) and "apply_application_discount" in request.data:
@@ -646,7 +649,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-
     @action(
         methods=[
             "POST",
@@ -655,10 +657,12 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     )
     @basic_exception_handler
     def update_address(self, request, *args, **kwargs):
+        raise NotImplementedError(
+            "Updating addresses needs to be implemented in ledger api client"
+        )
         instance = self.get_object()
         request.data["organisation_id"] = instance.organisation_id
         return self.update_details(request, *args, **kwargs)
-
 
     @action(
         methods=[
@@ -671,17 +675,13 @@ class OrganisationViewSet(viewsets.ModelViewSet):
 
 
 class OrganisationListFilterView(generics.ListAPIView):
-    """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
-
     queryset = Organisation.objects.none()
     serializer_class = LedgerOrganisationFilterSerializer
-    # filter_backends = (filters.SearchFilter,)
     filter_backends = (LedgerOrganisationFilterBackend,)
     search_fields = (
-        # "name",
-        # "trading_name",
         "organisation_name",
         "organisation_trading_name",
+        "organisation_abn",
     )
 
     def get_queryset(self):
@@ -701,9 +701,33 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Response(serializer.data)
 
 
+class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        total_count = queryset.count()
+
+        applicant = request.GET.get("filter_applicant", "All")
+        if applicant != "All":
+            raise serializers.ValidationError("Filtering by applicant is not supported")
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        queryset = queryset.order_by(*ordering)
+
+        queryset = super(
+            OrganisationRequestDatatableFilterBackend, self
+        ).filter_queryset(request, queryset, view)
+        setattr(view, "_datatables_total_count", total_count)
+
+        return queryset
+
+
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     queryset = OrganisationRequest.objects.none()
     serializer_class = OrganisationRequestSerializer
+    filter_backends = (OrganisationRequestDatatableFilterBackend,)
+    pagination_class = DatatablesPageNumberPagination
+    page_size = 10
+    ordering = ("lodgement_date",)
 
     def get_queryset(self):
         user = self.request.user
@@ -719,21 +743,17 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
+    @basic_exception_handler
     def datatable_list(self, request, *args, **kwargs):
         qs = self.get_queryset()
-        try:
-            serializer = OrganisationRequestDTSerializer(qs, many=True)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-        else:
-            return Response(serializer.data)
+        qs = self.filter_queryset(qs)
+
+        self.paginator.page_size = qs.count()
+        result_page = self.paginator.paginate_queryset(qs, request)
+        serializer = OrganisationRequestDTSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=[

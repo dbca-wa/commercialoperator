@@ -4,6 +4,7 @@ from django.db import models, transaction
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError
+
 # from django.contrib.postgres.fields.jsonb import JSONField
 from django.db.models import JSONField
 from django.utils import timezone
@@ -40,6 +41,9 @@ from commercialoperator.utils import search_keys, search_multiple_keys
 from commercialoperator.helpers import is_customer
 
 # from commercialoperator.components.approvals.email import send_referral_email_notification
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def update_approval_doc_filename(instance, filename):
@@ -221,7 +225,7 @@ class Approval(RevisionedMixin):
                     if num_months <= num_expiry_months
                 ]
         else:
-            logger.warn(
+            logger.warning(
                 f"Expiry not set: Cannot create Notification Dates for Approval {self.lodgement_number}"
             )
 
@@ -828,10 +832,21 @@ class Approval(RevisionedMixin):
 
     @transaction.atomic
     def approval_surrender(self, request, details):
-        if not retrieve_organisation_delegate_ids(self.org_applicant_id).filter(
+        org_applicant_id = self.org_applicant_id
+        # org_applicant_id = 1 # An existing organisation
+
+        # The id (pk) of the Organisation in cols.organisations
+        organisation_pk = (
+            Organisation.objects.filter(organisation_id=org_applicant_id)
+            .values_list("pk", flat=True)
+            .first()
+        )
+
+        if not retrieve_organisation_delegate_ids(organisation_pk).filter(
             user_id=request.user.id
         ):
-            # Note: In almost exlusively all cases, this filter will return an empty queryset (comparing organisation_id to user_id) and thus evaluate to True
+            # Note: This was existing code:
+            # In almost exlusively all cases, this filter will return an empty queryset (comparing organisation_id to user_id) and thus evaluate to True
             # if not request.user.commercialoperator_organisations.filter(
             #     organisation_id=self.applicant_id
             # ):

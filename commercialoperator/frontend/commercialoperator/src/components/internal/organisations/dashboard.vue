@@ -99,7 +99,7 @@ import Vue from 'vue';
 import $ from 'jquery';
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints } from '@/utils/hooks';
 export default {
     name: 'OrganisationAccessDashboard',
     components: {
@@ -126,14 +126,20 @@ export default {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
                 },
                 responsive: true,
+                serverSide: true,
                 processing: true,
                 order: [[0, 'desc']],
                 ajax: {
-                    url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_requests,
-                        'datatable_list'
-                    ),
-                    dataSrc: '',
+                    url: api_endpoints.organisation_requests,
+                    dataSrc: 'data',
+                    data: function (d) {
+                        d.filter_organisation = vm.filterOrganisation;
+                        d.filter_applicant = vm.filterApplicant;
+                        d.filter_role = vm.filterRole;
+                        d.filter_status = vm.filterStatus;
+
+                        return d;
+                    },
                 },
                 columns: [
                     {
@@ -191,7 +197,6 @@ export default {
                     organisationColumn
                         .data()
                         .unique()
-                        .sort()
                         // eslint-disable-next-line no-unused-vars
                         .each(function (d, j) {
                             let organisationChoices = [];
@@ -200,7 +205,13 @@ export default {
                                     ? organisationChoices.push(a)
                                     : '';
                             });
-                            vm.organisationChoices = organisationChoices;
+                            // Case insensitive sort in place
+                            vm.organisationChoices = organisationChoices.sort(
+                                (a, b) =>
+                                    a.localeCompare(b, 'en', {
+                                        sensitivity: 'base',
+                                    })
+                            );
                         });
                     // Grab Applicant from the data in the table
                     var applicantColumn =
@@ -208,16 +219,23 @@ export default {
                     applicantColumn
                         .data()
                         .unique()
-                        .sort()
                         // eslint-disable-next-line no-unused-vars
                         .each(function (d, j) {
                             let applicationChoices = [];
                             $.each(d, (index, a) => {
-                                a != null && applicationChoices.indexOf(a) < 0
+                                a = a.trim();
+                                [null, ''].includes(a) == false &&
+                                applicationChoices.indexOf(a) < 0
                                     ? applicationChoices.push(a)
                                     : '';
                             });
-                            vm.applicantChoices = applicationChoices;
+                            // Case insensitive sort in place
+                            vm.applicantChoices = applicationChoices.sort(
+                                (a, b) =>
+                                    a.localeCompare(b, 'en', {
+                                        sensitivity: 'base',
+                                    })
+                            );
                         });
                     // Grab Role from the data in the table
                     var roleColumn =
@@ -225,7 +243,6 @@ export default {
                     roleColumn
                         .data()
                         .unique()
-                        .sort()
                         // eslint-disable-next-line no-unused-vars
                         .each(function (d, j) {
                             let roleChoices = [];
@@ -234,7 +251,7 @@ export default {
                                     ? roleChoices.push(a)
                                     : '';
                             });
-                            vm.roleChoices = roleChoices;
+                            vm.roleChoices = roleChoices.sort();
                         });
                     // Grab Status from the data in the table
                     var statusColumn =
@@ -242,7 +259,6 @@ export default {
                     statusColumn
                         .data()
                         .unique()
-                        .sort()
                         // eslint-disable-next-line no-unused-vars
                         .each(function (d, j) {
                             let statusChoices = [];
@@ -251,7 +267,7 @@ export default {
                                     ? statusChoices.push(a)
                                     : '';
                             });
-                            vm.statusChoices = statusChoices;
+                            vm.statusChoices = statusChoices.sort();
                         });
                 },
             },

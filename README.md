@@ -8,8 +8,8 @@ It is a database-backed Django application, using REST API with Vue.js as the cl
 
 # Requirements
 
-- Python (2.7.x)
-- PostgreSQL (>=9.3)
+- Python (>=3.12, <4.0)
+- PostgreSQL (>=12.20)
 
 Python library requirements should be installed using `pip`:
 
@@ -43,8 +43,6 @@ required environment variables at run time. Example content:
     BPAY_ALLOWED=False
     SITE_PREFIX='cols-dev'
     SITE_DOMAIN='SITE_DOMAIN'
-    LEDGER_GST=10
-    DISABLE_EMAIL=True
     PS_PAYMENT_SYSTEM_ID='S123'
-    DEV_APP_BUILD_URL="http://localhost:9072/app.js"
-
+    DEV_APP_BUILD_URL="http://10.17.0.10:9107/static/commercialoperator_vue/js/app.js"
+    ENABLE_DJANGO_LOGIN=True

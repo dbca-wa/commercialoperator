@@ -14,13 +14,16 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Name</label
                                     >
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.name
+                                                proposal.org_applicant
+                                                    .organisation_name
                                             "
                                             disabled
                                             type="text"
@@ -32,14 +35,16 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Trading Name</label
                                     >
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
                                                 proposal.org_applicant
-                                                    .trading_name
+                                                    .organisation_trading_name
                                             "
                                             disabled
                                             type="text"
@@ -51,12 +56,17 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >ABN/ACN</label
                                     >
                                     <div class="col-sm-6">
                                         <input
-                                            v-model="proposal.org_applicant.abn"
+                                            v-model="
+                                                proposal.org_applicant
+                                                    .organisation_abn
+                                            "
                                             disabled
                                             type="text"
                                             class="form-control"
@@ -77,7 +87,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Given Name(s)</label
                                     >
                                     <div class="col-sm-6">
@@ -94,7 +106,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantName"
+                                        class="col-sm-3 control-label"
                                         >Surname</label
                                     >
                                     <div class="col-sm-6">
@@ -121,7 +135,7 @@
                         <FormSection
                             v-if="
                                 applicantType == 'ORG' &&
-                                proposal.org_applicant.address
+                                proposal.org_applicant.organisation_address
                             "
                             :form-collapse="false"
                             label="Address Details"
@@ -130,14 +144,16 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="street"
+                                        class="col-sm-3 control-label"
                                         >Street</label
                                     >
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
-                                                    .line1
+                                                proposal.org_applicant
+                                                    .organisation_address.line1
                                             "
                                             disabled
                                             type="text"
@@ -148,13 +164,16 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="suburb"
+                                        class="col-sm-3 control-label"
                                         >Town/Suburb</label
                                     >
                                     <div class="col-sm-6">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
+                                                proposal.org_applicant
+                                                    .organisation_address
                                                     .locality
                                             "
                                             disabled
@@ -166,14 +185,16 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >State</label
                                     >
                                     <div class="col-sm-2">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
-                                                    .state
+                                                proposal.org_applicant
+                                                    .organisation_address.state
                                             "
                                             disabled
                                             type="text"
@@ -182,13 +203,16 @@
                                             placeholder=""
                                         />
                                     </div>
-                                    <label for="" class="col-sm-2 control-label"
+                                    <label
+                                        for="postcode"
+                                        class="col-sm-2 control-label text-nowrap"
                                         >Postcode</label
                                     >
                                     <div class="col-sm-2">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
+                                                proposal.org_applicant
+                                                    .organisation_address
                                                     .postcode
                                             "
                                             disabled
@@ -200,13 +224,16 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >Country</label
                                     >
                                     <div class="col-sm-4">
                                         <input
                                             v-model="
-                                                proposal.org_applicant.address
+                                                proposal.org_applicant
+                                                    .organisation_address
                                                     .country
                                             "
                                             disabled
@@ -230,7 +257,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="street"
+                                        class="col-sm-3 control-label"
                                         >Street</label
                                     >
                                     <div class="col-sm-6">
@@ -248,7 +277,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="suburb"
+                                        class="col-sm-3 control-label"
                                         >Town/Suburb</label
                                     >
                                     <div class="col-sm-6">
@@ -267,7 +298,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >State</label
                                     >
                                     <div class="col-sm-2">
@@ -283,7 +316,9 @@
                                             placeholder=""
                                         />
                                     </div>
-                                    <label for="" class="col-sm-2 control-label"
+                                    <label
+                                        for="postcode"
+                                        class="col-sm-2 control-label text-nowrap"
                                         >Postcode</label
                                     >
                                     <div class="col-sm-2">
@@ -302,7 +337,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="country"
+                                        class="col-sm-3 control-label"
                                         >Country</label
                                     >
                                     <div class="col-sm-4">
@@ -355,7 +392,9 @@
                         >
                             <form class="form-horizontal">
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantPhoneNumber"
+                                        class="col-sm-3 control-label"
                                         >Phone (work)</label
                                     >
                                     <div class="col-sm-6">
@@ -372,7 +411,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row mb-2">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantMobileNumber"
+                                        class="col-sm-3 control-label"
                                         >Mobile</label
                                     >
                                     <div class="col-sm-6">
@@ -389,7 +430,9 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label for="" class="col-sm-3 control-label"
+                                    <label
+                                        for="applicantEmail"
+                                        class="col-sm-3 control-label"
                                         >Email</label
                                     >
                                     <div class="col-sm-6">

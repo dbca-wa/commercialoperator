@@ -24,7 +24,7 @@
                                         >
                                         <div class="col-sm-9">
                                             <input
-                                                v-model="org.name"
+                                                v-model="org.organisation_name"
                                                 type="text"
                                                 class="form-control"
                                                 name="first_name"
@@ -40,7 +40,9 @@
                                         >
                                         <div class="col-sm-9">
                                             <input
-                                                v-model="org.trading_name"
+                                                v-model="
+                                                    org.organisation_trading_name
+                                                "
                                                 type="text"
                                                 class="form-control"
                                                 name="trading_name"
@@ -56,7 +58,7 @@
                                         >
                                         <div class="col-sm-9">
                                             <input
-                                                v-model="org.abn"
+                                                v-model="org.organisation_abn"
                                                 type="text"
                                                 disabled
                                                 class="form-control"
@@ -73,7 +75,7 @@
                                         >
                                         <div class="col-sm-6">
                                             <input
-                                                v-model="org.email"
+                                                v-model="org.organisation_email"
                                                 type="text"
                                                 class="form-control"
                                                 name="email"
@@ -132,7 +134,10 @@
                                         >
                                         <div class="col-sm-6">
                                             <input
-                                                v-model="org.address.line1"
+                                                v-model="
+                                                    org.organisation_address
+                                                        .line1
+                                                "
                                                 type="text"
                                                 class="form-control"
                                                 name="street"
@@ -148,7 +153,10 @@
                                         >
                                         <div class="col-sm-6">
                                             <input
-                                                v-model="org.address.locality"
+                                                v-model="
+                                                    org.organisation_address
+                                                        .locality
+                                                "
                                                 type="text"
                                                 class="form-control"
                                                 name="surburb"
@@ -164,7 +172,10 @@
                                         >
                                         <div class="col-sm-3">
                                             <input
-                                                v-model="org.address.state"
+                                                v-model="
+                                                    org.organisation_address
+                                                        .state
+                                                "
                                                 type="text"
                                                 class="form-control"
                                                 name="country"
@@ -173,12 +184,15 @@
                                         </div>
                                         <label
                                             for=""
-                                            class="col-sm-1 control-label"
+                                            class="col-sm-1 control-label text-nowrap"
                                             >Postcode</label
                                         >
                                         <div class="col-sm-2">
                                             <input
-                                                v-model="org.address.postcode"
+                                                v-model="
+                                                    org.organisation_address
+                                                        .postcode
+                                                "
                                                 type="text"
                                                 class="form-control"
                                                 name="postcode"
@@ -194,7 +208,10 @@
                                         >
                                         <div class="col-sm-4">
                                             <select
-                                                v-model="org.address.country"
+                                                v-model="
+                                                    org.organisation_address
+                                                        .country
+                                                "
                                                 class="form-control"
                                                 name="country"
                                             >
@@ -252,6 +269,7 @@
                                 the new user to be linked as organisation user.
                             </div>
                             <form
+                                v-if="org.pins"
                                 class="form-horizontal"
                                 action="index.html"
                                 method="post"
@@ -355,6 +373,7 @@
                             <div>
                                 <div class="col-sm-12">
                                     <div class="form-group row">
+                                        <!-- TODO: -->
                                         <datatable
                                             id="organisation_contacts_datatable_ref"
                                             ref="contacts_datatable_user"
@@ -400,7 +419,10 @@ export default {
                 vm.countries = data[0];
                 vm.org = data[1];
                 vm.myorgperms = data[2];
-                vm.org.address = vm.org.address != null ? vm.org.address : {};
+                vm.org.organisation_address =
+                    vm.org.organisation_address != null
+                        ? vm.org.organisation_address
+                        : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
             });
         });
@@ -414,7 +436,10 @@ export default {
             next((vm) => {
                 vm.org = data[0];
                 vm.myorgperms = data[1];
-                vm.org.address = vm.org.address != null ? vm.org.address : {};
+                vm.org.organisation_address =
+                    vm.org.organisation_address != null
+                        ? vm.org.organisation_address
+                        : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
             });
         });
@@ -437,7 +462,9 @@ export default {
             pBody: 'pBody' + vm._uid,
             cBody: 'cBody' + vm._uid,
             oBody: 'oBody' + vm._uid,
-            org: null,
+            org: {
+                organisation_address: {},
+            },
             loading: [],
             countries: [],
             contact_user: {
@@ -683,6 +710,7 @@ export default {
                 },
                 columns: [
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             return full.first_name + ' ' + full.last_name;
                         },
@@ -691,6 +719,7 @@ export default {
                     { data: 'email' },
                     { data: 'user_status' },
                     {
+                        data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
                             if (vm.myorgperms.is_admin) {
@@ -719,6 +748,8 @@ export default {
                 ],
                 processing: true,
             },
+            // Note: Had to add this variable, it didn't exist. It is the model of the datatable component. What is it for?
+            filterOrgContactStatus: null,
         };
     },
     computed: {
@@ -727,9 +758,13 @@ export default {
         },
     },
     mounted: function () {
-        this.personal_form = document.forms.personal_form;
-
         let vm = this;
+        vm.personal_form = document.forms.personal_form;
+        if (!vm.org_id) {
+            // Prop org_id is null when using the external/organisations/manage/org_id route
+            return;
+        }
+
         let initialisers = [
             utils.fetchCountries(),
             utils.fetchOrganisation(vm.org_id),
@@ -739,7 +774,10 @@ export default {
             vm.countries = data[0];
             vm.org = data[1];
             vm.myorgperms = data[2];
-            vm.org.address = vm.org.address != null ? vm.org.address : {};
+            vm.org.organisation_address =
+                vm.org.organisation_address != null
+                    ? vm.org.organisation_address
+                    : {};
             vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
         });
     },
@@ -1491,8 +1529,8 @@ export default {
                     (response) => {
                         vm.updatingDetails = false;
                         vm.org = response.body;
-                        if (vm.org.address == null) {
-                            vm.org.address = {};
+                        if (vm.org.organisation_address == null) {
+                            vm.org.organisation_address = {};
                         }
                     },
                     (error) => {
@@ -1517,7 +1555,7 @@ export default {
                         api_endpoints.organisations,
                         vm.org.id + '/update_address'
                     ),
-                    JSON.stringify(vm.org.address),
+                    JSON.stringify(vm.org.organisation_address),
                     {
                         emulateJSON: true,
                     }
@@ -1526,8 +1564,8 @@ export default {
                     (response) => {
                         vm.updatingAddress = false;
                         vm.org = response.body;
-                        if (vm.org.address == null) {
-                            vm.org.address = {};
+                        if (vm.org.organisation_address == null) {
+                            vm.org.organisation_address = {};
                         }
                     },
                     (error) => {
@@ -1555,8 +1593,8 @@ export default {
                     (response) => {
                         vm.updatingDetails = false;
                         vm.org = response.body;
-                        if (vm.org.address == null) {
-                            vm.org.address = {};
+                        if (vm.org.organisation_address == null) {
+                            vm.org.organisation_address = {};
                         }
                         if (!vm.isApplication) {
                             swal.fire({
@@ -1638,7 +1676,7 @@ export default {
                         api_endpoints.organisations,
                         vm.org.id + '/update_address'
                     ),
-                    JSON.stringify(vm.org.address),
+                    JSON.stringify(vm.org.organisation_address),
                     {
                         emulateJSON: true,
                     }
@@ -1655,8 +1693,8 @@ export default {
                                 confirmButtonText: 'OK',
                             });
                         }
-                        if (vm.org.address == null) {
-                            vm.org.address = {};
+                        if (vm.org.organisation_address == null) {
+                            vm.org.organisation_address = {};
                         }
                     },
                     (error) => {
@@ -1675,7 +1713,7 @@ export default {
         unlinkUser: function (d) {
             let vm = this;
             let org = vm.org;
-            let org_name = org.name;
+            let org_name = org.organisation_name;
             let person = helpers.copyObject(d);
             swal.fire({
                 title: 'Unlink From Organisation',
@@ -1685,7 +1723,7 @@ export default {
                     ' ' +
                     person.id +
                     ' from ' +
-                    org.name +
+                    org.organisation_name +
                     ' ?',
                 icon: 'question',
                 showCancelButton: true,
@@ -1706,8 +1744,8 @@ export default {
                         .then(
                             (response) => {
                                 vm.org = response.body;
-                                if (vm.org.address == null) {
-                                    vm.org.address = {};
+                                if (vm.org.organisation_address == null) {
+                                    vm.org.organisation_address = {};
                                 }
                                 swal.fire({
                                     title: 'Unlink',

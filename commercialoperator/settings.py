@@ -18,7 +18,6 @@ ROOT_URLCONF = "commercialoperator.urls"
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
 SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
-DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
 BUILD_TAG = env(
@@ -423,6 +422,16 @@ CACHE_TIMEOUT_NEVER = None
 # Cache keys
 CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
+CACHE_KEY_LEDGER_USER_INFO = "ledger-user-info-{}"
+CACHE_KEY_COUNTRY_LIST = "country-list"
+CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES = "amendment-request-reason-choices"
+CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES = "compliance-amendment-reason-choices"
+CACHE_KEY_ACCREDITATION_CHOICES = "accreditation-choices"
+CACHE_KEY_LICENCE_PERIOD_CHOICES = "licence-period-choices"
+CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES = "filming-licence-charge-choices"
+CACHE_KEY_APPLICATION_TYPES = "application-types"
+CACHE_KEY_PROPOSAL_SUBMITTERS = "proposal-submitters-{}"
+CACHE_KEY_PROPOSAL_PROCESSING_STATUS = "proposal-processing-status-{}"
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"

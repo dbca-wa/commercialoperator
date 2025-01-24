@@ -23,7 +23,10 @@
                                             >Park or Reserve</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="events_park_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="events_park"
                                             v-model="events_park_id"
@@ -190,7 +193,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.park_action == 'add'
+            return this.localParkAction == 'add'
                 ? 'Add a new Park or Reserve'
                 : 'Edit a Park or Reserve';
         },
@@ -422,7 +425,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
@@ -444,6 +447,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
+                    dropdownParent: $('#events_park_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);

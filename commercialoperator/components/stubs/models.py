@@ -32,7 +32,7 @@ class EmailUserLogEntry(CommunicationsLogEntry):
 
     class Meta:
         managed = False
-        app_label = "boranga"
+        app_label = "commercialoperator"
 
 
 class EmailUserAction(UserAction):
@@ -48,7 +48,7 @@ class EmailUserAction(UserAction):
 
     class Meta:
         managed = False
-        app_label = "CommunicationsLogEntry"
+        app_label = "commercialoperator"
 
 
 class LedgerOrganisation(models.Model):

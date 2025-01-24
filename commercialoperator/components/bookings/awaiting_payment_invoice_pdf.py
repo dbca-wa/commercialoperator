@@ -23,6 +23,9 @@ from django.conf import settings
 
 from commercialoperator.components.main.utils import to_local_tz
 
+import logging
+logger = logging.getLogger(__name__)
+
 DPAW_HEADER_LOGO = os.path.join(
     settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
 )
@@ -487,6 +490,14 @@ def _create_invoice(invoice_buffer, proposal):
     # for val, item in enumerate(booking.as_line_items, 1):
     total_amount = 0.0
     filming_fee = proposal.filming_fees.order_by("-id").first()
+    if not filming_fee:
+        # Note: Added this shortcut out of this fn because filming fees don't exist yet on proposal
+        # See: Proposal::__create_filming_fee_invoice
+        logger.error(
+            f"Filming Fee not found for proposal {proposal.lodgement_number}"
+        )
+        return invoice_buffer
+
     lines = filming_fee.lines_aggregated
     if len(lines) == 0:
         lines = filming_fee.lines

@@ -401,7 +401,7 @@ class MakePaymentView(TemplateView):
                 for s in set(frozenset(d.items()) for d in booking.as_line_items)
             ]
             if len(booking.as_line_items) != len(unique_lines):
-                logger.warn("Booking contains dupicate rows.")
+                logger.warning("Booking contains dupicate rows.")
 
             with transaction.atomic():
                 set_session_booking(request.session, booking)

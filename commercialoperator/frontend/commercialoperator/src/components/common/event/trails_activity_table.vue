@@ -96,7 +96,7 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {
@@ -123,6 +123,13 @@ export default {
                     },
                     {
                         data: 'activities_assessor_names',
+                        // eslint-disable-next-line no-unused-vars
+                        mRender: function (data, type, full) {
+                            if (!data) {
+                                data = [];
+                            }
+                            return data.join(',');
+                        },
                     },
                     {
                         data: 'id',

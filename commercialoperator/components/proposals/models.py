@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
+from django.core.cache import cache
 
 # from django.contrib.postgres.fields.jsonb import JSONField
 from django.db.models import JSONField
@@ -325,7 +326,9 @@ class ProposalApproverGroup(models.Model):
 
     @property
     def members_email(self):
-        return [i.email for i in self.members.all()]
+        members = retrieve_group_members(self)
+        emailusers = [retrieve_email_user(i) for i in members]
+        return [u.email for u in emailusers]
 
 
 class DefaultDocument(Document):
@@ -999,8 +1002,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def _fee_paid(self):
+        # Note: Commented out the `and self.invoice.payment_status in ["paid", "over_paid"]` part b/c payment_status doesn't exist in ledger models Invoice
         if (
-            self.invoice and self.invoice.payment_status in ["paid", "over_paid"]
+            self.invoice# and self.invoice.payment_status in ["paid", "over_paid"]
         ) or self.proposal_type == "amendment":
             return True
         return False
@@ -1157,7 +1161,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         current_revision_id = Version.objects.get_for_object(self).first().revision_id
         versions = (
             Version.objects.get_for_object(self)
-            .select_related("revision__user")
+            .select_related("revision")
             .filter(
                 Q(revision__comment__icontains="status")
                 | Q(revision_id=current_revision_id)
@@ -2030,7 +2034,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             )
         elif self.processing_status == "with_approver":
             return self.__approver_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             )
         else:
             return False
@@ -2047,7 +2051,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             )
         elif self.processing_status == "with_approver":
             return self.__approver_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             )
         else:
             return False
@@ -2058,7 +2062,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             or self.processing_status == "with_assessor_requirements"
         ):
             return self.__assessor_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             )
         else:
             return False
@@ -2082,7 +2086,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             ):
                 return True
             elif self.__approver_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
+                "proposalapprovergroup", user.id
             ):
                 return True
             else:
@@ -4063,6 +4067,10 @@ class ProposalAccreditation(models.Model):
     class Meta:
         app_label = "commercialoperator"
 
+    def save(self, *args, **kwargs):
+        super(ProposalAccreditation, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_ACCREDITATION_CHOICES)
+
 
 class ProposalPark(models.Model):
     park = models.ForeignKey(
@@ -4344,6 +4352,10 @@ class AmendmentReason(models.Model):
 
     def __str__(self):
         return self.reason
+
+    def save(self, *args, **kwargs):
+        super(AmendmentReason, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES)
 
 
 class AmendmentRequest(ProposalRequest):
@@ -4791,7 +4803,7 @@ class Referral(RevisionedMixin):
     @property
     def allowed_assessors(self):
         group = self.referral_group
-        return group.members.all() if group else []
+        return retrieve_group_members(group) if group else []
 
     def can_process(self, user):
         if self.processing_status == "with_referral":
@@ -5873,7 +5885,7 @@ def duplicate_object(self):
                 try:
                     related_object.save()
                 except Exception as e:
-                    logger.warn(e)
+                    logger.warning(e)
 
                 text = str(related_object)
                 text = (text[:40] + "..") if len(text) > 40 else text
@@ -8255,8 +8267,9 @@ reversion.register(ProposalRequirement, follow=["compliance_requirement"])
 reversion.register(
     ReferralRecipientGroup,
     follow=["commercialoperator_referral_groups", "referral_assessment"],
+    exclude=["members"],
 )
-reversion.register(QAOfficerGroup, follow=["qaofficer_groups"])
+reversion.register(QAOfficerGroup, follow=["qaofficer_groups"], exclude=["members"])
 reversion.register(QAOfficerReferral)
 reversion.register(QAOfficerDocument, follow=["qaofficer_referral_document"])
 reversion.register(ProposalAccreditation)

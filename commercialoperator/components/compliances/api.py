@@ -2,6 +2,8 @@ import traceback
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
+from django.conf import settings
 from rest_framework import viewsets, serializers, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
@@ -22,7 +24,10 @@ from commercialoperator.components.compliances.serializers import (
     ComplianceAmendmentRequestSerializer,
     CompAmendmentRequestDisplaySerializer,
 )
-from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
+from commercialoperator.components.stubs.utils import (
+    retrieve_cols_organisations_from_ledger_org_ids,
+    retrieve_delegate_organisation_ids,
+)
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
@@ -45,7 +50,13 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
             )
         elif is_customer(self.request):
             user = self.request.user
-            user_orgs = retrieve_delegate_organisation_ids(user.id)
+
+            commercialoperator_organisations = (
+                retrieve_cols_organisations_from_ledger_org_ids(user)
+            )
+
+            user_orgs = [o["id"] for o in commercialoperator_organisations]
+
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
                 | Q(proposal__submitter_id=user.id)
@@ -71,9 +82,32 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         """
 
         qs = self.get_queryset().exclude(processing_status="future")
-        # qs = ProposalFilterBackend().filter_queryset(self.request, qs, self)
         qs = self.filter_queryset(qs)
-        # qs = qs.order_by('lodgement_number', '-issue_date').distinct('lodgement_number')
+
+        # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
+        applicant_id = request.GET.get("org_id")
+        if applicant_id:
+            qs = qs.filter(proposal__org_applicant_id=applicant_id)
+        submitter_id = request.GET.get("submitter_id", None)
+        if submitter_id:
+            qs = qs.filter(proposal__submitter_id=submitter_id)
+        self.paginator.page_size = qs.count()
+        result_page = self.paginator.paginate_queryset(qs, request)
+        serializer = ComplianceSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
+    def compliances_internal(self, request, *args, **kwargs):
+        """Same as external compliance endpoint but including future compliances"""
+        qs = self.get_queryset()
+        qs = self.filter_queryset(qs)
 
         # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
         applicant_id = request.GET.get("org_id")
@@ -146,22 +180,9 @@ class ComplianceViewSet(viewsets.ModelViewSet):
     )
     def filter_list(self, request, *args, **kwargs):
         """Used by the external dashboard filters"""
-        region_qs = (
-            self.get_queryset()
-            .filter(proposal__region__isnull=False)
-            .values_list("proposal__region__name", flat=True)
-            .distinct()
-        )
-        activity_qs = (
-            self.get_queryset()
-            .filter(proposal__activity__isnull=False)
-            .values_list("proposal__activity", flat=True)
-            .distinct()
-        )
+
         application_types = ApplicationType.objects.all().values_list("name", flat=True)
         data = dict(
-            regions=region_qs,
-            activities=activity_qs,
             application_types=application_types,
         )
         return Response(data)
@@ -510,10 +531,18 @@ class ComplianceAmendmentReasonChoicesView(views.APIView):
     ]
 
     def get(self, request, format=None):
-        choices_list = []
-        # choices = ComplianceAmendmentRequest.REASON_CHOICES
-        choices = ComplianceAmendmentReason.objects.all()
-        if choices:
-            for c in choices:
-                choices_list.append({"key": c.id, "value": c.reason})
+        choices_list = cache.get(settings.CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES)
+
+        if choices_list is None:
+            choices_list = []
+            choices = ComplianceAmendmentReason.objects.all()
+
+            if choices:
+                for c in choices:
+                    choices_list.append({"key": c.id, "value": c.reason})
+            cache.set(
+                settings.CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES,
+                choices_list,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
         return Response(choices_list)

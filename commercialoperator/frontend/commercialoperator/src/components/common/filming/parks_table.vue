@@ -102,7 +102,7 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {
@@ -182,7 +182,7 @@ export default {
                 proposal: vm.proposal.id,
             };
             this.$refs.edit_park.park = new_park_another;
-            this.$refs.edit_park.park_action = 'add';
+            this.$refs.edit_park.localParkAction = 'add';
             this.$refs.edit_park.isModalOpen = true;
         },
         editPark: function (id) {

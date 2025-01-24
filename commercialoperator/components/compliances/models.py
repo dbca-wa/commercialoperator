@@ -1,6 +1,7 @@
 import datetime
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
@@ -475,6 +476,10 @@ class ComplianceAmendmentReason(models.Model):
 
     def __str__(self):
         return self.reason
+
+    def save(self, *args, **kwargs):
+        super(ComplianceAmendmentReason, self).save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_COMPLIANCE_AMENDMENT_REASON_CHOICES)
 
 
 class ComplianceAmendmentRequest(CompRequest):

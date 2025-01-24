@@ -23,7 +23,10 @@
                                             >Park or Reserve</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="selected_park_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="filming_park"
                                             v-model="selected_park_id"
@@ -252,6 +255,7 @@ export default {
                 allowInputToggle: true,
             },
             selected_park_id: null,
+            localParkAction: JSON.parse(JSON.stringify(this.park_action)),
         };
     },
     computed: {
@@ -260,7 +264,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.park_action == 'add'
+            return this.localParkAction == 'add'
                 ? 'Add a new Park or Reserve'
                 : 'Edit a Park or Reserve';
         },
@@ -270,6 +274,14 @@ export default {
                       this.park_id +
                       '/delete_document/'
                 : '';
+        },
+    },
+    watch: {
+        park_action: {
+            handler(newVal) {
+                this.localParkAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -458,7 +470,7 @@ export default {
 
             formData.append('data', JSON.stringify(park));
             vm.issuingPark = true;
-            if (vm.park_action == 'add' && vm.park_id == null) {
+            if (vm.localParkAction == 'add' && vm.park_id == null) {
                 vm.$http
                     .post(api_endpoints.proposal_filming_parks, formData, {
                         emulateJSON: true,
@@ -529,7 +541,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
@@ -551,6 +563,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
+                    dropdownParent: $('#selected_park_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);

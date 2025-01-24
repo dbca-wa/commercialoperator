@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="row">
+                <div class="row mb-1">
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="">Status</label>
@@ -40,7 +40,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="">Lodged From</label>
                         <div
@@ -222,7 +222,7 @@ export default {
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
                             if (data) {
-                                return `${data.first_name} ${data.last_name}`;
+                                return `${data.first_name || ''} ${data.last_name || ''}`;
                             }
                             return '';
                         },
@@ -231,7 +231,16 @@ export default {
                     },
                     {
                         data: 'applicant',
+                        // eslint-disable-next-line no-unused-vars
+                        mRender: function (data, type, full) {
+                            if (data) {
+                                return `${data.first_name || ''} ${data.last_name || ''}`;
+                            }
+                            return '';
+                        },
                         name: 'proposal__org_applicant__organisation__name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
+                        // Note: disabled for now during segregation
+                        searchable: false,
                     },
                     {
                         data: 'processing_status',

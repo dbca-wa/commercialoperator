@@ -9,7 +9,10 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="withqaForm">
+                    <form
+                        class="needs-validation form-horizontal"
+                        name="withqaForm"
+                    >
                         <alert :show.sync="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
@@ -17,38 +20,46 @@
                             <div class="row">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
-                                        <TextArea
-                                            id="id_comments"
-                                            :proposal_id="proposal_id"
-                                            :readonly="readonly"
-                                            name="_comments"
-                                            label="Comments"
-                                        />
-                                        <div v-if="is_qaofficer_status">
-                                            <FileField
-                                                id="id_file"
-                                                :document_url="document_url"
+                                        <div
+                                            class="input-group"
+                                            style="width: 70%"
+                                        >
+                                            <TextArea
+                                                id="id-qaofficer-comments"
+                                                ref="comments"
                                                 :proposal_id="proposal_id"
-                                                :is-repeatable="true"
-                                                name="qaofficer_file"
-                                                label="Add Document"
-                                                @refreshFromResponse="
-                                                    refreshFromResponse
-                                                "
+                                                :readonly="readonly"
+                                                name="_comments"
+                                                class="form-control"
+                                                label="Comments"
+                                                :is-required="true"
                                             />
-                                        </div>
-                                        <div v-else>
-                                            <FileField
-                                                id="id_file"
-                                                :document_url="document_url"
-                                                :proposal_id="proposal_id"
-                                                :is-repeatable="true"
-                                                name="assessor_qa_file"
-                                                label="Add Document"
-                                                @refreshFromResponse="
-                                                    refreshFromResponse
-                                                "
-                                            />
+                                            <div v-if="is_qaofficer_status">
+                                                <FileField
+                                                    id="id_file"
+                                                    :document_url="document_url"
+                                                    :proposal_id="proposal_id"
+                                                    :is-repeatable="true"
+                                                    name="qaofficer_file"
+                                                    label="Add Document"
+                                                    @refreshFromResponse="
+                                                        refreshFromResponse
+                                                    "
+                                                />
+                                            </div>
+                                            <div v-else>
+                                                <FileField
+                                                    id="id_file"
+                                                    :document_url="document_url"
+                                                    :proposal_id="proposal_id"
+                                                    :is-repeatable="true"
+                                                    name="assessor_qa_file"
+                                                    label="Add Document"
+                                                    @refreshFromResponse="
+                                                        refreshFromResponse
+                                                    "
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -124,8 +135,7 @@ export default {
     },
     mounted: function () {
         let vm = this;
-        vm.form = document.forms.onholdForm;
-        vm.addFormValidations();
+        vm.form = document.forms.withqaForm;
         this.$nextTick(() => {
             vm.eventListerners();
         });
@@ -139,17 +149,15 @@ export default {
             let vm = this;
             vm.document_list = helpers.copyObject(response.body);
         },
-
         save: function () {
             let vm = this;
             var is_with_qaofficer =
                 vm.processing_status == 'With QA Officer' ? true : false;
-            var form = document.forms.withqaForm;
             var data = {
                 with_qaofficer: is_with_qaofficer ? 'False' : 'True', // since wee need to do the reverse
                 file_input_name: 'qaofficer_file',
                 proposal: vm.proposal_id,
-                text: form.elements['_comments'].value, // getting the value from the text-area.vue field
+                text: vm.$refs.comments.localValue, // getting the value from the text-area.vue field
             };
             vm.$http
                 .post(
@@ -165,34 +173,34 @@ export default {
                 .then(
                     (res) => {
                         if (!is_with_qaofficer) {
-                            swal(
-                                'Send Application to QA Officer',
-                                'Send Application to QA Officer',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Send Application to QA Officer',
+                                text: 'Send Application to QA Officer',
+                                icon: 'success',
+                            });
                         } else {
-                            swal(
-                                'Application QA Officer Assessment Completed',
-                                'Application QA Officer Assessment Completed',
-                                'success'
-                            );
+                            swal.fire({
+                                title: 'Application QA Officer Assessment Completed',
+                                text: 'Application QA Officer Assessment Completed',
+                                icon: 'success',
+                            });
                         }
 
                         vm.proposal = res.body;
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
-                        swal(
-                            'Submit Error',
-                            helpers.apiVueResourceError(err),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Submit Error',
+                            text: helpers.apiVueResourceError(err),
+                            icon: 'error',
+                        });
                     }
                 );
         },
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            if (vm.$refs.comments.isValid() && helpers.validateForm(vm.form)) {
                 vm.save();
             }
         },
@@ -210,8 +218,6 @@ export default {
             this.hasErrors = false;
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
-
-            this.validation_form.resetForm();
         },
         addFormValidations: function () {},
         eventListerners: function () {},

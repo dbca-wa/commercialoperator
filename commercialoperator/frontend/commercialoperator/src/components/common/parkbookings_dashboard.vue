@@ -47,7 +47,7 @@
                         index="parl_entry_fees_per_park"
                         subtitle=""
                     >
-                        <div class="row">
+                        <div class="row mb-1">
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="">Park</label>
@@ -113,7 +113,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="">Arrival From</label>
@@ -158,7 +158,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-lg-12" style="margin-top: 25px">
+                            <div class="col-lg-12">
                                 <datatable
                                     :id="datatable_id"
                                     ref="proposal_datatable"
@@ -294,7 +294,7 @@ export default {
                                 : '';
                     },
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {

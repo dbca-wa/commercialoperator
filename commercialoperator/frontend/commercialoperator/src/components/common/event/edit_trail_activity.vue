@@ -23,7 +23,10 @@
                                             >Trail</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="events_trail_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="events_trail"
                                             v-model="events_trail_id"
@@ -50,7 +53,10 @@
                                             >Sections</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="events_section_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="events_section"
                                             v-model="section_id"
@@ -216,7 +222,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.park_action == 'add'
+            return this.localParkAction == 'add'
                 ? 'Add a new Trail'
                 : 'Edit a Trail';
         },
@@ -463,7 +469,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
@@ -485,6 +491,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Park',
+                    dropdownParent: $('#events_trail_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);
@@ -499,6 +506,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select section',
+                    dropdownParent: $('#events_section_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);

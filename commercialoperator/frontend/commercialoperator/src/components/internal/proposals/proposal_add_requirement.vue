@@ -47,7 +47,10 @@
                                         v-if="requirement.standard"
                                         class="col-sm-9"
                                     >
-                                        <div style="width: 70% !important">
+                                        <div
+                                            v-if="requirements.length > 0"
+                                            style="width: 70% !important"
+                                        >
                                             <select
                                                 ref="standard_req"
                                                 v-model="
@@ -95,7 +98,7 @@
                                         >
                                             <input
                                                 v-model="requirement.due_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="due_date"
                                                 placeholder="DD/MM/YYYY"
@@ -124,7 +127,7 @@
                                                 "
                                                 :delete_url="delete_url"
                                                 :proposal_id="proposal_id"
-                                                is-repeatable="true"
+                                                :is-repeatable="true"
                                                 name="requirements_file"
                                                 @refreshFromResponse="
                                                     refreshFromResponse
@@ -499,9 +502,9 @@ export default {
                 proposal: this.proposal_id,
             };
             this.$refs.filefield.reset_files();
-            this.errors = false;
+            this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.due_date).data('DateTimePicker').clear();
+            // $(this.$refs.due_date).data('DateTimePicker').clear();
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {
@@ -639,7 +642,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
@@ -657,14 +660,14 @@ export default {
         eventListeners: function () {
             let vm = this;
             // Initialise Date Picker
-            $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.due_date).on('dp.change', function (e) {
-                if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
-                    vm.requirement.due_date = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.due_date).data('date') === '') {
-                    vm.requirement.due_date = '';
-                }
-            });
+            // $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
+            // $(vm.$refs.due_date).on('dp.change', function (e) {
+            //     if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
+            //         vm.requirement.due_date = e.date.format('DD/MM/YYYY');
+            //     } else if ($(vm.$refs.due_date).data('date') === '') {
+            //         vm.requirement.due_date = '';
+            //     }
+            // });
 
             // Intialise select2
             $(vm.$refs.standard_req)

@@ -335,7 +335,10 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(

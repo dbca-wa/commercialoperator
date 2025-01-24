@@ -66,6 +66,14 @@ class ComplianceSerializer(serializers.ModelSerializer):
             "compliance_licence_name",
         )
 
+        datatables_always_serialize = (
+            "customer_status",
+            "can_user_view",
+            "can_process",
+            "fee_invoice_reference",
+            "fee_paid",
+        )
+
     def get_documents(self, obj):
         return [[d.name, d._file.url, d.can_delete, d.id] for d in obj.documents.all()]
 

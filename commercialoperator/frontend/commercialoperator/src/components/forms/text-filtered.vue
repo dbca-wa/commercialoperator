@@ -66,11 +66,12 @@
                     name="fullname"
                     :filterable="false"
                     :options="options"
+                    placeholder="Start typing to search for a user"
                     @search="onSearch"
                 >
-                    <template slot="no-options">
-                        type to search users/organisations.
-                    </template>
+                    <template slot="no-options"
+                        >Search for user name or email</template
+                    >
                     <template slot="option" slot-scope="option">
                         <div v-if="option.email == ''" class="d-center">
                             {{ option.name }}

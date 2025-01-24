@@ -291,7 +291,7 @@ export default {
                                 : '';
                     },
                 },
-                dom: 'lBfrtip',
+                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
                 buttons: ['excel', 'csv'],
                 columns: [
                     {
@@ -429,7 +429,6 @@ export default {
                             }
                             return result;
                         },
-                        createdCell: helpers.dtPopoverCellFn,
                         name: 'licence_document__name',
                     },
                     {
