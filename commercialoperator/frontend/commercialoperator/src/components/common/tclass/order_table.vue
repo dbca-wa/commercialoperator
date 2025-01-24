@@ -716,8 +716,9 @@ export default {
             /* from prior sessions */
             for (let i = 0; i < vm.options.length; i++) {
                 region_id = vm.options[i].region_id;
+                // I added empty list as fallback in case max_group_arrival_by_date is not defined in options
                 arrival_dates = Object.keys(
-                    vm.options[i].max_group_arrival_by_date
+                    vm.options[i].max_group_arrival_by_date || {}
                 );
                 idx = vm.find_region_idx2(region_id);
                 if (!(idx > -1)) {
@@ -780,7 +781,10 @@ export default {
             var keys = [];
             var arrival = '';
             for (var i = 0; i < vm.options.length; i++) {
-                keys = Object.keys(vm.options[i].max_group_arrival_by_date);
+                // I added empty list as fallback in case max_group_arrival_by_date is not defined in options
+                keys = Object.keys(
+                    vm.options[i].max_group_arrival_by_date || {}
+                );
                 for (var j = 0; j < keys.length; j++) {
                     arrival = keys[j];
                     if (!(arrival_dates.indexOf(arrival) > -1)) {
@@ -989,8 +993,9 @@ export default {
             var total_children = 0;
 
             for (var i = 0; i < vm.options.length; i++) {
+                // I added empty list as fallback in case max_group_arrival_by_date is not defined in options
                 arrival_dates = Object.keys(
-                    vm.options[i].max_group_arrival_by_date
+                    vm.options[i].max_group_arrival_by_date || {}
                 );
                 region_id = vm.options[i].region_id;
                 for (var j = 0; j < arrival_dates.length; j++) {
