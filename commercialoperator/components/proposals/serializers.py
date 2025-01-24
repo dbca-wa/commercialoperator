@@ -57,7 +57,9 @@ from commercialoperator.components.proposals.serializers_event import (
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
 )
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.stubs.utils import (
+    retrieve_email_user,
+)
 from commercialoperator.components.users.serializers import UserAddressSerializer
 from commercialoperator.components.stubs.serializers import (
     SegregationBaseSerializer,
@@ -68,7 +70,9 @@ from rest_framework import serializers
 from datetime import datetime
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 class ProposalTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -802,9 +806,13 @@ class ApplicantSerializer(serializers.ModelSerializer):
         OrganisationAddressSerializer,
     )
 
-    address = OrganisationAddressSerializer(read_only=True)
+    id = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    abn = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
 
-    # address = OrganisationAddressSerializer()
     class Meta:
         model = Organisation
         fields = (
@@ -815,6 +823,39 @@ class ApplicantSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
         )
+
+    def get_id(self, obj):
+        return obj
+
+    def get_name(self, obj):
+        try:
+            return Organisation.objects.get(id=obj).name
+        except Organisation.DoesNotExist:
+            return None
+
+    def get_abn(self, obj):
+        try:
+            return Organisation.objects.get(id=obj).abn
+        except Organisation.DoesNotExist:
+            return None
+
+    def get_address(self, obj):
+        try:
+            return Organisation.objects.get(id=obj).address
+        except Organisation.DoesNotExist:
+            return None
+
+    def get_email(self, obj):
+        try:
+            return Organisation.objects.get(id=obj).email
+        except Organisation.DoesNotExist:
+            return None
+
+    def get_phone_number(self, obj):
+        try:
+            return Organisation.objects.get(id=obj).phone_number
+        except Organisation.DoesNotExist:
+            return None
 
 
 class ProposalReferralSerializer(serializers.ModelSerializer):
@@ -834,7 +875,7 @@ class ProposalDeclinedDetailsSerializer(serializers.ModelSerializer):
 
 
 class ProposalParkSerializer(BaseProposalSerializer):
-    applicant = ApplicantSerializer()
+    applicant = ApplicantSerializer(source="applicant_id")
     processing_status = serializers.SerializerMethodField(read_only=True)
     customer_status = serializers.SerializerMethodField(read_only=True)
     submitter = serializers.CharField(source="submitter.get_full_name")
