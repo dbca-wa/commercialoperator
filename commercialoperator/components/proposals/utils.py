@@ -891,251 +891,240 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
         )
 
 
+@basic_exception_handler
+@transaction.atomic
 def save_park_zone_activity_data(
     instance, marine_parks_activities, request, assessor_save=False
 ):
-    with transaction.atomic():
-        try:
-            if marine_parks_activities or len(marine_parks_activities) == 0:
-                parkzone_activity = []
-                try:
-                    # current_parks=instance.parks.all()
-                    selected_parks = []
-                    # print("selected_parks",selected_parks)
-                    for item in marine_parks_activities:
-                        if item["park"]:
-                            selected_parks.append(item["park"])
-                            selected_zones = []
-                            try:
-                                # Check if PrposalPark record already exists. If exists, check for zones
-                                park = ProposalPark.objects.get(
-                                    park=item["park"], proposal=instance
+    # if marine_parks_activities or len(marine_parks_activities) == 0:
+    if not marine_parks_activities and not len(marine_parks_activities):
+        return
+
+    parkzone_activity = []
+    # current_parks=instance.parks.all()
+    selected_parks = []
+    # print("selected_parks",selected_parks)
+    for item in marine_parks_activities:
+        if item["park"]:
+            selected_parks.append(item["park"])
+            selected_zones = []
+            try:
+                # Check if PrposalPark record already exists. If exists, check for zones
+                park = ProposalPark.objects.get(
+                    park=item["park"], proposal=instance
+                )
+                current_zones = park.zones.all()
+                current_zones_ids = [a.zone_id for a in current_zones]
+                if item["activities"]:
+                    for a in item["activities"]:
+                        if a["zone"]:
+                            selected_zones.append(a["zone"])
+                            if a["zone"] in current_zones_ids:
+                                zone = ProposalParkZone.objects.get(
+                                    proposal_park=park, zone=a["zone"]
                                 )
-                                current_zones = park.zones.all()
-                                current_zones_ids = [a.zone_id for a in current_zones]
-                                if item["activities"]:
-                                    for a in item["activities"]:
-                                        if a["zone"]:
-                                            selected_zones.append(a["zone"])
-                                            if a["zone"] in current_zones_ids:
-                                                zone = ProposalParkZone.objects.get(
-                                                    proposal_park=park, zone=a["zone"]
-                                                )
-                                                current_activities = (
-                                                    zone.park_activities.all()
-                                                )
-                                                current_activities_id = [
-                                                    s.activity_id
-                                                    for s in current_activities
-                                                ]
-                                                allowed_act_ids = list(
-                                                    set(
-                                                        zone.zone.allowed_activities_ids
-                                                    ).intersection(a["activities"])
-                                                )
-
-                                                [
-                                                    ProposalParkZoneActivity.objects.get_or_create(
-                                                        park_zone=zone,
-                                                        activity_id=act_id,
-                                                    )
-                                                    for act_id in allowed_act_ids
-                                                ]
-                                                # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
-                                                        ", ".join(
-                                                            map(str, allowed_act_ids)
-                                                        ),
-                                                        zone.zone.id,
-                                                        park.park.id,
-                                                    ),
-                                                    request,
-                                                )
-
-                                                if "access_point" in a:
-                                                    zone.access_point = a[
-                                                        "access_point"
-                                                    ]
-                                                    zone.save()
-                                            else:
-                                                zone_instance = Zone.objects.get(
-                                                    id=a["zone"]
-                                                )
-                                                zone = ProposalParkZone.objects.create(
-                                                    proposal_park=park,
-                                                    zone=zone_instance,
-                                                )
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ZONE.format(
-                                                        zone.zone.id, park.park.id
-                                                    ),
-                                                    request,
-                                                )
-                                                allowed_act_ids = list(
-                                                    set(
-                                                        zone.zone.allowed_activities_ids
-                                                    ).intersection(a["activities"])
-                                                )
-
-                                                [
-                                                    ProposalParkZoneActivity.objects.get_or_create(
-                                                        park_zone=zone,
-                                                        activity_id=act_id,
-                                                    )
-                                                    for act_id in allowed_act_ids
-                                                ]
-                                                # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
-                                                        ", ".join(
-                                                            map(str, allowed_act_ids)
-                                                        ),
-                                                        zone.zone.id,
-                                                        park.park.id,
-                                                    ),
-                                                    request,
-                                                )
-                                                if "access_point" in a:
-                                                    zone.access_point = a[
-                                                        "access_point"
-                                                    ]
-                                                    zone.save()
-                                            new_activities = zone.park_activities.all()
-                                            new_activities_id = set(
-                                                n.activity_id for n in new_activities
-                                            )
-                                            diff_activity = set(
-                                                new_activities_id
-                                            ).difference(set(a["activities"]))
-                                            # print("park:",park.park_id,"zone:",zone.zone_id,"new_activities:",new_activities_id, "diff:", diff_activity)
-                                            for d in diff_activity:
-                                                act = ProposalParkZoneActivity.objects.get(
-                                                    activity_id=d, park_zone=zone
-                                                )
-                                                act.delete()
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_UNLINK_ACTIVITY_ZONE.format(
-                                                        d, zone.zone.id, park.park.id
-                                                    ),
-                                                    request,
-                                                )
-
-                            except ProposalPark.DoesNotExist:
-                                try:
-                                    # If ProposalPark does not exists then create a new record and activities for it.
-                                    park_instance = Park.objects.get(id=item["park"])
-                                    park = ProposalPark.objects.create(
-                                        park=park_instance, proposal=instance
-                                    )
-                                    instance.log_user_action(
-                                        ProposalUserAction.ACTION_LINK_PARK.format(
-                                            park.park.id, instance.id
-                                        ),
-                                        request,
-                                    )
-                                    current_zones = []
-                                    if item["activities"]:
-                                        for a in item["activities"]:
-                                            if a["zone"]:
-                                                selected_zones.append(a["zone"])
-                                                zone_instance = Zone.objects.get(
-                                                    id=a["zone"]
-                                                )
-                                                zone = ProposalParkZone.objects.create(
-                                                    proposal_park=park,
-                                                    zone=zone_instance,
-                                                )
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ZONE.format(
-                                                        zone.zone.id, park.park.id
-                                                    ),
-                                                    request,
-                                                )
-                                                allowed_act_ids = list(
-                                                    set(
-                                                        zone.zone.allowed_activities_ids
-                                                    ).intersection(a["activities"])
-                                                )
-
-                                                [
-                                                    ProposalParkZoneActivity.objects.get_or_create(
-                                                        park_zone=zone,
-                                                        activity_id=act_id,
-                                                    )
-                                                    for act_id in allowed_act_ids
-                                                ]
-                                                # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
-                                                        ", ".join(
-                                                            map(str, allowed_act_ids)
-                                                        ),
-                                                        zone.zone.id,
-                                                        park.park.id,
-                                                    ),
-                                                    request,
-                                                )
-
-                                                if "access_point" in a:
-                                                    zone.access_point = a[
-                                                        "access_point"
-                                                    ]
-                                                    zone.save()
-                                except:
-                                    raise
-                            # compare all zones (new+old) with the list of zones selected to get
-                            # the list of deleted zones.
-                            new_zones = park.zones.all()
-                            new_zones_ids = set(a.zone_id for a in new_zones)
-                            diff_zones = set(new_zones_ids).difference(
-                                set(selected_zones)
-                            )
-                            # print("park:",park.park_id, "new_zones:", new_zones_ids,"diff_zones:", diff_zones)
-                            for d in diff_zones:
-                                pk = ProposalParkZone.objects.get(
-                                    zone=d, proposal_park=park
+                                current_activities = (
+                                    zone.park_activities.all()
                                 )
-                                pk.delete()
+                                current_activities_id = [
+                                    s.activity_id
+                                    for s in current_activities
+                                ]
+                                allowed_act_ids = list(
+                                    set(
+                                        zone.zone.allowed_activities_ids
+                                    ).intersection(a["activities"])
+                                )
+
+                                [
+                                    ProposalParkZoneActivity.objects.get_or_create(
+                                        park_zone=zone,
+                                        activity_id=act_id,
+                                    )
+                                    for act_id in allowed_act_ids
+                                ]
+                                # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
                                 instance.log_user_action(
-                                    ProposalUserAction.ACTION_UNLINK_ZONE.format(
-                                        d, park.park.id
+                                    ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
+                                        ", ".join(
+                                            map(str, allowed_act_ids)
+                                        ),
+                                        zone.zone.id,
+                                        park.park.id,
                                     ),
                                     request,
                                 )
-                    new_parks = instance.parks.filter(park__park_type="marine")
-                    new_parks_id = set(p.park_id for p in new_parks)
-                    # print("new_parks", new_parks_id, "diff:", diff_parks)
-                    if not assessor_save:
-                        internal_parks = instance.parks.filter(
-                            park__park_type="marine", park__visible_to_external=False
-                        )
-                        if internal_parks:
-                            for p in internal_parks:
-                                selected_parks.append(p.park_id)
-                    diff_parks = set(new_parks_id).difference(set(selected_parks))
-                    for d in diff_parks:
-                        pk = ProposalPark.objects.get(park=d, proposal=instance)
-                        pk.delete()
-                        instance.log_user_action(
-                            ProposalUserAction.ACTION_UNLINK_PARK.format(
-                                d, instance.id
-                            ),
-                            request,
-                        )
+
+                                if "access_point" in a:
+                                    zone.access_point = a[
+                                        "access_point"
+                                    ]
+                                    zone.save()
+                            else:
+                                zone_instance = Zone.objects.get(
+                                    id=a["zone"]
+                                )
+                                zone = ProposalParkZone.objects.create(
+                                    proposal_park=park,
+                                    zone=zone_instance,
+                                )
+                                instance.log_user_action(
+                                    ProposalUserAction.ACTION_LINK_ZONE.format(
+                                        zone.zone.id, park.park.id
+                                    ),
+                                    request,
+                                )
+                                allowed_act_ids = list(
+                                    set(
+                                        zone.zone.allowed_activities_ids
+                                    ).intersection(a["activities"])
+                                )
+
+                                [
+                                    ProposalParkZoneActivity.objects.get_or_create(
+                                        park_zone=zone,
+                                        activity_id=act_id,
+                                    )
+                                    for act_id in allowed_act_ids
+                                ]
+                                # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
+                                instance.log_user_action(
+                                    ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
+                                        ", ".join(
+                                            map(str, allowed_act_ids)
+                                        ),
+                                        zone.zone.id,
+                                        park.park.id,
+                                    ),
+                                    request,
+                                )
+                                if "access_point" in a:
+                                    zone.access_point = a[
+                                        "access_point"
+                                    ]
+                                    zone.save()
+                            new_activities = zone.park_activities.all()
+                            new_activities_id = set(
+                                n.activity_id for n in new_activities
+                            )
+                            diff_activity = set(
+                                new_activities_id
+                            ).difference(set(a["activities"]))
+                            # print("park:",park.park_id,"zone:",zone.zone_id,"new_activities:",new_activities_id, "diff:", diff_activity)
+                            for d in diff_activity:
+                                act = ProposalParkZoneActivity.objects.get(
+                                    activity_id=d, park_zone=zone
+                                )
+                                act.delete()
+                                instance.log_user_action(
+                                    ProposalUserAction.ACTION_UNLINK_ACTIVITY_ZONE.format(
+                                        d, zone.zone.id, park.park.id
+                                    ),
+                                    request,
+                                )
+
+            except ProposalPark.DoesNotExist:
+                try:
+                    # If ProposalPark does not exists then create a new record and activities for it.
+                    park_instance = Park.objects.get(id=item["park"])
+                    park = ProposalPark.objects.create(
+                        park=park_instance, proposal=instance
+                    )
+                    instance.log_user_action(
+                        ProposalUserAction.ACTION_LINK_PARK.format(
+                            park.park.id, instance.id
+                        ),
+                        request,
+                    )
+                    current_zones = []
+                    if item["activities"]:
+                        for a in item["activities"]:
+                            if a["zone"]:
+                                selected_zones.append(a["zone"])
+                                zone_instance = Zone.objects.get(
+                                    id=a["zone"]
+                                )
+                                zone = ProposalParkZone.objects.create(
+                                    proposal_park=park,
+                                    zone=zone_instance,
+                                )
+                                instance.log_user_action(
+                                    ProposalUserAction.ACTION_LINK_ZONE.format(
+                                        zone.zone.id, park.park.id
+                                    ),
+                                    request,
+                                )
+                                allowed_act_ids = list(
+                                    set(
+                                        zone.zone.allowed_activities_ids
+                                    ).intersection(a["activities"])
+                                )
+
+                                [
+                                    ProposalParkZoneActivity.objects.get_or_create(
+                                        park_zone=zone,
+                                        activity_id=act_id,
+                                    )
+                                    for act_id in allowed_act_ids
+                                ]
+                                # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
+                                instance.log_user_action(
+                                    ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
+                                        ", ".join(
+                                            map(str, allowed_act_ids)
+                                        ),
+                                        zone.zone.id,
+                                        park.park.id,
+                                    ),
+                                    request,
+                                )
+
+                                if "access_point" in a:
+                                    zone.access_point = a[
+                                        "access_point"
+                                    ]
+                                    zone.save()
                 except:
                     raise
-
-        #                try:
-        #                    pass
-        #                    #with transaction.atomic():
-        #                    #    ProposalParkZoneActivity.objects.bulk_create(parkzone_activity)
-        #                    #ProposalParkZoneActivity.objects.bulk_create(parkzone_activity)
-        #                except IntegrityError:
-        #                    pass
-
-        except:
-            raise
+            # compare all zones (new+old) with the list of zones selected to get
+            # the list of deleted zones.
+            new_zones = park.zones.all()
+            new_zones_ids = set(a.zone_id for a in new_zones)
+            diff_zones = set(new_zones_ids).difference(
+                set(selected_zones)
+            )
+            # print("park:",park.park_id, "new_zones:", new_zones_ids,"diff_zones:", diff_zones)
+            for d in diff_zones:
+                pk = ProposalParkZone.objects.get(
+                    zone=d, proposal_park=park
+                )
+                pk.delete()
+                instance.log_user_action(
+                    ProposalUserAction.ACTION_UNLINK_ZONE.format(
+                        d, park.park.id
+                    ),
+                    request,
+                )
+    new_parks = instance.parks.filter(park__park_type="marine")
+    new_parks_id = set(p.park_id for p in new_parks)
+    # print("new_parks", new_parks_id, "diff:", diff_parks)
+    if not assessor_save:
+        internal_parks = instance.parks.filter(
+            park__park_type="marine", park__visible_to_external=False
+        )
+        if internal_parks:
+            for p in internal_parks:
+                selected_parks.append(p.park_id)
+    diff_parks = set(new_parks_id).difference(set(selected_parks))
+    for d in diff_parks:
+        pk = ProposalPark.objects.get(park=d, proposal=instance)
+        pk.delete()
+        instance.log_user_action(
+            ProposalUserAction.ACTION_UNLINK_PARK.format(
+                d, instance.id
+            ),
+            request,
+        )
 
 
 def save_proponent_data(instance, request, viewset, parks=None, trails=None):
