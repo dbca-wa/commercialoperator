@@ -2207,23 +2207,24 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         )
         # self.save()
 
-    def save_parks(self, request, parks):
-        with transaction.atomic():
-            if parks:
-                try:
-                    current_parks = self.parks.all()
-                    if current_parks:
-                        # print current_parks
-                        for p in current_parks:
-                            p.delete()
-                    for item in parks:
-                        try:
-                            park = Park.objects.get(id=item)
-                            ProposalPark.objects.create(proposal=self, park=park)
-                        except:
-                            raise
-                except:
-                    raise
+    # NOTE: This function doesn't seem to be used anywhere and we can remove it later.
+    # def save_parks(self, request, parks):
+    #     with transaction.atomic():
+    #         if parks:
+    #             try:
+    #                 current_parks = self.parks.all()
+    #                 if current_parks:
+    #                     # print current_parks
+    #                     for p in current_parks:
+    #                         p.delete()
+    #                 for item in parks:
+    #                     try:
+    #                         park = Park.objects.get(id=item)
+    #                         ProposalPark.objects.create(proposal=self, park=park)
+    #                     except:
+    #                         raise
+    #             except:
+    #                 raise
 
     def update(self, request, viewset):
         from commercialoperator.components.proposals.utils import save_proponent_data
