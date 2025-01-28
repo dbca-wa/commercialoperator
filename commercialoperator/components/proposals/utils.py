@@ -1330,7 +1330,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                             comments=acc["comments"],
                             accreditation_expiry=(
                                 datetime.strptime(
-                                    acc["accreditation_expiry"], "%d/%m/%Y"
+                                    acc["accreditation_expiry"], "%Y-%m-%d"
                                 ).date()
                                 if acc["accreditation_expiry"]
                                 else None
