@@ -57,6 +57,8 @@ from datetime import datetime
 
 import logging
 
+from commercialoperator.components.stubs.decorators import basic_exception_handler
+
 logger = logging.getLogger(__name__)
 
 
@@ -443,208 +445,206 @@ class SpecialFieldsSearch(object):
         return item_data
 
 
+@basic_exception_handler
+@transaction.atomic
 def save_park_activity_data(
     instance, select_parks_activities, request, assessor_save=False
 ):
-    with transaction.atomic():
-        try:
-            if select_parks_activities or len(select_parks_activities) == 0:
-                try:
-                    # current_parks=instance.parks.all()
-                    selected_parks = []
-                    for item in select_parks_activities:
-                        if item["park"]:
-                            selected_parks.append(item["park"])
+    # if select_parks_activities or len(select_parks_activities) == 0:
+    if not select_parks_activities and not len(select_parks_activities):
+        raise ValidationError("Please select at least one park.")
+
+    # current_parks=instance.parks.all()
+    selected_parks = []
+    for item in select_parks_activities:
+        if item["park"]:
+            selected_parks.append(item["park"])
+            try:
+                # Check if PrposalPark record already exists. If exists, check for activities
+                park = ProposalPark.objects.get(
+                    park=item["park"], proposal=instance
+                )
+                current_activities = park.land_activities.all()
+                current_activities_id = [
+                    a.activity_id for a in current_activities
+                ]
+                # Get the access records related to ProposalPark
+                current_access = park.access_types.all()
+                current_access_id = [
+                    a.access_type_id for a in current_access
+                ]
+                if item["activities"]:
+                    for a in item["activities"]:
+                        if a in current_activities_id:
+                            # if activity already exists then pass otherwise create the record.
+                            pass
+                        else:
                             try:
-                                # Check if PrposalPark record already exists. If exists, check for activities
-                                park = ProposalPark.objects.get(
-                                    park=item["park"], proposal=instance
-                                )
-                                current_activities = park.land_activities.all()
-                                current_activities_id = [
-                                    a.activity_id for a in current_activities
-                                ]
-                                # Get the access records related to ProposalPark
-                                current_access = park.access_types.all()
-                                current_access_id = [
-                                    a.access_type_id for a in current_access
-                                ]
-                                if item["activities"]:
-                                    for a in item["activities"]:
-                                        if a in current_activities_id:
-                                            # if activity already exists then pass otherwise create the record.
-                                            pass
-                                        else:
-                                            try:
-                                                # TODO add logging
-                                                if (
-                                                    a
-                                                    not in park.park.allowed_activities_ids
-                                                ):
-                                                    # raise Exception('Activity not allowed for this park')
-                                                    pass
-                                                else:
-                                                    activity = Activity.objects.get(
-                                                        id=a
-                                                    )
-                                                    ProposalParkActivity.objects.create(
-                                                        proposal_park=park,
-                                                        activity=activity,
-                                                    )
-                                                    instance.log_user_action(
-                                                        ProposalUserAction.ACTION_LINK_ACTIVITY.format(
-                                                            activity.id, park.park.id
-                                                        ),
-                                                        request,
-                                                    )
-                                            except:
-                                                raise
-                                if item["access"]:
-                                    for a in item["access"]:
-                                        if a in current_access_id:
-                                            # if access type already exists then pass otherwise create the record.
-                                            pass
-                                        else:
-                                            try:
-                                                if (
-                                                    a
-                                                    not in park.park.allowed_access_ids
-                                                ):
-                                                    # raise Exception('Activity not allowed for this park')
-                                                    pass
-                                                else:
-                                                    access = AccessType.objects.get(
-                                                        id=a
-                                                    )
-                                                    ProposalParkAccess.objects.create(
-                                                        proposal_park=park,
-                                                        access_type=access,
-                                                    )
-                                                    instance.log_user_action(
-                                                        ProposalUserAction.ACTION_LINK_ACCESS.format(
-                                                            access.id, park.park.id
-                                                        ),
-                                                        request,
-                                                    )
-                                            except:
-                                                raise
-                            except ProposalPark.DoesNotExist:
-                                try:
-                                    # If ProposalPark does not exists then create a new record and activities for it.
-                                    park_instance = Park.objects.get(id=item["park"])
-                                    park = ProposalPark.objects.create(
-                                        park=park_instance, proposal=instance
+                                # TODO add logging
+                                if (
+                                    a
+                                    not in park.park.allowed_activities_ids
+                                ):
+                                    # raise Exception('Activity not allowed for this park')
+                                    pass
+                                else:
+                                    activity = Activity.objects.get(
+                                        id=a
+                                    )
+                                    ProposalParkActivity.objects.create(
+                                        proposal_park=park,
+                                        activity=activity,
                                     )
                                     instance.log_user_action(
-                                        ProposalUserAction.ACTION_LINK_PARK.format(
-                                            park.park.id, instance.id
+                                        ProposalUserAction.ACTION_LINK_ACTIVITY.format(
+                                            activity.id, park.park.id
                                         ),
                                         request,
                                     )
-                                    current_activities = []
-                                    for a in item["activities"]:
-                                        try:
-                                            if (
-                                                a
-                                                not in park.park.allowed_activities_ids
-                                            ):
-                                                # raise Exception('Activity not allowed for this park')
-                                                pass
-                                            else:
-                                                activity = Activity.objects.get(id=a)
-                                                ProposalParkActivity.objects.create(
-                                                    proposal_park=park,
-                                                    activity=activity,
-                                                )
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACTIVITY.format(
-                                                        activity.id, park.park.id
-                                                    ),
-                                                    request,
-                                                )
-                                        except:
-                                            raise
-                                    for a in item["access"]:
-                                        try:
-                                            if a not in park.park.allowed_access_ids:
-                                                # raise Exception('Activity not allowed for this park')
-                                                pass
-                                            else:
-                                                access = AccessType.objects.get(id=a)
-                                                ProposalParkAccess.objects.create(
-                                                    proposal_park=park,
-                                                    access_type=access,
-                                                )
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACCESS.format(
-                                                        access.id, park.park.id
-                                                    ),
-                                                    request,
-                                                )
-                                        except:
-                                            raise
-                                except:
-                                    raise
-                            # compare all activities (new+old) with the list of activities selected activities to get
-                            # the list of deleted activities.
-                            new_activities = park.land_activities.all()
-                            new_activities_id = set(
-                                a.activity_id for a in new_activities
-                            )
-                            diff_activity = set(new_activities_id).difference(
-                                set(item["activities"])
-                            )
-                            for d in diff_activity:
-                                act = ProposalParkActivity.objects.get(
-                                    activity_id=d, proposal_park=park
+                            except:
+                                raise
+                if item["access"]:
+                    for a in item["access"]:
+                        if a in current_access_id:
+                            # if access type already exists then pass otherwise create the record.
+                            pass
+                        else:
+                            try:
+                                if (
+                                    a
+                                    not in park.park.allowed_access_ids
+                                ):
+                                    # raise Exception('Activity not allowed for this park')
+                                    pass
+                                else:
+                                    access = AccessType.objects.get(
+                                        id=a
+                                    )
+                                    ProposalParkAccess.objects.create(
+                                        proposal_park=park,
+                                        access_type=access,
+                                    )
+                                    instance.log_user_action(
+                                        ProposalUserAction.ACTION_LINK_ACCESS.format(
+                                            access.id, park.park.id
+                                        ),
+                                        request,
+                                    )
+                            except:
+                                raise
+            except ProposalPark.DoesNotExist:
+                try:
+                    # If ProposalPark does not exists then create a new record and activities for it.
+                    park_instance = Park.objects.get(id=item["park"])
+                    park = ProposalPark.objects.create(
+                        park=park_instance, proposal=instance
+                    )
+                    instance.log_user_action(
+                        ProposalUserAction.ACTION_LINK_PARK.format(
+                            park.park.id, instance.id
+                        ),
+                        request,
+                    )
+                    current_activities = []
+                    for a in item["activities"]:
+                        try:
+                            if (
+                                a
+                                not in park.park.allowed_activities_ids
+                            ):
+                                # raise Exception('Activity not allowed for this park')
+                                pass
+                            else:
+                                activity = Activity.objects.get(id=a)
+                                ProposalParkActivity.objects.create(
+                                    proposal_park=park,
+                                    activity=activity,
                                 )
-                                act.delete()
                                 instance.log_user_action(
-                                    ProposalUserAction.ACTION_UNLINK_ACTIVITY.format(
-                                        d, park.park.id
+                                    ProposalUserAction.ACTION_LINK_ACTIVITY.format(
+                                        activity.id, park.park.id
                                     ),
                                     request,
                                 )
-                            new_access = park.access_types.all()
-                            new_access_id = set(a.access_type_id for a in new_access)
-                            diff_access = set(new_access_id).difference(
-                                set(item["access"])
-                            )
-                            for d in diff_access:
-                                acc = ProposalParkAccess.objects.get(
-                                    access_type_id=d, proposal_park=park
+                        except:
+                            raise
+                    for a in item["access"]:
+                        try:
+                            if a not in park.park.allowed_access_ids:
+                                # raise Exception('Activity not allowed for this park')
+                                pass
+                            else:
+                                access = AccessType.objects.get(id=a)
+                                ProposalParkAccess.objects.create(
+                                    proposal_park=park,
+                                    access_type=access,
                                 )
-                                acc.delete()
                                 instance.log_user_action(
-                                    ProposalUserAction.ACTION_UNLINK_ACCESS.format(
-                                        d, park.park.id
+                                    ProposalUserAction.ACTION_LINK_ACCESS.format(
+                                        access.id, park.park.id
                                     ),
                                     request,
                                 )
-                    new_parks = instance.parks.filter(park__park_type="land")
-                    new_parks_id = set(p.park_id for p in new_parks)
-                    if not assessor_save:
-                        internal_parks = instance.parks.filter(
-                            park__park_type="land", park__visible_to_external=False
-                        )
-                        if internal_parks:
-                            for p in internal_parks:
-                                selected_parks.append(p.park_id)
-                            # selected_parks.append(p.park_id for p in internal_parks)
-                    diff_parks = set(new_parks_id).difference(set(selected_parks))
-                    for d in diff_parks:
-                        pk = ProposalPark.objects.get(park=d, proposal=instance)
-                        pk.delete()
-                        instance.log_user_action(
-                            ProposalUserAction.ACTION_UNLINK_PARK.format(
-                                d, instance.id
-                            ),
-                            request,
-                        )
+                        except:
+                            raise
                 except:
                     raise
-        except:
-            raise
+            # compare all activities (new+old) with the list of activities selected activities to get
+            # the list of deleted activities.
+            new_activities = park.land_activities.all()
+            new_activities_id = set(
+                a.activity_id for a in new_activities
+            )
+            diff_activity = set(new_activities_id).difference(
+                set(item["activities"])
+            )
+            for d in diff_activity:
+                act = ProposalParkActivity.objects.get(
+                    activity_id=d, proposal_park=park
+                )
+                act.delete()
+                instance.log_user_action(
+                    ProposalUserAction.ACTION_UNLINK_ACTIVITY.format(
+                        d, park.park.id
+                    ),
+                    request,
+                )
+            new_access = park.access_types.all()
+            new_access_id = set(a.access_type_id for a in new_access)
+            diff_access = set(new_access_id).difference(
+                set(item["access"])
+            )
+            for d in diff_access:
+                acc = ProposalParkAccess.objects.get(
+                    access_type_id=d, proposal_park=park
+                )
+                acc.delete()
+                instance.log_user_action(
+                    ProposalUserAction.ACTION_UNLINK_ACCESS.format(
+                        d, park.park.id
+                    ),
+                    request,
+                )
+    new_parks = instance.parks.filter(park__park_type="land")
+    new_parks_id = set(p.park_id for p in new_parks)
+    if not assessor_save:
+        internal_parks = instance.parks.filter(
+            park__park_type="land", park__visible_to_external=False
+        )
+        if internal_parks:
+            for p in internal_parks:
+                selected_parks.append(p.park_id)
+            # selected_parks.append(p.park_id for p in internal_parks)
+    diff_parks = set(new_parks_id).difference(set(selected_parks))
+    for d in diff_parks:
+        pk = ProposalPark.objects.get(park=d, proposal=instance)
+        pk.delete()
+        instance.log_user_action(
+            ProposalUserAction.ACTION_UNLINK_PARK.format(
+                d, instance.id
+            ),
+            request,
+        )
 
 
 def save_trail_section_activity_data(instance, select_trails_activities, request):
