@@ -1185,6 +1185,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def applicant(self):
         if self.org_applicant:
+            self.org_applicant
             return self.org_applicant.organisation.name
         elif self.proxy_applicant:
             return "{} {}".format(

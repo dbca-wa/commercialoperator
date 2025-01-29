@@ -1,9 +1,9 @@
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from datetime import datetime, date
 from django.utils import timezone
@@ -43,6 +43,8 @@ from decimal import Decimal
 
 
 import logging
+
+from commercialoperator.helpers import is_internal
 
 logger = logging.getLogger("payment_checkout")
 
@@ -1002,7 +1004,7 @@ def checkout(
     # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
     basket_params = json.loads(json.dumps(basket_params, cls=DecimalEncoder))
 
-    basket, basket_hash = create_basket_session(request, request.user.id, basket_params)
+    basket_hash = create_basket_session(request, request.user.id, basket_params)
 
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
@@ -1017,33 +1019,42 @@ def checkout(
         ),  # 'http://mooring-ria-jm.dbca.wa.gov.au/success/'
         "force_redirect": True,
         "invoice_text": invoice_text,  # 'Reservation for Jawaid Mushtaq from 2019-05-17 to 2019-05-19 at RIA 005'
+        "proxy": True if is_internal(request) else False,
+        "session_type": "ledger_api",
+        "basket_owner": request.user.id,
     }
 
-    if proxy or request.user.is_anonymous():
+    logger.info(
+        f"Creating checkout session with checkout parameters: {checkout_params}"
+    )
+    if proxy or request.user.is_anonymous:
         checkout_params["basket_owner"] = proposal.submitter_id
 
     create_checkout_session(request, checkout_params)
 
-    response = HttpResponseRedirect(reverse("checkout:index"))
-    response.set_cookie(
-        settings.OSCAR_BASKET_COOKIE_OPEN,
-        basket_hash,
-        max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-        secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-        httponly=True,
-    )
+    logger.info("Redirecting user to ledgergw payment details page.")
+    return redirect(reverse("ledgergw-payment-details"))
 
-    if invoice_text == "Application Fee" and proposal.allow_full_discount:
-        response = HttpResponseRedirect(reverse("zero_fee_success"))
-        response.set_cookie(
-            settings.OSCAR_BASKET_COOKIE_OPEN,
-            basket_hash,
-            max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-            secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-            httponly=True,
-        )
+    # response = HttpResponseRedirect(reverse("checkout:index"))
+    # response.set_cookie(
+    #     settings.OSCAR_BASKET_COOKIE_OPEN,
+    #     basket_hash,
+    #     max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
+    #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
+    #     httponly=True,
+    # )
 
-    return response
+    # if invoice_text == "Application Fee" and proposal.allow_full_discount:
+    #     response = HttpResponseRedirect(reverse("zero_fee_success"))
+    #     response.set_cookie(
+    #         settings.OSCAR_BASKET_COOKIE_OPEN,
+    #         basket_hash,
+    #         max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
+    #         secure=settings.OSCAR_BASKET_COOKIE_SECURE,
+    #         httponly=True,
+    #     )
+
+    # return response
 
 
 def checkout_existing_invoice(

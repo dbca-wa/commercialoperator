@@ -825,8 +825,12 @@ class ApplicationFeeSuccessView(TemplateView):
             proposal = application_fee.proposal
 
             try:
-                recipient = proposal.applicant.email
-                submitter = proposal.applicant
+                proposal.applicant
+                # recipient = proposal.applicant.email
+                applicant = Organisation.objects.get(id=proposal.applicant_id)
+                recipient = applicant.email
+                # submitter = proposal.applicant
+                submitter = applicant
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
