@@ -825,7 +825,7 @@ class ApplicationFeeSuccessView(TemplateView):
             proposal = application_fee.proposal
 
             try:
-                proposal.applicant
+                proposal.applicant_obj
                 # recipient = proposal.applicant.email
                 applicant = Organisation.objects.get(id=proposal.applicant_id)
                 recipient = applicant.email

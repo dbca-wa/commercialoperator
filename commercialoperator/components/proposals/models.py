@@ -1004,7 +1004,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def _fee_paid(self):
         # Note: Commented out the `and self.invoice.payment_status in ["paid", "over_paid"]` part b/c payment_status doesn't exist in ledger models Invoice
         if (
-            self.invoice# and self.invoice.payment_status in ["paid", "over_paid"]
+            self.invoice  # and self.invoice.payment_status in ["paid", "over_paid"]
         ) or self.proposal_type == "amendment":
             return True
         return False
@@ -1183,9 +1183,24 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             ]
 
     @property
+    def applicant_obj(self):
+        """Returns the applicant object, because applicant is already used to return the name of the applicant"""
+
+        if self.org_applicant:
+            logger.debug("Returning an organisation applicant")
+            return self.org_applicant
+        elif self.proxy_applicant:
+            logger.debug("Returning a proxy applicant")
+            return self.proxy_applicant
+        else:
+            logger.debug(
+                "Neither an organisation nor a proxy applicant. Returning None."
+            )
+            return None
+
+    @property
     def applicant(self):
         if self.org_applicant:
-            self.org_applicant
             return self.org_applicant.organisation.name
         elif self.proxy_applicant:
             return "{} {}".format(
