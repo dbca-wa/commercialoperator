@@ -209,9 +209,8 @@ export default {
     border-top-right-radius: 0.3rem;
     background-color: #226fbb;
     color: #fff;
-    background: #3580ca
-        url('../../../../../../staticfiles/img/parks-bg-banner.gif') repeat-x
-        center bottom;
+    background: #3580ca url('@/assets/parks-bg-banner.gif') repeat-x center
+        bottom;
 }
 
 .btn-close {
