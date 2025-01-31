@@ -6,6 +6,8 @@ from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 
+from rest_framework import status
+
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import ApplicationType
@@ -77,7 +79,7 @@ from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Ord
 
 from ledger_api_client.ledger_models import Invoice
 from ledger_api_client.ledger_models import Basket
-from ledger_api_client.utils import Order
+from ledger_api_client.utils import Order, get_organisation
 
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
@@ -1146,7 +1148,8 @@ class InvoicePDFView(View):
         else:
             proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
 
-        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant
+
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
             response.write(create_invoice_pdf_bytes("invoice.pdf", invoice, proposal))

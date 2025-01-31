@@ -4,6 +4,11 @@ from django.conf import settings
 
 import logging
 
+from commercialoperator.components.stubs.utils import (
+    retrieve_email_user,
+    retrieve_organisation_delegate_ids,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,9 +54,11 @@ def in_dbca_domain(request):
 
 
 def is_in_organisation_contacts(request, organisation):
-    return request.user.email in organisation.contacts.all().values_list(
-        "email", flat=True
-    )
+    delegate_ids = retrieve_organisation_delegate_ids(organisation.id)
+    delegates = [retrieve_email_user(user_id) for user_id in delegate_ids]
+    delegate_emails = [delegate.email for delegate in delegates]
+
+    return request.user.email in delegate_emails
 
 
 def is_departmentUser(request):
