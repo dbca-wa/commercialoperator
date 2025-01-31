@@ -1002,10 +1002,15 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def _fee_paid(self):
-        # Note: Commented out the `and self.invoice.payment_status in ["paid", "over_paid"]` part b/c payment_status doesn't exist in ledger models Invoice
-        if (
-            self.invoice  # and self.invoice.payment_status in ["paid", "over_paid"]
-        ) or self.proposal_type == "amendment":
+        from commercialoperator.components.bookings.utils import get_invoice_properties
+
+        if not self.invoice:
+            return False
+
+        invoice_properties = get_invoice_properties(self.invoice.id)
+        payment_status = invoice_properties.get("invoice", {}).get("payment_status")
+
+        if payment_status in ["paid", "over_paid"] or self.proposal_type == "amendment":
             return True
         return False
 
