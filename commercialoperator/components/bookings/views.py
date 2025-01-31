@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 
-
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import ApplicationType
@@ -36,6 +35,7 @@ from commercialoperator.components.bookings.email import (
 )
 from commercialoperator.components.bookings.utils import (
     create_booking,
+    get_invoice_properties,
     get_session_booking,
     set_session_booking,
     delete_session_booking,
@@ -77,6 +77,7 @@ from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Ord
 
 from ledger_api_client.ledger_models import Invoice
 from ledger_api_client.ledger_models import Basket
+from ledger_api_client.utils import Order
 
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
@@ -811,9 +812,6 @@ class ApplicationFeeSuccessView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         print(" APPLICATION FEE SUCCESS ")
-        #        for ss in request.session.keys():
-        #            print (ss)
-        #            print (request.session[ss])
 
         proposal = None
         submitter = None
@@ -824,27 +822,27 @@ class ApplicationFeeSuccessView(TemplateView):
             application_fee = get_session_application_invoice(request.session)
             proposal = application_fee.proposal
 
+            applicant = proposal.applicant_obj
             try:
-                proposal.applicant_obj
-                # recipient = proposal.applicant.email
-                applicant = Organisation.objects.get(id=proposal.applicant_id)
-                recipient = applicant.email
-                # submitter = proposal.applicant
+                recipient = Organisation.objects.get(id=applicant.id).email
                 submitter = applicant
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
 
-            if self.request.user.is_authenticated:
-                basket = Basket.objects.filter(
-                    status="Submitted", owner=request.user
-                ).order_by("-id")[:1]
+            user = self.request.user
+
+            if user.is_authenticated:
+                basket = Basket.objects.filter(status="Submitted", owner=user).order_by(
+                    "-id"
+                )[:1]
             else:
                 basket = Basket.objects.filter(
-                    status="Submitted", owner=booking.proposal.submitter
+                    status="Submitted", owner=proposal.submitter
                 ).order_by("-id")[:1]
 
-            order = Order.objects.get(basket=basket[0])
+            order = Order.objects.get(basket_id=basket[0].id)
+
             invoice = Invoice.objects.get(order_number=order.number)
             invoice_ref = invoice.reference
             fee_inv, created = ApplicationFeeInvoice.objects.get_or_create(
@@ -855,7 +853,6 @@ class ApplicationFeeSuccessView(TemplateView):
                 try:
                     inv = Invoice.objects.get(reference=invoice_ref)
                     order = Order.objects.get(number=inv.order_number)
-                    order.user = submitter
                 except Invoice.DoesNotExist:
                     logger.error(
                         "{} tried paying an application fee with an incorrect invoice".format(
@@ -885,10 +882,8 @@ class ApplicationFeeSuccessView(TemplateView):
                     return redirect("external-proposal-detail", args=(proposal.id,))
 
                 if fee_inv:
-                    # application_fee.payment_type = 1  # internet booking
                     application_fee.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
                     application_fee.expiry_time = None
-                    update_payments(invoice_ref)
 
                     if (
                         proposal.processing_status
@@ -899,18 +894,18 @@ class ApplicationFeeSuccessView(TemplateView):
                     else:
                         proposal = proposal_submit(proposal, request)
 
-                    if proposal and (
-                        invoice.payment_status == "paid"
-                        or invoice.payment_status == "over_paid"
-                    ):
+                    invoice_properties = get_invoice_properties(invoice.id)
+                    payment_status = invoice_properties.get("invoice", {}).get(
+                        "payment_status"
+                    )
+
+                    if proposal and payment_status in ["paid", "over_paid"]:
                         proposal.fee_invoice_reference = invoice_ref
                         proposal.save()
                         proposal.reset_application_discount(request.user)
                     else:
                         logger.error(
-                            "Invoice payment status is {}".format(
-                                invoice.payment_status
-                            )
+                            "Invoice payment status is {}".format(payment_status)
                         )
                         raise
 
@@ -922,12 +917,10 @@ class ApplicationFeeSuccessView(TemplateView):
                     send_application_fee_invoice_tclass_email_notification(
                         request, proposal, invoice, recipients=[recipient]
                     )
-                    # send_application_fee_confirmation_tclass_email_notification(request, application_fee, invoice, recipients=[recipient])
 
                     context = {
                         "proposal": proposal,
                         "submitter": submitter,
-                        #'fee_invoice': invoice
                         "fee_invoice": fee_inv,
                     }
                     return render(request, self.template_name, context)
