@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import render, redirect
 
+import requests
 from rest_framework import status
 
 from datetime import datetime, date
@@ -1256,3 +1257,9 @@ def get_invoice_properties(invoice_id):
         )
 
     return invoice_properties_response.get("data", {})
+
+
+def get_invoice_pdf(invoice_reference):
+    api_key = settings.LEDGER_API_KEY
+    url = settings.LEDGER_API_URL+'/ledgergw/invoice-pdf/'+api_key+'/'+invoice_reference
+    return requests.get(url=url)

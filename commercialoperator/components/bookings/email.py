@@ -5,7 +5,6 @@ from django.utils.encoding import smart_str as smart_text
 from django.conf import settings
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
-from commercialoperator.components.bookings.invoice_pdf import create_invoice_pdf_bytes
 from commercialoperator.components.bookings.confirmation_pdf import (
     create_confirmation_pdf_bytes,
 )

@@ -13,7 +13,6 @@ from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.bookings.context_processors import template_context
-from commercialoperator.components.bookings.invoice_pdf import create_invoice_pdf_bytes
 from commercialoperator.components.bookings.invoice_compliance_pdf import (
     create_invoice_compliance_pdf_bytes,
 )
@@ -37,6 +36,7 @@ from commercialoperator.components.bookings.email import (
 )
 from commercialoperator.components.bookings.utils import (
     create_booking,
+    get_invoice_pdf,
     get_invoice_properties,
     get_session_booking,
     set_session_booking,
@@ -1137,7 +1137,6 @@ class BookingSuccessView(TemplateView):
         return render(request, self.template_name, context)
 
 
-# class InvoicePDFView(InvoiceOwnerMixin,View):
 class InvoicePDFView(View):
     def get(self, request, *args, **kwargs):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
@@ -1152,8 +1151,13 @@ class InvoicePDFView(View):
 
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(create_invoice_pdf_bytes("invoice.pdf", invoice, proposal))
-            return response
+
+            invoice_pdf = get_invoice_pdf(invoice.reference)
+
+            if invoice_pdf.status_code == status.HTTP_200_OK:
+                response.write(invoice_pdf.content)
+                return response
+
         raise PermissionDenied
 
     def get_object(self):

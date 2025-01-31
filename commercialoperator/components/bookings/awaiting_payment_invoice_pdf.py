@@ -4,16 +4,7 @@ from io import BytesIO
 from ledger_api_client.utils import currency
 from reportlab.lib import enums
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import (
-    BaseDocTemplate,
-    PageTemplate,
-    Frame,
-    Paragraph,
-    Spacer,
-    Table,
-    TableStyle,
-    Flowable,
-)
+from reportlab.platypus import Flowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.units import inch
@@ -24,6 +15,7 @@ from django.conf import settings
 from commercialoperator.components.main.utils import to_local_tz
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 DPAW_HEADER_LOGO = os.path.join(
@@ -420,139 +412,9 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.restoreState()
 
 
-def _create_invoice(invoice_buffer, proposal):
-
-    global DPAW_HEADER_LOGO
-    #    if  cols_var["TEMPLATE_GROUP"] == 'rottnest':
-    #        DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'mooring', 'static', 'mooring', 'img','logo-rottnest-island-sm.png')
-    #    else:
-    #        DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'ledger', 'payments','static', 'payments', 'img','dbca_logo.jpg')
-    DPAW_HEADER_LOGO = os.path.join(
-        settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
-    )
-
-    every_page_frame = Frame(
-        PAGE_MARGIN,
-        PAGE_MARGIN + 250,
-        PAGE_WIDTH - 2 * PAGE_MARGIN,
-        PAGE_HEIGHT - 450,
-        id="EveryPagesFrame",
-        showBoundary=0,
-    )
-    remit_frame = Frame(
-        PAGE_MARGIN,
-        PAGE_MARGIN,
-        PAGE_WIDTH - 2 * PAGE_MARGIN,
-        PAGE_HEIGHT - 600,
-        id="RemitFrame",
-        showBoundary=0,
-    )
-    every_page_template = PageTemplate(
-        id="EveryPages", frames=[every_page_frame, remit_frame], onPage=_create_header
-    )
-
-    doc = BaseDocTemplate(
-        invoice_buffer, pageTemplates=[every_page_template], pagesize=A4
-    )
-
-    # this is the only way to get data into the onPage callback function
-    # doc.invoice = invoice
-    doc.proposal = proposal
-    # owner = invoice.owner
-
-    elements = []
-    # elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 5))
-
-    # Draw Products Table
-    invoice_table_style = TableStyle(
-        [
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-        ]
-    )
-    # items = invoice.order.lines.all()
-    # items = booking.as_line_items
-    # discounts = invoice.order.basket_discounts
-    # if invoice.text:
-    #    elements.append(Paragraph(invoice.text, styles['Left']))
-    #    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
-    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
-
-    data = [
-        ["Item", "Product", "Qty", "Unit Price", "Total"]
-        # ['Item', 'Product', 'Status', 'Qty', 'Fees']
-    ]
-    val = 1
-    s = styles["BodyText"]
-    s.wordWrap = "CJK"
-
-    # for val, item in enumerate(booking.as_line_items, 1):
-    total_amount = 0.0
-    filming_fee = proposal.filming_fees.order_by("-id").first()
-    if not filming_fee:
-        # Note: Added this shortcut out of this fn because filming fees don't exist yet on proposal
-        # See: Proposal::__create_filming_fee_invoice
-        logger.error(
-            f"Filming Fee not found for proposal {proposal.lodgement_number}"
-        )
-        return invoice_buffer
-
-    lines = filming_fee.lines_aggregated
-    if len(lines) == 0:
-        lines = filming_fee.lines
-
-    for val, item in enumerate(lines, 1):
-        amount = float(item["price_incl_tax"]) * item["quantity"]
-        data.append(
-            [
-                val,
-                Paragraph(item["ledger_description"], s),
-                item["quantity"],
-                currency(item["price_incl_tax"]),
-                currency(amount),
-            ]
-        )
-        total_amount += amount
-        val += 1
-    data.append(["", "Total", "", "", currency(total_amount)])
-
-    t = Table(
-        data,
-        style=invoice_table_style,
-        hAlign="LEFT",
-        colWidths=(
-            0.7 * inch,
-            None,
-            0.7 * inch,
-            1.0 * inch,
-            1.0 * inch,
-        ),
-    )
-    elements.append(t)
-    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
-    # /Products Table
-    # if invoice.payment_status != 'paid' and invoice.payment_status != 'over_paid':
-    #    elements.append(Paragraph(settings.INVOICE_UNPAID_WARNING, styles['Left']))
-
-    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 6))
-
-    # Remitttance Frame
-    #    elements.append(FrameBreak())
-    #    boundary = BrokenLine(PAGE_WIDTH - 2 * (PAGE_MARGIN *1.1))
-    #    elements.append(boundary)
-    #    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-    #
-    #    remittance = Remittance(HEADER_MARGIN,HEADER_MARGIN - 10,invoice)
-    #    elements.append(remittance)
-    doc.build(elements)
-
-    return invoice_buffer
-
-
 def create_awaiting_payment_invoice_pdf_bytes(filename, proposal):
     invoice_buffer = BytesIO()
-    _create_invoice(invoice_buffer, proposal)
+    # _create_invoice(invoice_buffer, proposal)
 
     # Get the value of the BytesIO buffer
     value = invoice_buffer.getvalue()
