@@ -54,6 +54,8 @@ def in_dbca_domain(request):
 
 
 def is_in_organisation_contacts(request, organisation):
+    """Takes a cols Organisation object and checks if the request.user is in the organisation's contacts."""
+
     delegate_ids = retrieve_organisation_delegate_ids(organisation.id)
     delegates = [retrieve_email_user(user_id) for user_id in delegate_ids]
     delegate_emails = [delegate.email for delegate in delegates]
