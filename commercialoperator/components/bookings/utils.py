@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import render, redirect
 
+from rest_framework import status
+
 from datetime import datetime, date
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
@@ -36,6 +38,7 @@ from commercialoperator.components.stubs.classes import DecimalEncoder
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
 from ledger_api_client.utils import calculate_excl_gst
+from ledger_api_client.ledger_models import Invoice
 
 import json
 
@@ -430,8 +433,6 @@ def get_session_application_invoice(session):
         raise Exception("Application not in Session")
 
     try:
-        # return Invoice.objects.get(id=application_invoice_id)
-        # return Proposal.objects.get(id=proposal_id)
         return ApplicationFee.objects.get(id=application_fee_id)
     except Invoice.DoesNotExist:
         raise Exception(
@@ -1238,3 +1239,20 @@ def create_invoice(booking, payment_method="bpay"):
     )
 
     return order
+
+def get_invoice_properties(invoice_id):
+    import ledger_api_client.utils as ledger_utils
+
+    invoice_properties_response = ledger_utils.get_invoice_properties(invoice_id)
+
+    if invoice_properties_response.get("status", None) != status.HTTP_200_OK:
+        logger.error(
+            "Invoice properties not found for invoice {}".format(
+                invoice_id
+            )
+        )
+        raise ValueError(
+            "Invoice properties not found for invoice {}".format(invoice_id)
+        )
+
+    return invoice_properties_response.get("data", {})
