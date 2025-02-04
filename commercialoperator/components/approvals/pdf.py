@@ -1,6 +1,7 @@
 import os
 from io import BytesIO
-from datetime import date
+
+from rest_framework import status
 
 from reportlab.lib import enums
 from reportlab.lib.pagesizes import A4
@@ -27,9 +28,12 @@ from django.core.exceptions import ValidationError
 
 from commercialoperator.components.approvals.models import ApprovalDocument
 from commercialoperator.components.main.models import ApplicationType
+from commercialoperator.components.stubs.utils import (
+    retrieve_email_user,
+    retrieve_organisation_delegate_ids,
+)
 
-# BW_DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'wildlifelicensing', 'static', 'wl', 'img',
-#                                   'bw_dpaw_header_logo.png')
+from ledger_api_client.utils import get_organisation
 
 BW_DPAW_HEADER_LOGO = os.path.join(
     settings.BASE_DIR,
@@ -348,10 +352,14 @@ def _create_approval_cols(approval_buffer, approval, proposal, copied_to_permit,
         )
     )
 
-    if (
-        approval.current_proposal.org_applicant
-        and approval.current_proposal.org_applicant.organisation.trading_name
-    ):
+    organisation = approval.current_proposal.org_applicant
+    organisation_response = get_organisation(organisation.organisation_id)
+    organisation_trading_name = (
+        organisation
+        and organisation_response.get("status", None) == status.HTTP_200_OK
+        and organisation_response.get("data", {}).get("organisation_trading_name")
+    )
+    if organisation_trading_name:
         delegation.append(Spacer(1, SECTION_BUFFER_HEIGHT))
         delegation.append(
             Table(
@@ -360,9 +368,7 @@ def _create_approval_cols(approval_buffer, approval, proposal, copied_to_permit,
                         [Paragraph("Trading Name:", styles["BoldLeft"])],
                         [
                             Paragraph(
-                                _format_name(
-                                    approval.current_proposal.org_applicant.organisation.trading_name
-                                ),
+                                _format_name(organisation_trading_name),
                                 styles["Left"],
                             )
                         ],
@@ -950,18 +956,17 @@ def _create_approval_filming(
 
     address = proposal.applicant_address
     if proposal.org_applicant:
+        organisation = proposal.org_applicant
         try:
-            email = (
-                proposal.org_applicant.organisation.organisation_set.all()
-                .first()
-                .contacts.all()
-                .first()
-                .email
-            )
+            contact = retrieve_organisation_delegate_ids(organisation.id).first()
         except:
             raise ValidationError(
                 "There is no contact for Organisation. Please create an Organisation contact"
             )
+        else:
+            emailuser = retrieve_email_user(contact)
+            if emailuser:
+                email = emailuser.email
     else:
         email = proposal.submitter.email
     elements.append(
@@ -1003,10 +1008,15 @@ def _create_approval_filming(
         )
     )
 
-    if (
-        approval.current_proposal.org_applicant
-        and approval.current_proposal.org_applicant.organisation.trading_name
-    ):
+    organisation = approval.current_proposal.org_applicant
+    organisation_response = get_organisation(organisation.organisation_id)
+    organisation_trading_name = (
+        organisation
+        and organisation_response.get("status", None) == status.HTTP_200_OK
+        and organisation_response.get("data", {}).get("organisation_trading_name")
+    )
+
+    if organisation_trading_name:
         delegation.append(Spacer(1, SECTION_BUFFER_HEIGHT))
         delegation.append(
             Table(
@@ -1015,9 +1025,7 @@ def _create_approval_filming(
                         [Paragraph("Trading Name:", styles["BoldLeft"])],
                         [
                             Paragraph(
-                                _format_name(
-                                    approval.current_proposal.org_applicant.organisation.trading_name
-                                ),
+                                _format_name(organisation_trading_name),
                                 styles["Left"],
                             )
                         ],
@@ -1079,7 +1087,7 @@ def _create_approval_filming(
         bulletFontName=BOLD_FONTNAME,
         bulletFontSize=MEDIUM_FONTSIZE,
     )
-    # bulletFontName=BOLD_FONTNAME
+
     elements.append(understandingList)
 
     elements += _layout_extracted_fields(approval.extracted_fields)
@@ -1296,10 +1304,15 @@ def _create_approval_lawful_authority(
         )
     )
 
-    if (
-        approval.current_proposal.org_applicant
-        and approval.current_proposal.org_applicant.organisation.trading_name
-    ):
+    organisation = approval.current_proposal.org_applicant
+    organisation_response = get_organisation(organisation.organisation_id)
+    organisation_trading_name = (
+        organisation
+        and organisation_response.get("status", None) == status.HTTP_200_OK
+        and organisation_response.get("data", {}).get("organisation_trading_name")
+    )
+
+    if organisation_trading_name:
         delegation.append(Spacer(1, SECTION_BUFFER_HEIGHT))
         delegation.append(
             Table(
@@ -1308,9 +1321,7 @@ def _create_approval_lawful_authority(
                         [Paragraph("Trading Name:", styles["BoldLeft"])],
                         [
                             Paragraph(
-                                _format_name(
-                                    approval.current_proposal.org_applicant.organisation.trading_name
-                                ),
+                                _format_name(organisation_trading_name),
                                 styles["Left"],
                             )
                         ],
