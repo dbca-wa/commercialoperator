@@ -1241,6 +1241,7 @@ def create_invoice(booking, payment_method="bpay"):
 
     return order
 
+
 def get_invoice_properties(invoice_id):
     import ledger_api_client.utils as ledger_utils
 
@@ -1248,18 +1249,20 @@ def get_invoice_properties(invoice_id):
 
     if invoice_properties_response.get("status", None) != status.HTTP_200_OK:
         logger.error(
-            "Invoice properties not found for invoice {}".format(
-                invoice_id
-            )
+            f"Invoice properties not found for invoice {invoice_id}: {invoice_properties_response['message']}"
         )
-        raise ValueError(
-            "Invoice properties not found for invoice {}".format(invoice_id)
-        )
+        return {}
 
     return invoice_properties_response.get("data", {})
 
 
 def get_invoice_pdf(invoice_reference):
     api_key = settings.LEDGER_API_KEY
-    url = settings.LEDGER_API_URL+'/ledgergw/invoice-pdf/'+api_key+'/'+invoice_reference
+    url = (
+        settings.LEDGER_API_URL
+        + "/ledgergw/invoice-pdf/"
+        + api_key
+        + "/"
+        + invoice_reference
+    )
     return requests.get(url=url)
