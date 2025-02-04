@@ -2921,7 +2921,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
         with transaction.atomic():
             try:
-                # if self.processing_status != 'with_assessor_requirements' or self.processing_status != 'with_approver':
                 if not (
                     self.processing_status == "with_assessor_requirements"
                     or self.processing_status == "with_approver"
@@ -2933,7 +2932,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     )
                 if not self.can_assess(request.user):
                     raise exceptions.ProposalNotAuthorized()
-                # if not self.applicant.organisation.postal_address:
+
                 if not self.applicant_address:
                     raise ValidationError(
                         "The applicant needs to have set their postal address before approving this proposal."
@@ -2948,14 +2947,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     current_proposal=self,
                     issue_date=timezone.now(),
                     expiry_date=datetime.datetime.strptime(
-                        details.get("due_date"), "%d/%m/%Y"
+                        details.get("due_date"), "%Y-%m-%d"
                     ).date(),
                     start_date=datetime.datetime.strptime(
-                        details.get("start_date"), "%d/%m/%Y"
+                        details.get("start_date"), "%Y-%m-%d"
                     ).date(),
                     submitter=self.submitter,
-                    # org_applicant = self.applicant if isinstance(self.applicant, Organisation) else None,
-                    # proxy_applicant = self.applicant if isinstance(self.applicant, EmailUser) else None,
                     org_applicant=self.org_applicant,
                     proxy_applicant=self.proxy_applicant,
                     lodgement_number=lodgement_number,
@@ -2973,189 +2970,132 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
+    @transaction.atomic
     def final_approval(self, request, details):
         from commercialoperator.components.approvals.models import Approval
         from commercialoperator.helpers import is_departmentUser
 
-        with transaction.atomic():
-            try:
-                self.proposed_decline_status = False
+        try:
+            self.proposed_decline_status = False
 
-                if (
-                    self.processing_status
-                    == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
-                    and self.fee_paid
-                ) or (self.proposal_type == "amendment"):
-                    # for 'Awaiting Payment' approval. External/Internal user fires this method after full payment via Make/Record Payment
-                    pass
-                else:
-                    if not self.can_assess(request.user):
-                        raise exceptions.ProposalNotAuthorized()
-                    if self.processing_status != "with_approver":
-                        raise ValidationError(
-                            "You cannot issue the approval if it is not with an approver"
-                        )
-                    # if not self.applicant.organisation.postal_address:
-                    if not self.applicant_address:
-                        raise ValidationError(
-                            "The applicant needs to have set their postal address before approving this proposal."
-                        )
-
-                    self.proposed_issuance_approval = {
-                        "start_date": details.get("start_date").strftime("%d/%m/%Y"),
-                        "expiry_date": details.get("expiry_date").strftime("%d/%m/%Y"),
-                        "details": details.get("details"),
-                        "cc_email": details.get("cc_email"),
-                    }
-
-                    if is_departmentUser(request):
-                        # needed because external users come through this workflow following 'awaiting_payment; status
-                        self.approved_by = request.user
-
-                if (
-                    (
-                        self.application_type.name == ApplicationType.FILMING
-                        and self.filming_approval_type == self.LICENCE
-                        and self.processing_status
-                        in [Proposal.PROCESSING_STATUS_WITH_APPROVER]
+            if (
+                self.processing_status
+                == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
+                and self.fee_paid
+            ) or (self.proposal_type == "amendment"):
+                # for 'Awaiting Payment' approval. External/Internal user fires this method after full payment via Make/Record Payment
+                pass
+            else:
+                if not self.can_assess(request.user):
+                    raise exceptions.ProposalNotAuthorized()
+                if self.processing_status != "with_approver":
+                    raise ValidationError(
+                        "You cannot issue the approval if it is not with an approver"
                     )
-                    and not self.proposal_type == "amendment"
-                    and not self.fee_paid
-                ):
+                # if not self.applicant.organisation.postal_address:
+                if not self.applicant_address:
+                    raise ValidationError(
+                        "The applicant needs to have set their postal address before approving this proposal."
+                    )
 
-                    self.processing_status = self.PROCESSING_STATUS_AWAITING_PAYMENT
-                    self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
+                self.proposed_issuance_approval = {
+                    "start_date": details.get("start_date").strftime("%d/%m/%Y"),
+                    "expiry_date": details.get("expiry_date").strftime("%d/%m/%Y"),
+                    "details": details.get("details"),
+                    "cc_email": details.get("cc_email"),
+                }
+
+                if is_departmentUser(request):
+                    # needed because external users come through this workflow following 'awaiting_payment; status
                     self.approved_by = request.user
-                    invoice = self.__create_filming_fee_invoice(request)
-                    # confirmation = self.__create_filming_fee_confirmation(request)
-                    #
-                    # if confirmation:
-                    if invoice:
-                        # send Proposal awaiting payment approval email & Log proposal action
-                        send_proposal_awaiting_payment_approval_email_notification(
-                            self, request
-                        )
-                        self.log_user_action(
-                            ProposalUserAction.ACTION_AWAITING_PAYMENT_APPROVAL_.format(
-                                self.id
-                            ),
-                            request,
-                        )
 
-                        # Log entry for organisation
-                        applicant_field = getattr(self, self.applicant_field)
-                        applicant_field.log_user_action(
-                            ProposalUserAction.ACTION_AWAITING_PAYMENT_APPROVAL_.format(
-                                self.id
-                            ),
-                            request,
-                        )
-                        self.save(
-                            version_comment="Final Approval - Awaiting Payment, Proposal: {}".format(
-                                self.lodgement_number
-                            )
-                        )
+            if (
+                (
+                    self.application_type.name == ApplicationType.FILMING
+                    and self.filming_approval_type == self.LICENCE
+                    and self.processing_status
+                    in [Proposal.PROCESSING_STATUS_WITH_APPROVER]
+                )
+                and not self.proposal_type == "amendment"
+                and not self.fee_paid
+            ):
 
-                    else:
-                        logger.info(
-                            "Cannot create Filming awaiting payment confirmation"
-                        )
-                        raise Exception(
-                            "Cannot create Filming awaiting payment confirmation"
-                        )
-
-                else:
-                    self.processing_status = "approved"
-                    self.customer_status = "approved"
-                    # Log proposal action
+                self.processing_status = self.PROCESSING_STATUS_AWAITING_PAYMENT
+                self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
+                self.approved_by = request.user
+                invoice = self.__create_filming_fee_invoice(request)
+                # confirmation = self.__create_filming_fee_confirmation(request)
+                #
+                # if confirmation:
+                if invoice:
+                    # send Proposal awaiting payment approval email & Log proposal action
+                    send_proposal_awaiting_payment_approval_email_notification(
+                        self, request
+                    )
                     self.log_user_action(
-                        ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                        ProposalUserAction.ACTION_AWAITING_PAYMENT_APPROVAL_.format(
+                            self.id
+                        ),
                         request,
                     )
+
                     # Log entry for organisation
                     applicant_field = getattr(self, self.applicant_field)
                     applicant_field.log_user_action(
-                        ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                        ProposalUserAction.ACTION_AWAITING_PAYMENT_APPROVAL_.format(
+                            self.id
+                        ),
                         request,
                     )
+                    self.save(
+                        version_comment="Final Approval - Awaiting Payment, Proposal: {}".format(
+                            self.lodgement_number
+                        )
+                    )
 
-                if self.processing_status == self.PROCESSING_STATUS_APPROVED:
-                    # TODO if it is an ammendment proposal then check appropriately
-                    checking_proposal = self
-                    if self.proposal_type == "renewal":
-                        if self.previous_application:
-                            previous_approval = self.previous_application.approval
-                            approval, created = Approval.objects.update_or_create(
-                                current_proposal=checking_proposal,
-                                defaults={
-                                    "issue_date": timezone.now(),
-                                    "expiry_date": datetime.datetime.strptime(
-                                        self.proposed_issuance_approval.get(
-                                            "expiry_date"
-                                        ),
-                                        "%d/%m/%Y",
-                                    ).date(),
-                                    "start_date": datetime.datetime.strptime(
-                                        self.proposed_issuance_approval.get(
-                                            "start_date"
-                                        ),
-                                        "%d/%m/%Y",
-                                    ).date(),
-                                    "submitter": self.submitter,
-                                    #'org_applicant' : self.applicant if isinstance(self.applicant, Organisation) else None,
-                                    #'proxy_applicant' : self.applicant if isinstance(self.applicant, EmailUser) else None,
-                                    "org_applicant": self.org_applicant,
-                                    "proxy_applicant": self.proxy_applicant,
-                                    "lodgement_number": previous_approval.lodgement_number,
-                                },
-                            )
-                            if created:
-                                previous_approval.replaced_by = approval
-                                previous_approval.save()
+                else:
+                    logger.info(
+                        "Cannot create Filming awaiting payment confirmation"
+                    )
+                    raise Exception(
+                        "Cannot create Filming awaiting payment confirmation"
+                    )
 
-                            self.reset_licence_discount(request.user)
+            else:
+                self.processing_status = "approved"
+                self.customer_status = "approved"
+                # Log proposal action
+                self.log_user_action(
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                    request,
+                )
+                # Log entry for organisation
+                applicant_field = getattr(self, self.applicant_field)
+                applicant_field.log_user_action(
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                    request,
+                )
 
-                    elif self.proposal_type == "amendment":
-                        if self.previous_application:
-                            previous_approval = self.previous_application.approval
-                            approval, created = Approval.objects.update_or_create(
-                                current_proposal=checking_proposal,
-                                defaults={
-                                    "issue_date": timezone.now(),
-                                    "expiry_date": datetime.datetime.strptime(
-                                        self.proposed_issuance_approval.get(
-                                            "expiry_date"
-                                        ),
-                                        "%d/%m/%Y",
-                                    ).date(),
-                                    "start_date": datetime.datetime.strptime(
-                                        self.proposed_issuance_approval.get(
-                                            "start_date"
-                                        ),
-                                        "%d/%m/%Y",
-                                    ).date(),
-                                    "submitter": self.submitter,
-                                    #'org_applicant' : self.applicant if isinstance(self.applicant, Organisation) else None,
-                                    #'proxy_applicant' : self.applicant if isinstance(self.applicant, EmailUser) else None,
-                                    "org_applicant": self.org_applicant,
-                                    "proxy_applicant": self.proxy_applicant,
-                                    "lodgement_number": previous_approval.lodgement_number,
-                                },
-                            )
-                            if created:
-                                previous_approval.replaced_by = approval
-                                previous_approval.save()
-                    else:
+            if self.processing_status == self.PROCESSING_STATUS_APPROVED:
+                # TODO if it is an ammendment proposal then check appropriately
+                checking_proposal = self
+                if self.proposal_type == "renewal":
+                    if self.previous_application:
+                        previous_approval = self.previous_application.approval
                         approval, created = Approval.objects.update_or_create(
                             current_proposal=checking_proposal,
                             defaults={
                                 "issue_date": timezone.now(),
                                 "expiry_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get("expiry_date"),
+                                    self.proposed_issuance_approval.get(
+                                        "expiry_date"
+                                    ),
                                     "%d/%m/%Y",
                                 ).date(),
                                 "start_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get("start_date"),
+                                    self.proposed_issuance_approval.get(
+                                        "start_date"
+                                    ),
                                     "%d/%m/%Y",
                                 ).date(),
                                 "submitter": self.submitter,
@@ -3163,66 +3103,123 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 #'proxy_applicant' : self.applicant if isinstance(self.applicant, EmailUser) else None,
                                 "org_applicant": self.org_applicant,
                                 "proxy_applicant": self.proxy_applicant,
-                                #'extracted_fields' = JSONField(blank=True, null=True)
+                                "lodgement_number": previous_approval.lodgement_number,
                             },
                         )
-                        self.reset_licence_discount(request.user)
-                    # Generate compliances
-                    from commercialoperator.components.compliances.models import (
-                        Compliance,
-                        ComplianceUserAction,
-                    )
+                        if created:
+                            previous_approval.replaced_by = approval
+                            previous_approval.save()
 
-                    if created:
-                        if self.proposal_type == "amendment":
-                            approval_compliances = Compliance.objects.filter(
-                                approval=previous_approval,
-                                proposal=self.previous_application,
-                                processing_status="future",
-                            )
-                            if approval_compliances:
-                                for c in approval_compliances:
-                                    c.delete()
-                        # Log creation
-                        # Generate the document
-                        approval.generate_doc(request.user)
-                        self.generate_compliances(approval, request)
-                        # send the doc and log in approval and org
-                    else:
-                        # Generate the document
-                        approval.generate_doc(request.user)
-                        # Delete the future compliances if Approval is reissued and generate the compliances again.
+                        self.reset_licence_discount(request.user)
+
+                elif self.proposal_type == "amendment":
+                    if self.previous_application:
+                        previous_approval = self.previous_application.approval
+                        approval, created = Approval.objects.update_or_create(
+                            current_proposal=checking_proposal,
+                            defaults={
+                                "issue_date": timezone.now(),
+                                "expiry_date": datetime.datetime.strptime(
+                                    self.proposed_issuance_approval.get(
+                                        "expiry_date"
+                                    ),
+                                    "%d/%m/%Y",
+                                ).date(),
+                                "start_date": datetime.datetime.strptime(
+                                    self.proposed_issuance_approval.get(
+                                        "start_date"
+                                    ),
+                                    "%d/%m/%Y",
+                                ).date(),
+                                "submitter": self.submitter,
+                                #'org_applicant' : self.applicant if isinstance(self.applicant, Organisation) else None,
+                                #'proxy_applicant' : self.applicant if isinstance(self.applicant, EmailUser) else None,
+                                "org_applicant": self.org_applicant,
+                                "proxy_applicant": self.proxy_applicant,
+                                "lodgement_number": previous_approval.lodgement_number,
+                            },
+                        )
+                        if created:
+                            previous_approval.replaced_by = approval
+                            previous_approval.save()
+                else:
+                    approval, created = Approval.objects.update_or_create(
+                        current_proposal=checking_proposal,
+                        defaults={
+                            "issue_date": timezone.now(),
+                            "expiry_date": datetime.datetime.strptime(
+                                self.proposed_issuance_approval.get("expiry_date"),
+                                "%d/%m/%Y",
+                            ).date(),
+                            "start_date": datetime.datetime.strptime(
+                                self.proposed_issuance_approval.get("start_date"),
+                                "%d/%m/%Y",
+                            ).date(),
+                            "submitter": self.submitter,
+                            #'org_applicant' : self.applicant if isinstance(self.applicant, Organisation) else None,
+                            #'proxy_applicant' : self.applicant if isinstance(self.applicant, EmailUser) else None,
+                            "org_applicant": self.org_applicant,
+                            "proxy_applicant": self.proxy_applicant,
+                            #'extracted_fields' = JSONField(blank=True, null=True)
+                        },
+                    )
+                    self.reset_licence_discount(request.user)
+                # Generate compliances
+                from commercialoperator.components.compliances.models import (
+                    Compliance,
+                    ComplianceUserAction,
+                )
+
+                if created:
+                    if self.proposal_type == "amendment":
                         approval_compliances = Compliance.objects.filter(
-                            approval=approval, proposal=self, processing_status="future"
+                            approval=previous_approval,
+                            proposal=self.previous_application,
+                            processing_status="future",
                         )
                         if approval_compliances:
                             for c in approval_compliances:
                                 c.delete()
-                        self.generate_compliances(approval, request)
-                        # Log proposal action
-                        self.log_user_action(
-                            ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                            request,
-                        )
-                        # Log entry for organisation
-                        applicant_field = getattr(self, self.applicant_field)
-                        applicant_field.log_user_action(
-                            ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                            request,
-                        )
-                    self.approval = approval
-
-                    # send Proposal approval email with attachment
-                    send_proposal_approval_email_notification(self, request)
-                    self.save(
-                        version_comment="Final Approval: {}".format(
-                            self.approval.lodgement_number
-                        )
+                    # Log creation
+                    # Generate the document
+                    approval.generate_doc(request.user)
+                    self.generate_compliances(approval, request)
+                    # send the doc and log in approval and org
+                else:
+                    # Generate the document
+                    approval.generate_doc(request.user)
+                    # Delete the future compliances if Approval is reissued and generate the compliances again.
+                    approval_compliances = Compliance.objects.filter(
+                        approval=approval, proposal=self, processing_status="future"
                     )
-                    self.approval.documents.all().update(can_delete=False)
+                    if approval_compliances:
+                        for c in approval_compliances:
+                            c.delete()
+                    self.generate_compliances(approval, request)
+                    # Log proposal action
+                    self.log_user_action(
+                        ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
+                        request,
+                    )
+                    # Log entry for organisation
+                    applicant_field = getattr(self, self.applicant_field)
+                    applicant_field.log_user_action(
+                        ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
+                        request,
+                    )
+                self.approval = approval
 
-            except:
-                raise
+                # send Proposal approval email with attachment
+                send_proposal_approval_email_notification(self, request)
+                self.save(
+                    version_comment="Final Approval: {}".format(
+                        self.approval.lodgement_number
+                    )
+                )
+                self.approval.documents.all().update(can_delete=False)
+
+        except:
+            raise
 
     def __create_filming_fee_invoice(self, request):
 
