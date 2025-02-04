@@ -9,15 +9,19 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import MinValueValidator
 from django.core.cache import cache
 
-# from django.contrib.postgres.fields.jsonb import JSONField
+from rest_framework import status
+
 from django.db.models import JSONField
 from django.utils import timezone
 from django.conf import settings
 from taggit.models import TaggedItemBase
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Basket, Invoice
+from ledger_api_client.utils import (
+    create_basket_session,
+    process_create_future_invoice,
+)
 from commercialoperator.components.main.mixins import RevisionedMixin
 
-# from ledger.accounts.models import EmailUser
 from commercialoperator import exceptions
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.main.models import (
@@ -2979,8 +2983,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             self.proposed_decline_status = False
 
             if (
-                self.processing_status
-                == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
+                self.processing_status == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
                 and self.fee_paid
             ) or (self.proposal_type == "amendment"):
                 # for 'Awaiting Payment' approval. External/Internal user fires this method after full payment via Make/Record Payment
@@ -2992,7 +2995,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     raise ValidationError(
                         "You cannot issue the approval if it is not with an approver"
                     )
-                # if not self.applicant.organisation.postal_address:
+
                 if not self.applicant_address:
                     raise ValidationError(
                         "The applicant needs to have set their postal address before approving this proposal."
@@ -3024,9 +3027,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
                 self.approved_by = request.user
                 invoice = self.__create_filming_fee_invoice(request)
-                # confirmation = self.__create_filming_fee_confirmation(request)
-                #
-                # if confirmation:
+
                 if invoice:
                     # send Proposal awaiting payment approval email & Log proposal action
                     send_proposal_awaiting_payment_approval_email_notification(
@@ -3054,9 +3055,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     )
 
                 else:
-                    logger.info(
-                        "Cannot create Filming awaiting payment confirmation"
-                    )
+                    logger.info("Cannot create Filming awaiting payment confirmation")
                     raise Exception(
                         "Cannot create Filming awaiting payment confirmation"
                     )
@@ -3087,15 +3086,11 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             defaults={
                                 "issue_date": timezone.now(),
                                 "expiry_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get(
-                                        "expiry_date"
-                                    ),
+                                    self.proposed_issuance_approval.get("expiry_date"),
                                     "%d/%m/%Y",
                                 ).date(),
                                 "start_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get(
-                                        "start_date"
-                                    ),
+                                    self.proposed_issuance_approval.get("start_date"),
                                     "%d/%m/%Y",
                                 ).date(),
                                 "submitter": self.submitter,
@@ -3120,15 +3115,11 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             defaults={
                                 "issue_date": timezone.now(),
                                 "expiry_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get(
-                                        "expiry_date"
-                                    ),
+                                    self.proposed_issuance_approval.get("expiry_date"),
                                     "%d/%m/%Y",
                                 ).date(),
                                 "start_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get(
-                                        "start_date"
-                                    ),
+                                    self.proposed_issuance_approval.get("start_date"),
                                     "%d/%m/%Y",
                                 ).date(),
                                 "submitter": self.submitter,
@@ -3221,6 +3212,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         except:
             raise
 
+    @transaction.atomic
     def __create_filming_fee_invoice(self, request):
 
         from dateutil.relativedelta import relativedelta
@@ -3238,45 +3230,54 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             and not self.fee_invoice_reference
             and len(self.filming_activity.film_type) > 0
         ):
-
             lines, lines_aggregated = create_filming_fee_lines(self)
+            try:
+                logger.info("Creating filming fee invoice")
 
-            with transaction.atomic():
-                try:
-                    logger.info("Creating filming fee invoice")
+                deferred_payment_date = timezone.now() + relativedelta(months=1)
 
-                    deferred_payment_date = timezone.now() + relativedelta(months=1)
+                # basket = createCustomBasket(lines, request.user, settings.PAYMENT_SYSTEM_ID)
 
-                    basket = createCustomBasket(
-                        lines, request.user, settings.PAYMENT_SYSTEM_ID
-                    )
-                    order = CreateInvoiceBasket(
-                        payment_method="other", system=settings.PAYMENT_SYSTEM_PREFIX
-                    ).create_invoice_and_order(
-                        basket,
-                        0,
-                        None,
-                        None,
-                        user=request.user,
-                        invoice_text="Payment Invoice",
-                    )
-                    invoice = Invoice.objects.get(order_number=order.number)
+                basket_params = {
+                    "products": lines,
+                    "vouchers": [],
+                    "system": settings.PAYMENT_SYSTEM_ID,
+                    "custom_basket": True,
+                }
+                basket_hash = create_basket_session(
+                    request, request.user.id, basket_params
+                )
 
-                    filming_fee = FilmingFee.objects.create(
-                        proposal=self,
-                        lines=lines,
-                        lines_aggregated=lines_aggregated,
-                        created_by=request.user,
-                        payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY,
-                        deferred_payment_date=deferred_payment_date,
-                    )
-                    filming_fee.filming_fee_invoices.create(
-                        invoice_reference=invoice.reference
+                basket = Basket.objects.filter(
+                    status="Open", owner=request.user
+                ).order_by("-id")[:1]
+
+                future_invoice_response = process_create_future_invoice(
+                    basket[0].id, invoice_text="Payment Invoice"
+                )
+                if future_invoice_response.get("status") != status.HTTP_200_OK:
+                    raise ValidationError(
+                        f"Failed to create filming fee invoice: {future_invoice_response.get("message")}"
                     )
 
-                except Exception as e:
-                    logger.error("Failed to create filming fee confirmation")
-                    logger.error("{}".format(e))
+                future_invoice = future_invoice_response.get("data", {})
+                invoice = Invoice.objects.get(order_number=future_invoice.get("order"))
+
+                filming_fee = FilmingFee.objects.create(
+                    proposal=self,
+                    lines=lines,
+                    lines_aggregated=lines_aggregated,
+                    created_by=request.user,
+                    payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY,
+                    deferred_payment_date=deferred_payment_date,
+                )
+                filming_fee.filming_fee_invoices.create(
+                    invoice_reference=invoice.reference
+                )
+
+            except Exception as e:
+                logger.error("Failed to create filming fee confirmation")
+                logger.error("{}".format(e))
 
         return filming_fee
 

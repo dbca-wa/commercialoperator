@@ -72,14 +72,10 @@ from commercialoperator.components.bookings.models import (
     FilmingFeeInvoice,
 )
 
-
 from commercialoperator.components.stubs.utils import update_payments
 from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Order
 
-
-from ledger_api_client.ledger_models import Invoice
-from ledger_api_client.ledger_models import Basket
-from ledger_api_client.utils import Order, get_organisation
+from ledger_api_client.ledger_models import Basket, Invoice
 
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
@@ -193,7 +189,6 @@ class FilmingFeeView(TemplateView):
         return get_object_or_404(Proposal, id=self.kwargs["proposal_pk"])
 
     def get(self, request, *args, **kwargs):
-
         proposal = self.get_object()
         # filming_fee = FilmingFee.objects.create(proposal=proposal, created_by=request.user, payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY)
         filming_fee = proposal.filming_fees.order_by("-id").first()
@@ -1176,13 +1171,19 @@ class InvoiceFilmingFeePDFView(View):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
         proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
 
-        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant  # .organisation.organisation_set.all()[0]
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(
-                create_invoice_filmingfee_pdf_bytes("invoice.pdf", invoice, proposal)
-            )
-            return response
+            invoice_pdf = get_invoice_pdf(invoice.reference)
+
+            if invoice_pdf.status_code == status.HTTP_200_OK:
+                response.write(invoice_pdf.content)
+                return response
+            else:
+                logger.error(
+                    f"Error getting PDF for invoice {invoice.reference}: {invoice_pdf.reason}"
+                )
+
         raise PermissionDenied
 
     def get_object(self):
