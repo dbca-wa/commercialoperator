@@ -322,7 +322,7 @@ export default {
                                     !full.fee_paid
                                 ) {
                                     links += `<a href='/filming_fee/${full.id}'>Make Payment</a><br/>`;
-                                    links += `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp Pending Invoice</a><br/>`;
+                                    links += `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>Pending Invoice</a><br/>`;
                                 }
                             }
                             if (
@@ -330,9 +330,9 @@ export default {
                                 full.proposal_type != 'Amendment'
                             ) {
                                 if (full.application_type == 'Filming') {
-                                    links += `<a href='/cols/payments/invoice-filmingfee-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp #${full.fee_invoice_reference}</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-filmingfee-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>#${full.fee_invoice_reference}</a><br/>`;
                                 } else {
-                                    links += `<a href='/cols/payments/invoice-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp #${full.fee_invoice_reference}</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>#${full.fee_invoice_reference}</a><br/>`;
                                 }
                             }
                             return links;
@@ -472,7 +472,7 @@ export default {
                                     //links +=  `<a href='/ledger/payments/invoice/payment?invoice=${full.fee_invoice_reference}' target='_blank'>Record Payment</a><br/>`;
                                     links += `<a href='/filming_fee/${full.id}'>Record Payment</a><br/>`;
                                 }
-                                links += `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp Pending Invoice</a><br/>`;
+                                links += `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>Pending Invoice</a><br/>`;
                             }
 
                             //if (full.fee_paid && full.proposal_type!='Amendment'){
@@ -485,9 +485,9 @@ export default {
                                 }
 
                                 if (full.application_type == 'Filming') {
-                                    links += `<a href='/cols/payments/invoice-filmingfee-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp #${full.fee_invoice_reference}</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-filmingfee-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>#${full.fee_invoice_reference}</a><br/>`;
                                 } else {
-                                    links += `<a href='/cols/payments/invoice-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i>&nbsp #${full.fee_invoice_reference}</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-pdf/${full.fee_invoice_reference}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>#${full.fee_invoice_reference}</a><br/>`;
                                 }
                             }
 

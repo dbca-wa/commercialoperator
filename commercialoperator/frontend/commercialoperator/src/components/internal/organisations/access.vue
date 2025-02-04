@@ -167,7 +167,7 @@
                                                         access.identification
                                                     "
                                                     ><i
-                                                        class="fa fa-file-pdf-o"
+                                                        class="fa fa-file-pdf"
                                                     ></i
                                                     >&nbsp;Letter</a
                                                 >
