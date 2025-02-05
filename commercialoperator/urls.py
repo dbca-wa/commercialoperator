@@ -364,6 +364,11 @@ urlpatterns = (
             name="filming_fee_success",
         ),
         url(
+            r"^cols/payments/invoice-admin-pdf/(?P<reference>\d+)",
+            booking_views.InvoicePDFView.as_view(),
+            name="internal-invoice-admin-pdf",
+        ),
+        url(
             r"cols/payments/invoice-pdf/(?P<reference>\d+)",
             booking_views.InvoicePDFView.as_view(),
             name="cols-invoice-pdf",
