@@ -188,6 +188,7 @@ class FilmingFeeView(TemplateView):
     def get_object(self):
         return get_object_or_404(Proposal, id=self.kwargs["proposal_pk"])
 
+    @transaction.atomic
     def get(self, request, *args, **kwargs):
         proposal = self.get_object()
         # filming_fee = FilmingFee.objects.create(proposal=proposal, created_by=request.user, payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY)
@@ -197,39 +198,37 @@ class FilmingFeeView(TemplateView):
         )
 
         try:
-            with transaction.atomic():
-                set_session_filming_invoice(request.session, filming_fee)
-                # lines = create_filming_fee_lines(proposal)
-                lines = filming_fee.lines
-                invoice = Invoice.objects.get(reference=inv_ref)
+            set_session_filming_invoice(request.session, filming_fee)
+            lines = filming_fee.lines
+            invoice = Invoice.objects.get(reference=inv_ref)
 
-                film_types = "/".join(
-                    [
-                        w.capitalize().replace("_", " ")
-                        for w in proposal.filming_activity.film_type
-                    ]
-                )
-                # invoice_text = 'Payment Invoice: {} - {}'.format(film_types, self.filming_activity.activity_title)
-                invoice_text = "Payment Invoice: {}".format(film_types)
+            film_types = "/".join(
+                [
+                    w.capitalize().replace("_", " ")
+                    for w in proposal.filming_activity.film_type
+                ]
+            )
+            # invoice_text = 'Payment Invoice: {} - {}'.format(film_types, self.filming_activity.activity_title)
+            invoice_text = "Payment Invoice: {}".format(film_types)
 
-                checkout_response = checkout_existing_invoice(
-                    request,
-                    invoice,
-                    lines,
-                    return_url_ns="filming_fee_success",
-                    return_preload_url_ns="filming_fee_success",
-                    invoice_text=invoice_text,
-                )
+            checkout_response = checkout_existing_invoice(
+                request,
+                invoice,
+                lines,
+                return_url_ns="filming_fee_success",
+                return_preload_url_ns="filming_fee_success",
+                invoice_text=invoice_text,
+            )
 
-                logger.info(
-                    "{} built payment line item {} for Proposal Fee and handing over to payment gateway".format(
-                        "User {} with id {}".format(
-                            proposal.submitter.get_full_name(), proposal.submitter.id
-                        ),
-                        proposal.id,
-                    )
+            logger.info(
+                "{} built payment line item {} for Proposal Fee and handing over to payment gateway".format(
+                    "User {} with id {}".format(
+                        proposal.submitter.get_full_name(), proposal.submitter.id
+                    ),
+                    proposal.id,
                 )
-                return checkout_response
+            )
+            return checkout_response
 
         except Exception as e:
             logger.error("Error Creating Proposal Fee: {}".format(e))
@@ -1314,20 +1313,19 @@ class MonthlyConfirmationPDFParkBookingView(View):
 
 
 class AwaitingPaymentInvoicePDFView(View):
-    """ """
-
     def get(self, request, *args, **kwargs):
         proposal = get_object_or_404(Proposal, id=self.kwargs["id"])
-        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant
 
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(
-                create_awaiting_payment_invoice_pdf_bytes(
-                    "awaiting_payment_invoice.pdf", proposal
-                )
-            )
-            return response
+
+            invoice_pdf = get_invoice_pdf(proposal.invoice.reference)
+
+            if invoice_pdf.status_code == status.HTTP_200_OK:
+                response.write(invoice_pdf.content)
+                return response
+
         raise PermissionDenied
 
     def check_owner(self, organisation):
