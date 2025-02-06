@@ -80,6 +80,8 @@ from ledger_api_client.ledger_models import Basket, Invoice
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
 
+from urllib.parse import urljoin
+
 import logging
 
 logger = logging.getLogger("payment_checkout")
@@ -1148,7 +1150,9 @@ class InvoicePDFView(View):
 
             invoice_pdf = get_invoice_pdf(invoice.reference)
 
-            if invoice_pdf.status_code == status.HTTP_200_OK:
+            if invoice_pdf.status_code == status.HTTP_200_OK or is_payment_admin(
+                request.user
+            ):
                 response.write(invoice_pdf.content)
                 return response
 
@@ -1327,6 +1331,30 @@ class AwaitingPaymentInvoicePDFView(View):
                 return response
 
         raise PermissionDenied
+
+    def check_owner(self, organisation):
+        return (
+            is_in_organisation_contacts(self.request, organisation)
+            or is_internal(self.request)
+            or self.request.user.is_superuser
+        )
+
+
+class InvoicePaymentView(View):
+    def get(self, request, *args, **kwargs):
+        invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
+
+        if is_payment_admin(request.user):
+            ledger_invoice_url = urljoin(
+                settings.LEDGER_UI_URL,
+                f"ledger/payments/oracle/payments?invoice_no={invoice.reference}",
+            )
+            return redirect(ledger_invoice_url)
+
+        raise PermissionDenied
+
+    def get_object(self):
+        return get_object_or_404(Invoice, reference=self.kwargs["reference"])
 
     def check_owner(self, organisation):
         return (

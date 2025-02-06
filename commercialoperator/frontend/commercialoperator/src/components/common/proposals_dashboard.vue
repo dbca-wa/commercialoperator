@@ -481,7 +481,7 @@ export default {
                                 full.proposal_type != 'Amendment'
                             ) {
                                 if (vm.is_payment_admin) {
-                                    links += `<a href='/cols/payments/invoice-admin-pdf/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-payment-view/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
                                 }
 
                                 if (full.application_type == 'Filming') {
