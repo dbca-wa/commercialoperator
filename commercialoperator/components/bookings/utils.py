@@ -1037,26 +1037,6 @@ def checkout(
     logger.info("Redirecting user to ledgergw payment details page.")
     return redirect(reverse("ledgergw-payment-details"))
 
-    # response = HttpResponseRedirect(reverse("checkout:index"))
-    # response.set_cookie(
-    #     settings.OSCAR_BASKET_COOKIE_OPEN,
-    #     basket_hash,
-    #     max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-    #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-    #     httponly=True,
-    # )
-
-    # if invoice_text == "Application Fee" and proposal.allow_full_discount:
-    #     response = HttpResponseRedirect(reverse("zero_fee_success"))
-    #     response.set_cookie(
-    #         settings.OSCAR_BASKET_COOKIE_OPEN,
-    #         basket_hash,
-    #         max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-    #         secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-    #         httponly=True,
-    #     )
-
-    # return response
 
 
 def checkout_existing_invoice(
