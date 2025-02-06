@@ -267,7 +267,7 @@ export default {
                                 }
                                 if (full.fee_paid) {
                                     if (vm.is_payment_admin) {
-                                        links += `<a href='/ledger/payments/invoice/payment?invoice=${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
+                                        links += `<a href='/cols/payments/invoice-payment-view/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
                                     }
                                 }
                             } else {

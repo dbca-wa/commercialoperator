@@ -469,7 +469,6 @@ export default {
                                 full.processing_status == 'Awaiting Payment'
                             ) {
                                 if (vm.is_payment_admin) {
-                                    //links +=  `<a href='/ledger/payments/invoice/payment?invoice=${full.fee_invoice_reference}' target='_blank'>Record Payment</a><br/>`;
                                     links += `<a href='/filming_fee/${full.id}'>Record Payment</a><br/>`;
                                 }
                                 links += `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>Pending Invoice</a><br/>`;
