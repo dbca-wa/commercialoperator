@@ -1,16 +1,14 @@
 from django.urls import reverse
 from django.shortcuts import redirect
-# from django.utils.http import urlquote_plus
-from urllib.parse import quote_plus as urlquote_plus
 
-import re
+from urllib.parse import quote_plus as urlquote_plus
 
 from commercialoperator.components.bookings.models import ApplicationFee
 from reversion.middleware import RevisionMiddleware
 from reversion.views import _request_creates_revision
 
-
-CHECKOUT_PATH = re.compile("^/ledger/checkout/checkout")
+# NOTE: Do we need this variable in segregated cols?
+# CHECKOUT_PATH = re.compile("^/ledger/checkout/checkout")
 
 
 class FirstTimeNagScreenMiddleware(object):
