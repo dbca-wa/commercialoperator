@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import View, TemplateView
@@ -1323,6 +1323,9 @@ class AwaitingPaymentInvoicePDFView(View):
 
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
+
+            if not proposal.invoice:
+                raise Http404("Invoice not found")
 
             invoice_pdf = get_invoice_pdf(proposal.invoice.reference)
 
