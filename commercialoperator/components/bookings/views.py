@@ -1324,10 +1324,17 @@ class AwaitingPaymentInvoicePDFView(View):
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
 
-            if not proposal.invoice:
+            if proposal.application_type.name == ApplicationType.FILMING:
+                invoice = Invoice.objects.get(
+                    reference=proposal.filming_fee_invoice_reference
+                )
+            else:
+                invoice = proposal.invoice
+
+            if not invoice:
                 raise Http404("Invoice not found")
 
-            invoice_pdf = get_invoice_pdf(proposal.invoice.reference)
+            invoice_pdf = get_invoice_pdf(invoice.reference)
 
             if invoice_pdf.status_code == status.HTTP_200_OK:
                 response.write(invoice_pdf.content)
