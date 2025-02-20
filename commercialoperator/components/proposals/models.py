@@ -3238,11 +3238,15 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 # basket = createCustomBasket(lines, request.user, settings.PAYMENT_SYSTEM_ID)
 
+                reference = self.lodgement_number
+
                 basket_params = {
                     "products": lines,
                     "vouchers": [],
                     "system": settings.PAYMENT_SYSTEM_ID,
                     "custom_basket": True,
+                    "booking_reference": reference,
+                    "booking_reference_link": reference,
                 }
                 basket_hash = create_basket_session(
                     request, request.user.id, basket_params
