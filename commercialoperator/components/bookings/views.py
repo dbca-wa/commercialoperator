@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import View, TemplateView
@@ -6,13 +6,13 @@ from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 
+from rest_framework import status
 
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.bookings.context_processors import template_context
-from commercialoperator.components.bookings.invoice_pdf import create_invoice_pdf_bytes
 from commercialoperator.components.bookings.invoice_compliance_pdf import (
     create_invoice_compliance_pdf_bytes,
 )
@@ -36,6 +36,8 @@ from commercialoperator.components.bookings.email import (
 )
 from commercialoperator.components.bookings.utils import (
     create_booking,
+    get_invoice_pdf,
+    get_invoice_properties,
     get_session_booking,
     set_session_booking,
     delete_session_booking,
@@ -70,16 +72,15 @@ from commercialoperator.components.bookings.models import (
     FilmingFeeInvoice,
 )
 
-
 from commercialoperator.components.stubs.utils import update_payments
 from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Order
 
-
-from ledger_api_client.ledger_models import Invoice
-from ledger_api_client.ledger_models import Basket
+from ledger_api_client.ledger_models import Basket, Invoice
 
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
+
+from urllib.parse import urljoin
 
 import logging
 
@@ -189,49 +190,46 @@ class FilmingFeeView(TemplateView):
     def get_object(self):
         return get_object_or_404(Proposal, id=self.kwargs["proposal_pk"])
 
+    @transaction.atomic
     def get(self, request, *args, **kwargs):
-
         proposal = self.get_object()
-        # filming_fee = FilmingFee.objects.create(proposal=proposal, created_by=request.user, payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY)
         filming_fee = proposal.filming_fees.order_by("-id").first()
         inv_ref = (
             filming_fee.filming_fee_invoices.order_by("-id").first().invoice_reference
         )
 
         try:
-            with transaction.atomic():
-                set_session_filming_invoice(request.session, filming_fee)
-                # lines = create_filming_fee_lines(proposal)
-                lines = filming_fee.lines
-                invoice = Invoice.objects.get(reference=inv_ref)
+            set_session_filming_invoice(request.session, filming_fee)
+            lines = filming_fee.lines
+            invoice = Invoice.objects.get(reference=inv_ref)
 
-                film_types = "/".join(
-                    [
-                        w.capitalize().replace("_", " ")
-                        for w in proposal.filming_activity.film_type
-                    ]
-                )
-                # invoice_text = 'Payment Invoice: {} - {}'.format(film_types, self.filming_activity.activity_title)
-                invoice_text = "Payment Invoice: {}".format(film_types)
+            film_types = "/".join(
+                [
+                    w.capitalize().replace("_", " ")
+                    for w in proposal.filming_activity.film_type
+                ]
+            )
+            invoice_text = "Payment Invoice: {}".format(film_types)
 
-                checkout_response = checkout_existing_invoice(
-                    request,
-                    invoice,
-                    lines,
-                    return_url_ns="filming_fee_success",
-                    return_preload_url_ns="filming_fee_success",
-                    invoice_text=invoice_text,
-                )
+            checkout_response = checkout_existing_invoice(
+                request,
+                proposal,
+                invoice,
+                lines,
+                return_url_ns="filming_fee_success",
+                return_preload_url_ns="filming_fee_success",
+                invoice_text=invoice_text,
+            )
 
-                logger.info(
-                    "{} built payment line item {} for Proposal Fee and handing over to payment gateway".format(
-                        "User {} with id {}".format(
-                            proposal.submitter.get_full_name(), proposal.submitter.id
-                        ),
-                        proposal.id,
-                    )
+            logger.info(
+                "{} built payment line item {} for Proposal Fee and handing over to payment gateway".format(
+                    "User {} with id {}".format(
+                        proposal.submitter.get_full_name(), proposal.submitter.id
+                    ),
+                    proposal.id,
                 )
-                return checkout_response
+            )
+            return checkout_response
 
         except Exception as e:
             logger.error("Error Creating Proposal Fee: {}".format(e))
@@ -811,9 +809,6 @@ class ApplicationFeeSuccessView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         print(" APPLICATION FEE SUCCESS ")
-        #        for ss in request.session.keys():
-        #            print (ss)
-        #            print (request.session[ss])
 
         proposal = None
         submitter = None
@@ -824,23 +819,27 @@ class ApplicationFeeSuccessView(TemplateView):
             application_fee = get_session_application_invoice(request.session)
             proposal = application_fee.proposal
 
+            applicant = proposal.applicant_obj
             try:
-                recipient = proposal.applicant.email
-                submitter = proposal.applicant
+                recipient = Organisation.objects.get(id=applicant.id).email
+                submitter = applicant
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
 
-            if self.request.user.is_authenticated:
-                basket = Basket.objects.filter(
-                    status="Submitted", owner=request.user
-                ).order_by("-id")[:1]
+            user = self.request.user
+
+            if user.is_authenticated:
+                basket = Basket.objects.filter(status="Submitted", owner=user).order_by(
+                    "-id"
+                )[:1]
             else:
                 basket = Basket.objects.filter(
-                    status="Submitted", owner=booking.proposal.submitter
+                    status="Submitted", owner=proposal.submitter
                 ).order_by("-id")[:1]
 
-            order = Order.objects.get(basket=basket[0])
+            order = Order.objects.get(basket_id=basket[0].id)
+
             invoice = Invoice.objects.get(order_number=order.number)
             invoice_ref = invoice.reference
             fee_inv, created = ApplicationFeeInvoice.objects.get_or_create(
@@ -851,7 +850,6 @@ class ApplicationFeeSuccessView(TemplateView):
                 try:
                     inv = Invoice.objects.get(reference=invoice_ref)
                     order = Order.objects.get(number=inv.order_number)
-                    order.user = submitter
                 except Invoice.DoesNotExist:
                     logger.error(
                         "{} tried paying an application fee with an incorrect invoice".format(
@@ -881,10 +879,8 @@ class ApplicationFeeSuccessView(TemplateView):
                     return redirect("external-proposal-detail", args=(proposal.id,))
 
                 if fee_inv:
-                    # application_fee.payment_type = 1  # internet booking
                     application_fee.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
                     application_fee.expiry_time = None
-                    update_payments(invoice_ref)
 
                     if (
                         proposal.processing_status
@@ -895,18 +891,18 @@ class ApplicationFeeSuccessView(TemplateView):
                     else:
                         proposal = proposal_submit(proposal, request)
 
-                    if proposal and (
-                        invoice.payment_status == "paid"
-                        or invoice.payment_status == "over_paid"
-                    ):
+                    invoice_properties = get_invoice_properties(invoice.id)
+                    payment_status = invoice_properties.get("invoice", {}).get(
+                        "payment_status"
+                    )
+
+                    if proposal and payment_status in ["paid", "over_paid"]:
                         proposal.fee_invoice_reference = invoice_ref
                         proposal.save()
                         proposal.reset_application_discount(request.user)
                     else:
                         logger.error(
-                            "Invoice payment status is {}".format(
-                                invoice.payment_status
-                            )
+                            "Invoice payment status is {}".format(payment_status)
                         )
                         raise
 
@@ -918,12 +914,10 @@ class ApplicationFeeSuccessView(TemplateView):
                     send_application_fee_invoice_tclass_email_notification(
                         request, proposal, invoice, recipients=[recipient]
                     )
-                    # send_application_fee_confirmation_tclass_email_notification(request, application_fee, invoice, recipients=[recipient])
 
                     context = {
                         "proposal": proposal,
                         "submitter": submitter,
-                        #'fee_invoice': invoice
                         "fee_invoice": fee_inv,
                     }
                     return render(request, self.template_name, context)
@@ -1138,7 +1132,6 @@ class BookingSuccessView(TemplateView):
         return render(request, self.template_name, context)
 
 
-# class InvoicePDFView(InvoiceOwnerMixin,View):
 class InvoicePDFView(View):
     def get(self, request, *args, **kwargs):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
@@ -1149,11 +1142,19 @@ class InvoicePDFView(View):
         else:
             proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
 
-        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant
+
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(create_invoice_pdf_bytes("invoice.pdf", invoice, proposal))
-            return response
+
+            invoice_pdf = get_invoice_pdf(invoice.reference)
+
+            if invoice_pdf.status_code == status.HTTP_200_OK or is_payment_admin(
+                request.user
+            ):
+                response.write(invoice_pdf.content)
+                return response
+
         raise PermissionDenied
 
     def get_object(self):
@@ -1172,13 +1173,19 @@ class InvoiceFilmingFeePDFView(View):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
         proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
 
-        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant  # .organisation.organisation_set.all()[0]
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(
-                create_invoice_filmingfee_pdf_bytes("invoice.pdf", invoice, proposal)
-            )
-            return response
+            invoice_pdf = get_invoice_pdf(invoice.reference)
+
+            if invoice_pdf.status_code == status.HTTP_200_OK:
+                response.write(invoice_pdf.content)
+                return response
+            else:
+                logger.error(
+                    f"Error getting PDF for invoice {invoice.reference}: {invoice_pdf.reason}"
+                )
+
         raise PermissionDenied
 
     def get_object(self):
@@ -1309,21 +1316,54 @@ class MonthlyConfirmationPDFParkBookingView(View):
 
 
 class AwaitingPaymentInvoicePDFView(View):
-    """ """
-
     def get(self, request, *args, **kwargs):
         proposal = get_object_or_404(Proposal, id=self.kwargs["id"])
-        organisation = proposal.org_applicant.organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant
 
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(
-                create_awaiting_payment_invoice_pdf_bytes(
-                    "awaiting_payment_invoice.pdf", proposal
+
+            if proposal.application_type.name == ApplicationType.FILMING:
+                invoice = Invoice.objects.get(
+                    reference=proposal.filming_fee_invoice_reference
                 )
-            )
-            return response
+            else:
+                invoice = proposal.invoice
+
+            if not invoice:
+                raise Http404("Invoice not found")
+
+            invoice_pdf = get_invoice_pdf(invoice.reference)
+
+            if invoice_pdf.status_code == status.HTTP_200_OK:
+                response.write(invoice_pdf.content)
+                return response
+
         raise PermissionDenied
+
+    def check_owner(self, organisation):
+        return (
+            is_in_organisation_contacts(self.request, organisation)
+            or is_internal(self.request)
+            or self.request.user.is_superuser
+        )
+
+
+class InvoicePaymentView(View):
+    def get(self, request, *args, **kwargs):
+        invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
+
+        if is_payment_admin(request.user):
+            ledger_invoice_url = urljoin(
+                settings.LEDGER_UI_URL,
+                f"ledger/payments/oracle/payments?invoice_no={invoice.reference}",
+            )
+            return redirect(ledger_invoice_url)
+
+        raise PermissionDenied
+
+    def get_object(self):
+        return get_object_or_404(Invoice, reference=self.kwargs["reference"])
 
     def check_owner(self, organisation):
         return (

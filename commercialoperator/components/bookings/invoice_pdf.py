@@ -595,14 +595,3 @@ def _create_invoice(invoice_buffer, invoice, proposal):
     doc.build(elements)
 
     return invoice_buffer
-
-
-def create_invoice_pdf_bytes(filename, invoice, proposal):
-    invoice_buffer = BytesIO()
-    _create_invoice(invoice_buffer, invoice, proposal)
-
-    # Get the value of the BytesIO buffer
-    value = invoice_buffer.getvalue()
-    invoice_buffer.close()
-
-    return value

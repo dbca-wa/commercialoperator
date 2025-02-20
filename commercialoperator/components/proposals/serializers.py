@@ -1475,6 +1475,7 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
     filming_access = ProposalFilmingAccessSerializer()
     filming_equipment = ProposalFilmingEquipmentSerializer()
     filming_other_details = ProposalFilmingOtherDetailsSerializer()
+    proposed_issuance_approval = serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -1608,6 +1609,34 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
             if obj.fee_paid
             else None
         )
+    
+    def get_proposed_issuance_approval(self, obj):
+        pia = obj.proposed_issuance_approval
+        if not pia:
+            return None
+
+        try:
+            start_date_obj = datetime.strptime(pia.get("start_date"), "%d/%m/%Y")
+        except ValueError:
+            logger.warning("Invalid start date format. Expecting dd/mm/YYYY")
+            start_date_str = None
+        else:
+            start_date_str = datetime.strftime(start_date_obj, "%Y-%m-%d")
+
+        try:
+            expiry_date_obj = datetime.strptime(pia.get("expiry_date"), "%d/%m/%Y")
+        except ValueError:
+            logger.warning("Invalid expiry date format. Expecting dd/mm/YYYY")
+            expiry_date_str = None
+        else:
+            expiry_date_str = datetime.strftime(expiry_date_obj, "%Y-%m-%d")
+
+        return {
+            "details": pia.get("details"),
+            "start_date": start_date_str,
+            "expiry_date": expiry_date_str,
+            "cc_email": pia.get("cc_email"),
+        }
 
 
 # Event serializer

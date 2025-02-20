@@ -1,9 +1,12 @@
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+
+import requests
+from rest_framework import status
 
 from datetime import datetime, date
 from django.utils import timezone
@@ -29,13 +32,15 @@ from commercialoperator.components.bookings.email import (
 
 from ledger_api_client.utils import (
     create_basket_session,
-    use_existing_basket_from_invoice,
     create_checkout_session,
+    use_existing_basket_from_invoice,
+    generate_payment_session,
 )
 from commercialoperator.components.stubs.classes import DecimalEncoder
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
 from ledger_api_client.utils import calculate_excl_gst
+from ledger_api_client.ledger_models import Invoice
 
 import json
 
@@ -43,6 +48,8 @@ from decimal import Decimal
 
 
 import logging
+
+from commercialoperator.helpers import is_internal
 
 logger = logging.getLogger("payment_checkout")
 
@@ -428,8 +435,6 @@ def get_session_application_invoice(session):
         raise Exception("Application not in Session")
 
     try:
-        # return Invoice.objects.get(id=application_invoice_id)
-        # return Proposal.objects.get(id=proposal_id)
         return ApplicationFee.objects.get(id=application_fee_id)
     except Invoice.DoesNotExist:
         raise Exception(
@@ -1002,7 +1007,7 @@ def checkout(
     # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
     basket_params = json.loads(json.dumps(basket_params, cls=DecimalEncoder))
 
-    basket, basket_hash = create_basket_session(request, request.user.id, basket_params)
+    basket_hash = create_basket_session(request, request.user.id, basket_params)
 
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
@@ -1017,37 +1022,27 @@ def checkout(
         ),  # 'http://mooring-ria-jm.dbca.wa.gov.au/success/'
         "force_redirect": True,
         "invoice_text": invoice_text,  # 'Reservation for Jawaid Mushtaq from 2019-05-17 to 2019-05-19 at RIA 005'
+        "proxy": True if is_internal(request) else False,
+        "session_type": "ledger_api",
+        "basket_owner": request.user.id,
     }
 
-    if proxy or request.user.is_anonymous():
+    logger.info(
+        f"Creating checkout session with checkout parameters: {checkout_params}"
+    )
+    if proxy or request.user.is_anonymous:
         checkout_params["basket_owner"] = proposal.submitter_id
 
     create_checkout_session(request, checkout_params)
 
-    response = HttpResponseRedirect(reverse("checkout:index"))
-    response.set_cookie(
-        settings.OSCAR_BASKET_COOKIE_OPEN,
-        basket_hash,
-        max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-        secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-        httponly=True,
-    )
+    logger.info("Redirecting user to ledgergw payment details page.")
+    return redirect(reverse("ledgergw-payment-details"))
 
-    if invoice_text == "Application Fee" and proposal.allow_full_discount:
-        response = HttpResponseRedirect(reverse("zero_fee_success"))
-        response.set_cookie(
-            settings.OSCAR_BASKET_COOKIE_OPEN,
-            basket_hash,
-            max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-            secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-            httponly=True,
-        )
-
-    return response
 
 
 def checkout_existing_invoice(
     request,
+    proposal,
     invoice,
     lines,
     return_url_ns="public_booking_success",
@@ -1057,14 +1052,12 @@ def checkout_existing_invoice(
     proxy=False,
 ):
     basket_params = {
-        #'products': invoice.order.basket.lines.all(),
         "products": lines,
         "vouchers": vouchers,
         "system": settings.PAYMENT_SYSTEM_ID,
         "custom_basket": True,
     }
 
-    basket, basket_hash = use_existing_basket_from_invoice(invoice.reference)
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri("/"),
@@ -1074,31 +1067,40 @@ def checkout_existing_invoice(
         "invoice_text": invoice.text,
     }
 
-    create_checkout_session(request, checkout_params)
+    return_url = request.build_absolute_uri(reverse(return_url_ns))
+    fallback_url = request.build_absolute_uri("/")
+    payment_session = generate_payment_session(request, invoice.reference, return_url, fallback_url)
 
+    # NOTE: I commented out the old way of redirecting to index
     # response = HttpResponseRedirect(reverse('checkout:index'))
     # use HttpResponse instead of HttpResponseRedirect - HttpResonseRedirect does not pass cookies which is important for ledger to get the correct basket
-    response = HttpResponse(
-        "<script> window.location='"
-        + reverse("checkout:index")
-        + "';</script> <a href='"
-        + reverse("checkout:index")
-        + "'> Redirecting please wait: "
-        + reverse("checkout:index")
-        + "</a>"
-    )
+    # response = HttpResponse(
+    #     "<script> window.location='"
+    #     + reverse("checkout:index")
+    #     + "';</script> <a href='"
+    #     + reverse("checkout:index")
+    #     + "'> Redirecting please wait: "
+    #     + reverse("checkout:index")
+    #     + "</a>"
+    # )
 
     # inject the current basket into the redirect response cookies
     # or else, anonymous users will be directionless
-    response.set_cookie(
-        settings.OSCAR_BASKET_COOKIE_OPEN,
-        basket_hash,
-        max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-        secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-        httponly=True,
-    )
+    # response.set_cookie(
+    #     settings.OSCAR_BASKET_COOKIE_OPEN,
+    #     basket_hash,
+    #     max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
+    #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
+    #     httponly=True,
+    # )
 
-    return response
+
+    # NOTE: Not sure if we need these session variables
+    request.session["payment_pk"] = proposal.pk
+    request.session["payment_model"] = "proposal"
+
+    return HttpResponseRedirect(payment_session["payment_url"])
+    # return redirect(reverse("ledgergw-payment-details"))
 
 
 def oracle_integration(date, override):
@@ -1227,3 +1229,29 @@ def create_invoice(booking, payment_method="bpay"):
     )
 
     return order
+
+
+def get_invoice_properties(invoice_id):
+    import ledger_api_client.utils as ledger_utils
+
+    invoice_properties_response = ledger_utils.get_invoice_properties(invoice_id)
+
+    if invoice_properties_response.get("status", None) != status.HTTP_200_OK:
+        logger.error(
+            f"Invoice properties not found for invoice {invoice_id}: {invoice_properties_response['message']}"
+        )
+        return {}
+
+    return invoice_properties_response.get("data", {})
+
+
+def get_invoice_pdf(invoice_reference):
+    api_key = settings.LEDGER_API_KEY
+    url = (
+        settings.LEDGER_API_URL
+        + "/ledgergw/invoice-pdf/"
+        + api_key
+        + "/"
+        + invoice_reference
+    )
+    return requests.get(url=url)

@@ -99,7 +99,6 @@
                                     />
                                 </template>
                                 <template v-if="col_types[index] == 'checkbox'">
-                                    <!--<input :id="'id_checkbox_' + row_idx" class="tbl_input" :type="col_types[index]" v-on:input="row[index] = $event.target.checked"  :checked="row[index]" :checkbox="same_tour_group_checkbox[row_idx].checked" @change="calcPrice(row, row_idx, index)" :title="tooltip_same_group_tour(row, row_idx)" :disabled="same_tour_group_checkbox[row_idx].disabled"/>-->
                                     <input
                                         :id="'id_checkbox_' + row_idx"
                                         v-model="row[index]"

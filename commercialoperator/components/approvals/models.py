@@ -5,7 +5,6 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_delete
 from django.core.exceptions import ValidationError
 
-# from django.contrib.postgres.fields.jsonb import JSONField
 from django.db.models import JSONField
 from django.utils import timezone
 from django.conf import settings
@@ -290,13 +289,12 @@ class Approval(RevisionedMixin):
     @property
     def applicant(self):
         if self.org_applicant:
-            return self.org_applicant.organisation.name
+            return self.org_applicant.name
         elif self.proxy_applicant:
             return "{} {}".format(
                 self.proxy_applicant.first_name, self.proxy_applicant.last_name
             )
         else:
-            # return None
             try:
                 return "{} {}".format(
                     self.submitter.first_name, self.submitter.last_name

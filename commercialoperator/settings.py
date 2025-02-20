@@ -121,6 +121,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE_CLASSES += [
     "commercialoperator.middleware.BookingTimerMiddleware",
     "commercialoperator.middleware.FirstTimeNagScreenMiddleware",
+    # "commercialoperator.middleware.PaymentSessionMiddleware",
     "commercialoperator.middleware.RevisionOverrideMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]

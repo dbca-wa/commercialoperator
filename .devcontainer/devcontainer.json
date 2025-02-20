@@ -11,5 +11,5 @@
 		   "--hostname","commercialoperator-dev"
 		   ],
 	"forwardPorts": [9106,9107,9108,9109,9110],
-	"initializeCommand" : "${localEnv:HOME}/docker-scripts-dev/windows_vbox/postgres_docker_load.sh && ${localEnv:HOME}/docker-scripts-dev/windows_vbox/ledger_docker_load.sh "
+	"initializeCommand" : "${localEnv:HOME}/docker-scripts-dev/windows_vbox/postgres_docker_load_2404.sh && ${localEnv:HOME}/docker-scripts-dev/windows_vbox/ledger_docker_load.sh "
 }

@@ -8,11 +8,13 @@ from ledger_api_client.order import (
 import json
 import decimal
 
+
 class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, decimal.Decimal):
             return str(o)
         return super().default(o)
+
 
 class ErsatzQuerySet(models.QuerySet):
     def filter(self, *args: Any, **kwargs: Any):
@@ -65,14 +67,6 @@ class BpointTransaction(Ersatz):
 
 class BpayTransaction(Ersatz):
     """ledger.payments.models.BpayTransaction"""
-
-    class Meta:
-        managed = False
-        app_label = "cols_segregation_app"
-
-
-class Invoice(Ersatz):
-    """ledger.payments.models.Invoice"""
 
     class Meta:
         managed = False

@@ -6,13 +6,14 @@ from commercialoperator.components.stubs.classes import (
     CashTransaction,
     BpointTransaction,
     BpayTransaction,
-    Invoice,
 )
 from commercialoperator.components.bookings.models import (
     BookingInvoice,
     ApplicationFeeInvoice,
 )
 from commercialoperator.components.stubs.decorators import basic_exception_handler
+
+from ledger_api_client.ledger_models import Invoice
 
 
 @basic_exception_handler

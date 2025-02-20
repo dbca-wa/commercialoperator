@@ -389,15 +389,15 @@ export default {
                                     'monthly invoicing' &&
                                     full.invoice_reference !== null)
                             ) {
-                                links += `<a href='/cols/payments/invoice-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i></a> &nbsp`;
-                                links += `<a href='/cols/payments/confirmation-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf-o'></i></a><br/>`;
+                                links += `<a href='/cols/payments/invoice-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i></a>`;
+                                links += `<a href='/cols/payments/confirmation-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'></i></a><br/>`;
                             } else if (
                                 full.payment_method.toLowerCase() ==
                                     'monthly invoicing' &&
                                 full.invoice_reference == null
                             ) {
                                 // running aggregated monthly booking - not yet invoiced
-                                links += `<a href='/cols/payments/monthly-confirmation-pdf/booking/${full.id}.pdf' target='_blank' style='padding-left: 52px;'><i style='color:red;' class='fa fa-file-pdf-o'></i></a><br/>`;
+                                links += `<a href='/cols/payments/monthly-confirmation-pdf/booking/${full.id}.pdf' target='_blank' style='padding-left: 52px;'><i style='color:red;' class='fa fa-file-pdf'></i></a><br/>`;
                             }
                             return links;
                         },
@@ -416,9 +416,9 @@ export default {
                                     full.payment_status.toLowerCase() ==
                                         'over_paid'
                                 ) {
-                                    links += `<a href='/ledger/payments/invoice/payment?invoice=${full.invoice_reference}' target='_blank'>View Payment</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-payment-view/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
                                 } else if (full.invoice_reference !== null) {
-                                    links += `<a href='/ledger/payments/invoice/payment?invoice=${full.invoice_reference}' target='_blank'>Record Payment</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-payment-view/${full.invoice_reference}' target='_blank'>Record Payment</a><br/>`;
                                 }
                             }
                             return links;

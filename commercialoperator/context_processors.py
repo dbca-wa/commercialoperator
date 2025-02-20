@@ -1,3 +1,4 @@
+import hashlib
 from django.conf import settings
 from ledger_api_client import utils as ledger_api_utils
 
@@ -10,6 +11,16 @@ from commercialoperator.settings import (
 
 
 def commercialoperator_url(request):
+
+    checkouthash = None
+    if "payment_model" in request.session and "payment_pk" in request.session:
+        checkouthash = hashlib.sha256(
+            str(
+                str(request.session["payment_model"])
+                + str(request.session["payment_pk"])
+            ).encode("utf-8")
+        ).hexdigest()
+
     organisations_user_can_admin = Organisation.organisations_user_can_admin(
         request.user.id
     )
@@ -24,4 +35,5 @@ def commercialoperator_url(request):
         "PAYMENT_SYSTEM_PREFIX": settings.PAYMENT_SYSTEM_PREFIX,
         "app_build_url": settings.DEV_APP_BUILD_URL,
         "ledger_totals": ledger_totals,
+        "checkouthash": checkouthash,
     }
