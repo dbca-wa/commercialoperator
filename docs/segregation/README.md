@@ -34,7 +34,7 @@ That is the database to work with from now on.
 
 ## Change what DATABASE_URL points to in env file
 
-`DATABASE_URL=postgis://commercialoperator_dev:commercialoperator_dev@172.17.0.1:5432/commercialoperator_segregation`
+`DATABASE_URL=postgis://commercialoperator_dev:commercialoperator_dev@172.17.0.1:15432/commercialoperator_segregation`
 
 ## Possibly have to change tables ownership from e.g. postgres to database user, e.g. commercialoperator_dev, from command line
 
