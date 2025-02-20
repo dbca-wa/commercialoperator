@@ -193,7 +193,6 @@ class FilmingFeeView(TemplateView):
     @transaction.atomic
     def get(self, request, *args, **kwargs):
         proposal = self.get_object()
-        # filming_fee = FilmingFee.objects.create(proposal=proposal, created_by=request.user, payment_type=FilmingFee.PAYMENT_TYPE_TEMPORARY)
         filming_fee = proposal.filming_fees.order_by("-id").first()
         inv_ref = (
             filming_fee.filming_fee_invoices.order_by("-id").first().invoice_reference
@@ -210,11 +209,11 @@ class FilmingFeeView(TemplateView):
                     for w in proposal.filming_activity.film_type
                 ]
             )
-            # invoice_text = 'Payment Invoice: {} - {}'.format(film_types, self.filming_activity.activity_title)
             invoice_text = "Payment Invoice: {}".format(film_types)
 
             checkout_response = checkout_existing_invoice(
                 request,
+                proposal,
                 invoice,
                 lines,
                 return_url_ns="filming_fee_success",

@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -32,8 +32,9 @@ from commercialoperator.components.bookings.email import (
 
 from ledger_api_client.utils import (
     create_basket_session,
-    use_existing_basket_from_invoice,
     create_checkout_session,
+    use_existing_basket_from_invoice,
+    generate_payment_session,
 )
 from commercialoperator.components.stubs.classes import DecimalEncoder
 from commercialoperator.components.stubs.decorators import basic_exception_handler
@@ -1041,6 +1042,7 @@ def checkout(
 
 def checkout_existing_invoice(
     request,
+    proposal,
     invoice,
     lines,
     return_url_ns="public_booking_success",
@@ -1050,14 +1052,12 @@ def checkout_existing_invoice(
     proxy=False,
 ):
     basket_params = {
-        #'products': invoice.order.basket.lines.all(),
         "products": lines,
         "vouchers": vouchers,
         "system": settings.PAYMENT_SYSTEM_ID,
         "custom_basket": True,
     }
 
-    basket, basket_hash = use_existing_basket_from_invoice(invoice.reference)
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri("/"),
@@ -1067,31 +1067,40 @@ def checkout_existing_invoice(
         "invoice_text": invoice.text,
     }
 
-    create_checkout_session(request, checkout_params)
+    return_url = request.build_absolute_uri(reverse(return_url_ns))
+    fallback_url = request.build_absolute_uri("/")
+    payment_session = generate_payment_session(request, invoice.reference, return_url, fallback_url)
 
+    # NOTE: I commented out the old way of redirecting to index
     # response = HttpResponseRedirect(reverse('checkout:index'))
     # use HttpResponse instead of HttpResponseRedirect - HttpResonseRedirect does not pass cookies which is important for ledger to get the correct basket
-    response = HttpResponse(
-        "<script> window.location='"
-        + reverse("checkout:index")
-        + "';</script> <a href='"
-        + reverse("checkout:index")
-        + "'> Redirecting please wait: "
-        + reverse("checkout:index")
-        + "</a>"
-    )
+    # response = HttpResponse(
+    #     "<script> window.location='"
+    #     + reverse("checkout:index")
+    #     + "';</script> <a href='"
+    #     + reverse("checkout:index")
+    #     + "'> Redirecting please wait: "
+    #     + reverse("checkout:index")
+    #     + "</a>"
+    # )
 
     # inject the current basket into the redirect response cookies
     # or else, anonymous users will be directionless
-    response.set_cookie(
-        settings.OSCAR_BASKET_COOKIE_OPEN,
-        basket_hash,
-        max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-        secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-        httponly=True,
-    )
+    # response.set_cookie(
+    #     settings.OSCAR_BASKET_COOKIE_OPEN,
+    #     basket_hash,
+    #     max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
+    #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
+    #     httponly=True,
+    # )
 
-    return response
+
+    # NOTE: Not sure if we need these session variables
+    request.session["payment_pk"] = proposal.pk
+    request.session["payment_model"] = "proposal"
+
+    return HttpResponseRedirect(payment_session["payment_url"])
+    # return redirect(reverse("ledgergw-payment-details"))
 
 
 def oracle_integration(date, override):
