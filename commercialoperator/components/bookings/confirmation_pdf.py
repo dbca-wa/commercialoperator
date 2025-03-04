@@ -183,7 +183,6 @@ class Remittance(Flowable):
         canvas = self.canv
         current_y, current_x = self.current_y, self.current_x
         bpay_logo = ImageReader(BPAY_LOGO)
-        # current_y -= 40
         # Pay By Cheque
         cheque_x = current_x + 4 * inch
         cheque_y = current_y - 30
@@ -408,31 +407,12 @@ def _create_header(canvas, doc, draw_page_number=True):
             booking.booking_number,
         )
 
-    if booking.deferred_payment_date and invoice.payment_method in [
-        invoice.PAYMENT_METHOD_MONTHLY_INVOICING,
-        invoice.PAYMENT_METHOD_BPAY,
-    ]:
-        canvas.drawRightString(
-            current_x + 20,
-            current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 7,
-            "Payment Due Date",
-        )
-        canvas.drawString(
-            current_x + invoice_details_offset,
-            current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 7,
-            booking.deferred_payment_date.strftime(DATE_FORMAT),
-        )
-
     canvas.restoreState()
 
 
 def _create_confirmation(confirmation_buffer, invoice, booking):
 
     global DPAW_HEADER_LOGO
-    #    if  cols_var["TEMPLATE_GROUP"] == 'rottnest':
-    #        DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'mooring', 'static', 'mooring', 'img','logo-rottnest-island-sm.png')
-    #    else:
-    #        DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'ledger', 'payments','static', 'payments', 'img','dbca_logo.jpg')
     DPAW_HEADER_LOGO = os.path.join(
         settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
     )
@@ -464,10 +444,8 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
     # this is the only way to get data into the onPage callback function
     doc.invoice = invoice
     doc.booking = booking
-    owner = invoice.owner
 
     elements = []
-    # elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 5))
 
     # Draw Products Table
     invoice_table_style = TableStyle(
@@ -478,16 +456,9 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
         ]
     )
     items = invoice.order.lines.all()
-    discounts = invoice.order.basket_discounts
-    # if invoice.text:
-    #    elements.append(Paragraph(invoice.text, styles['Left']))
-    #    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
 
-    data = [
-        # ['Item','Product', 'Quantity','Unit Price', 'Total']
-        ["Item", "Product", "Quantity", "Fees"]
-    ]
+    data = [["Item", "Product", "Quantity", "Fees"]]
     val = 1
     s = styles["BodyText"]
     s.wordWrap = "CJK"
@@ -523,14 +494,6 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
 
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 6))
 
-    # Remitttance Frame
-    #    elements.append(FrameBreak())
-    #    boundary = BrokenLine(PAGE_WIDTH - 2 * (PAGE_MARGIN *1.1))
-    #    elements.append(boundary)
-    #    elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-    #
-    #    remittance = Remittance(HEADER_MARGIN,HEADER_MARGIN - 10,invoice)
-    #    elements.append(remittance)
     doc.build(elements)
 
     return confirmation_buffer
