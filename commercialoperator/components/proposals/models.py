@@ -1,6 +1,7 @@
 import json
 import datetime
 from dateutil.relativedelta import relativedelta
+from django.urls import reverse
 from django.db import models, transaction
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -3213,15 +3214,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             raise
 
     @transaction.atomic
-    def __create_filming_fee_invoice(self, request):
+    def __create_filming_fee_invoice(
+        self,
+        request,
+        return_preload_url_ns =  "filming_fee_success",
+    ):
 
         from dateutil.relativedelta import relativedelta
         from commercialoperator.components.bookings.models import FilmingFee
         from commercialoperator.components.bookings.utils import (
             create_filming_fee_lines,
         )
-        from commercialoperator.components.stubs.utils import createCustomBasket
-        from commercialoperator.components.stubs.classes import CreateInvoiceBasket
 
         filming_fee = None
         if (
@@ -3241,12 +3244,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 reference = self.lodgement_number
 
                 basket_params = {
+                    "system": settings.PAYMENT_SYSTEM_ID,
                     "products": lines,
                     "vouchers": [],
-                    "system": settings.PAYMENT_SYSTEM_ID,
                     "custom_basket": True,
                     "booking_reference": reference,
                     "booking_reference_link": reference,
+                    "fallback_url": request.build_absolute_uri("/"),
                 }
                 basket_hash = create_basket_session(
                     request, request.user.id, basket_params
@@ -3256,8 +3260,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     status="Open", owner=request.user
                 ).order_by("-id")[:1]
 
+                invoice_name = self.applicant_obj.name
+                return_preload_url = request.build_absolute_uri(
+                    reverse(return_preload_url_ns)
+                )
+                due_date = None
                 future_invoice_response = process_create_future_invoice(
-                    basket[0].id, invoice_text="Payment Invoice"
+                    basket[0].id,
+                    invoice_text="Payment Invoice",
+                    return_preload_url=return_preload_url,
+                    invoice_name=invoice_name,
+                    due_date=due_date,
                 )
                 if future_invoice_response.get("status") != status.HTTP_200_OK:
                     raise ValidationError(
