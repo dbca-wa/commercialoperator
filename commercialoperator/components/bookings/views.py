@@ -1,3 +1,5 @@
+import requests
+
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -76,6 +78,7 @@ from commercialoperator.components.stubs.utils import update_payments
 from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Order
 
 from ledger_api_client.ledger_models import Basket, Invoice
+from ledger_api_client.utils import Order
 
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
@@ -592,15 +595,16 @@ class FilmingFeeSuccessView(TemplateView):
         inv = None
         try:
             context = template_context(self.request)
-            basket = None
+            # basket = None
             filming_fee = get_session_filming_invoice(request.session)
             fee_inv = filming_fee.filming_fee_invoices.order_by("-id").first()
             invoice_ref = fee_inv.invoice_reference
             proposal = filming_fee.proposal
 
+            applicant = proposal.applicant_obj
             try:
-                recipient = proposal.applicant.email
-                submitter = proposal.applicant
+                recipient = Organisation.objects.get(id=applicant.id).email
+                submitter = applicant
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
@@ -608,11 +612,8 @@ class FilmingFeeSuccessView(TemplateView):
             inv = Invoice.objects.get(reference=invoice_ref)
             if filming_fee.payment_type == FilmingFee.PAYMENT_TYPE_TEMPORARY:
                 try:
-                    # inv = Invoice.objects.get(reference=invoice_ref)
                     order = Order.objects.get(number=inv.order_number)
-                    order.user = submitter
-                    order.save()
-                except Invoice.DoesNotExist:
+                except requests.exceptions.JSONDecodeError:
                     logger.error(
                         "{} tried paying an filming fee with an incorrect invoice".format(
                             "User {} with id {}".format(
@@ -643,12 +644,12 @@ class FilmingFeeSuccessView(TemplateView):
                 if fee_inv:
                     filming_fee.payment_type = FilmingFee.PAYMENT_TYPE_INTERNET
                     filming_fee.expiry_time = None
-                    update_payments(invoice_ref)
 
-                    if proposal and (
-                        inv.payment_status == "paid"
-                        or inv.payment_status == "over_paid"
-                    ):
+                    invoice_properties = get_invoice_properties(inv.id)
+                    payment_status = invoice_properties.get("invoice", {}).get(
+                        "payment_status"
+                    )
+                    if proposal and payment_status in ["paid", "over_paid"]:
                         proposal.fee_invoice_reference = invoice_ref
                         proposal.save()
                         proposal.final_approval(request, None)
@@ -669,12 +670,13 @@ class FilmingFeeSuccessView(TemplateView):
                     context = {
                         "proposal": proposal,
                         "submitter": submitter,
-                        #'fee_invoice': invoice
                         "fee_invoice": fee_inv,
                     }
                     return render(request, self.template_name, context)
 
         except Exception as e:
+            logger.error("Error Creating Filming Fee: {}".format(e))
+
             if (
                 "cols_last_filming_invoice" in request.session
             ) and FilmingFee.objects.filter(
@@ -923,6 +925,8 @@ class ApplicationFeeSuccessView(TemplateView):
                     return render(request, self.template_name, context)
 
         except Exception as e:
+            logger.error("Error Creating Application Fee: {}".format(e))
+
             if (
                 "cols_last_app_invoice" in request.session
             ) and ApplicationFee.objects.filter(
