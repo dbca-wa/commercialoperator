@@ -1,7 +1,7 @@
 import os
 
 from io import BytesIO
-from ledger_api_client.utils import currency
+from ledger_api_client.utils import currency, calculate_excl_gst
 from reportlab.lib import enums
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (
@@ -21,7 +21,6 @@ from reportlab.lib import colors
 
 from django.conf import settings
 
-from ledger_api_client.utils import calculate_excl_gst
 from commercialoperator.components.main.utils import to_local_tz
 
 DPAW_HEADER_LOGO = os.path.join(
