@@ -1362,7 +1362,7 @@ class InvoicePaymentView(View):
                 settings.LEDGER_UI_URL,
                 f"ledger/payments/oracle/payments?invoice_no={invoice.reference}",
             )
-            return redirect(ledger_invoice_url)
+            return HttpResponseRedirect(ledger_invoice_url)
 
         raise PermissionDenied
 
