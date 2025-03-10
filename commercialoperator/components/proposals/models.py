@@ -49,6 +49,7 @@ from commercialoperator.components.proposals.email import (
     send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
 )
+from commercialoperator.components.proposals.mixins import MembersEmailMixin
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
@@ -209,7 +210,7 @@ class TaggedProposalAssessorGroupActivities(TaggedItemBase):
         app_label = "commercialoperator"
 
 
-class ProposalAssessorGroup(models.Model):
+class ProposalAssessorGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
@@ -257,12 +258,12 @@ class ProposalAssessorGroup(models.Model):
         ]
         return Proposal.objects.filter(processing_status__in=assessable_states)
 
-    @property
-    def members_email(self):
-        members = retrieve_group_members(self)
-        emailusers = [retrieve_email_user(i) for i in members]
-        emailusers = [u for u in emailusers if u]
-        return [u.email for u in emailusers]
+    # @property
+    # def members_email(self):
+    #     members = retrieve_group_members(self)
+    #     emailusers = [retrieve_email_user(i) for i in members]
+    #     emailusers = [u for u in emailusers if u]
+    #     return [u.email for u in emailusers]
 
 
 class TaggedProposalApproverGroupRegions(TaggedItemBase):
@@ -283,7 +284,7 @@ class TaggedProposalApproverGroupActivities(TaggedItemBase):
         app_label = "commercialoperator"
 
 
-class ProposalApproverGroup(models.Model):
+class ProposalApproverGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
@@ -329,11 +330,11 @@ class ProposalApproverGroup(models.Model):
         assessable_states = ["with_approver"]
         return Proposal.objects.filter(processing_status__in=assessable_states)
 
-    @property
-    def members_email(self):
-        members = retrieve_group_members(self)
-        emailusers = [retrieve_email_user(i) for i in members]
-        return [u.email for u in emailusers]
+    # @property
+    # def members_email(self):
+    #     members = retrieve_group_members(self)
+    #     emailusers = [retrieve_email_user(i) for i in members]
+    #     return [u.email for u in emailusers]
 
 
 class DefaultDocument(Document):
@@ -3217,7 +3218,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def __create_filming_fee_invoice(
         self,
         request,
-        return_preload_url_ns =  "filming_fee_success",
+        return_preload_url_ns="filming_fee_success",
     ):
 
         from dateutil.relativedelta import relativedelta
@@ -6732,10 +6733,10 @@ class ProposalFilmingParks(models.Model):
                             default=True
                         )
                     if kens_proposal.processing_status == "with_assessor":
-                        return (
-                            assessor_group
-                            in user.districtproposalassessorgroup_set.all()
+                        user_district_assessor_groups = retrieve_user_groups(
+                            "districtproposalassessorgroup", user.id
                         )
+                        return assessor_group in user_district_assessor_groups
                     else:
                         return False
 
@@ -6757,10 +6758,10 @@ class ProposalFilmingParks(models.Model):
                     if district_proposal:
                         district_proposal = district_proposal[0]
                         if district_proposal.processing_status == "with_assessor":
-                            return (
-                                assessor_group
-                                in user.districtproposalassessorgroup_set.all()
+                            user_district_assessor_groups = retrieve_user_groups(
+                                "districtproposalassessorgroup", user.id
                             )
+                            return assessor_group in user_district_assessor_groups
                         else:
                             return False
                     else:
@@ -6819,7 +6820,7 @@ class FilmingParkDocument(Document):
 
 
 # Internal Workflow models - Filming application
-class DistrictProposalAssessorGroup(models.Model):
+class DistrictProposalAssessorGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     district = models.ForeignKey(
@@ -6853,12 +6854,8 @@ class DistrictProposalAssessorGroup(models.Model):
                     "There can only be one default District assessor group"
                 )
 
-    @property
-    def members_email(self):
-        return [i.email for i in self.members.all()]
 
-
-class DistrictProposalApproverGroup(models.Model):
+class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     district = models.ForeignKey(
@@ -6890,10 +6887,6 @@ class DistrictProposalApproverGroup(models.Model):
                 raise ValidationError(
                     "There can only be one default district approver group"
                 )
-
-    @property
-    def members_email(self):
-        return [i.email for i in self.members.all()]
 
 
 class DistrictProposalQuerySet(models.QuerySet):
@@ -7143,10 +7136,9 @@ class DistrictProposal(models.Model):
             return False
 
     def can_process_requirements(self, user):
-        # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
         if self.processing_status in ["with_assessor", "with_assessor_requirements"]:
-            return (
-                self.__assessor_group() in user.districtproposalassessorgroup_set.all()
+            return self.__assessor_group() in retrieve_user_groups(
+                "districtproposalassessorgroup", user.id
             )
         else:
             return False
@@ -7157,7 +7149,9 @@ class DistrictProposal(models.Model):
             group = self.__approver_group()
         else:
             group = self.__assessor_group()
-        return group.members.all() if group else []
+
+        group_members = retrieve_group_members(group)
+        return group_members
 
     def assign_officer(self, request, officer):
         with transaction.atomic():
