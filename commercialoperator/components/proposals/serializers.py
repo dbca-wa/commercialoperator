@@ -92,6 +92,7 @@ class EmailUserAppViewBaseSerializer(EmailUserSerializer):
     email = serializers.SerializerMethodField()
     phone_number = serializers.SerializerMethodField()
     mobile_number = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
 
     def get_dob(self, obj):
         emailuser = retrieve_email_user(obj)
@@ -110,6 +111,12 @@ class EmailUserAppViewBaseSerializer(EmailUserSerializer):
     def get_mobile_number(self, obj):
         emailuser = retrieve_email_user(obj)
         return emailuser.mobile_number if emailuser else None
+
+    def get_address(self, obj):
+        emailuser = retrieve_email_user(obj)
+        if not emailuser:
+            return None
+        return UserAddressSerializer(emailuser).data
 
 
 class EmailUserAppViewSerializer(EmailUserAppViewBaseSerializer):
@@ -729,8 +736,6 @@ class ProposalSerializer(BaseProposalSerializer):
     )
     region = serializers.CharField(source="region.name", read_only=True)
     district = serializers.CharField(source="district.name", read_only=True)
-
-    # tenure = serializers.CharField(source='tenure.name', read_only=True)
 
     def get_readonly(self, obj):
         return obj.can_user_view
@@ -1446,7 +1451,7 @@ class ProposalFilmingSerializer(BaseProposalSerializer):
 
 
 class InternalFilmingProposalSerializer(BaseProposalSerializer):
-    applicant = serializers.CharField(read_only=True)
+    applicant = serializers.SerializerMethodField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
     review_status = serializers.SerializerMethodField(read_only=True)
@@ -1609,7 +1614,7 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
             if obj.fee_paid
             else None
         )
-    
+
     def get_proposed_issuance_approval(self, obj):
         pia = obj.proposed_issuance_approval
         if not pia:
@@ -1637,6 +1642,18 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
             "expiry_date": expiry_date_str,
             "cc_email": pia.get("cc_email"),
         }
+
+    def get_applicant(self, obj):
+        applicant_obj = obj.applicant_obj
+        contacts = applicant_obj.contacts.all()
+        contact_emails = [c.email for c in contacts if c]
+
+        contact_users = EmailUser.objects.filter(email__in=contact_emails)
+        if len(contact_users) > 0:
+            applicant = contact_users[0]
+            return EmailUserSerializer(applicant.id).data
+
+        return []
 
 
 # Event serializer
@@ -2015,6 +2032,7 @@ class DistrictProposalSerializer(serializers.ModelSerializer):
     can_process_requirements = serializers.SerializerMethodField()
     district_name = serializers.CharField(read_only=True)
     districtproposaldeclineddetails = DistrictProposalDeclinedDetailsSerializer()
+    applicant = serializers.SerializerMethodField()
 
     class Meta:
         model = DistrictProposal
@@ -2046,6 +2064,15 @@ class DistrictProposalSerializer(serializers.ModelSerializer):
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
         )
         return obj.can_process_requirements(user)
+
+    def get_applicant(self, obj):
+        applicant = obj.proposal.applicant_obj
+        contacts = applicant.contacts.all()
+        contact_emails = [c.email for c in contacts if c]
+
+        contact_users = EmailUser.objects.filter(email__in=contact_emails)
+
+        return EmailUserSerializer([u.id for u in contact_users], many=True).data
 
 
 class ListDistrictProposalSerializer(serializers.ModelSerializer):
