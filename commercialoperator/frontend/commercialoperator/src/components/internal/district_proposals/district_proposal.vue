@@ -568,7 +568,7 @@
             ref="proposed_approval"
             :processing_status="district_proposal.processing_status"
             :district_proposal_id="district_proposal.id"
-            :proposal_type="proposal.proposal_type"
+            :district_proposal_type="districtProposalType"
             :proposal_id="district_proposal.proposal.id"
             :is-approval-level-document="isApprovalLevelDocument"
             @refreshFromResponse="refreshFromResponse"
@@ -843,6 +843,14 @@ export default {
         },
         application_type_event: function () {
             return api_endpoints.event;
+        },
+        hasAssessorMode() {
+            return this.proposal.assessor_mode.has_assessor_mode;
+        },
+        districtProposalType() {
+            return this.district_proposal.proposal
+                ? this.district_proposal.proposal.proposal_type
+                : '';
         },
     },
     watch: {},
