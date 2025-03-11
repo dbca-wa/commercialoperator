@@ -7441,68 +7441,63 @@ class DistrictProposal(models.Model):
             except:
                 raise
 
+    @transaction.atomic
     def preview_approval(self, request, details):
         from commercialoperator.components.approvals.models import PreviewTempApproval
 
-        with transaction.atomic():
-            try:
-                if self.processing_status != "with_approver":
-                    raise ValidationError(
-                        "Licence preview only available when processing status is with_approver. Current status {}".format(
-                            self.processing_status
-                        )
+        try:
+            if self.processing_status != "with_approver":
+                raise ValidationError(
+                    "Licence preview only available when processing status is with_approver. Current status {}".format(
+                        self.processing_status
                     )
-                if not self.can_assess(request.user):
-                    raise exceptions.ProposalNotAuthorized()
-                # if not self.applicant.organisation.postal_address:
-                if not self.proposal.applicant_address:
-                    raise ValidationError(
-                        "The applicant needs to have set their postal address before approving this proposal."
-                    )
-                self.processing_status = "approved"
-                self.save()
-                # lodgement_number = self.previous_application.approval.lodgement_number if self.proposal_type in ['renewal', 'amendment'] else None # renewals/amendments keep same licence number
-                # lodgement_number = self.proposal.approval.lodgement_number
-                if self.proposal.proposal_type in ["renewal", "amendment"]:
-                    lodgement_number = (
-                        self.proposal.previous_application.approval.lodgement_number
-                    )
-                elif self.proposal.approval:
-                    lodgement_number = self.proposal.approval.lodgement_number
-                else:
-                    lodgement_number = (
-                        None  # renewals/amendments keep same licence number
-                    )
-                preview_approval = PreviewTempApproval.objects.create(
-                    current_proposal=self.proposal,
-                    issue_date=timezone.now(),
-                    expiry_date=datetime.datetime.strptime(
-                        details.get("due_date"), "%d/%m/%Y"
-                    ).date(),
-                    start_date=datetime.datetime.strptime(
-                        details.get("start_date"), "%d/%m/%Y"
-                    ).date(),
-                    # expiry_date = details.get('due_date').strftime('%d/%m/%Y'),
-                    # start_date = details.get('start_date').strftime('%d/%m/%Y'),
-                    submitter=self.proposal.submitter,
-                    # org_applicant = self.applicant if isinstance(self.applicant, Organisation) else None,
-                    # proxy_applicant = self.applicant if isinstance(self.applicant, EmailUser) else None,
-                    org_applicant=self.proposal.org_applicant,
-                    proxy_applicant=self.proposal.proxy_applicant,
-                    lodgement_number=lodgement_number,
                 )
+            if not self.can_assess(request.user):
+                raise exceptions.ProposalNotAuthorized()
 
-                # Generate the preview document - get the value of the BytesIO buffer
-                licence_buffer = preview_approval.generate_doc(
-                    request.user, preview=True
+            if not self.proposal.applicant_address:
+                raise ValidationError(
+                    "The applicant needs to have set their postal address before approving this proposal."
                 )
+            self.processing_status = "approved"
+            self.save()
 
-                # clean temp preview licence object
-                transaction.set_rollback(True)
+            if self.proposal.proposal_type in ["renewal", "amendment"]:
+                lodgement_number = (
+                    self.proposal.previous_application.approval.lodgement_number
+                )
+            elif self.proposal.approval:
+                lodgement_number = self.proposal.approval.lodgement_number
+            else:
+                lodgement_number = (
+                    None  # renewals/amendments keep same licence number
+                )
+            preview_approval = PreviewTempApproval.objects.create(
+                current_proposal=self.proposal,
+                issue_date=timezone.now(),
+                expiry_date=datetime.datetime.strptime(
+                    details.get("expiry_date"), "%Y-%m-%d"
+                ).date(),
+                start_date=datetime.datetime.strptime(
+                    details.get("start_date"), "%Y-%m-%d"
+                ).date(),
+                submitter=self.proposal.submitter,
+                org_applicant=self.proposal.org_applicant,
+                proxy_applicant=self.proposal.proxy_applicant,
+                lodgement_number=lodgement_number,
+            )
 
-                return licence_buffer
-            except:
-                raise
+            # Generate the preview document - get the value of the BytesIO buffer
+            licence_buffer = preview_approval.generate_doc(
+                request.user, preview=True
+            )
+
+            # clean temp preview licence object
+            transaction.set_rollback(True)
+
+            return licence_buffer
+        except:
+            raise
 
     def final_approval(self, request, details):
         from commercialoperator.components.approvals.models import (

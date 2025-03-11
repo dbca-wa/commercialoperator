@@ -1231,29 +1231,24 @@ def _create_approval_lawful_authority(
             ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
         ]
     )
-
     elements = []
 
     # Organization details
-
-    address = proposal.applicant_address
-    # address = proposal.applicant_address
     if proposal.org_applicant:
+        organisation = proposal.org_applicant
         try:
-            email = (
-                proposal.org_applicant.organisation.organisation_set.all()
-                .first()
-                .contacts.all()
-                .first()
-                .email
-            )
+            contact = retrieve_organisation_delegate_ids(organisation.id).first()
         except:
             raise ValidationError(
                 "There is no contact for Organisation. Please create an Organisation contact"
             )
+        else:
+            emailuser = retrieve_email_user(contact)
+            if emailuser:
+                email = emailuser.email
     else:
         email = proposal.submitter.email
-    # elements.append(Paragraph(email,styles['BoldLeft']))
+
     elements.append(
         Paragraph(
             "CONSERVATION AND LAND MANAGEMENT REGULATIONS 2002 Regulation 4(1)",
@@ -1394,8 +1389,6 @@ def _create_approval_lawful_authority(
     elements.append(
         Paragraph("{} {}".format(user.first_name, user.last_name), styles["Left"])
     )
-    # if user.position_title:
-    #    elements.append(Paragraph('{}'.format(user.position_title), styles['Left']))
     elements.append(Paragraph("As Delegate of CEO", styles["Left"]))
     elements.append(
         Paragraph("Under Section 133(2) of the CALM Act 1984", styles["Left"])
@@ -1458,7 +1451,6 @@ def _create_approval_lawful_authority(
         ).values_list("id", flat=True)
     )
     for district_proposal in approved_district_proposals:
-        # for p in district_proposal.proposal_park.all():
         if district_proposal.parks_list:
             for p in district_proposal.parks_list:
                 park_data.append(
@@ -1493,9 +1485,6 @@ def _create_approval_lawful_authority(
     ).exclude(is_deleted=True)
     if requirements.exists():
         elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-        # elements.append(Paragraph('The following requirements must be satisfied for the licence not to be withdrawn:', styles['BoldLeft']))
-        # elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-
         conditionList = ListFlowable(
             [
                 Paragraph(a.requirement, styles["Left"])
