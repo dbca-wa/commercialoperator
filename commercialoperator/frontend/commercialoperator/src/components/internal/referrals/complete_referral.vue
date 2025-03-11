@@ -285,7 +285,7 @@ export default {
                             .removeClass('has-error');
                     });
                     // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
+                    // $('.' + this.settings.validClass).tooltip('destroy');
                     // add or update tooltips
                     for (var i = 0; i < errorList.length; i++) {
                         var error = errorList[i];
