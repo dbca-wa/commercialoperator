@@ -1,6 +1,7 @@
 from django.conf import settings
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.main.models import ApplicationType
+from commercialoperator.components.proposals.mixins import ProposedIssuanceApprovalMixin
 from commercialoperator.components.proposals.models import (
     ProposalType,
     Proposal,
@@ -927,7 +928,7 @@ class ProposalParkSerializer(BaseProposalSerializer):
         return obj.land_parks_exclude_free
 
 
-class InternalProposalSerializer(BaseProposalSerializer):
+class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprovalMixin):
     applicant = serializers.CharField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
@@ -1099,34 +1100,6 @@ class InternalProposalSerializer(BaseProposalSerializer):
 
     def get_marine_parks_activities(self, obj):
         return []
-
-    def get_proposed_issuance_approval(self, obj):
-        pia = obj.proposed_issuance_approval
-        if not pia:
-            return None
-
-        try:
-            start_date_obj = datetime.strptime(pia.get("start_date"), "%d/%m/%Y")
-        except ValueError:
-            logger.warning("Invalid start date format. Expecting dd/mm/YYYY")
-            start_date_str = None
-        else:
-            start_date_str = datetime.strftime(start_date_obj, "%Y-%m-%d")
-
-        try:
-            expiry_date_obj = datetime.strptime(pia.get("expiry_date"), "%d/%m/%Y")
-        except ValueError:
-            logger.warning("Invalid expiry date format. Expecting dd/mm/YYYY")
-            expiry_date_str = None
-        else:
-            expiry_date_str = datetime.strftime(expiry_date_obj, "%Y-%m-%d")
-
-        return {
-            "details": pia.get("details"),
-            "start_date": start_date_str,
-            "expiry_date": expiry_date_str,
-            "cc_email": pia.get("cc_email"),
-        }
 
 
 class ProposalUserActionSerializer(serializers.ModelSerializer):
@@ -1450,7 +1423,9 @@ class ProposalFilmingSerializer(BaseProposalSerializer):
         return obj.can_user_view
 
 
-class InternalFilmingProposalSerializer(BaseProposalSerializer):
+class InternalFilmingProposalSerializer(
+    BaseProposalSerializer, ProposedIssuanceApprovalMixin
+):
     applicant = serializers.SerializerMethodField(read_only=True)
     org_applicant = OrganisationSerializer()
     processing_status = serializers.SerializerMethodField(read_only=True)
@@ -1614,34 +1589,6 @@ class InternalFilmingProposalSerializer(BaseProposalSerializer):
             if obj.fee_paid
             else None
         )
-
-    def get_proposed_issuance_approval(self, obj):
-        pia = obj.proposed_issuance_approval
-        if not pia:
-            return None
-
-        try:
-            start_date_obj = datetime.strptime(pia.get("start_date"), "%d/%m/%Y")
-        except ValueError:
-            logger.warning("Invalid start date format. Expecting dd/mm/YYYY")
-            start_date_str = None
-        else:
-            start_date_str = datetime.strftime(start_date_obj, "%Y-%m-%d")
-
-        try:
-            expiry_date_obj = datetime.strptime(pia.get("expiry_date"), "%d/%m/%Y")
-        except ValueError:
-            logger.warning("Invalid expiry date format. Expecting dd/mm/YYYY")
-            expiry_date_str = None
-        else:
-            expiry_date_str = datetime.strftime(expiry_date_obj, "%Y-%m-%d")
-
-        return {
-            "details": pia.get("details"),
-            "start_date": start_date_str,
-            "expiry_date": expiry_date_str,
-            "cc_email": pia.get("cc_email"),
-        }
 
     def get_applicant(self, obj):
         applicant_obj = obj.applicant_obj
@@ -2024,7 +1971,9 @@ class DistrictProposalDeclinedDetailsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DistrictProposalSerializer(serializers.ModelSerializer):
+class DistrictProposalSerializer(
+    serializers.ModelSerializer, ProposedIssuanceApprovalMixin
+):
     processing_status = serializers.CharField(source="get_processing_status")
     district_assessor_can_assess = serializers.SerializerMethodField()
     allowed_district_assessors = EmailUserSerializer(many=True)
@@ -2074,34 +2023,6 @@ class DistrictProposalSerializer(serializers.ModelSerializer):
         contact_users = EmailUser.objects.filter(email__in=contact_emails)
 
         return EmailUserSerializer([u.id for u in contact_users], many=True).data
-
-    def get_proposed_issuance_approval(self, obj):
-        pia = obj.proposed_issuance_approval
-        if not pia:
-            return None
-
-        try:
-            start_date_obj = datetime.strptime(pia.get("start_date"), "%d/%m/%Y")
-        except ValueError:
-            logger.warning("Invalid start date format. Expecting dd/mm/YYYY")
-            start_date_str = None
-        else:
-            start_date_str = datetime.strftime(start_date_obj, "%Y-%m-%d")
-
-        try:
-            expiry_date_obj = datetime.strptime(pia.get("expiry_date"), "%d/%m/%Y")
-        except ValueError:
-            logger.warning("Invalid expiry date format. Expecting dd/mm/YYYY")
-            expiry_date_str = None
-        else:
-            expiry_date_str = datetime.strftime(expiry_date_obj, "%Y-%m-%d")
-
-        return {
-            "details": pia.get("details"),
-            "start_date": start_date_str,
-            "expiry_date": expiry_date_str,
-            "cc_email": pia.get("cc_email"),
-        }
 
 
 class ListDistrictProposalSerializer(serializers.ModelSerializer):
