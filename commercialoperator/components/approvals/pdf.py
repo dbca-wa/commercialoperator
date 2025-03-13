@@ -209,9 +209,6 @@ def _create_approval_header(canvas, doc, draw_page_number=True):
     canvas.setFont(BOLD_FONTNAME, LARGE_FONTSIZE)
 
     current_y = PAGE_HEIGHT - HEADER_MARGIN
-
-    # canvas.drawCentredString(PAGE_WIDTH / 2, current_y - LARGE_FONTSIZE, '{}'.format(settings.DEP_NAME.upper()))
-
     current_y -= 30
 
     dpaw_header_logo = ImageReader(BW_DPAW_HEADER_LOGO)
@@ -227,10 +224,7 @@ def _create_approval_header(canvas, doc, draw_page_number=True):
 
     canvas.setFont(BOLD_FONTNAME, LARGE_FONTSIZE)
 
-    # print current_x, current_y
-    # current_y -= 36
     current_y -= 2
-    # current_x += 10
     current_x += 150
 
     if draw_page_number:
@@ -297,25 +291,17 @@ def _create_approval_cols(approval_buffer, approval, proposal, copied_to_permit,
     elements = []
 
     # Organization details
-
     address = proposal.applicant_address
-    # address = proposal.applicant_address
     if proposal.org_applicant:
+        organisation = proposal.org_applicant
         try:
-            email = (
-                proposal.org_applicant.organisation.organisation_set.all()
-                .first()
-                .contacts.all()
-                .first()
-                .email
-            )
+            contact = retrieve_organisation_delegate_ids(organisation.id).first()
         except:
             raise ValidationError(
                 "There is no contact for Organisation. Please create an Organisation contact"
             )
     else:
         email = proposal.submitter.email
-    # elements.append(Paragraph(email,styles['BoldLeft']))
     elements.append(
         Paragraph(
             "CONSERVATION AND LAND MANAGEMENT REGULATIONS 2002 (PART 7)",
@@ -491,12 +477,10 @@ def _create_approval_cols(approval_buffer, approval, proposal, copied_to_permit,
     for p in approval.current_proposal.selected_parks_activities_pdf:
         activities_str = []
         for ac in p["activities"]:
-            # activities_str.append(ac.encode('UTF-8'))
             activities_str.append(ac)
         access_types_str = []
         if "access_types" in p:
             for at in p["access_types"]:
-                # access_types_str.append(at.encode('UTF-8'))
                 access_types_str.append(at)
         activities_str = str(activities_str).strip("[]").replace("'", "")
         access_types_str = str(access_types_str).strip("[]").replace("'", "")
@@ -534,8 +518,6 @@ def _create_approval_cols(approval_buffer, approval, proposal, copied_to_permit,
     requirements = proposal.requirements.all().exclude(is_deleted=True)
     if requirements.exists():
         elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-        # elements.append(Paragraph('The following requirements must be satisfied for the licence not to be withdrawn:', styles['BoldLeft']))
-        # elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
 
         conditionList = ListFlowable(
             [
@@ -587,25 +569,18 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
     elements = []
 
     # Organization details
-
     address = proposal.applicant_address
-    # address = proposal.applicant_address
     if proposal.org_applicant:
+        organisation = proposal.org_applicant
         try:
-            email = (
-                proposal.org_applicant.organisation.organisation_set.all()
-                .first()
-                .contacts.all()
-                .first()
-                .email
-            )
+            contact = retrieve_organisation_delegate_ids(organisation.id).first()
         except:
             raise ValidationError(
                 "There is no contact for Organisation. Please create an Organisation contact"
             )
     else:
         email = proposal.submitter.email
-    # elements.append(Paragraph(email,styles['BoldLeft']))
+
     elements.append(
         Paragraph(
             "CONSERVATION AND LAND MANAGEMENT REGULATIONS 2002 (PART 7)",
@@ -695,7 +670,6 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
             styles["BoldLeft"],
         )
     )
-    # elements.append(Paragraph('To hold the {} commercial event.'.format(approval.current_proposal.event_activity.event_name), styles['BoldLeft']))
 
     event_delegation = []
     event_delegation.append(Spacer(1, SECTION_BUFFER_HEIGHT))
@@ -762,7 +736,6 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
         bulletFontName=BOLD_FONTNAME,
         bulletFontSize=MEDIUM_FONTSIZE,
     )
-    # bulletFontName=BOLD_FONTNAME
     elements.append(understandingList)
 
     elements += _layout_extracted_fields(approval.extracted_fields)
@@ -824,10 +797,7 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
     park_data = []
     for p in approval.current_proposal.events_parks.all():
         activities_str = ""
-        # if p.event_activities:
         if p.activities_assessor:
-            # activities_str = p.event_activities.encode('UTF-8')
-            # activities_str = p.event_activities
             activities_str = ", ".join(p.activities_assessor_names)
 
         park_data.append(
@@ -837,27 +807,6 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
             ]
         )
 
-    # for trail in approval.current_proposal.trails.all():
-    #         for s in trail.sections.all():
-    #             trail_activities=[]
-    #             trail_section_name='{} - {}'.format(trail.trail.name, s.section.name)
-    #             for ts in s.trail_activities.all():
-    #               trail_activities.append(ts.activity_name.encode('UTF-8'))
-    #             #selected_parks_activities.append({'park': '{} - {}'.format(t.trail.name, s.section.name), 'activities': trail_activities})
-    #             park_data.append([Paragraph(_format_name(trail_section_name), styles['BoldLeft']),
-    #                           Paragraph(trail_activities, styles['Left']) # remove last trailing comma
-    #                     ])
-    # for p in approval.current_proposal.selected_parks_activities_pdf:
-    #     activities_str=[]
-    #     for ac in p['activities']:
-    #         #activities_str.append(ac.encode('UTF-8'))
-    #         activities_str.append(ac)
-
-    #     activities_str=str(activities_str).strip('[]').replace('\'', '')
-
-    #     park_data.append([Paragraph(_format_name(p['park']), styles['BoldLeft']),
-    #                           Paragraph(activities_str.strip().strip(','), styles['Left']) # remove last trailing comma
-    #                     ])
     for tr in approval.current_proposal.events_trails.all():
         activities_str = ""
         trail_name = ""
@@ -865,10 +814,7 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
             trail_name = "{} - {}".format(tr.trail.name, tr.section.name)
         else:
             trail_name = "{}".format(tr.trail.name)
-        # if tr.event_trail_activities:
         if tr.activities_assessor:
-            # activities_str = p.event_activities.encode('UTF-8')
-            # activities_str = tr.event_trail_activities
             activities_str = ", ".join(tr.activities_assessor_names)
 
         park_data.append(
@@ -898,8 +844,6 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
     requirements = proposal.requirements.all().exclude(is_deleted=True)
     if requirements.exists():
         elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-        # elements.append(Paragraph('The following requirements must be satisfied for the licence not to be withdrawn:', styles['BoldLeft']))
-        # elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
 
         conditionList = ListFlowable(
             [
@@ -1231,29 +1175,24 @@ def _create_approval_lawful_authority(
             ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
         ]
     )
-
     elements = []
 
     # Organization details
-
-    address = proposal.applicant_address
-    # address = proposal.applicant_address
     if proposal.org_applicant:
+        organisation = proposal.org_applicant
         try:
-            email = (
-                proposal.org_applicant.organisation.organisation_set.all()
-                .first()
-                .contacts.all()
-                .first()
-                .email
-            )
+            contact = retrieve_organisation_delegate_ids(organisation.id).first()
         except:
             raise ValidationError(
                 "There is no contact for Organisation. Please create an Organisation contact"
             )
+        else:
+            emailuser = retrieve_email_user(contact)
+            if emailuser:
+                email = emailuser.email
     else:
         email = proposal.submitter.email
-    # elements.append(Paragraph(email,styles['BoldLeft']))
+
     elements.append(
         Paragraph(
             "CONSERVATION AND LAND MANAGEMENT REGULATIONS 2002 Regulation 4(1)",
@@ -1394,8 +1333,6 @@ def _create_approval_lawful_authority(
     elements.append(
         Paragraph("{} {}".format(user.first_name, user.last_name), styles["Left"])
     )
-    # if user.position_title:
-    #    elements.append(Paragraph('{}'.format(user.position_title), styles['Left']))
     elements.append(Paragraph("As Delegate of CEO", styles["Left"]))
     elements.append(
         Paragraph("Under Section 133(2) of the CALM Act 1984", styles["Left"])
@@ -1458,7 +1395,6 @@ def _create_approval_lawful_authority(
         ).values_list("id", flat=True)
     )
     for district_proposal in approved_district_proposals:
-        # for p in district_proposal.proposal_park.all():
         if district_proposal.parks_list:
             for p in district_proposal.parks_list:
                 park_data.append(
@@ -1493,9 +1429,6 @@ def _create_approval_lawful_authority(
     ).exclude(is_deleted=True)
     if requirements.exists():
         elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-        # elements.append(Paragraph('The following requirements must be satisfied for the licence not to be withdrawn:', styles['BoldLeft']))
-        # elements.append(Spacer(1, SECTION_BUFFER_HEIGHT))
-
         conditionList = ListFlowable(
             [
                 Paragraph(a.requirement, styles["Left"])

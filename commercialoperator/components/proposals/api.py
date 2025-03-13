@@ -1421,24 +1421,15 @@ class ProposalViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def district_proposals(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            qs = instance.district_proposals.all()
-            # qs = qs.filter(status = 'requested')
-            serializer = ListDistrictProposalSerializer(
-                qs, context={"request": request}, many=True
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        qs = instance.district_proposals.all()
+        serializer = ListDistrictProposalSerializer(
+            qs, context={"request": request}, many=True
+        )
+        return Response(serializer.data)
+
 
     @action(
         methods=[

@@ -7,6 +7,7 @@ from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.organisations.utils import can_manage_org
 from commercialoperator.components.stubs.models import LedgerOrganisation
 from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.users.serializers import UserAddressSerializer
 
 
 class EmailUserRoSerializer(serializers.ModelSerializer):
@@ -16,6 +17,7 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
     last_name = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
     organisation = serializers.SerializerMethodField()
 
     class Meta:
@@ -27,6 +29,7 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
             "last_name",
             "full_name",
             "title",
+            "address",
             "organisation",
         )
 
@@ -62,6 +65,12 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
         if email_user:
             return email_user.title
         return None
+
+    def get_address(self, obj):
+        emailuser = retrieve_email_user(obj)
+        if not emailuser:
+            return None
+        return UserAddressSerializer(emailuser).data
 
     def get_organisation(self, obj):
         email_user = retrieve_email_user(obj)

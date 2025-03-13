@@ -41,11 +41,12 @@
                                         >
                                             <input
                                                 v-model="approval.start_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
                                                 name="start_date"
                                                 placeholder="DD/MM/YYYY"
                                                 disabled
+                                                required
                                             />
                                             <span class="input-group-addon">
                                                 <span
@@ -84,18 +85,19 @@
                                     </div>
                                     <div class="col-sm-9">
                                         <div
-                                            ref="due_date"
+                                            ref="expiry_date"
                                             class="input-group date"
                                             style="width: 70%"
                                         >
                                             <input
                                                 ref="expiry_date"
                                                 v-model="approval.expiry_date"
-                                                type="text"
+                                                type="date"
                                                 class="form-control"
-                                                name="due_date"
+                                                name="expiry_date"
                                                 placeholder="DD/MM/YYYY"
                                                 disabled
+                                                required
                                             />
                                             <span class="input-group-addon">
                                                 <span
@@ -138,6 +140,7 @@
                                             name="approval_details"
                                             class="form-control"
                                             style="width: 70%"
+                                            required
                                         ></textarea>
                                     </div>
                                 </div>
@@ -302,9 +305,8 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.approvalForm;
-        vm.addFormValidations();
         this.$nextTick(() => {
-            vm.eventListeners();
+            vm.addDateFieldMinValues();
         });
     },
     methods: {
@@ -313,7 +315,7 @@ export default {
 
             let formData = new FormData(vm.form);
             formData.append('start_date', vm.approval.start_date);
-            formData.append('due_date', vm.approval.expiry_date);
+            formData.append('expiry_date', vm.approval.expiry_date);
             // convert formData to json
             let jsonObject = {};
             for (const [key, value] of formData.entries()) {
@@ -356,7 +358,7 @@ export default {
 
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            if (helpers.validateForm(vm.form) && vm.validateFormDates()) {
                 vm.sendData();
             }
         },
@@ -370,9 +372,6 @@ export default {
             this.toDateError = false;
             this.startDateError = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.due_date).data('DateTimePicker').clear();
-            $(this.$refs.start_date).data('DateTimePicker').clear();
-            this.validation_form.resetForm();
         },
         fetchContact: function (id) {
             let vm = this;
@@ -442,84 +441,67 @@ export default {
                     );
             }
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    start_date: 'required',
-                    due_date: 'required',
-                    approval_details: 'required',
-                },
-                messages: {},
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
+        addDateFieldMinValues: function () {
+            const vm = this;
+
+            const date = new Date();
+            let today = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+            );
+            today = moment(today).format('YYYY-MM-DD');
+            // Start and expiry dates cannot be selected prior to today
+            $(vm.$refs.start_date).find('input').attr('min', today);
+            $(vm.$refs.expiry_date).find('input').attr('min', today);
         },
-        eventListeners: function () {
-            let vm = this;
-            // Initialise Date Picker
-            $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.due_date).on('dp.change', function (e) {
-                if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
-                    if (
-                        $(vm.$refs.due_date).data('DateTimePicker').date() <
-                        $(vm.$refs.start_date).data('DateTimePicker').date()
-                    ) {
-                        vm.toDateError = true;
-                        vm.toDateErrorString =
-                            'Please select Expiry date that is after Start date';
-                        vm.approval.expiry_date = '';
-                    } else {
-                        vm.toDateError = false;
-                        vm.toDateErrorString = '';
-                        vm.approval.expiry_date = e.date.format('DD/MM/YYYY');
-                    }
-                } else if ($(vm.$refs.due_date).data('date') === '') {
+        validateFormDates: function () {
+            const vm = this;
+
+            const start_date = $(vm.$refs.start_date).find('input').val();
+            const expiry_date = $(vm.$refs.expiry_date).find('input').val();
+
+            let isValid = false;
+            if (Date.parse(expiry_date)) {
+                // Unix timestamp comparison
+                if (Date.parse(expiry_date) < Date.parse(start_date)) {
+                    vm.toDateError = true;
+                    vm.toDateErrorString =
+                        'Please select an Expiry date that is after Start date';
                     vm.approval.expiry_date = '';
+                } else {
+                    vm.toDateError = false;
+                    vm.toDateErrorString = '';
+                    vm.approval.expiry_date =
+                        moment(expiry_date).format('YYYY-MM-DD');
+                    isValid = true;
                 }
-            });
-            $(vm.$refs.start_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.start_date).on('dp.change', function (e) {
-                if ($(vm.$refs.start_date).data('DateTimePicker').date()) {
-                    if (
-                        $(vm.$refs.due_date).data('DateTimePicker').date() !=
-                            null &&
-                        $(vm.$refs.due_date).data('DateTimePicker').date() <
-                            $(vm.$refs.start_date).data('DateTimePicker').date()
-                    ) {
-                        vm.startDateError = true;
-                        vm.startDateErrorString =
-                            'Please select Start date that is before Expiry date';
-                        vm.approval.start_date = '';
-                    } else {
-                        vm.startDateError = false;
-                        vm.startDateErrorString = '';
-                        vm.approval.start_date = e.date.format('DD/MM/YYYY');
-                    }
-                } else if ($(vm.$refs.start_date).data('date') === '') {
+            } else if (expiry_date === '') {
+                vm.approval.expiry_date = '';
+            }
+
+            if (Date.parse(start_date)) {
+                // Unix timestamp comparison
+                if (
+                    Date.parse(expiry_date) &&
+                    Date.parse(expiry_date) < Date.parse(start_date)
+                ) {
+                    vm.startDateError = true;
+                    vm.startDateErrorString =
+                        'Please select a Start date that is before Expiry date';
                     vm.approval.start_date = '';
+                } else {
+                    vm.startDateError = false;
+                    vm.startDateErrorString = '';
+                    vm.approval.start_date =
+                        moment(start_date).format('YYYY-MM-DD');
+                    isValid = true;
                 }
-            });
+            } else if (start_date === '') {
+                vm.approval.start_date = '';
+            }
+
+            return isValid;
         },
     },
 };

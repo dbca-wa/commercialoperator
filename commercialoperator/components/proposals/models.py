@@ -1,6 +1,7 @@
 import json
 import datetime
 from dateutil.relativedelta import relativedelta
+from django.urls import reverse
 from django.db import models, transaction
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -48,6 +49,7 @@ from commercialoperator.components.proposals.email import (
     send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
 )
+from commercialoperator.components.proposals.mixins import MembersEmailMixin
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
@@ -208,7 +210,7 @@ class TaggedProposalAssessorGroupActivities(TaggedItemBase):
         app_label = "commercialoperator"
 
 
-class ProposalAssessorGroup(models.Model):
+class ProposalAssessorGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
@@ -256,12 +258,12 @@ class ProposalAssessorGroup(models.Model):
         ]
         return Proposal.objects.filter(processing_status__in=assessable_states)
 
-    @property
-    def members_email(self):
-        members = retrieve_group_members(self)
-        emailusers = [retrieve_email_user(i) for i in members]
-        emailusers = [u for u in emailusers if u]
-        return [u.email for u in emailusers]
+    # @property
+    # def members_email(self):
+    #     members = retrieve_group_members(self)
+    #     emailusers = [retrieve_email_user(i) for i in members]
+    #     emailusers = [u for u in emailusers if u]
+    #     return [u.email for u in emailusers]
 
 
 class TaggedProposalApproverGroupRegions(TaggedItemBase):
@@ -282,7 +284,7 @@ class TaggedProposalApproverGroupActivities(TaggedItemBase):
         app_label = "commercialoperator"
 
 
-class ProposalApproverGroup(models.Model):
+class ProposalApproverGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.CASCADE)
@@ -328,11 +330,11 @@ class ProposalApproverGroup(models.Model):
         assessable_states = ["with_approver"]
         return Proposal.objects.filter(processing_status__in=assessable_states)
 
-    @property
-    def members_email(self):
-        members = retrieve_group_members(self)
-        emailusers = [retrieve_email_user(i) for i in members]
-        return [u.email for u in emailusers]
+    # @property
+    # def members_email(self):
+    #     members = retrieve_group_members(self)
+    #     emailusers = [retrieve_email_user(i) for i in members]
+    #     return [u.email for u in emailusers]
 
 
 class DefaultDocument(Document):
@@ -3213,15 +3215,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             raise
 
     @transaction.atomic
-    def __create_filming_fee_invoice(self, request):
+    def __create_filming_fee_invoice(
+        self,
+        request,
+        return_preload_url_ns="filming_fee_success",
+    ):
 
         from dateutil.relativedelta import relativedelta
         from commercialoperator.components.bookings.models import FilmingFee
         from commercialoperator.components.bookings.utils import (
             create_filming_fee_lines,
         )
-        from commercialoperator.components.stubs.utils import createCustomBasket
-        from commercialoperator.components.stubs.classes import CreateInvoiceBasket
 
         filming_fee = None
         if (
@@ -3241,12 +3245,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 reference = self.lodgement_number
 
                 basket_params = {
+                    "system": settings.PAYMENT_SYSTEM_ID,
                     "products": lines,
                     "vouchers": [],
-                    "system": settings.PAYMENT_SYSTEM_ID,
                     "custom_basket": True,
                     "booking_reference": reference,
                     "booking_reference_link": reference,
+                    "fallback_url": request.build_absolute_uri("/"),
                 }
                 basket_hash = create_basket_session(
                     request, request.user.id, basket_params
@@ -3256,8 +3261,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     status="Open", owner=request.user
                 ).order_by("-id")[:1]
 
+                invoice_name = self.applicant_obj.name
+                return_preload_url = request.build_absolute_uri(
+                    reverse(return_preload_url_ns)
+                )
+                due_date = None
                 future_invoice_response = process_create_future_invoice(
-                    basket[0].id, invoice_text="Payment Invoice"
+                    basket[0].id,
+                    invoice_text="Payment Invoice",
+                    return_preload_url=return_preload_url,
+                    invoice_name=invoice_name,
+                    due_date=due_date,
                 )
                 if future_invoice_response.get("status") != status.HTTP_200_OK:
                     raise ValidationError(
@@ -6719,10 +6733,10 @@ class ProposalFilmingParks(models.Model):
                             default=True
                         )
                     if kens_proposal.processing_status == "with_assessor":
-                        return (
-                            assessor_group
-                            in user.districtproposalassessorgroup_set.all()
+                        user_district_assessor_groups = retrieve_user_groups(
+                            "districtproposalassessorgroup", user.id
                         )
+                        return assessor_group in user_district_assessor_groups
                     else:
                         return False
 
@@ -6744,10 +6758,10 @@ class ProposalFilmingParks(models.Model):
                     if district_proposal:
                         district_proposal = district_proposal[0]
                         if district_proposal.processing_status == "with_assessor":
-                            return (
-                                assessor_group
-                                in user.districtproposalassessorgroup_set.all()
+                            user_district_assessor_groups = retrieve_user_groups(
+                                "districtproposalassessorgroup", user.id
                             )
+                            return assessor_group in user_district_assessor_groups
                         else:
                             return False
                     else:
@@ -6806,7 +6820,7 @@ class FilmingParkDocument(Document):
 
 
 # Internal Workflow models - Filming application
-class DistrictProposalAssessorGroup(models.Model):
+class DistrictProposalAssessorGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     district = models.ForeignKey(
@@ -6840,12 +6854,8 @@ class DistrictProposalAssessorGroup(models.Model):
                     "There can only be one default District assessor group"
                 )
 
-    @property
-    def members_email(self):
-        return [i.email for i in self.members.all()]
 
-
-class DistrictProposalApproverGroup(models.Model):
+class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(EmailUser)
     district = models.ForeignKey(
@@ -6877,10 +6887,6 @@ class DistrictProposalApproverGroup(models.Model):
                 raise ValidationError(
                     "There can only be one default district approver group"
                 )
-
-    @property
-    def members_email(self):
-        return [i.email for i in self.members.all()]
 
 
 class DistrictProposalQuerySet(models.QuerySet):
@@ -7130,10 +7136,9 @@ class DistrictProposal(models.Model):
             return False
 
     def can_process_requirements(self, user):
-        # if self.processing_status == 'on_hold' or self.processing_status == 'with_assessor' or self.processing_status == 'with_referral' or self.processing_status == 'with_assessor_requirements':
         if self.processing_status in ["with_assessor", "with_assessor_requirements"]:
-            return (
-                self.__assessor_group() in user.districtproposalassessorgroup_set.all()
+            return self.__assessor_group() in retrieve_user_groups(
+                "districtproposalassessorgroup", user.id
             )
         else:
             return False
@@ -7144,7 +7149,9 @@ class DistrictProposal(models.Model):
             group = self.__approver_group()
         else:
             group = self.__assessor_group()
-        return group.members.all() if group else []
+
+        group_members = retrieve_group_members(group)
+        return group_members
 
     def assign_officer(self, request, officer):
         with transaction.atomic():
@@ -7434,68 +7441,63 @@ class DistrictProposal(models.Model):
             except:
                 raise
 
+    @transaction.atomic
     def preview_approval(self, request, details):
         from commercialoperator.components.approvals.models import PreviewTempApproval
 
-        with transaction.atomic():
-            try:
-                if self.processing_status != "with_approver":
-                    raise ValidationError(
-                        "Licence preview only available when processing status is with_approver. Current status {}".format(
-                            self.processing_status
-                        )
+        try:
+            if self.processing_status != "with_approver":
+                raise ValidationError(
+                    "Licence preview only available when processing status is with_approver. Current status {}".format(
+                        self.processing_status
                     )
-                if not self.can_assess(request.user):
-                    raise exceptions.ProposalNotAuthorized()
-                # if not self.applicant.organisation.postal_address:
-                if not self.proposal.applicant_address:
-                    raise ValidationError(
-                        "The applicant needs to have set their postal address before approving this proposal."
-                    )
-                self.processing_status = "approved"
-                self.save()
-                # lodgement_number = self.previous_application.approval.lodgement_number if self.proposal_type in ['renewal', 'amendment'] else None # renewals/amendments keep same licence number
-                # lodgement_number = self.proposal.approval.lodgement_number
-                if self.proposal.proposal_type in ["renewal", "amendment"]:
-                    lodgement_number = (
-                        self.proposal.previous_application.approval.lodgement_number
-                    )
-                elif self.proposal.approval:
-                    lodgement_number = self.proposal.approval.lodgement_number
-                else:
-                    lodgement_number = (
-                        None  # renewals/amendments keep same licence number
-                    )
-                preview_approval = PreviewTempApproval.objects.create(
-                    current_proposal=self.proposal,
-                    issue_date=timezone.now(),
-                    expiry_date=datetime.datetime.strptime(
-                        details.get("due_date"), "%d/%m/%Y"
-                    ).date(),
-                    start_date=datetime.datetime.strptime(
-                        details.get("start_date"), "%d/%m/%Y"
-                    ).date(),
-                    # expiry_date = details.get('due_date').strftime('%d/%m/%Y'),
-                    # start_date = details.get('start_date').strftime('%d/%m/%Y'),
-                    submitter=self.proposal.submitter,
-                    # org_applicant = self.applicant if isinstance(self.applicant, Organisation) else None,
-                    # proxy_applicant = self.applicant if isinstance(self.applicant, EmailUser) else None,
-                    org_applicant=self.proposal.org_applicant,
-                    proxy_applicant=self.proposal.proxy_applicant,
-                    lodgement_number=lodgement_number,
                 )
+            if not self.can_assess(request.user):
+                raise exceptions.ProposalNotAuthorized()
 
-                # Generate the preview document - get the value of the BytesIO buffer
-                licence_buffer = preview_approval.generate_doc(
-                    request.user, preview=True
+            if not self.proposal.applicant_address:
+                raise ValidationError(
+                    "The applicant needs to have set their postal address before approving this proposal."
                 )
+            self.processing_status = "approved"
+            self.save()
 
-                # clean temp preview licence object
-                transaction.set_rollback(True)
+            if self.proposal.proposal_type in ["renewal", "amendment"]:
+                lodgement_number = (
+                    self.proposal.previous_application.approval.lodgement_number
+                )
+            elif self.proposal.approval:
+                lodgement_number = self.proposal.approval.lodgement_number
+            else:
+                lodgement_number = (
+                    None  # renewals/amendments keep same licence number
+                )
+            preview_approval = PreviewTempApproval.objects.create(
+                current_proposal=self.proposal,
+                issue_date=timezone.now(),
+                expiry_date=datetime.datetime.strptime(
+                    details.get("expiry_date"), "%Y-%m-%d"
+                ).date(),
+                start_date=datetime.datetime.strptime(
+                    details.get("start_date"), "%Y-%m-%d"
+                ).date(),
+                submitter=self.proposal.submitter,
+                org_applicant=self.proposal.org_applicant,
+                proxy_applicant=self.proposal.proxy_applicant,
+                lodgement_number=lodgement_number,
+            )
 
-                return licence_buffer
-            except:
-                raise
+            # Generate the preview document - get the value of the BytesIO buffer
+            licence_buffer = preview_approval.generate_doc(
+                request.user, preview=True
+            )
+
+            # clean temp preview licence object
+            transaction.set_rollback(True)
+
+            return licence_buffer
+        except:
+            raise
 
     def final_approval(self, request, details):
         from commercialoperator.components.approvals.models import (

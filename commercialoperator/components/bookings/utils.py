@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -31,15 +31,14 @@ from commercialoperator.components.bookings.email import (
 )
 
 from ledger_api_client.utils import (
+    calculate_excl_gst,
     create_basket_session,
     create_checkout_session,
-    use_existing_basket_from_invoice,
     generate_payment_session,
 )
 from commercialoperator.components.stubs.classes import DecimalEncoder
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
-from ledger_api_client.utils import calculate_excl_gst
 from ledger_api_client.ledger_models import Invoice
 
 import json
@@ -997,11 +996,16 @@ def checkout(
     vouchers=[],
     proxy=False,
 ):
+    reference = proposal.lodgement_number
+
     basket_params = {
         "products": lines,
         "vouchers": vouchers,
         "system": settings.PAYMENT_SYSTEM_ID,
         "custom_basket": True,
+        "booking_reference": reference,
+        "booking_reference_link": reference,
+        "fallback_url": request.build_absolute_uri("/"),
     }
 
     # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
@@ -1039,7 +1043,6 @@ def checkout(
     return redirect(reverse("ledgergw-payment-details"))
 
 
-
 def checkout_existing_invoice(
     request,
     proposal,
@@ -1069,7 +1072,13 @@ def checkout_existing_invoice(
 
     return_url = request.build_absolute_uri(reverse(return_url_ns))
     fallback_url = request.build_absolute_uri("/")
-    payment_session = generate_payment_session(request, invoice.reference, return_url, fallback_url)
+    payment_session = generate_payment_session(
+        request, invoice.reference, return_url, fallback_url
+    )
+    if payment_session.get("status", None) != status.HTTP_200_OK:
+        raise ValidationError(
+            payment_session.get("message", "Error generating payment session")
+        )
 
     # NOTE: I commented out the old way of redirecting to index
     # response = HttpResponseRedirect(reverse('checkout:index'))
@@ -1093,7 +1102,6 @@ def checkout_existing_invoice(
     #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
     #     httponly=True,
     # )
-
 
     # NOTE: Not sure if we need these session variables
     request.session["payment_pk"] = proposal.pk

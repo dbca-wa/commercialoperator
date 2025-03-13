@@ -315,7 +315,7 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.approvalForm;
-        // vm.addFormValidations();
+        // NOTE: `vm.addFormValidations();` replaced with form required attribute and call to `helpers.validateForm(vm.form)` in ok() method
         this.$nextTick(() => {
             vm.eventListeners();
         });

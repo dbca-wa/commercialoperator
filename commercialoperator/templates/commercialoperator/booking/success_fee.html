@@ -71,7 +71,11 @@
                     {% endif %}
                     </span>
                     <span style="float:right;">
-                    <a href="{% url 'external' %}" class="btn btn-info btn-lg">Return to Dashboard</a>
+                    {% if request.user.is_staff %}
+                        <a href="{% url 'internal' %}" class="btn btn-info btn-lg">Return to Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'home' %}" class="btn btn-info btn-lg">Return to Dashboard</a>
+                    {% endif %}
                     </span>
                 {% else %}
                     <a href="{% url 'home' %}" class="btn btn-info btn-lg">Log in</a><p>You must be logged in to see your invoice online.</p>
