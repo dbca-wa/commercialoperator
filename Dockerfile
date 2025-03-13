@@ -71,6 +71,7 @@ ENV PATH=/app/venv/bin:$PATH
 RUN git config --global --add safe.directory /app
 
 COPY --chown=oim:oim  requirements.txt ./
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 #RUN  rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
