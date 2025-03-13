@@ -996,11 +996,16 @@ def checkout(
     vouchers=[],
     proxy=False,
 ):
+    reference = proposal.lodgement_number
+
     basket_params = {
         "products": lines,
         "vouchers": vouchers,
         "system": settings.PAYMENT_SYSTEM_ID,
         "custom_basket": True,
+        "booking_reference": reference,
+        "booking_reference_link": reference,
+        "fallback_url": request.build_absolute_uri("/"),
     }
 
     # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
