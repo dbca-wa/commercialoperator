@@ -2922,59 +2922,56 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
+    @transaction.atomic
+    @basic_exception_handler
     def preview_approval(self, request, details):
         from commercialoperator.components.approvals.models import PreviewTempApproval
-
-        with transaction.atomic():
-            try:
-                if not (
-                    self.processing_status == "with_assessor_requirements"
-                    or self.processing_status == "with_approver"
-                ):
-                    raise ValidationError(
-                        "Licence preview only available when processing status is with_approver. Current status {}".format(
-                            self.processing_status
-                        )
-                    )
-                if not self.can_assess(request.user):
-                    raise exceptions.ProposalNotAuthorized()
-
-                if not self.applicant_address:
-                    raise ValidationError(
-                        "The applicant needs to have set their postal address before approving this proposal."
-                    )
-
-                lodgement_number = (
-                    self.previous_application.approval.lodgement_number
-                    if self.proposal_type in ["renewal", "amendment"]
-                    else None
-                )  # renewals/amendments keep same licence number
-                preview_approval = PreviewTempApproval.objects.create(
-                    current_proposal=self,
-                    issue_date=timezone.now(),
-                    expiry_date=datetime.datetime.strptime(
-                        details.get("due_date"), "%Y-%m-%d"
-                    ).date(),
-                    start_date=datetime.datetime.strptime(
-                        details.get("start_date"), "%Y-%m-%d"
-                    ).date(),
-                    submitter=self.submitter,
-                    org_applicant=self.org_applicant,
-                    proxy_applicant=self.proxy_applicant,
-                    lodgement_number=lodgement_number,
+        if not (
+            self.processing_status == "with_assessor_requirements"
+            or self.processing_status == "with_approver"
+        ):
+            raise ValidationError(
+                "Licence preview only available when processing status is with_approver. Current status {}".format(
+                    self.processing_status
                 )
+            )
+        if not self.can_assess(request.user):
+            raise exceptions.ProposalNotAuthorized()
 
-                # Generate the preview document - get the value of the BytesIO buffer
-                licence_buffer = preview_approval.generate_doc(
-                    request.user, preview=True
-                )
+        if not self.applicant_address:
+            raise ValidationError(
+                "The applicant needs to have set their postal address before approving this proposal."
+            )
 
-                # clean temp preview licence object
-                transaction.set_rollback(True)
+        lodgement_number = (
+            self.previous_application.approval.lodgement_number
+            if self.proposal_type in ["renewal", "amendment"]
+            else None
+        )  # renewals/amendments keep same licence number
+        preview_approval = PreviewTempApproval.objects.create(
+            current_proposal=self,
+            issue_date=timezone.now(),
+            expiry_date=datetime.datetime.strptime(
+                details.get("due_date"), "%Y-%m-%d"
+            ).date(),
+            start_date=datetime.datetime.strptime(
+                details.get("start_date"), "%Y-%m-%d"
+            ).date(),
+            submitter=self.submitter,
+            org_applicant=self.org_applicant,
+            proxy_applicant=self.proxy_applicant,
+            lodgement_number=lodgement_number,
+        )
 
-                return licence_buffer
-            except:
-                raise
+        # Generate the preview document - get the value of the BytesIO buffer
+        licence_buffer = preview_approval.generate_doc(
+            request.user, preview=True
+        )
+
+        # clean temp preview licence object
+        transaction.set_rollback(True)
+
+        return licence_buffer
 
     @transaction.atomic
     def final_approval(self, request, details):
