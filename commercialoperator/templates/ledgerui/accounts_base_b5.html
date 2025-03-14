@@ -1,0 +1,23 @@
+{% extends "ledgerui/accounts_base_b5.html" %}
+
+{% block myaccount_nav %}
+
+<button class="nav-link managed-account-nav" id="nav-organisations-tab" data-bs-toggle="tab" data-bs-target="#nav-organisations" type="button" role="tab" aria-controls="nav-organisations" aria-selected="false">Organisations</button>
+<button class="nav-link managed-account-nav" id="nav-settings-tab" data-bs-toggle="tab" data-bs-target="#nav-settings" type="button" role="tab" aria-controls="nav-settings" aria-selected="false">System Settings</button>
+
+{% endblock %}
+
+{% block additional_content %}
+
+<div id="nav-organisations-tab-page" style="display:none;">
+    <div id="app">
+        Linking to an organisation coming soon...
+    </div>
+</div>
+<div id="nav-settings-tab-page" style="display:none;">
+    <div id="app">
+        Setting up preferences coming soon...
+    </div>
+</div>
+
+{% endblock %}	
