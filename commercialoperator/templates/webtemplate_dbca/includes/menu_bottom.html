@@ -2,6 +2,8 @@
 {% load utils %}
 {% can_show_tests as can_show_tests %}
 {% is_commercialoperator_admin as is_commercialoperator_admin_user %}
+{% is_organisation_access_officer as is_organisation_access_officer %}
+{% is_finance_officer as is_finance_officer %}
 
 {% if request.user.is_superuser %}
     <li role="separator" class="divider"></li>
@@ -12,7 +14,16 @@
 {% if can_show_tests and request.user.is_superuser %}
     <li><a class="dropdown-item" href="{% url 'test-emails' %}">Test Emails</a></li>
 {% endif %}
-<a class="dropdown-item" href="{% url 'manage-account' %}">Manage Account</a>
+    <li><a class="dropdown-item" href="/ledger-ui/accounts">Manage Account (Ledger)</a></li>
+
+<a class="dropdown-item" href="{% url 'manage-account' %}">Manage Account (COLS)</a>
+
+
+
+
+
+
+
 {% comment %} {% for org in request.user.commercialoperator_organisations.all %}
     {% for org_contact in org.contacts.all%}
         {% ifequal org_contact.email request.user.email %}
