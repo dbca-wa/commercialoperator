@@ -7,9 +7,7 @@
   "private": true,
   "scripts": {
     "build": "vue-cli-service build",
-    "serve": "vue-cli-service serve",
-    "unit": "cross-env BABEL_ENV=test karma start test/unit/karma.conf.js --single-run",
-    "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
+    "serve": "vue-cli-service serve"
   },
   "dependencies": {
     "@babel/runtime": "^7.25.0",
