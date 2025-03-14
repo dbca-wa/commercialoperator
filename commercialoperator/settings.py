@@ -184,6 +184,20 @@ PUBLIC_URL = PUBLIC_URL if PUBLIC_URL.endswith(os.sep) else PUBLIC_URL + os.sep
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
 ADMIN_GROUP = env("ADMIN_GROUP", "COLS Admin")
+
+GROUP_NAME_ORGANISATION_ACCESS = env("GROUP_NAME_ORGANISATION_ACCESS", "organisation_access_group") 
+GROUP_FINANCE = env("GROUP_FINANCE", "finance")
+LEDGER_UI_CARDS_MANAGEMENT = True
+LEDGER_UI_ACCOUNTS_MANAGEMENT = [
+    {"first_name": {"options": {"view": True, "edit": True}}},
+    {"last_name": {"options": {"view": True, "edit": True}}},
+    {"residential_address": {"options": {"view": True, "edit": True}}},
+    {"postal_same_as_residential": {"options": {"view": True, "edit": True}}},
+    {"postal_address": {"options": {"view": True, "edit": True}}},
+    {"phone_number": {"options": {"view": True, "edit": True}}},
+    {"mobile_number": {"options": {"view": True, "edit": True}}},
+]
+
 COLS_EVENT_USERGUIDE_URL = env(
     "COLS_EVENT_USERGUIDE_URL", "https://parks.dpaw.wa.gov.au/for-business/how-apply-0"
 )
