@@ -175,6 +175,16 @@ router.register(
 )
 
 api_patterns = [
+    url(
+        r"^api/account/$",
+        users_api.GetLedgerAccount.as_view(),
+        name="get-ledger-account",
+    ),
+    url(
+        r"^api/request_user_id/$",
+        users_api.GetRequestUserID.as_view(),
+        name="get-request-user-id",
+    ),
     url(r"^api/profile$", users_api.GetProfile.as_view(), name="get-profile"),
     url(r"^api/countries$", users_api.GetCountries.as_view(), name="get-countries"),
     url(
