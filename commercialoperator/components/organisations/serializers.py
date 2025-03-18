@@ -599,7 +599,7 @@ class OrgUserAcceptSerializer(serializers.Serializer):
         if domain in settings.DEPT_DOMAINS:
             return data
         else:
-            if not (data["mobile_number"] or data["phone_number"]):
+            if not (data.get("mobile_number", None) or data.get("phone_number", None)):
                 raise serializers.ValidationError(
                     "User must have an associated phone number or mobile number."
                 )
