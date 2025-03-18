@@ -430,14 +430,38 @@ class OrganisationRequestSerializer(serializers.ModelSerializer):
     identification = serializers.FileField()
     requester = OrgRequestRequesterSerializer(source="requester_id", read_only=True)
     status = serializers.SerializerMethodField()
+    organisation = serializers.SerializerMethodField()
 
     class Meta:
         model = OrganisationRequest
         fields = "__all__"
-        read_only_fields = ("requester", "lodgement_date", "assigned_officer")
+        read_only_fields = (
+            "requester",
+            "lodgement_date",
+            "assigned_officer",
+            "organisation",
+        )
 
     def get_status(self, obj):
         return obj.get_status_display()
+
+    def get_organisation(self, obj):
+        org_response = get_search_organisation(None, obj.abn)
+        if org_response["status"] != status.HTTP_200_OK:
+            return None
+
+        org_data = org_response["data"]
+        organisation_id = org_data[0]["organisation_id"]
+
+        try:
+            organisation = Organisation.objects.get(organisation_id=organisation_id)
+        except Organisation.DoesNotExist:
+            logger.error(
+                f"Organisation with ID {organisation_id} not found in the database."
+            )
+            return None
+
+        return OrganisationSerializer(organisation).data
 
 
 class OrganisationRequestDTSerializer(OrganisationRequestSerializer):
@@ -557,7 +581,6 @@ class OrganisationUnlinkUserSerializer(serializers.Serializer):
 
 
 class OrgUserAcceptSerializer(serializers.Serializer):
-
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     email = serializers.EmailField()
@@ -568,13 +591,6 @@ class OrgUserAcceptSerializer(serializers.Serializer):
         required=False, allow_null=True, allow_blank=True
     )
 
-    # def validate(self, data):
-    #     '''
-    #     Check for either mobile number or phone number
-    #     '''
-    #     if not (data['mobile_number'] or data['phone_number']):
-    #         raise serializers.ValidationError("User must have an associated phone number or mobile number.")
-    #     return data
     def validate(self, data):
         # Mobile and phone number for dbca user are updated from active directory so need to skip these users from validation.
         domain = None
