@@ -418,3 +418,29 @@ class UserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+
+
+class GetLedgerAccount(views.APIView):
+    renderer_classes = [
+        JSONRenderer,
+    ]
+
+    def get(self, request, format=None):
+        if request.user.is_anonymous:
+            return Response({"error": "User is not logged in."})
+        response = get_account_details(request, str(request.user.id))
+        return response
+
+
+class GetRequestUserID(views.APIView):
+    """Yes, this is a bit silly but for now the get_account_details from ledger_api_client doesn't return the
+    request user id"""
+
+    renderer_classes = [
+        JSONRenderer,
+    ]
+
+    def get(self, request, format=None):
+        if request.user.is_anonymous:
+            return Response({"id": None, "is_internal": False})
+        return Response({"id": request.user.id, "is_internal": is_internal(request)})
