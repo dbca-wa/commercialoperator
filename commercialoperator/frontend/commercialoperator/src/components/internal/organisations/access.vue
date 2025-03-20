@@ -317,7 +317,7 @@ export default {
                 processing: true,
                 ajax: {
                     url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_requests,
+                        api_endpoints.organisation_request,
                         vm.$route.params.access_id + '/action_log'
                     ),
                     dataSrc: '',
@@ -505,7 +505,7 @@ export default {
             vm.$http
                 .get(
                     helpers.add_endpoint_json(
-                        api_endpoints.organisation_requests,
+                        api_endpoints.organisation_request,
                         vm.access.id + '/assign_request_user'
                     )
                 )
@@ -526,7 +526,7 @@ export default {
                 vm.$http
                     .post(
                         helpers.add_endpoint_json(
-                            api_endpoints.organisation_requests,
+                            api_endpoints.organisation_request,
                             vm.access.id + '/assign_to'
                         ),
                         JSON.stringify(data),
@@ -548,7 +548,7 @@ export default {
                 vm.$http
                     .get(
                         helpers.add_endpoint_json(
-                            api_endpoints.organisation_requests,
+                            api_endpoints.organisation_request,
                             vm.access.id + '/unassign'
                         )
                     )
@@ -576,7 +576,7 @@ export default {
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
-                                api_endpoints.organisation_requests,
+                                api_endpoints.organisation_request,
                                 vm.access.id + '/accept'
                             )
                         )
@@ -626,7 +626,7 @@ export default {
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
-                                api_endpoints.organisation_requests,
+                                api_endpoints.organisation_request,
                                 vm.access.id + '/decline'
                             )
                         )
