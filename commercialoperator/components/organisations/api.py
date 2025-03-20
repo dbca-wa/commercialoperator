@@ -12,7 +12,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import update_organisation_obj
+from ledger_api_client.utils import update_organisation_obj, get_all_organisation
 
 from commercialoperator.components.approvals.serializers import EmailUserSerializer
 from commercialoperator.components.organisations.utils import can_admin_org
@@ -22,6 +22,7 @@ from commercialoperator.components.stubs.utils import (
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
+    retrieve_organisation_delegate_ids,
 )
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
@@ -760,11 +761,48 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     )
     @basic_exception_handler
     def linked_organisations(self, request, *args, **kwargs):
-        if is_internal(request):
-            qs = self.get_queryset().filter(requester=self.request.user)
-        else:
-            qs = self.get_queryset()
-        serializer = OrganisationRequestSerializer(qs, many=True)
+        user_id = request.user.id
+        qs = self.get_queryset()
+        # qs = self.get_queryset().filter(id=1079) # An existing organisation request for testing
+
+        # Ledger organisation ids
+        ledger_org_ids = []
+        # Get all organisations from ledger in advance to not otherwise query ledger in each loop
+        all_organisations_response = get_all_organisation()
+        if all_organisations_response.get("status") != status.HTTP_200_OK:
+            raise serializers.ValidationError(
+                "Error fetching organisations from ledger"
+            )
+        ledger_organisation_data = all_organisations_response.get("data", [])
+        # Retrieve ledger organisation ids by ABN for which there is an organisation request
+        organisation_request_abns = [org_req.abn for org_req in qs]
+        ledger_org_ids = [
+            d["organisation_id"]
+            for d in ledger_organisation_data
+            if d["organisation_abn"] in organisation_request_abns
+        ]
+        ledger_org_ids = list(set(ledger_org_ids))
+        # Get COLS organisation ids for the ledger organisation ids (there is no abn field in organisation model, so have to take a little detour)
+        organisation_ids = Organisation.objects.filter(
+            organisation_id__in=ledger_org_ids
+        ).values_list("id", flat=True)
+        # Of those, get the COLS organisation ids where the user is a delegate
+        user_delegate_organisation_ids = [
+            oid
+            for oid in organisation_ids
+            if user_id in retrieve_organisation_delegate_ids(oid)
+        ]
+        # Get the organisation ABNs for the user delegate organisations
+        organisation_abns = [
+            org.abn
+            for org in Organisation.objects.filter(
+                id__in=user_delegate_organisation_ids
+            )
+        ]
+
+        serializer = OrganisationRequestSerializer(
+            qs.filter(abn__in=organisation_abns), many=True
+        )
         return Response(serializer.data)
 
     @action(
