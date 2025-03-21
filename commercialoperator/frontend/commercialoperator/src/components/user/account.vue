@@ -334,6 +334,76 @@
                 </table>
             </FormSection>
         </div>
+
+        <div v-if="email_user.is_internal" class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <FormSection
+                        :form-collapse="false"
+                        label="System settings"
+                        index="system_settings"
+                        subtitle="
+                            Set up preferences in using this system
+                        "
+                    >
+                        <form
+                            class="form-horizontal"
+                            action="index.html"
+                            method="post"
+                        >
+                            <div class="form-group row mb-3">
+                                <label for="" class="col-sm-3"
+                                    >Park Entry Fees dashboard view</label
+                                >
+                                <div class="col-sm-3">
+                                    <label>
+                                        <input
+                                            v-model="
+                                                email_user.system_settings
+                                                    .one_row_per_park
+                                            "
+                                            type="radio"
+                                            value="true"
+                                        />One row per Park
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <label>
+                                        <input
+                                            v-model="
+                                                email_user.system_settings
+                                                    .one_row_per_park
+                                            "
+                                            type="radio"
+                                            value="false"
+                                        />One row per Booking
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-12">
+                                    <button
+                                        v-if="!updatingSystemSettings"
+                                        class="btn btn-primary float-end"
+                                        @click.prevent="updateSystemSettings()"
+                                    >
+                                        Update
+                                    </button>
+                                    <button
+                                        v-else
+                                        disabled
+                                        class="btn btn-primary float-end"
+                                    >
+                                        <i class="fa fa-spin fa-spinner"></i
+                                        >&nbsp;Updating
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </FormSection>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- TODO: commented -->
     <!-- <BootstrapSpinner v-else class="text-primary" /> -->
@@ -375,6 +445,7 @@ export default {
             },
             loadingOrganisationRequests: false,
             helpers: helpers,
+            updatingSystemSettings: false,
         };
     },
     computed: {
@@ -432,6 +503,7 @@ export default {
                 utils.fetchLedgerAccount(),
                 utils.fetchRequestUserID(),
                 utils.fetchOrganisationRequests(),
+                utils.fetchProfile(),
             ];
             Promise.all(initialisers).then((data) => {
                 console.log('Promise return', data);
@@ -440,6 +512,7 @@ export default {
                 vm.email_user.id = data[2].id;
                 vm.email_user.is_internal = data[2].is_internal;
                 vm.organisation_requests = data[3];
+                vm.email_user.system_settings = data[4].system_settings;
 
                 this.$nextTick(() => {
                     if (vm.email_user.postal_same_as_residential) {
@@ -763,6 +836,34 @@ export default {
                 _file = input.files[0];
             }
             vm.newOrganisation.identification = _file;
+        },
+        updateSystemSettings: function () {
+            let vm = this;
+            vm.updatingSystemSettings = true;
+            vm.$http
+                .post(
+                    helpers.add_endpoint_json(
+                        api_endpoints.users,
+                        vm.profile.id + '/update_system_settings'
+                    ),
+                    JSON.stringify(vm.profile.system_settings),
+                    {
+                        emulateJSON: true,
+                    }
+                )
+                .then(
+                    (response) => {
+                        vm.updatingSystemSettings = false;
+                        vm.profile = response.body;
+                        if (vm.profile.residential_address == null) {
+                            vm.profile.residential_address = {};
+                        }
+                    },
+                    (error) => {
+                        console.log(error);
+                        vm.updatingSystemSettings = false;
+                    }
+                );
         },
     },
 };
