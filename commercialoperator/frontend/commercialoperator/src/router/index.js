@@ -16,13 +16,8 @@ export default new Router({
             // component: Account, // TODO: change to Account
         },
         {
-            path: '/account',
-            name: 'account',
-            component: Account,
-        },
-        {
             path: '/ledger-ui/accounts',
-            name: 'accounts',
+            name: 'account',
             component: Account,
         },
 
