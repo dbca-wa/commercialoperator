@@ -20,7 +20,6 @@ export default new Router({
             name: 'account',
             component: Account,
         },
-
         external_routes,
         internal_routes,
     ],

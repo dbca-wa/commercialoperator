@@ -4,27 +4,16 @@
 
 {% block myaccount_nav %}
 
-<button class="nav-link managed-account-nav" id="nav-organisations-tab" data-bs-toggle="tab" data-bs-target="#nav-organisations" type="button" role="tab" aria-controls="nav-organisations" aria-selected="false">Organisations</button>
-<button class="nav-link managed-account-nav" id="nav-settings-tab" data-bs-toggle="tab" data-bs-target="#nav-settings" type="button" role="tab" aria-controls="nav-settings" aria-selected="false">System Settings</button>
+<button class="nav-link managed-account-nav" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Profile</button>
 
 {% endblock %}
 
 {% block additional_content %}
 
-<div id="nav-organisations-tab-page" style="display:none;">
-    <div class="container-fluid">
-        <div id="app">
-            Linking to an organisation coming soon...
-        </div>
-    </div>
+<div id="nav-profile-tab-page" style="display:none;">
+    <div id="app"></div>
 </div>
-<div id="nav-settings-tab-page" style="display:none;">
-    <div class="container-fluid">
-        <div id="app">
-            Setting up preferences coming soon...
-        </div>
-    </div>
-</div>
+
 
 <link rel="stylesheet" href="{% static 'commercialoperator/css/base.css' %}?v={{build_tag}}">
 <link rel="stylesheet" href="{% static 'commercialoperator/css/app.css' %}?v={{build_tag}}">
