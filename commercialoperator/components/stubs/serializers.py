@@ -38,6 +38,8 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
         )
 
     def get_id(self, obj):
+        if isinstance(obj, EmailUser):
+            return obj.id
         return obj
 
     def get_email(self, obj):
@@ -81,7 +83,7 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
         if not email_user:
             return None
         return email_user.phone_number
-    
+
     def get_mobile_number(self, obj):
         email_user = retrieve_email_user(obj)
         if not email_user:

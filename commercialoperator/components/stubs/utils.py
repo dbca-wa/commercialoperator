@@ -36,6 +36,18 @@ def retrieve_email_user(email_user_id):
             # Cache an empty EmailUser object to prevent repeated queries
             cache.set(cache_key, EmailUser(), cache_timeout)
             return None
+        except TypeError:
+            if isinstance(email_user_id, EmailUser):
+                logger.warning(
+                    f"Retrieved EmailUser object {email_user_id} directly. Returning."
+                )
+                return email_user_id
+            logger.error(
+                f"Type {type(email_user_id)} `email_user_id` parameter {email_user_id} must be an integer."
+            )
+            raise TypeError(
+                f"Type {type(email_user_id)} `email_user_id` parameter {email_user_id} must be an integer."
+            )
         else:
             cache.set(cache_key, email_user, cache_timeout)
             return email_user
