@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Profile from '@/components/user/profile.vue';
 import Account from '@/components/user/account.vue';
 import external_routes from '@/components/external/routes';
 import internal_routes from '@/components/internal/routes';
@@ -12,8 +11,7 @@ export default new Router({
         {
             path: '/firsttime',
             name: 'first-time',
-            component: Profile,
-            // component: Account, // TODO: change to Account
+            component: Account,
         },
         {
             path: '/ledger-ui/accounts',
