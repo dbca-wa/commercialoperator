@@ -340,7 +340,7 @@
                 <div class="panel panel-default">
                     <FormSection
                         :form-collapse="false"
-                        label="System settings"
+                        label="System Settings"
                         index="system_settings"
                         subtitle="
                             Set up preferences in using this system
@@ -844,9 +844,9 @@ export default {
                 .post(
                     helpers.add_endpoint_json(
                         api_endpoints.users,
-                        vm.profile.id + '/update_system_settings'
+                        vm.email_user.id + '/update_system_settings'
                     ),
-                    JSON.stringify(vm.profile.system_settings),
+                    JSON.stringify(vm.email_user.system_settings),
                     {
                         emulateJSON: true,
                     }
@@ -854,9 +854,10 @@ export default {
                 .then(
                     (response) => {
                         vm.updatingSystemSettings = false;
-                        vm.profile = response.body;
-                        if (vm.profile.residential_address == null) {
-                            vm.profile.residential_address = {};
+                        vm.email_user.system_settings =
+                            response.body.system_settings;
+                        if (vm.email_user.residential_address == null) {
+                            vm.email_user.residential_address = {};
                         }
                     },
                     (error) => {
