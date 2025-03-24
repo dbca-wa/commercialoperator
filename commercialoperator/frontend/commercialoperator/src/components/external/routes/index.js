@@ -1,42 +1,39 @@
-import ExternalDashboard from '../dashboard.vue'
-import Proposal from '../proposal.vue'
-//import CommercialOperatorLicence from '../commercial_operator_licence.vue'
-import ProposalApply from '../proposal_apply.vue'
-import ProposalSubmit from '../proposal_submit.vue'
-import Organisation from '../organisations/manage.vue'
-import Compliance from '../compliances/access.vue'
-import ComplianceSubmit from '../compliances/submit.vue'
-import Approval from '../approvals/approval.vue'
-import PaymentOrder from '@/components/common/tclass/payment_order.vue'
-import PaymentDash from '@/components/common/payments_dashboard.vue'
-export default
-{
+import ExternalDashboard from '../dashboard.vue';
+import Proposal from '../proposal.vue';
+import ProposalApply from '../proposal_apply.vue';
+import ProposalSubmit from '../proposal_submit.vue';
+import Organisation from '../organisations/manage.vue';
+import Compliance from '../compliances/access.vue';
+import ComplianceSubmit from '../compliances/submit.vue';
+import Approval from '../approvals/approval.vue';
+import PaymentOrder from '@/components/common/tclass/payment_order.vue';
+import PaymentDash from '@/components/common/payments_dashboard.vue';
+
+export default {
     path: '/external',
-    component:
-    {
-        render(c)
-        {
-            return c('router-view')
-        }
+    component: {
+        render(c) {
+            return c('router-view');
+        },
     },
     children: [
         {
             path: '/',
             component: ExternalDashboard,
-            name: 'external-proposals-dash'
+            name: 'external-proposals-dash',
         },
         {
             path: 'organisations/manage/:org_id',
-            component: Organisation
+            component: Organisation,
         },
         {
             path: 'compliance/:compliance_id',
-            component: Compliance
+            component: Compliance,
         },
         {
             path: 'compliance/submit',
             component: ComplianceSubmit,
-            name:"submit_compliance"
+            name: 'submit_compliance',
         },
         {
             path: 'approval/:approval_id',
@@ -45,7 +42,7 @@ export default
         {
             path: 'payment',
             component: PaymentDash,
-            props: { level: 'external' }
+            props: { level: 'external' },
         },
         {
             path: 'payment_order',
@@ -54,35 +51,28 @@ export default
         },
         {
             path: 'proposal',
-            component:
-            {
-                render(c)
-                {
-                    return c('router-view')
-                }
+            component: {
+                render(c) {
+                    return c('router-view');
+                },
             },
             children: [
                 {
                     path: '/',
                     component: ProposalApply,
-                    name:"apply_proposal"
+                    name: 'apply_proposal',
                 },
                 {
                     path: 'submit',
                     component: ProposalSubmit,
-                    name:"submit_proposal"
+                    name: 'submit_proposal',
                 },
                 {
                     path: ':proposal_id',
                     component: Proposal,
-                    name:"draft_proposal"
+                    name: 'draft_proposal',
                 },
-                //{
-                //    path: ':proposal_id',
-                //    component: CommercialOperatorLicence,
-                //    name:"draft_commercial_operator_licence"
-                //},
-            ]
-        }
-    ]
-}
+            ],
+        },
+    ],
+};

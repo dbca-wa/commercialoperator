@@ -52,6 +52,9 @@ class ExternalView(LoginRequiredMixin, TemplateView):
             context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
 
+class AccountView(LoginRequiredMixin, TemplateView):
+    template_name = "commercialoperator/dash/index.html"
+
 
 class ReferralView(ReferralOwnerMixin, DetailView):
     model = Referral

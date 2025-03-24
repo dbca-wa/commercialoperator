@@ -95,3 +95,11 @@ def in_dbca_domain(request):
         user.save()
 
     return True
+
+
+def is_finance_officer(request):
+    return belongs_to(request.user, settings.GROUP_FINANCE)
+
+
+def is_organisation_access_officer(request):
+    return belongs_to(request.user, settings.GROUP_NAME_ORGANISATION_ACCESS)

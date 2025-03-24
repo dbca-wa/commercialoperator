@@ -89,11 +89,10 @@
                     aria-labelledby="pills-applicant-tab"
                 >
                     <div v-if="is_external">
-                        <Profile
+                        <Account
                             v-if="applicantType == 'SUB'"
                             ref="profile"
-                            :is-application="true"
-                        ></Profile>
+                        ></Account>
 
                         <Organisation
                             v-if="applicantType == 'ORG'"
@@ -212,7 +211,7 @@
 </template>
 
 <script>
-import Profile from '@/components/user/profile.vue';
+import Account from '@/components/user/account.vue';
 import Organisation from '@/components/external/organisations/manage.vue';
 import Applicant from '@/components/common/tclass/applicant.vue';
 import Assessment from '@/components/common/tclass/assessment.vue';
@@ -224,13 +223,13 @@ import OtherDetails from '@/components/common/filming/other_details.vue';
 import Confirmation from '@/components/common/filming/confirmation.vue';
 export default {
     components: {
+        Account,
         Applicant,
         Activity,
         Access,
         Equipment,
         OtherDetails,
         Confirmation,
-        Profile,
         Organisation,
         Assessment,
         ApprovalType,

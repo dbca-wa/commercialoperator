@@ -6,11 +6,12 @@ var event = 'Event';
 module.exports = {
     organisations: '/api/organisations.json',
     filtered_organisations: '/api/filtered_organisations',
-    organisation_request: '/api/organisation_requests.json',
+    organisation_request: '/api/organisation_requests',
     organisation_requests:
         '/api/organisation_requests/datatable_list/?format=datatables',
     organisation_contacts: '/api/organisation_contacts.json',
     organisation_access_group_members: '/api/organisation_access_group_members',
+    organisation_lookup: '/api/organisations/organisation_lookup',
     users: '/api/users.json',
     profile: '/api/profile',
     users_api: '/api/users',
@@ -118,4 +119,8 @@ module.exports = {
     t_class: t_class,
     filming: filming,
     event: event,
+
+    // ------------------- ledger ui
+    request_user_id: '/api/request_user_id/',
+    account_details: '/api/account/',
 };

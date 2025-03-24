@@ -11,11 +11,11 @@ from commercialoperator.components.main.serializers import (
 )
 from rest_framework import serializers
 
+from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
 
-class EmailUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmailUser
-        fields = ("id", "email", "first_name", "last_name", "title", "organisation")
+
+class EmailUserSerializer(EmailUserRoSerializer):
+    pass
 
 
 class ApprovalPaymentSerializer(serializers.ModelSerializer):

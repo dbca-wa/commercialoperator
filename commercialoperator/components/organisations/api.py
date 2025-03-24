@@ -12,8 +12,9 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import update_organisation_obj
+from ledger_api_client.utils import update_organisation_obj, get_all_organisation
 
+from commercialoperator.components.approvals.serializers import EmailUserSerializer
 from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
 from commercialoperator.components.stubs.decorators import basic_exception_handler
@@ -21,6 +22,7 @@ from commercialoperator.components.stubs.utils import (
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
+    retrieve_organisation_delegate_ids,
 )
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
@@ -141,37 +143,28 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def validate_pins(self, request, *args, **kwargs):
-        try:
-            self.allow_external = True
-            instance = self.get_object()
-            serializer = OrganisationPinCheckSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            ret = instance.validate_pins(
-                serializer.validated_data["pin1"],
-                serializer.validated_data["pin2"],
-                request,
-            )
+        self.allow_external = True
+        instance = self.get_object()
+        serializer = OrganisationPinCheckSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ret = instance.validate_pins(
+            serializer.validated_data["pin1"],
+            serializer.validated_data["pin2"],
+            request,
+        )
 
-            if ret == None:
-                # user has already been to this organisation - don't add again
-                data = {"valid": ret}
-                return Response({"valid": "User already exists"})
-
+        if ret == None:
+            # user has already been to this organisation - don't add again
             data = {"valid": ret}
-            if data["valid"]:
-                # Notify each Admin member of request.
-                instance.send_organisation_request_link_notification(request)
-            return Response(data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+            return Response({"valid": "User already exists"})
+
+        data = {"valid": ret}
+        if data["valid"]:
+            # Notify each Admin member of request.
+            instance.send_organisation_request_link_notification(request)
+        return Response(data)
 
     @action(
         methods=[
@@ -264,31 +257,19 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def unlink_user(self, request, *args, **kwargs):
-        try:
-            self.allow_external = True
-            instance = self.get_object()
-            serializer = OrgUserAcceptSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user_obj = EmailUser.objects.get(
-                email=serializer.validated_data["email"].lower()
-            )
-            instance.unlink_user(user_obj, request)
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        self.allow_external = True
+        instance = self.get_object()
+
+        user_obj = self.request.user
+        user_data = EmailUserSerializer(user_obj.id).data
+        serializer = OrgUserAcceptSerializer(data=user_data)
+        serializer.is_valid(raise_exception=True)
+
+        instance.unlink_user(user_obj, request)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -673,6 +654,31 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     def upload_id(self, request, *args, **kwargs):
         pass
 
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+        # permission_classes=[IsAuthenticated],
+    )
+    def organisation_lookup(self, request, *args, **kwargs):
+        filtered_organisations = filter_organisation_list(
+            self, request, *args, **kwargs
+        )
+        filtered_organisations
+        organisation_ids = [o.organisation_id for o in filtered_organisations]
+        organisations = self.get_queryset().filter(organisation_id__in=organisation_ids)
+
+        data_transform = [
+            {
+                "id": organisation.id,
+                "text": f"{organisation.name} (ABN: {organisation.abn})",
+                "first_five": organisation.first_five,
+            }
+            for organisation in organisations
+        ]
+        return Response({"results": data_transform})
+
 
 class OrganisationListFilterView(generics.ListAPIView):
     queryset = Organisation.objects.none()
@@ -734,8 +740,70 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             return OrganisationRequest.objects.all()
         elif is_customer(self.request):
-            return OrganisationRequest.objects.filter(requester_id=user)
+            user_org_ids = retrieve_delegate_organisation_ids(user.id)
+            user_organisations = Organisation.objects.filter(
+                organisation_id__in=user_org_ids
+            )
+            user_organisation_abns = [org.abn for org in user_organisations]
+
+            # NOTE: Adding organisation requests where the user is a delegate here, on top of being a requester
+            return OrganisationRequest.objects.filter(
+                Q(abn__in=user_organisation_abns) | Q(requester_id=user)
+            )
+
         return OrganisationRequest.objects.none()
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
+    @basic_exception_handler
+    def linked_organisations(self, request, *args, **kwargs):
+        user_id = request.user.id
+        qs = self.get_queryset()
+        # qs = self.get_queryset().filter(id=1079) # An existing organisation request for testing
+
+        # Ledger organisation ids
+        ledger_org_ids = []
+        # Get all organisations from ledger in advance to not otherwise query ledger in each loop
+        all_organisations_response = get_all_organisation()
+        if all_organisations_response.get("status") != status.HTTP_200_OK:
+            raise serializers.ValidationError(
+                "Error fetching organisations from ledger"
+            )
+        ledger_organisation_data = all_organisations_response.get("data", [])
+        # Retrieve ledger organisation ids by ABN for which there is an organisation request
+        organisation_request_abns = [org_req.abn for org_req in qs]
+        ledger_org_ids = [
+            d["organisation_id"]
+            for d in ledger_organisation_data
+            if d["organisation_abn"] in organisation_request_abns
+        ]
+        ledger_org_ids = list(set(ledger_org_ids))
+        # Get COLS organisation ids for the ledger organisation ids (there is no abn field in organisation model, so have to take a little detour)
+        organisation_ids = Organisation.objects.filter(
+            organisation_id__in=ledger_org_ids
+        ).values_list("id", flat=True)
+        # Of those, get the COLS organisation ids where the user is a delegate
+        user_delegate_organisation_ids = [
+            oid
+            for oid in organisation_ids
+            if user_id in retrieve_organisation_delegate_ids(oid)
+        ]
+        # Get the organisation ABNs for the user delegate organisations
+        organisation_abns = [
+            org.abn
+            for org in Organisation.objects.filter(
+                id__in=user_delegate_organisation_ids
+            )
+        ]
+
+        serializer = OrganisationRequestSerializer(
+            qs.filter(abn__in=organisation_abns), many=True
+        )
+        return Response(serializer.data)
 
     @action(
         methods=[

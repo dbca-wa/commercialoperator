@@ -18,6 +18,8 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
+    mobile_number = serializers.SerializerMethodField()
     organisation = serializers.SerializerMethodField()
 
     class Meta:
@@ -30,10 +32,14 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
             "full_name",
             "title",
             "address",
+            "phone_number",
+            "mobile_number",
             "organisation",
         )
 
     def get_id(self, obj):
+        if isinstance(obj, EmailUser):
+            return obj.id
         return obj
 
     def get_email(self, obj):
@@ -71,6 +77,18 @@ class EmailUserRoSerializer(serializers.ModelSerializer):
         if not emailuser:
             return None
         return UserAddressSerializer(emailuser).data
+
+    def get_phone_number(self, obj):
+        email_user = retrieve_email_user(obj)
+        if not email_user:
+            return None
+        return email_user.phone_number
+
+    def get_mobile_number(self, obj):
+        email_user = retrieve_email_user(obj)
+        if not email_user:
+            return None
+        return email_user.mobile_number
 
     def get_organisation(self, obj):
         email_user = retrieve_email_user(obj)

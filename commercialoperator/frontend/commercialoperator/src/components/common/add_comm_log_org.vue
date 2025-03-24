@@ -29,6 +29,7 @@
                                             type="text"
                                             class="form-control"
                                             name="to"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -48,6 +49,7 @@
                                             type="text"
                                             class="form-control"
                                             name="fromm"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -66,6 +68,7 @@
                                             v-model="comms.type"
                                             class="form-control"
                                             name="type"
+                                            required
                                         >
                                             <option value="">
                                                 Select Type
@@ -93,6 +96,7 @@
                                             class="form-control"
                                             name="subject"
                                             style="width: 70%"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -112,6 +116,7 @@
                                             name="text"
                                             class="form-control"
                                             style="width: 70%"
+                                            required
                                         ></textarea>
                                     </div>
                                 </div>
@@ -309,12 +314,11 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.commsOrgForm;
-        vm.addFormValidations();
     },
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            if (helpers.validateForm(vm.form)) {
                 vm.sendData();
             }
         },
@@ -355,7 +359,7 @@ export default {
             this.comms = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
+            // this.validation_form.resetForm();
             let file_length = vm.files.length;
             this.files = [];
             for (var i = 0; i < file_length; i++) {
