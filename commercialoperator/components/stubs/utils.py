@@ -24,6 +24,12 @@ def retrieve_email_user(email_user_id):
         logger.error("Needs an email_user_id to retrieve an EmailUser object")
         return None
 
+    if isinstance(email_user_id, EmailUser):
+        logger.warning(
+            f"Retrieved EmailUser object {email_user_id} directly. Returning."
+        )
+        return email_user_id
+
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)
     cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
     email_user = cache.get(cache_key)
@@ -37,11 +43,6 @@ def retrieve_email_user(email_user_id):
             cache.set(cache_key, EmailUser(), cache_timeout)
             return None
         except TypeError:
-            if isinstance(email_user_id, EmailUser):
-                logger.warning(
-                    f"Retrieved EmailUser object {email_user_id} directly. Returning."
-                )
-                return email_user_id
             logger.error(
                 f"Type {type(email_user_id)} `email_user_id` parameter {email_user_id} must be an integer."
             )
