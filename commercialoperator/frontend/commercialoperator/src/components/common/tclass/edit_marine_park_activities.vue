@@ -133,13 +133,6 @@ export default {
             successString: '',
             success: false,
             dateFormat: 'YYYY-MM-DD',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             // Adding this prop here because it was missing in the original code
             access_point: '',
         };

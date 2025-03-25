@@ -228,13 +228,6 @@ export default {
             filterExpiryTo: '',
             filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             application_types: [],
             approval_status: [],
             proposal_submitters: [],

@@ -267,13 +267,6 @@ export default {
             errorString: '',
             successString: '',
             success: false,
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             files: [
                 {
                     file: null,

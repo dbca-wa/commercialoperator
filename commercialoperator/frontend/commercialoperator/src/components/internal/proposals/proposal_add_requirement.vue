@@ -411,13 +411,6 @@ export default {
             errorString: '',
             successString: '',
             success: false,
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             validDate: false,
         };
     },
@@ -659,16 +652,6 @@ export default {
         },
         eventListeners: function () {
             let vm = this;
-            // Initialise Date Picker
-            // $(vm.$refs.due_date).datetimepicker(vm.datepickerOptions);
-            // $(vm.$refs.due_date).on('dp.change', function (e) {
-            //     if ($(vm.$refs.due_date).data('DateTimePicker').date()) {
-            //         vm.requirement.due_date = e.date.format('DD/MM/YYYY');
-            //     } else if ($(vm.$refs.due_date).data('date') === '') {
-            //         vm.requirement.due_date = '';
-            //     }
-            // });
-
             // Intialise select2
             $(vm.$refs.standard_req)
                 .select2({

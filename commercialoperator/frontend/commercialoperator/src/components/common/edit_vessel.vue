@@ -190,13 +190,6 @@ export default {
             successString: '',
             success: false,
             dateFormat: 'YYYY-MM-DD',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             localVesselAction: JSON.parse(JSON.stringify(this.vessel_action)),
         };
     },

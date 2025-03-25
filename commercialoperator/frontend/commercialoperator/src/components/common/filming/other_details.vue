@@ -420,13 +420,6 @@ export default {
             dBody: 'dBody' + vm._uid,
             values: null,
             global_settings: [],
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {

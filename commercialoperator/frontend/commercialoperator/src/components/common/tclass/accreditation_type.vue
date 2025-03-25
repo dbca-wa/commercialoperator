@@ -128,13 +128,6 @@ export default {
     data: function () {
         return {
             repeat: 1,
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
 

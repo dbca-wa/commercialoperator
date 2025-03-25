@@ -471,13 +471,6 @@ export default {
             licence_period_choices: [],
             mooring: [''],
             global_settings: [],
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             pre_event_parks_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,
                 vm.$route.params.proposal_id + '/pre_event_parks'

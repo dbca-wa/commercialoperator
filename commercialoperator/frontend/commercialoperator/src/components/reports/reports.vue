@@ -269,11 +269,6 @@ export default {
             flatDateEndPicker: null,
             refundsStartPicker: null,
             refundsEndPicker: null,
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-            },
             regions: [],
             region: '',
             district: '',

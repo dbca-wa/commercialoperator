@@ -261,13 +261,6 @@ export default {
             success: false,
             approvalCCError: false,
             approvalCCErrorString: '',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {

@@ -457,13 +457,6 @@ export default {
             selected_film_type: [],
             selected_film_purpose: [],
             selected_film_usage: [],
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: false,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {
