@@ -12,7 +12,6 @@ import ComplianceDash from '../compliances/dashboard.vue';
 import Compliance from '../compliances/access.vue';
 import Approval from '../approvals/approval.vue';
 import PaymentOrder from '@/components/common/tclass/payment_order.vue';
-import Reports from '@/components/reports/reports.vue';
 import ParkEntryFeesDashboard from '../park_entry_fees_dashboard.vue';
 import DistrictProposal from '../district_proposals/district_proposal.vue';
 
@@ -59,11 +58,6 @@ export default {
             path: 'payment_order',
             component: PaymentOrder,
             name: 'payment_order',
-        },
-        {
-            path: 'reports',
-            name: 'reports',
-            component: Reports,
         },
 
         {

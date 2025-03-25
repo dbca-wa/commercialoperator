@@ -252,11 +252,6 @@ api_patterns = [
         name="filming_licence_charge_choices ",
     ),
     url(r"^api/oracle_job$", main_api.OracleJob.as_view(), name="get-oracle"),
-    url(
-        r"^api/reports/booking_settlements$",
-        main_api.BookingSettlementReportView.as_view(),
-        name="booking-settlements-report",
-    ),
     # Filming
     url(
         r"^api/filming_activity_tab",
