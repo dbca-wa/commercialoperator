@@ -1614,6 +1614,7 @@ export default {
         amendmentRequest: function () {
             this.save_wo();
             let values = '';
+            // Note: What are these values for? The only deficiency class is in comment.vue and that component is not imported here
             $('.deficiency').each((i, d) => {
                 values +=
                     $(d).val() != ''
