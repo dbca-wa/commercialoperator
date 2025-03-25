@@ -1,6 +1,6 @@
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from django.db.models import Q
 from commercialoperator.components.proposals.utils import create_data_from_form
@@ -36,7 +36,7 @@ class ProposalView(TemplateView):
             return redirect(reverse("external"))
         except:
             traceback.print_exc
-            return JsonResponse({error: "something went wrong"}, safe=False, status=400)
+            return JsonResponse({"error": "something went wrong"}, safe=False, status=400)
 
 
 class ProposalHistoryCompareView(HistoryCompareDetailView):
@@ -66,9 +66,8 @@ class ProposalFilteredHistoryCompareView(HistoryCompareDetailView):
         action_list = [
             {"version": version, "revision": version.revision}
             for version in self._order_version_queryset(
-                # Version.objects.get_for_object(self.get_object()).select_related("revision__user").filter(revision__comment__icontains='status')
                 Version.objects.get_for_object(self.get_object())
-                .select_related("revision__user")
+                .select_related("revision")
                 .filter(
                     Q(revision__comment__icontains="status")
                     | Q(revision_id=current_revision_id)
