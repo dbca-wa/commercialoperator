@@ -1277,7 +1277,6 @@ export default {
             let vm = this;
             var trail = node.raw;
 
-            console.log('Trail 0: ' + JSON.stringify(trail));
             //inserting a temporary variables checked and new_activities to store and display selected activities for each section.
             for (var l = 0; l < trail.sections.length; l++) {
                 trail.sections[l].checked = false;
@@ -1307,7 +1306,7 @@ export default {
                     }
                 }
             }
-            console.log('Trail: ' + JSON.stringify(trail));
+
             this.$refs.edit_sections.trail = trail;
             this.$refs.edit_sections.isModalOpen = true;
         },
