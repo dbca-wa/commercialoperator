@@ -33,6 +33,7 @@
                         v-if="node.raw.can_edit"
                         class="col-sm-4 option-label-container"
                     >
+                        <!-- Note: I changed the listener from click to mousedown, because when opening the multiselect list, click would deselect/select a list option item before opening the modal -->
                         <div class="text-nowrap pull-right">
                             <a
                                 v-if="is_checked(node)"
