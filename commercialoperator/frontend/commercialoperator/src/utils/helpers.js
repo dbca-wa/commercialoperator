@@ -226,6 +226,91 @@ module.exports = {
         console.log('Form is valid');
         return true;
     },
+    /**
+     * Validates two dates based on the specified operation
+     * @param {String} operation The operation to perform on the dates (e.g. '<', '>')
+     * @param {...String} dates The dates to compare
+     * @returns {Boolean} True if the operation is valid, false otherwise
+     */
+    validateFormDates: function (operation, ...dates) {
+        if (!operation) {
+            console.warn(
+                'validateFormDates: No operation specified, defaulting to "<"'
+            );
+            operation = '<';
+        }
+        if (dates.length < 2) {
+            console.error('validateFormDates: At least two dates are required');
+            return false;
+        }
+        const date1 = dates[0];
+        const date2 = dates[1];
+
+        if (!Date.parse(date1) || !Date.parse(date2)) {
+            console.warn(
+                'validateFormDates: One or both dates are invalid, returning false'
+            );
+            return false;
+        }
+
+        // Unix timestamp comparison
+        if (operation === '<') {
+            return Date.parse(date1) < Date.parse(date2);
+        } else {
+            console.warn(
+                'validateFormDates: Unsupported operation "' +
+                    operation +
+                    ' not yet implemented"'
+            );
+            return false;
+        }
+    },
+    /**
+     * Adds a date field value attribute to the specified reference
+     * @param {Object} context The `this` context of the Vue component
+     * @param {String} value A date value to set as the value, or today if null
+     * @param {String} attribute The attribute to set (e.g. 'min', 'max')
+     * @param {String} reference The reference to the date field
+     */
+    addDateFieldValueAttribute(context, value, attribute, reference) {
+        if (!value) {
+            // If no value is passed, set today to the current date
+            const date = new Date();
+            value = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+            );
+        }
+        value = moment(value).format('YYYY-MM-DD');
+        $(context.$refs[reference]).find('input').attr(attribute, value);
+    },
+    /**
+     * Adds a date field min value attribute to the specified references
+     * @param {Object} context The `this` context of the Vue component
+     * @param {String} value A date value to set as the min value
+     * @param  {...String} references references to the date fields
+     */
+    addDateFieldMinValues: function (context, value, ...references) {
+        references.forEach((ref) => {
+            if (context.$refs[ref]) {
+                this.addDateFieldValueAttribute(context, value, 'min', ref);
+            }
+        });
+    },
+    /**
+     * Adds a date field max value attribute to the specified references
+     * @param {Object} context The `this` context of the Vue component
+     * @param {String} value A date value to set as the max value
+     * @param  {...String} references references to the date fields
+     */
+    addDateFieldMaxValues: function (context, value, ...references) {
+        references.forEach((ref) => {
+            if (context.$refs[ref]) {
+                this.addDateFieldValueAttribute(context, value, 'max', ref);
+            }
+        });
+    },
     formatABN: function (abn) {
         if (abn.length == 11) {
             return (
