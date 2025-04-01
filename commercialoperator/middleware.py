@@ -35,13 +35,15 @@ class FirstTimeNagScreenMiddleware(object):
             request.user.first_name
             and request.user.last_name
             and request.user.residential_address_id
+            # Don't require internal users to fill in phone numbers
+            and is_internal(request)
             or (request.user.phone_number or request.user.mobile_number)
         ):
             return self.get_response(request)
 
         path_ft = reverse("first_time")
         path_logout = reverse("accounts:logout")
-        if request.path not in (path_ft, path_logout):
+        if request.path not in ("/sso/setting", path_ft, path_logout):
             return redirect(
                 reverse("first_time")
                 + "?next="
