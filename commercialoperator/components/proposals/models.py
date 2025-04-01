@@ -6276,7 +6276,6 @@ def searchKeyWords(
         ApplicationType.FILMING,
     ]
     if is_internal:
-        # proposal_list = Proposal.objects.filter(application_type__name='T Class').exclude(processing_status__in=['discarded','draft'])
         proposal_list = Proposal.objects.filter(
             application_type__name__in=application_types
         ).exclude(processing_status__in=["discarded", "draft"])
@@ -6319,7 +6318,6 @@ def searchKeyWords(
         trails = ProposalTrail.objects.filter(sections__in=sections)
 
         if searchProposal:
-            # proposal_list = proposal_list.filter(data__iregex=filter_regex)
             # this below query run is equivalent to the search_words property, except that it retrieves the pertaining proposal records
             # there is a lot here but a lot of time is saved not having to iterate every record every time
             proposal_list = (
@@ -6366,10 +6364,8 @@ def searchKeyWords(
             # this loop now effectively formats the result
             # TODO if pagination can be applied prior, it can save time for all querysets regardless of size
             for p in proposal_list:
-                # if p.data:
                 if p.search_data:
                     try:
-                        # results = search(p.data[0], searchWords)
                         results = search(p.search_data, searchWords)
                         final_results = {}
                         if results:
@@ -6380,12 +6376,12 @@ def searchKeyWords(
                                 "number": p.lodgement_number,
                                 "id": p.id,
                                 "type": "Proposal",
-                                "applicant": p.applicant,
+                                "applicant": p.applicant_obj,
                                 "text": final_results,
                             }
                             qs.append(res)
-                    except:
-                        raise
+                    except Exception as e:
+                        raise e
         if searchApproval:
             approval_list = approval_list.filter(
                 Q(surrender_details__iregex=filter_regex)
