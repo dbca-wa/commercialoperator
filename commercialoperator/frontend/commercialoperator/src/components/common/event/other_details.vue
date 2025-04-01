@@ -35,6 +35,7 @@
                                                 class="form-control"
                                                 name="training_date"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                                 :disabled="proposal.readonly"
                                             />
                                             <span class="input-group-addon">
@@ -350,6 +351,7 @@
                                                 class="form-control"
                                                 name="insurance_expiry"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                                 :disabled="proposal.readonly"
                                             />
                                             <span class="input-group-addon">
@@ -523,7 +525,12 @@ export default {
         let vm = this;
         vm.fetchGlobalSettings();
         this.$nextTick(() => {
-            vm.eventListeners();
+            helpers.addDateFieldMinValues(
+                vm,
+                null,
+                'insurance_expiry',
+                'training_date'
+            );
         });
     },
     methods: {
@@ -727,23 +734,6 @@ export default {
                     }
                 }
             }
-        },
-        eventListeners: function () {
-            let vm = this;
-
-            var date = new Date();
-            var today = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-            );
-
-            //Set minimum date on datetimepicker so that
-            //insurance expiry date cannot be selected prior to today
-            $(vm.$refs.insurance_expiry).attr('min', today);
-            //Set minimum date on datetimepicker so that
-            //Training date cannot be selected prior to today
-            $(vm.$refs.training_date).attr('min', today);
         },
     },
 };

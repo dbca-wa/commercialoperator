@@ -283,6 +283,10 @@ module.exports = {
             );
         }
         value = moment(value).format('YYYY-MM-DD');
+        console.log(
+            `Adding date field ${reference} ${attribute} value attribute:`,
+            value
+        );
         $(context.$refs[reference]).find('input').attr(attribute, value);
     },
     /**

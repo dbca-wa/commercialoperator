@@ -142,6 +142,7 @@
                                                 class="form-control"
                                                 name="nominated_start_date"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                                 :disabled="
                                                     proposal.readonly ||
                                                     proposal.pending_amendment_request ||
@@ -327,6 +328,7 @@
                                                 class="form-control"
                                                 name="insurance_expiry"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                                 :disabled="proposal.readonly"
                                             />
                                             <span class="input-group-addon">
@@ -684,6 +686,12 @@ export default {
         vm.showCreditFacilityLink();
         this.$nextTick(() => {
             vm.eventListeners();
+            helpers.addDateFieldMinValues(
+                vm,
+                null,
+                'nominated_start_date',
+                'insurance_expiry'
+            );
         });
     },
     methods: {
@@ -879,21 +887,6 @@ export default {
         },
         eventListeners: function () {
             let vm = this;
-
-            var date = new Date();
-            var today = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-            );
-            today = moment(today).format('YYYY-MM-DD');
-
-            //Set minimum date on datetimepicker so that nominated
-            //start date cannot be selected prior to today
-            $(vm.$refs.nominated_start_date).attr('min', today);
-            //Set minimum date on datetimepicker so that
-            //insurance expiry date cannot be selected prior to today
-            $(vm.$refs.insurance_expiry).attr('min', today);
 
             // Intialise select2
             $(vm.$refs.preferred_licence_period)
