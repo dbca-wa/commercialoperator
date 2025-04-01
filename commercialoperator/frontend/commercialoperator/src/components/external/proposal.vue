@@ -402,6 +402,9 @@ export default {
 
         set_formData: function () {
             let vm = this;
+            if (!helpers.validateForm(vm.form)) {
+                throw new Error('Please fix the form errors before saving');
+            }
             let formData = new FormData(vm.form);
 
             formData.append(
@@ -424,7 +427,19 @@ export default {
             vm.savingProposal = true;
             vm.save_applicant_data();
 
-            let formData = vm.set_formData();
+            let formData;
+            try {
+                formData = vm.set_formData();
+            } catch (e) {
+                vm.savingProposal = false;
+                swal.fire({
+                    title: 'Error',
+                    text: e.message,
+                    icon: 'error',
+                });
+                return;
+            }
+
             vm.$http.post(vm.proposal_form_url, formData).then(
                 () => {
                     swal.fire({
@@ -460,14 +475,36 @@ export default {
         save_wo_confirm: function () {
             let vm = this;
             vm.save_applicant_data();
-            let formData = vm.set_formData();
+            let formData;
+            try {
+                formData = vm.set_formData();
+            } catch (e) {
+                vm.savingProposal = false;
+                swal.fire({
+                    title: 'Error',
+                    text: e.message,
+                    icon: 'error',
+                });
+                return;
+            }
 
             vm.$http.post(vm.proposal_form_url, formData);
         },
         save_before_submit: async function () {
             let vm = this;
             vm.save_applicant_data();
-            let formData = vm.set_formData();
+            let formData;
+            try {
+                formData = vm.set_formData();
+            } catch (e) {
+                vm.savingProposal = false;
+                swal.fire({
+                    title: 'Error',
+                    text: e.message,
+                    icon: 'error',
+                });
+                return;
+            }
             vm.saveError = false;
 
             //vm.$http.post(vm.proposal_form_url,formData);
@@ -493,7 +530,18 @@ export default {
 
         save_and_redirect: function () {
             let vm = this;
-            let formData = vm.set_formData();
+            let formData;
+            try {
+                formData = vm.set_formData();
+            } catch (e) {
+                vm.savingProposal = false;
+                swal.fire({
+                    title: 'Error',
+                    text: e.message,
+                    icon: 'error',
+                });
+                return;
+            }
 
             vm.save_applicant_data();
             vm.$http.post(vm.proposal_form_url, formData).then(
@@ -1142,7 +1190,18 @@ export default {
         },
         submit: function () {
             let vm = this;
-            let formData = vm.set_formData();
+            let formData;
+            try {
+                formData = vm.set_formData();
+            } catch (e) {
+                vm.savingProposal = false;
+                swal.fire({
+                    title: 'Error',
+                    text: e.message,
+                    icon: 'error',
+                });
+                return;
+            }
 
             var missing_data = vm.can_submit();
             if (missing_data != true) {
