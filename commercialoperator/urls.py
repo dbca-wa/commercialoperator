@@ -173,6 +173,11 @@ router.register(
     proposal_api_event.ProposalEventsTrailsViewSet,
     "proposal_events_trails",
 )
+router.register(
+    r"search_proposals",
+    proposal_api.SearchProposalsViewSet,
+    "search-proposals",
+),
 
 api_patterns = [
     url(
