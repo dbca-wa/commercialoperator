@@ -947,6 +947,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 version_comment="processing_status: {}".format(self.processing_status)
             )
 
+        cache.delete(
+            settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
+                id=self.id, lodgement_number=self.lodgement_number
+            )
+        )
+
     def get_property_cache(self):
         """
         Get properties which were previously resolved.
@@ -2926,6 +2932,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @basic_exception_handler
     def preview_approval(self, request, details):
         from commercialoperator.components.approvals.models import PreviewTempApproval
+
         if not (
             self.processing_status == "with_assessor_requirements"
             or self.processing_status == "with_approver"
@@ -2964,9 +2971,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         )
 
         # Generate the preview document - get the value of the BytesIO buffer
-        licence_buffer = preview_approval.generate_doc(
-            request.user, preview=True
-        )
+        licence_buffer = preview_approval.generate_doc(request.user, preview=True)
 
         # clean temp preview licence object
         transaction.set_rollback(True)
@@ -6258,10 +6263,15 @@ def duplicate_event(p):
 
 
 def searchKeyWords(
-    searchWords, searchProposal, searchApproval, searchCompliance, is_internal=True
+    context,
+    request,
+    searchWords,
+    searchProposal,
+    searchApproval,
+    searchCompliance,
+    is_internal=True,
 ):
     from commercialoperator.utils import (
-        search,
         search_approval,
         search_compliance,
         getChoiceFieldRegex,
@@ -6362,26 +6372,62 @@ def searchKeyWords(
             )
 
             # this loop now effectively formats the result
-            # TODO if pagination can be applied prior, it can save time for all querysets regardless of size
-            for p in proposal_list:
-                if p.search_data:
+            proposals = proposal_list.expand_search_results(searchWords).filter(
+                proposal_search_results__isnull=False
+            )
+
+            paginator = context.paginator
+            paginator.page_size = proposals.count()
+            proposals_paginated = paginator.paginate_queryset(proposals, request)
+
+            search_results_tuples = [
+                (p.id, p.lodgement_number, json.loads(p.proposal_search_results))
+                for p in proposals_paginated
+            ]
+
+            for search_result_tuple in search_results_tuples:
+                final_results = {}
+                pid = search_result_tuple[0]
+                lodgement_number = search_result_tuple[1]
+
+                for result in search_result_tuple[2]:
+                    for key, value in result.items():
+                        final_results.update({"key": key, "value": value})
+
+                cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
+                    id=pid, lodgement_number=lodgement_number
+                )
+                res = cache.get(cache_key)
+
+                if res is None:
                     try:
-                        results = search(p.search_data, searchWords)
-                        final_results = {}
-                        if results:
-                            for r in results:
-                                for key, value in r.items():
-                                    final_results.update({"key": key, "value": value})
-                            res = {
-                                "number": p.lodgement_number,
-                                "id": p.id,
-                                "type": "Proposal",
-                                "applicant": p.applicant_obj,
-                                "text": final_results,
-                            }
-                            qs.append(res)
-                    except Exception as e:
-                        raise e
+                        applicant = proposals.get(id=pid).applicant_obj
+                    except Proposal.DoesNotExist:
+                        applicant = None
+
+                    res = {
+                        "number": lodgement_number,
+                        "id": pid,  # id,
+                        "type": "Proposal",
+                        "applicant": applicant,
+                    }
+
+                    cache.set(
+                        cache_key,
+                        res,
+                        settings.CACHE_TIMEOUT_24_HOURS,
+                    )
+                else:
+                    logger.info(
+                        "Search Keywords cache hit for proposal {}".format(
+                            res["number"]
+                        )
+                    )
+
+                res["text"] = final_results
+
+                qs.append(res)
+
         if searchApproval:
             approval_list = approval_list.filter(
                 Q(surrender_details__iregex=filter_regex)
@@ -6406,6 +6452,7 @@ def searchKeyWords(
                     qs.extend(results)
                 except:
                     raise
+
     return qs
 
 
@@ -7462,9 +7509,7 @@ class DistrictProposal(models.Model):
             elif self.proposal.approval:
                 lodgement_number = self.proposal.approval.lodgement_number
             else:
-                lodgement_number = (
-                    None  # renewals/amendments keep same licence number
-                )
+                lodgement_number = None  # renewals/amendments keep same licence number
             preview_approval = PreviewTempApproval.objects.create(
                 current_proposal=self.proposal,
                 issue_date=timezone.now(),
@@ -7481,9 +7526,7 @@ class DistrictProposal(models.Model):
             )
 
             # Generate the preview document - get the value of the BytesIO buffer
-            licence_buffer = preview_approval.generate_doc(
-                request.user, preview=True
-            )
+            licence_buffer = preview_approval.generate_doc(request.user, preview=True)
 
             # clean temp preview licence object
             transaction.set_rollback(True)
