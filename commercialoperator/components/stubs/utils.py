@@ -148,39 +148,6 @@ class EmailUserQuerySet(models.QuerySet):
 
         return self
 
-    def expand_search_results(self, search_words):
-        """
-        Adds the search results as annotated field to the QuerySet
-        """
-
-        from commercialoperator.utils import search
-
-        results_dict = {}
-
-        for obj in self:
-            if obj.search_data:
-                results_dict[obj.id] = json.dumps(search(obj.search_data, search_words))
-
-        # Create a dictionary of Case expressions
-        case_whens = {
-            f"{self.model.__name__.lower()}_search_results": models.Case(
-                *[
-                    models.When(
-                        **{f"id": id},
-                        then=models.Value(results),
-                    )
-                    for id, results in results_dict.items()
-                ],
-                default=models.Value(None),
-                output_field=models.CharField(),
-            )
-        }
-
-        # Add the search results field
-        self = self.annotate(**case_whens)
-
-        return self
-
 
 def createCustomBasket(*args, **kwargs):
     raise NotImplementedError(
