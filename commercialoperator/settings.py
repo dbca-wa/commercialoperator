@@ -447,6 +447,7 @@ CACHE_KEY_FILMING_LICENCE_CHARGE_CHOICES = "filming-licence-charge-choices"
 CACHE_KEY_APPLICATION_TYPES = "application-types"
 CACHE_KEY_PROPOSAL_SUBMITTERS = "proposal-submitters-{}"
 CACHE_KEY_PROPOSAL_PROCESSING_STATUS = "proposal-processing-status-{}"
+CACHE_KEY_PROPOSAL_KEYWORD_SEARCH = "proposal-keyword-search-{id}-{lodgement_number}"
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"
