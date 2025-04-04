@@ -1430,7 +1430,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-
     @action(
         methods=[
             "GET",
@@ -2114,7 +2113,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         save_proponent_data(instance, request, self)
         return redirect(reverse("external"))
-
 
     @action(methods=["post"], detail=True)
     def update_training_flag(self, request, *args, **kwargs):
@@ -2991,6 +2989,7 @@ class FilmingLicenceChargeView(views.APIView):
 
 
 class SearchKeywordsView(views.APIView):
+
     renderer_classes = [
         JSONRenderer,
     ]
@@ -3003,11 +3002,48 @@ class SearchKeywordsView(views.APIView):
         searchCompliance = request.data.get("searchCompliance")
         if searchWords:
             qs = searchKeyWords(
-                searchWords, searchProposal, searchApproval, searchCompliance
+                request, searchWords, searchProposal, searchApproval, searchCompliance
             )
         # queryset = list(set(qs))
         serializer = SearchKeywordSerializer(qs, many=True)
         return Response(serializer.data)
+
+
+class SearchProposalsViewSet(viewsets.ModelViewSet):
+    queryset = Proposal.objects.none()
+    serializer_class = SearchKeywordSerializer
+    pagination_class = DatatablesPageNumberPagination
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
+    def search_keywords(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+
+        searchWords = json.loads(request.GET.get("searchKeywords"))
+        searchProposal = json.loads(request.GET.get("searchProposal"))
+        searchApproval = json.loads(request.GET.get("searchApproval"))
+        searchCompliance = json.loads(request.GET.get("searchCompliance"))
+
+        if len(searchWords):
+            result_page = searchKeyWords(
+                self,
+                request,
+                searchWords,
+                searchProposal,
+                searchApproval,
+                searchCompliance,
+            )
+        else:
+            result_page = self.paginator.paginate_queryset(qs, request)
+
+        serializer = SearchKeywordSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
 
 
 class SearchReferenceView(views.APIView):
