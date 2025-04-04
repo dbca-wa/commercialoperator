@@ -46,6 +46,8 @@ module.exports = {
     event_trail_container: '/api/event_trail_container',
     event_park_container: '/api/event_park_container',
     overdue_invoices: '/api/overdue_invoices.json',
+    proposal_search_keywords:
+        '/api/search_proposals/search_keywords/?format=datatables',
 
     //filming
     proposal_filming_parks: '/api/proposal_filming_parks.json',
