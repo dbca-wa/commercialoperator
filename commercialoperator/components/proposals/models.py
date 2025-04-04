@@ -6278,6 +6278,7 @@ def searchKeyWords(
     )
     from commercialoperator.components.approvals.models import Approval
     from commercialoperator.components.compliances.models import Compliance
+    from commercialoperator.utils import search
 
     qs = []
     application_types = [
@@ -6372,18 +6373,25 @@ def searchKeyWords(
             )
 
             # this loop now effectively formats the result
-            proposals = proposal_list.expand_search_results(searchWords).filter(
-                proposal_search_results__isnull=False
-            )
+            proposals = proposal_list
 
             paginator = context.paginator
             paginator.page_size = proposals.count()
             proposals_paginated = paginator.paginate_queryset(proposals, request)
 
-            search_results_tuples = [
-                (p.id, p.lodgement_number, json.loads(p.proposal_search_results))
-                for p in proposals_paginated
-            ]
+            search_results_tuples = []
+            for p in proposals_paginated:
+                if not p.search_data:
+                    continue
+
+                search_results = search(p.search_data, searchWords)
+                if not len(search_results):
+                    continue
+                search_results = json.dumps(search(p.search_data, searchWords))
+
+                search_results_tuples.append(
+                    (p.id, p.lodgement_number, json.loads(search_results))
+                )
 
             for search_result_tuple in search_results_tuples:
                 final_results = {}
