@@ -459,3 +459,7 @@ API_EXCEPTION_MESSAGE = (
     "An error occurred while processing your request, "
     f"please try again and if the problem persists contact {SUPPORT_EMAIL}"
 )
+
+# CSRF token
+CSRF_TRUSTED_ORIGINS_STRING = decouple.config("CSRF_TRUSTED_ORIGINS", default='[]')
+CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
