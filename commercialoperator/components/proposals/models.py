@@ -54,6 +54,7 @@ from commercialoperator.components.stubs.decorators import basic_exception_handl
 from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     EmailUserQuerySet,
+    QuerySetChain,
     retrieve_email_user,
     retrieve_group_members,
     retrieve_user_groups,
@@ -6261,7 +6262,6 @@ def duplicate_event(p):
 
     return p
 
-
 def searchKeyWords(
     context,
     request,
@@ -6280,22 +6280,29 @@ def searchKeyWords(
     from commercialoperator.components.compliances.models import Compliance
     from commercialoperator.utils import search
 
-    qs = []
     application_types = [
         ApplicationType.TCLASS,
         ApplicationType.EVENT,
         ApplicationType.FILMING,
     ]
-    if is_internal:
+
+    proposal_list = Proposal.objects.none()
+    approval_list =Approval.objects.none()
+    compliance_list = Compliance.objects.none()
+
+    if is_internal and searchProposal:
         proposal_list = Proposal.objects.filter(
             application_type__name__in=application_types
         ).exclude(processing_status__in=["discarded", "draft"])
+    if is_internal and searchApproval:
         approval_list = (
             Approval.objects.all()
             .order_by("lodgement_number", "-issue_date")
             .distinct("lodgement_number")
         )
+    if is_internal and searchCompliance:
         compliance_list = Compliance.objects.all()
+
     if searchWords:
         # convert the search words in to two regex values - one for text one for json values
         search_words_regex = "(?:" + "|".join(searchWords) + ")"
@@ -6327,6 +6334,9 @@ def searchKeyWords(
             trail_activities__in=pts_activities
         )
         trails = ProposalTrail.objects.filter(sections__in=sections)
+
+        paginator = context.paginator
+        paginator.page_size = 10
 
         if searchProposal:
             # this below query run is equivalent to the search_words property, except that it retrieves the pertaining proposal records
@@ -6372,96 +6382,94 @@ def searchKeyWords(
                 .order_by("-id")
             )
 
-            # this loop now effectively formats the result
-            proposals = proposal_list
-
-            paginator = context.paginator
-            paginator.page_size = proposals.count()
-            proposals_paginated = paginator.paginate_queryset(proposals, request)
-
-            search_results_tuples = []
-            for p in proposals_paginated:
-                if not p.search_data:
-                    continue
-
-                search_results = search(p.search_data, searchWords)
-                if not len(search_results):
-                    continue
-                search_results = json.dumps(search(p.search_data, searchWords))
-
-                search_results_tuples.append(
-                    (p.id, p.lodgement_number, json.loads(search_results))
-                )
-
-            for search_result_tuple in search_results_tuples:
-                final_results = {}
-                pid = search_result_tuple[0]
-                lodgement_number = search_result_tuple[1]
-
-                for result in search_result_tuple[2]:
-                    for key, value in result.items():
-                        final_results.update({"key": key, "value": value})
-
-                cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
-                    id=pid, lodgement_number=lodgement_number
-                )
-                res = cache.get(cache_key)
-
-                if res is None:
-                    try:
-                        applicant = proposals.get(id=pid).applicant_obj
-                    except Proposal.DoesNotExist:
-                        applicant = None
-
-                    res = {
-                        "number": lodgement_number,
-                        "id": pid,  # id,
-                        "type": "Proposal",
-                        "applicant": applicant,
-                    }
-
-                    cache.set(
-                        cache_key,
-                        res,
-                        settings.CACHE_TIMEOUT_24_HOURS,
-                    )
-                else:
-                    logger.info(
-                        "Search Keywords cache hit for proposal {}".format(
-                            res["number"]
-                        )
-                    )
-
-                res["text"] = final_results
-
-                qs.append(res)
-
         if searchApproval:
             approval_list = approval_list.filter(
                 Q(surrender_details__iregex=filter_regex)
                 | Q(suspension_details__iregex=filter_regex)
                 | Q(cancellation_details__iregex=search_words_regex)
             )
-            for a in approval_list:
-                try:
-                    results = search_approval(a, searchWords)
-                    qs.extend(results)
-                except:
-                    raise
+
         if searchCompliance:
             compliance_list = compliance_list.filter(
                 Q(text__iregex=search_words_regex)
                 | Q(requirement__free_requirement__iregex=search_words_regex)
                 | Q(requirement__standard_requirement__text__iregex=search_words_regex)
             )
-            for c in compliance_list:
-                try:
-                    results = search_compliance(c, searchWords)
-                    qs.extend(results)
-                except:
-                    raise
 
-    return qs
+    return_list = []
+    chained_list = QuerySetChain(proposal_list, approval_list, compliance_list)
+    chained_list_paginated = paginator.paginate_queryset(chained_list, request)
+
+    for entry in chained_list_paginated:
+        if isinstance(entry, Proposal):
+            if not entry.search_data:
+                continue
+
+            search_results = search(entry.search_data, searchWords)
+            if not len(search_results):
+                continue
+            search_results = json.dumps(search(entry.search_data, searchWords))
+
+            search_result_tuple = (entry.id, entry.lodgement_number, json.loads(search_results))
+
+            final_results = {}
+            pid = search_result_tuple[0]
+            lodgement_number = search_result_tuple[1]
+
+            for result in search_result_tuple[2]:
+                for key, value in result.items():
+                    final_results.update({"key": key, "value": value})
+
+            cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
+                id=pid, lodgement_number=lodgement_number
+            )
+            res = cache.get(cache_key)
+
+            if res is None:
+                try:
+                    applicant = proposal_list.get(id=pid).applicant_obj
+                except Proposal.DoesNotExist:
+                    applicant = None
+
+                res = {
+                    "number": lodgement_number,
+                    "id": pid,  # id,
+                    "type": "Proposal",
+                    "applicant": applicant,
+                }
+
+                cache.set(
+                    cache_key,
+                    res,
+                    settings.CACHE_TIMEOUT_24_HOURS,
+                )
+            else:
+                logger.info(
+                    "Search Keywords cache hit for proposal {}".format(
+                        res["number"]
+                    )
+                )
+
+            res["text"] = final_results
+
+            return_list.append(res)
+
+        elif isinstance(entry, Approval):
+            try:
+                results = search_approval(entry, searchWords)
+                return_list.extend(results)
+            except:
+                pass
+        elif isinstance(entry, Compliance):
+            try:
+                results = search_compliance(entry, searchWords)
+                return_list.extend(results)
+            except:
+                pass
+        else:
+            raise ValueError(f"Unknown entry type {type(entry)} in search results {entry}")
+
+    return return_list
 
 
 def search_reference(reference_number):
