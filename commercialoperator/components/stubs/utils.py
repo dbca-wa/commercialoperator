@@ -1,3 +1,5 @@
+from itertools import islice, chain
+
 from django.apps import apps
 from django.db import models
 from django.conf import settings
@@ -14,7 +16,6 @@ from ledger_api_client.utils import (
 )
 from ledger_api_client.common import get_ledger_user_info_by_id
 
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -347,3 +348,43 @@ def filter_organisation_list(view, request, *args, **kwargs):
     )[:10]
 
     return organisations
+
+
+class QuerySetChain(object):
+    """
+    Chains multiple subquerysets (possibly of different models) and behaves as
+    one queryset.  Supports minimal methods needed for use with
+    django.core.paginator.
+    """
+
+    def __init__(self, *subquerysets):
+        self.querysets = subquerysets
+
+    def count(self):
+        """
+        Performs a .count() for all subquerysets and returns the number of
+        records as an integer.
+        """
+
+        return sum(qs.count() for qs in self.querysets)
+
+    def _clone(self):
+        "Returns a clone of this queryset chain"
+
+        return self.__class__(*self.querysets)
+
+    def _all(self):
+        "Iterates records in all subquerysets"
+
+        return chain(*self.querysets)
+
+    def __getitem__(self, ndx):
+        """
+        Retrieves an item or slice from the chained set of results from all
+        subquerysets.
+        """
+
+        if type(ndx) is slice:
+            return list(islice(self._all(), ndx.start, ndx.stop, ndx.step or 1))
+        else:
+            return next(islice(self._all(), ndx, ndx + 1))
