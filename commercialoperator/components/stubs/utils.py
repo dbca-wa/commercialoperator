@@ -368,6 +368,16 @@ class QuerySetChain(object):
 
         return sum(qs.count() for qs in self.querysets)
 
+    def order_by(self, *field_names):
+        """
+        Returns a list of the unique ordering fields for all subquerysets.
+        """
+        querysets = ()
+        for qs in self.querysets:
+            querysets += (qs.distinct().order_by(*field_names),)
+
+        return self.__init__(*querysets)
+
     def _clone(self):
         "Returns a clone of this queryset chain"
 

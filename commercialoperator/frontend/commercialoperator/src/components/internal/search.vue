@@ -374,11 +374,14 @@ export default {
                 order: [[0, 'desc']],
                 pageLength: 10,
                 columns: [
-                    { data: 'number' },
-                    { data: 'type' },
-                    { data: 'applicant' },
+                    { data: 'number', name: 'lodgement_number' },
+                    // NOTE: Changing all columns below to be neither searchable nor orderable, b/c this table's dataset consists of thee different models
+                    { data: 'type', searchable: false, orderable: false },
+                    { data: 'applicant', searchable: false, orderable: false },
                     {
                         data: 'text',
+                        searchable: false,
+                        orderable: false,
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
                             if (data.value) {
@@ -390,6 +393,8 @@ export default {
                     },
                     {
                         data: 'id',
+                        searchable: false,
+                        orderable: false,
                         mRender: function (data, type, full) {
                             let links = '';
                             if (
