@@ -1,12 +1,16 @@
+import json
 import re
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.models import (
+    ProposalAccreditation,
     ProposalDocument,
+    ProposalFilmingActivity,
     ProposalPark,
     ProposalParkActivity,
     ProposalParkAccess,
@@ -58,6 +62,7 @@ from datetime import datetime
 import logging
 
 from commercialoperator.components.stubs.decorators import basic_exception_handler
+from commercialoperator.components.stubs.utils import QuerySetChain
 
 logger = logging.getLogger(__name__)
 
@@ -461,18 +466,12 @@ def save_park_activity_data(
             selected_parks.append(item["park"])
             try:
                 # Check if PrposalPark record already exists. If exists, check for activities
-                park = ProposalPark.objects.get(
-                    park=item["park"], proposal=instance
-                )
+                park = ProposalPark.objects.get(park=item["park"], proposal=instance)
                 current_activities = park.land_activities.all()
-                current_activities_id = [
-                    a.activity_id for a in current_activities
-                ]
+                current_activities_id = [a.activity_id for a in current_activities]
                 # Get the access records related to ProposalPark
                 current_access = park.access_types.all()
-                current_access_id = [
-                    a.access_type_id for a in current_access
-                ]
+                current_access_id = [a.access_type_id for a in current_access]
                 if item["activities"]:
                     for a in item["activities"]:
                         if a in current_activities_id:
@@ -481,16 +480,11 @@ def save_park_activity_data(
                         else:
                             try:
                                 # TODO add logging
-                                if (
-                                    a
-                                    not in park.park.allowed_activities_ids
-                                ):
+                                if a not in park.park.allowed_activities_ids:
                                     # raise Exception('Activity not allowed for this park')
                                     pass
                                 else:
-                                    activity = Activity.objects.get(
-                                        id=a
-                                    )
+                                    activity = Activity.objects.get(id=a)
                                     ProposalParkActivity.objects.create(
                                         proposal_park=park,
                                         activity=activity,
@@ -510,16 +504,11 @@ def save_park_activity_data(
                             pass
                         else:
                             try:
-                                if (
-                                    a
-                                    not in park.park.allowed_access_ids
-                                ):
+                                if a not in park.park.allowed_access_ids:
                                     # raise Exception('Activity not allowed for this park')
                                     pass
                                 else:
-                                    access = AccessType.objects.get(
-                                        id=a
-                                    )
+                                    access = AccessType.objects.get(id=a)
                                     ProposalParkAccess.objects.create(
                                         proposal_park=park,
                                         access_type=access,
@@ -548,10 +537,7 @@ def save_park_activity_data(
                     current_activities = []
                     for a in item["activities"]:
                         try:
-                            if (
-                                a
-                                not in park.park.allowed_activities_ids
-                            ):
+                            if a not in park.park.allowed_activities_ids:
                                 # raise Exception('Activity not allowed for this park')
                                 pass
                             else:
@@ -592,37 +578,27 @@ def save_park_activity_data(
             # compare all activities (new+old) with the list of activities selected activities to get
             # the list of deleted activities.
             new_activities = park.land_activities.all()
-            new_activities_id = set(
-                a.activity_id for a in new_activities
-            )
-            diff_activity = set(new_activities_id).difference(
-                set(item["activities"])
-            )
+            new_activities_id = set(a.activity_id for a in new_activities)
+            diff_activity = set(new_activities_id).difference(set(item["activities"]))
             for d in diff_activity:
                 act = ProposalParkActivity.objects.get(
                     activity_id=d, proposal_park=park
                 )
                 act.delete()
                 instance.log_user_action(
-                    ProposalUserAction.ACTION_UNLINK_ACTIVITY.format(
-                        d, park.park.id
-                    ),
+                    ProposalUserAction.ACTION_UNLINK_ACTIVITY.format(d, park.park.id),
                     request,
                 )
             new_access = park.access_types.all()
             new_access_id = set(a.access_type_id for a in new_access)
-            diff_access = set(new_access_id).difference(
-                set(item["access"])
-            )
+            diff_access = set(new_access_id).difference(set(item["access"]))
             for d in diff_access:
                 acc = ProposalParkAccess.objects.get(
                     access_type_id=d, proposal_park=park
                 )
                 acc.delete()
                 instance.log_user_action(
-                    ProposalUserAction.ACTION_UNLINK_ACCESS.format(
-                        d, park.park.id
-                    ),
+                    ProposalUserAction.ACTION_UNLINK_ACCESS.format(d, park.park.id),
                     request,
                 )
     new_parks = instance.parks.filter(park__park_type="land")
@@ -640,9 +616,7 @@ def save_park_activity_data(
         pk = ProposalPark.objects.get(park=d, proposal=instance)
         pk.delete()
         instance.log_user_action(
-            ProposalUserAction.ACTION_UNLINK_PARK.format(
-                d, instance.id
-            ),
+            ProposalUserAction.ACTION_UNLINK_PARK.format(d, instance.id),
             request,
         )
 
@@ -667,26 +641,19 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                     trail=item["trail"], proposal=instance
                 )
                 current_sections = trail.sections.all()
-                current_sections_ids = [
-                    a.section_id for a in current_sections
-                ]
+                current_sections_ids = [a.section_id for a in current_sections]
                 if item["activities"]:
                     for a in item["activities"]:
                         if a["section"]:
                             selected_sections.append(a["section"])
                             if a["section"] in current_sections_ids:
-                                section = (
-                                    ProposalTrailSection.objects.get(
-                                        proposal_trail=trail,
-                                        section=a["section"],
-                                    )
+                                section = ProposalTrailSection.objects.get(
+                                    proposal_trail=trail,
+                                    section=a["section"],
                                 )
-                                current_activities = (
-                                    section.trail_activities.all()
-                                )
+                                current_activities = section.trail_activities.all()
                                 current_activities_id = [
-                                    s.activity_id
-                                    for s in current_activities
+                                    s.activity_id for s in current_activities
                                 ]
                                 if a["activities"]:
                                     for act in a["activities"]:
@@ -719,14 +686,10 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                             except:
                                                 raise
                             else:
-                                section_instance = Section.objects.get(
-                                    id=a["section"]
-                                )
-                                section = (
-                                    ProposalTrailSection.objects.create(
-                                        proposal_trail=trail,
-                                        section=section_instance,
-                                    )
+                                section_instance = Section.objects.get(id=a["section"])
+                                section = ProposalTrailSection.objects.create(
+                                    proposal_trail=trail,
+                                    section=section_instance,
                                 )
                                 instance.log_user_action(
                                     ProposalUserAction.ACTION_LINK_SECTION.format(
@@ -744,9 +707,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                             ):
                                                 pass
                                             else:
-                                                activity = Activity.objects.get(
-                                                    id=act
-                                                )
+                                                activity = Activity.objects.get(id=act)
                                                 ProposalTrailSectionActivity.objects.create(
                                                     trail_section=section,
                                                     activity=activity,
@@ -761,15 +722,13 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                                 )
                                         except:
                                             raise
-                            new_activities = (
-                                section.trail_activities.all()
-                            )
+                            new_activities = section.trail_activities.all()
                             new_activities_id = set(
                                 n.activity_id for n in new_activities
                             )
-                            diff_activity = set(
-                                new_activities_id
-                            ).difference(set(a["activities"]))
+                            diff_activity = set(new_activities_id).difference(
+                                set(a["activities"])
+                            )
                             # print("trail:",trail.trail_id,"section:",section.section_id,"new_activities:",new_activities_id, "diff:", diff_activity)
                             for d in diff_activity:
                                 act = ProposalTrailSectionActivity.objects.get(
@@ -802,14 +761,10 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                         for a in item["activities"]:
                             if a["section"]:
                                 selected_sections.append(a["section"])
-                                section_instance = Section.objects.get(
-                                    id=a["section"]
-                                )
-                                section = (
-                                    ProposalTrailSection.objects.create(
-                                        proposal_trail=trail,
-                                        section=section_instance,
-                                    )
+                                section_instance = Section.objects.get(id=a["section"])
+                                section = ProposalTrailSection.objects.create(
+                                    proposal_trail=trail,
+                                    section=section_instance,
                                 )
                                 instance.log_user_action(
                                     ProposalUserAction.ACTION_LINK_SECTION.format(
@@ -827,9 +782,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                             ):
                                                 pass
                                             else:
-                                                activity = Activity.objects.get(
-                                                    id=act
-                                                )
+                                                activity = Activity.objects.get(id=act)
                                                 ProposalTrailSectionActivity.objects.create(
                                                     trail_section=section,
                                                     activity=activity,
@@ -845,15 +798,13 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                         except:
                                             raise
                             # Just to check the new activities. Next 3 lines can be deleted.
-                            new_activities = (
-                                section.trail_activities.all()
-                            )
+                            new_activities = section.trail_activities.all()
                             new_activities_id = set(
                                 nw.activity_id for nw in new_activities
                             )
-                            diff_activity = set(
-                                new_activities_id
-                            ).difference(set(a["activities"]))
+                            diff_activity = set(new_activities_id).difference(
+                                set(a["activities"])
+                            )
                             # print("not deleting","trail:",trail.trail_id,"section:",section.section_id,"new_activities:",new_activities_id, "diff:", diff_activity)
                 except:
                     raise
@@ -861,19 +812,13 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
             # the list of deleted sections.
             new_sections = trail.sections.all()
             new_sections_ids = set(a.section_id for a in new_sections)
-            diff_sections = set(new_sections_ids).difference(
-                set(selected_sections)
-            )
+            diff_sections = set(new_sections_ids).difference(set(selected_sections))
             # print("trail:",trail.trail_id, "new_sections:", new_sections_ids,"diff_sections:", diff_sections)
             for d in diff_sections:
-                pk = ProposalTrailSection.objects.get(
-                    section=d, proposal_trail=trail
-                )
+                pk = ProposalTrailSection.objects.get(section=d, proposal_trail=trail)
                 pk.delete()
                 instance.log_user_action(
-                    ProposalUserAction.ACTION_UNLINK_SECTION.format(
-                        d, trail.trail.id
-                    ),
+                    ProposalUserAction.ACTION_UNLINK_SECTION.format(d, trail.trail.id),
                     request,
                 )
     new_trails = instance.trails.all()
@@ -884,9 +829,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
         pk = ProposalTrail.objects.get(trail=d, proposal=instance)
         pk.delete()
         instance.log_user_action(
-            ProposalUserAction.ACTION_UNLINK_TRAIL.format(
-                d, instance.id
-            ),
+            ProposalUserAction.ACTION_UNLINK_TRAIL.format(d, instance.id),
             request,
         )
 
@@ -910,9 +853,7 @@ def save_park_zone_activity_data(
             selected_zones = []
             try:
                 # Check if PrposalPark record already exists. If exists, check for zones
-                park = ProposalPark.objects.get(
-                    park=item["park"], proposal=instance
-                )
+                park = ProposalPark.objects.get(park=item["park"], proposal=instance)
                 current_zones = park.zones.all()
                 current_zones_ids = [a.zone_id for a in current_zones]
                 if item["activities"]:
@@ -923,17 +864,14 @@ def save_park_zone_activity_data(
                                 zone = ProposalParkZone.objects.get(
                                     proposal_park=park, zone=a["zone"]
                                 )
-                                current_activities = (
-                                    zone.park_activities.all()
-                                )
+                                current_activities = zone.park_activities.all()
                                 current_activities_id = [
-                                    s.activity_id
-                                    for s in current_activities
+                                    s.activity_id for s in current_activities
                                 ]
                                 allowed_act_ids = list(
-                                    set(
-                                        zone.zone.allowed_activities_ids
-                                    ).intersection(a["activities"])
+                                    set(zone.zone.allowed_activities_ids).intersection(
+                                        a["activities"]
+                                    )
                                 )
 
                                 [
@@ -946,9 +884,7 @@ def save_park_zone_activity_data(
                                 # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
                                 instance.log_user_action(
                                     ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
-                                        ", ".join(
-                                            map(str, allowed_act_ids)
-                                        ),
+                                        ", ".join(map(str, allowed_act_ids)),
                                         zone.zone.id,
                                         park.park.id,
                                     ),
@@ -956,14 +892,10 @@ def save_park_zone_activity_data(
                                 )
 
                                 if "access_point" in a:
-                                    zone.access_point = a[
-                                        "access_point"
-                                    ]
+                                    zone.access_point = a["access_point"]
                                     zone.save()
                             else:
-                                zone_instance = Zone.objects.get(
-                                    id=a["zone"]
-                                )
+                                zone_instance = Zone.objects.get(id=a["zone"])
                                 zone = ProposalParkZone.objects.create(
                                     proposal_park=park,
                                     zone=zone_instance,
@@ -975,9 +907,9 @@ def save_park_zone_activity_data(
                                     request,
                                 )
                                 allowed_act_ids = list(
-                                    set(
-                                        zone.zone.allowed_activities_ids
-                                    ).intersection(a["activities"])
+                                    set(zone.zone.allowed_activities_ids).intersection(
+                                        a["activities"]
+                                    )
                                 )
 
                                 [
@@ -990,26 +922,22 @@ def save_park_zone_activity_data(
                                 # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
                                 instance.log_user_action(
                                     ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
-                                        ", ".join(
-                                            map(str, allowed_act_ids)
-                                        ),
+                                        ", ".join(map(str, allowed_act_ids)),
                                         zone.zone.id,
                                         park.park.id,
                                     ),
                                     request,
                                 )
                                 if "access_point" in a:
-                                    zone.access_point = a[
-                                        "access_point"
-                                    ]
+                                    zone.access_point = a["access_point"]
                                     zone.save()
                             new_activities = zone.park_activities.all()
                             new_activities_id = set(
                                 n.activity_id for n in new_activities
                             )
-                            diff_activity = set(
-                                new_activities_id
-                            ).difference(set(a["activities"]))
+                            diff_activity = set(new_activities_id).difference(
+                                set(a["activities"])
+                            )
                             # print("park:",park.park_id,"zone:",zone.zone_id,"new_activities:",new_activities_id, "diff:", diff_activity)
                             for d in diff_activity:
                                 act = ProposalParkZoneActivity.objects.get(
@@ -1041,9 +969,7 @@ def save_park_zone_activity_data(
                         for a in item["activities"]:
                             if a["zone"]:
                                 selected_zones.append(a["zone"])
-                                zone_instance = Zone.objects.get(
-                                    id=a["zone"]
-                                )
+                                zone_instance = Zone.objects.get(id=a["zone"])
                                 zone = ProposalParkZone.objects.create(
                                     proposal_park=park,
                                     zone=zone_instance,
@@ -1055,9 +981,9 @@ def save_park_zone_activity_data(
                                     request,
                                 )
                                 allowed_act_ids = list(
-                                    set(
-                                        zone.zone.allowed_activities_ids
-                                    ).intersection(a["activities"])
+                                    set(zone.zone.allowed_activities_ids).intersection(
+                                        a["activities"]
+                                    )
                                 )
 
                                 [
@@ -1070,9 +996,7 @@ def save_park_zone_activity_data(
                                 # parkzone_activity=[ProposalParkZoneActivity(park_zone=zone, activity_id=act_id) for act_id in allowed_act_ids]
                                 instance.log_user_action(
                                     ProposalUserAction.ACTION_LINK_ACTIVITY_ZONE.format(
-                                        ", ".join(
-                                            map(str, allowed_act_ids)
-                                        ),
+                                        ", ".join(map(str, allowed_act_ids)),
                                         zone.zone.id,
                                         park.park.id,
                                     ),
@@ -1080,9 +1004,7 @@ def save_park_zone_activity_data(
                                 )
 
                                 if "access_point" in a:
-                                    zone.access_point = a[
-                                        "access_point"
-                                    ]
+                                    zone.access_point = a["access_point"]
                                     zone.save()
                 except:
                     raise
@@ -1090,19 +1012,13 @@ def save_park_zone_activity_data(
             # the list of deleted zones.
             new_zones = park.zones.all()
             new_zones_ids = set(a.zone_id for a in new_zones)
-            diff_zones = set(new_zones_ids).difference(
-                set(selected_zones)
-            )
+            diff_zones = set(new_zones_ids).difference(set(selected_zones))
             # print("park:",park.park_id, "new_zones:", new_zones_ids,"diff_zones:", diff_zones)
             for d in diff_zones:
-                pk = ProposalParkZone.objects.get(
-                    zone=d, proposal_park=park
-                )
+                pk = ProposalParkZone.objects.get(zone=d, proposal_park=park)
                 pk.delete()
                 instance.log_user_action(
-                    ProposalUserAction.ACTION_UNLINK_ZONE.format(
-                        d, park.park.id
-                    ),
+                    ProposalUserAction.ACTION_UNLINK_ZONE.format(d, park.park.id),
                     request,
                 )
     new_parks = instance.parks.filter(park__park_type="marine")
@@ -1120,9 +1036,7 @@ def save_park_zone_activity_data(
         pk = ProposalPark.objects.get(park=d, proposal=instance)
         pk.delete()
         instance.log_user_action(
-            ProposalUserAction.ACTION_UNLINK_PARK.format(
-                d, instance.id
-            ),
+            ProposalUserAction.ACTION_UNLINK_PARK.format(d, instance.id),
             request,
         )
 
@@ -1895,3 +1809,247 @@ def get_cached_proposal_processing_status(view, queryset=None):
         )
 
     return processing_status
+
+
+def get_chained_list(
+    context,
+    searchWords,
+    searchProposal,
+    searchApproval,
+    searchCompliance,
+    is_internal=True,
+):
+    from commercialoperator.utils import (
+        getChoiceFieldRegex,
+    )
+    from commercialoperator.components.approvals.models import Approval
+    from commercialoperator.components.compliances.models import Compliance
+
+    application_types = [
+        ApplicationType.TCLASS,
+        ApplicationType.EVENT,
+        ApplicationType.FILMING,
+    ]
+
+    proposal_list = Proposal.objects.none()
+    approval_list = Approval.objects.none()
+    compliance_list = Compliance.objects.none()
+
+    if is_internal and searchProposal:
+        proposal_list = Proposal.objects.filter(
+            application_type__name__in=application_types
+        ).exclude(processing_status__in=["discarded", "draft"])
+    if is_internal and searchApproval:
+        approval_list = (
+            Approval.objects.all()
+            .order_by("lodgement_number", "-issue_date")
+            .distinct("lodgement_number")
+        )
+    if is_internal and searchCompliance:
+        compliance_list = Compliance.objects.all()
+
+    if searchWords:
+        # convert the search words in to two regex values - one for text one for json values
+        search_words_regex = "(?:" + "|".join(searchWords) + ")"
+        filter_regex = (
+            '.*".*":\s"(\\\\"|[^"])*' + search_words_regex + '(\\\\"|[^"])*".*'
+        )
+
+        # three searchable fields use choices: accreditation, film_type, and film_purpose
+        # so we must convert the search phrase in to the search short word where applicable
+        # accreditation
+        accreditation_words = getChoiceFieldRegex(
+            searchWords, ProposalAccreditation.ACCREDITATION_TYPE_CHOICES
+        )
+        # film type
+        film_type_words = getChoiceFieldRegex(
+            searchWords, ProposalFilmingActivity.FILM_TYPE_CHOICES
+        )
+        # film purpose
+        film_purpose_words = getChoiceFieldRegex(
+            searchWords, ProposalFilmingActivity.PURPOSE_CHOICES
+        )
+
+        # one particular search value is quite nested - it is faster to run these queries instead of the reverse
+        activities = Activity.objects.filter(name__iregex=search_words_regex)
+        pts_activities = ProposalTrailSectionActivity.objects.filter(
+            activity__in=activities
+        )
+        sections = ProposalTrailSection.objects.filter(
+            trail_activities__in=pts_activities
+        )
+        trails = ProposalTrail.objects.filter(sections__in=sections)
+
+        paginator = context.paginator
+        paginator.page_size = 10
+
+        if searchProposal:
+            # this below query run is equivalent to the search_words property, except that it retrieves the pertaining proposal records
+            # there is a lot here but a lot of time is saved not having to iterate every record every time
+            proposal_list = (
+                proposal_list.filter(
+                    (
+                        Q(application_type__name=ApplicationType.TCLASS)
+                        & (Q(parks__park__name__iregex=search_words_regex))
+                        | (Q(parks__activities__activity__in=activities))
+                        | (Q(parks__zones__park_activities__activity__in=activities))
+                        | (Q(trails__trail__name__iregex=search_words_regex))
+                        | (Q(vehicles__rego__iregex=search_words_regex))
+                        | (Q(vessels__spv_no__iregex=search_words_regex))
+                        | (Q(other_details__other_comments__iregex=search_words_regex))
+                        | (Q(other_details__mooring__iregex=search_words_regex))
+                        | (
+                            Q(
+                                other_details__accreditations__accreditation_type__in=accreditation_words
+                            )
+                        )
+                        | (Q(trails__in=trails))
+                    )
+                    | (
+                        Q(application_type__name=ApplicationType.EVENT)
+                        & (Q(events_parks__park__name__iregex=search_words_regex))
+                        | (Q(events_parks__event_activities__iregex=search_words_regex))
+                        | (Q(trails__trail__name__iregex=search_words_regex))
+                        | (Q(vehicles__rego__iregex=search_words_regex))
+                        | (Q(vessels__spv_no__iregex=search_words_regex))
+                        | (Q(trails__in=trails))
+                    )
+                    | (
+                        Q(application_type__name=ApplicationType.FILMING)
+                        & (Q(filming_parks__park__name__iregex=search_words_regex))
+                        | (Q(vehicles__rego__iregex=search_words_regex))
+                        | (Q(vessels__spv_no__iregex=search_words_regex))
+                        | (Q(filming_activity__film_type__in=film_type_words))
+                        | (Q(filming_activity__film_purpose__in=film_purpose_words))
+                    )
+                )
+                .distinct("id")
+                .order_by("-id")
+            )
+
+        if searchApproval:
+            approval_list = approval_list.filter(
+                Q(surrender_details__iregex=filter_regex)
+                | Q(suspension_details__iregex=filter_regex)
+                | Q(cancellation_details__iregex=search_words_regex)
+            )
+
+        if searchCompliance:
+            compliance_list = compliance_list.filter(
+                Q(text__iregex=search_words_regex)
+                | Q(requirement__free_requirement__iregex=search_words_regex)
+                | Q(requirement__standard_requirement__text__iregex=search_words_regex)
+            )
+
+    return proposal_list, approval_list, compliance_list
+
+
+def paginate_chained_list(context, request, chained_list, searchWords):
+    from commercialoperator.utils import (
+        search,
+        search_approval,
+        search_compliance,
+        #     # getChoiceFieldRegex,
+    )
+
+    paginator = context.paginator
+    paginator.page_size = 10
+    chained_list_paginated = paginator.paginate_queryset(chained_list, request)
+
+    return_list = []
+    for entry in chained_list_paginated:
+        if isinstance(entry, Proposal):
+            if not entry.search_data:
+                continue
+
+            search_results = search(entry.search_data, searchWords)
+            if not len(search_results):
+                continue
+            search_results = json.dumps(search(entry.search_data, searchWords))
+
+            search_result_tuple = (
+                entry.id,
+                entry.lodgement_number,
+                json.loads(search_results),
+            )
+
+            final_results = {}
+            pid = search_result_tuple[0]
+            lodgement_number = search_result_tuple[1]
+
+            for result in search_result_tuple[2]:
+                for key, value in result.items():
+                    final_results.update({"key": key, "value": value})
+
+            cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
+                id=pid, lodgement_number=lodgement_number
+            )
+            res = cache.get(cache_key)
+
+            if res is None:
+                try:
+                    applicant = entry.applicant_obj
+                except Proposal.DoesNotExist:
+                    applicant = None
+
+                res = {
+                    "number": lodgement_number,
+                    "id": pid,  # id,
+                    "type": "Proposal",
+                    "applicant": applicant,
+                }
+
+                cache.set(
+                    cache_key,
+                    res,
+                    settings.CACHE_TIMEOUT_24_HOURS,
+                )
+            else:
+                logger.info(
+                    "Search Keywords cache hit for proposal {}".format(res["number"])
+                )
+
+            res["text"] = final_results
+
+            return_list.append(res)
+
+        elif isinstance(entry, Approval):
+            try:
+                results = search_approval(entry, searchWords)
+                return_list.extend(results)
+            except:
+                pass
+        elif isinstance(entry, Compliance):
+            try:
+                results = search_compliance(entry, searchWords)
+                return_list.extend(results)
+            except:
+                pass
+        else:
+            raise ValueError(
+                f"Unknown entry type {type(entry)} in search results {entry}"
+            )
+
+    return return_list
+
+
+def searchKeyWords(
+    context,
+    request,
+    searchWords,
+    searchProposal,
+    searchApproval,
+    searchCompliance,
+    is_internal=True,
+):
+    proposal_list, approval_list, compliance_list = get_chained_list(
+        context,
+        searchWords,
+        searchProposal,
+        searchApproval,
+        searchCompliance,
+        is_internal,
+    )
+    chained_qs = QuerySetChain(proposal_list, approval_list, compliance_list)
+
+    return paginate_chained_list(context, request, chained_qs, searchWords)
