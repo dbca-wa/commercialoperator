@@ -782,7 +782,7 @@ class OrganisationContact(models.Model):
         unique_together = (("organisation", "email"),)
 
     def __str__(self):
-        return "{} {}".format(self.last_name, self.first_name)
+        return "{} {}".format(self.first_name, self.last_name)
 
     @property
     def can_edit(self):
@@ -801,6 +801,15 @@ class OrganisationContact(models.Model):
         :return: True if the application is in one of the editable status.
         """
         return self.user_status == "active" and self.user_role == "consultant"
+
+    @property
+    def check_delegate(self):
+        cols_org_id = self.organisation_id
+        delegate_user_ids = retrieve_organisation_delegate_ids(cols_org_id)
+        delegates_all = [retrieve_email_user(user_id) for user_id in delegate_user_ids]
+        delegates_all_emails = [user.email for user in delegates_all if user]
+
+        return self.email in delegates_all_emails
 
 
 class OrganisationContactDeclinedDetails(models.Model):
