@@ -274,66 +274,69 @@
                                 action="index.html"
                                 method="post"
                             >
-                                <div class="col-sm-6 row">
-                                    <div class="form-group row mb-3">
-                                        <label
-                                            for=""
-                                            class="col-sm-6 control-label"
-                                        >
-                                            Organisation User Pin Code 1:</label
-                                        >
-                                        <div class="col-sm-6">
-                                            <label class="control-label">{{
-                                                org.pins.three
-                                            }}</label>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group row mb-3">
+                                            <label
+                                                for=""
+                                                class="col-sm-6 control-label"
+                                            >
+                                                Organisation User Pin Code
+                                                1:</label
+                                            >
+                                            <div class="col-sm-6">
+                                                <label class="control-label">{{
+                                                    org.pins.three
+                                                }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-3">
+                                            <label
+                                                for=""
+                                                class="col-sm-6 control-label"
+                                                >Organisation User Pin Code
+                                                2:</label
+                                            >
+                                            <div class="col-sm-6">
+                                                <label class="control-label">{{
+                                                    org.pins.four
+                                                }}</label>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-group row mb-3">
-                                        <label
-                                            for=""
-                                            class="col-sm-6 control-label"
-                                            >Organisation User Pin Code
-                                            2:</label
+                                    <div class="col-sm-6 row">
+                                        <div
+                                            class="form-group row mb-3"
+                                            :disabled="!myorgperms.is_admin"
                                         >
-                                        <div class="col-sm-6">
-                                            <label class="control-label">{{
-                                                org.pins.four
-                                            }}</label>
+                                            <label
+                                                for=""
+                                                class="col-sm-6 control-label"
+                                            >
+                                                Organisation Administrator Pin
+                                                Code 1:</label
+                                            >
+                                            <div class="col-sm-6">
+                                                <label class="control-label">{{
+                                                    org.pins.one
+                                                }}</label>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6 row">
-                                    <div
-                                        class="form-group row mb-3"
-                                        :disabled="!myorgperms.is_admin"
-                                    >
-                                        <label
-                                            for=""
-                                            class="col-sm-6 control-label"
+                                        <div
+                                            class="form-group row mb-3"
+                                            :disabled="!myorgperms.is_admin"
                                         >
-                                            Organisation Administrator Pin Code
-                                            1:</label
-                                        >
-                                        <div class="col-sm-6">
-                                            <label class="control-label">{{
-                                                org.pins.one
-                                            }}</label>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="form-group row mb-3"
-                                        :disabled="!myorgperms.is_admin"
-                                    >
-                                        <label
-                                            for=""
-                                            class="col-sm-6 control-label"
-                                            >Organisation Administrator Pin Code
-                                            2:</label
-                                        >
-                                        <div class="col-sm-6">
-                                            <label class="control-label">{{
-                                                org.pins.two
-                                            }}</label>
+                                            <label
+                                                for=""
+                                                class="col-sm-6 control-label"
+                                                >Organisation Administrator Pin
+                                                Code 2:</label
+                                            >
+                                            <div class="col-sm-6">
+                                                <label class="control-label">{{
+                                                    org.pins.two
+                                                }}</label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
