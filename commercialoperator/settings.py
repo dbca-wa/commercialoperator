@@ -84,6 +84,7 @@ INSTALLED_APPS += [
     "commercialoperator.components.approvals",
     "commercialoperator.components.compliances",
     "commercialoperator.components.bookings",
+    "commercialoperator.components.permission",
     "commercialoperator.components.stubs",
     "taggit",
     "rest_framework",
@@ -185,7 +186,9 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower(
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
 ADMIN_GROUP = env("ADMIN_GROUP", "COLS Admin")
 
-GROUP_NAME_ORGANISATION_ACCESS = env("GROUP_NAME_ORGANISATION_ACCESS", "organisation_access_group") 
+GROUP_NAME_ORGANISATION_ACCESS = env(
+    "GROUP_NAME_ORGANISATION_ACCESS", "organisation_access_group"
+)
 GROUP_FINANCE = env("GROUP_FINANCE", "finance")
 LEDGER_UI_CARDS_MANAGEMENT = True
 LEDGER_UI_ACCOUNTS_MANAGEMENT = [
@@ -461,5 +464,14 @@ API_EXCEPTION_MESSAGE = (
 )
 
 # CSRF token
-CSRF_TRUSTED_ORIGINS_STRING = decouple.config("CSRF_TRUSTED_ORIGINS", default='[]')
+CSRF_TRUSTED_ORIGINS_STRING = decouple.config("CSRF_TRUSTED_ORIGINS", default="[]")
 CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
+
+# Ledger organisations interface
+ORGANISATION_PERMISSION_MODULE = "commercialoperator.components.permission.permission"
+
+LEDGER_UI_ORGANISATION_MANAGEMENT = [
+    {"organisation_name": {"options": {"view": True, "edit": True}}},
+    {"organisation_abn": {"options": {"view": True, "edit": True}}},
+    {"postal_address": {"options": {"view": True, "edit": True}}},
+]
