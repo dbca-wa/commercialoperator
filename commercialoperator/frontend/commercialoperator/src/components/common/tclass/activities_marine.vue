@@ -244,8 +244,7 @@ from '@/utils/hooks'
           var removed=$(vm.selected_activities_before).not(vm.selected_activities).get();
           var added = [];
           if (vm.selected_activities_initialised) {
-            added=$(vm.selected_activities).not(vm.selected_activities_before).get();
-            
+            added=$(vm.selected_activities).not(vm.selected_activities_before).get();            
           } else {
             vm.selected_activities_initialised = true;
           }
