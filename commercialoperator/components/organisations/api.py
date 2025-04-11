@@ -121,21 +121,28 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def contacts_exclude(self, request, *args, **kwargs):
+        ledger_organisation_id = kwargs.get("pk", None)
+        if not ledger_organisation_id:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "An Organisation ID is required"},
+            )
+
         try:
-            instance = self.get_object()
-            qs = instance.contacts.exclude(user_status="draft")
-            serializer = OrganisationContactSerializer(qs, many=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+            cols_organisation = Organisation.objects.get(organisation_id=ledger_organisation_id)
+        except Organisation.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"message": "Organisation not found"},
+            )
+
+        contacts = cols_organisation.contacts.exclude(user_status="draft")
+        serializer = OrganisationContactSerializer(contacts, many=True)
+
+        return Response(serializer.data)
+
 
     @action(
         methods=[
@@ -665,7 +672,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         filtered_organisations = filter_organisation_list(
             self, request, *args, **kwargs
         )
-        filtered_organisations
         organisation_ids = [o.organisation_id for o in filtered_organisations]
         organisations = self.get_queryset().filter(organisation_id__in=organisation_ids)
 
