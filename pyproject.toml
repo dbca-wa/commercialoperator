@@ -65,7 +65,10 @@ babel = ">=2.14,<3.0"
 pytz = "^2020.1"
 setuptools = "^76.0.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
 django-debug-toolbar = ">=3.8"
 ipdb = ">=0.13"
 pylint = ">=2.13"
