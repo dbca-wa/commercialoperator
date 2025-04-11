@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from commercialoperator.components.organisations.models import Organisation
 
 import logging
@@ -16,9 +18,16 @@ def organisation_permissions(request, ledger_organisation_id):
         )
         return False
 
-    if request.user.email in cols_organisation.contacts.all().filter(
-        is_admin=True
-    ).values_list("email", flat=True):
+    # Contacts that are active and either admin or consultant (equivalent to menu_bottom.html)
+    cols_organisation_contacts = cols_organisation.contacts.all().filter(
+        Q(
+            Q(is_admin=True, user_role="consultant", _connector="OR"),
+            user_status="active",
+            _connector="AND",
+        )
+    )
+
+    if request.user.email in cols_organisation_contacts.values_list("email", flat=True):
         return True
 
     logger.warning(
