@@ -135,7 +135,31 @@ export default {
         datatable,
         FormSection,
     },
+    beforeRouteEnter: function (to, from, next) {
+        let initialisers = [
+            // utils.fetchCountries(),
+            // utils.fetchOrganisation(to.params.org_id),
+            utils.fetchProfile(),
+        ];
+        Promise.all(initialisers).then((data) => {
+            next((vm) => {
+                // vm.countries = data[0];
+                // vm.org = data[1];
+                // vm.profile = data[2];
+                vm.profile = data[0];
+                vm.org.organisation_address =
+                    vm.org.organisation_address != null
+                        ? vm.org.organisation_address
+                        : {};
+                vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
+                vm.is_commercialoperator_admin =
+                    vm.profile.is_commercialoperator_admin;
+                vm.is_org_access_member = vm.profile.is_org_access_member;
+            });
+        });
+    },
     data() {
+        const vm = this;
         return {
             api_endpoints: api_endpoints,
             email_user: null,
@@ -159,7 +183,7 @@ export default {
                 ajax: {
                     url: helpers.add_endpoint_json(
                         api_endpoints.organisations,
-                        this.$route.params.org_id + '/contacts_exclude'
+                        vm.$route.params.org_id + '/contacts_exclude'
                     ),
 
                     dataSrc: '',
@@ -178,7 +202,7 @@ export default {
                         data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
-                            if (this.is_commercialoperator_admin) {
+                            if (vm.is_commercialoperator_admin) {
                                 if (full.user_status == 'Pending') {
                                     links += `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="accept_contact">Accept</a><br/>`;
                                     links += `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="decline_contact">Decline</a><br/>`;
@@ -205,6 +229,7 @@ export default {
                 processing: true,
             },
             filterOrgContactStatus: null,
+            is_commercialoperator_admin: false,
         };
     },
     computed: {
