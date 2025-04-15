@@ -11,7 +11,17 @@
 {% block additional_content %}
 
 <div id="nav-profile-tab-page" style="display:none;">
-    <div id="app"></div>
+    <div id="app">
+        <!-- Display a spinner while waiting for the component to load -->
+        <div class="d-flex justify-content-center align-items-center mt-5">
+            <div class="spinner-grow text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center align-items-center mb-5">
+            <strong>Loading</strong>
+        </div>
+    </div>
 </div>
 
 
