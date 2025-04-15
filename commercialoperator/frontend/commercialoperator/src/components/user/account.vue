@@ -323,7 +323,7 @@
                                             "
                                         >
                                             <i class="fa fa-chain-broken"></i>
-                                            unlink
+                                            Unlink
                                         </button>
                                     </div>
                                 </template>

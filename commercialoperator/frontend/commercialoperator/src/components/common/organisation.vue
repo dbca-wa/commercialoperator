@@ -31,40 +31,48 @@
                                 </div>
                                 <div v-for="d in org.delegates" :key="d.id">
                                     <div v-if="d.is_admin" class="row mb-1">
-                                        <div class="col-sm-6">
+                                        <label
+                                            :for="`organisation_admin_${d.id}`"
+                                            class="col-sm-3"
+                                        >
                                             <i
                                                 class="bi bi-shield-lock-fill"
                                                 style="color: #007bff"
                                             ></i
                                             >&nbsp;
                                             <strong>Organisation Admin:</strong>
-                                        </div>
-                                        <div class="col-sm-6">
+                                        </label>
+                                        <div class="col-sm-9">
                                             <input
                                                 class="form-control w-100"
                                                 type="text"
                                                 :value="`${d.name} (${d.email})`"
                                                 aria-label="organisation admin name"
+                                                :name="`organisation_admin_${d.id}`"
                                                 disabled
                                                 readonly
                                             />
                                         </div>
                                     </div>
                                     <div v-else class="row mb-1">
-                                        <div class="col-sm-6">
+                                        <label
+                                            :for="`organisation_user_${d.id}`"
+                                            class="col-sm-3"
+                                        >
                                             <i
                                                 class="bi bi-person-fill"
                                                 style="color: #007bff"
                                             ></i
                                             >&nbsp;
                                             <strong>Organisation User:</strong>
-                                        </div>
-                                        <div class="col-sm-6">
+                                        </label>
+                                        <div class="col-sm-9">
                                             <input
                                                 class="form-control w-100"
                                                 type="text"
                                                 :value="`${d.name} (${d.email})`"
                                                 aria-label="organisation user name"
+                                                :name="`organisation_user_${d.id}`"
                                                 disabled
                                                 readonly
                                             />
@@ -243,7 +251,29 @@ export default {
                     },
                     { data: 'user_role' },
                     { data: 'email' },
-                    { data: 'user_status' },
+                    {
+                        data: 'user_status',
+                        mRender: function (data, type, full) {
+                            let links = '';
+                            if (full.user_status == 'Pending') {
+                                links += `<span class='badge bg-warning me-1 p-2'>${full.user_status}</span>`;
+                            } else if (full.user_status == 'Active') {
+                                links += `<span class='badge bg-success me-1 p-2'><i class="fa fa-chain"></i> ${full.user_status}</span>`;
+                            } else if (full.user_status == 'Declined') {
+                                links += `<span class='badge bg-danger me-1 p-2'>${full.user_status}</span>`;
+                            } else if (full.user_status == 'Suspended') {
+                                links += `<span class='badge bg-danger me-1 p-2'>${full.user_status}</span>`;
+                            } else if (full.user_status == 'Unlinked') {
+                                links += `<span class='badge bg-secondary me-1 p-2'><i class="fa fa-chain-broken"></i> ${full.user_status}</span>`;
+                            } else if (full.user_status == 'ContactForm') {
+                                links += `<span class='badge bg-info me-1 p-2'>${full.user_status}</span>`;
+                            } else {
+                                links += `<span class='badge bg-secondary me-1 p-2'>${full.user_status}</span>`;
+                            }
+                            return links;
+                            // return full.user_status;
+                        },
+                    },
                     {
                         data: 'id',
                         mRender: function (data, type, full) {
@@ -255,7 +285,7 @@ export default {
                                 } else if (full.user_status == 'Suspended') {
                                     links += `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="reinstate_contact">Reinstate</a><br/>`;
                                 } else if (full.user_status == 'Active') {
-                                    links += `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="unlink_contact">Unlink</a><br/>`;
+                                    links += `<button class='btn btn-danger btn-sm btn-status' role='button' data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="unlink_contact"><i class="fa fa-chain-broken"></i> Unlink</button><br/>`;
                                     links += `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="suspend_contact">Suspend</a><br/>`;
                                     if (full.user_role == 'Organisation User') {
                                         links += `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="make_admin_contact">Make Organisation Admin</a><br/>`;
@@ -303,4 +333,8 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.btn-status {
+    height: 28px;
+}
+</style>
