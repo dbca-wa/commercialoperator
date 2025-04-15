@@ -16,6 +16,7 @@ from ledger_api_client.utils import update_organisation_obj, get_all_organisatio
 
 from commercialoperator.components.approvals.serializers import EmailUserSerializer
 from commercialoperator.components.organisations.utils import can_admin_org
+from commercialoperator.components.permission.permission import organisation_permissions
 from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
@@ -131,7 +132,9 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            cols_organisation = Organisation.objects.get(organisation_id=ledger_organisation_id)
+            cols_organisation = Organisation.objects.get(
+                organisation_id=ledger_organisation_id
+            )
         except Organisation.DoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
@@ -142,7 +145,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         serializer = OrganisationContactSerializer(contacts, many=True)
 
         return Response(serializer.data)
-
 
     @action(
         methods=[
@@ -685,6 +687,41 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ]
         return Response({"results": data_transform})
 
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+        # permission_classes=[IsAuthenticated],
+    )
+    @basic_exception_handler
+    def linked_organisation(self, request, *args, **kwargs):
+        org_id = request.GET.get("org_id", None)
+        if not org_id:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "An Organisation ID is required"},
+            )
+        try:
+            org = self.get_queryset().get(organisation_id=org_id)
+        except Organisation.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"message": f"Organisation with ledger id {org_id} not found"},
+            )
+        else:
+            if not organisation_permissions(request, org_id):
+                return Response(
+                    status=status.HTTP_403_FORBIDDEN,
+                    data={
+                        "message": "You do not have permission to view this organisation."
+                    },
+                )
+
+        serializer = OrganisationSerializer(org, context={"request": request})
+
+        return Response(serializer.data)
+
 
 class OrganisationListFilterView(generics.ListAPIView):
     queryset = Organisation.objects.none()
@@ -807,7 +844,9 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         ]
 
         serializer = OrganisationRequestSerializer(
-            qs.filter(abn__in=organisation_abns), many=True
+            qs.filter(abn__in=organisation_abns),
+            context={"request": request},
+            many=True,
         )
         return Response(serializer.data)
 
