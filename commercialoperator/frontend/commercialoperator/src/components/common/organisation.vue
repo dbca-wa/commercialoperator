@@ -27,27 +27,63 @@
                                 <h4>Persons linked to this organisation:</h4>
                             </div>
                             <div v-for="d in org.delegates" :key="d.id">
-                                <div v-if="d.is_admin" class="col-sm-6">
-                                    <h4>
-                                        {{ d.name }}
-                                        ({{ d.email }}
-                                        - Admin)
-                                    </h4>
+                                <div v-if="d.is_admin" class="row mb-1">
+                                    <div class="col-sm-6">
+                                        <i
+                                            class="bi bi-shield-lock-fill"
+                                            style="color: #007bff"
+                                        ></i
+                                        >&nbsp;
+                                        <strong>Organisation Admin:</strong>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input
+                                            class="form-control w-100"
+                                            type="text"
+                                            :value="`${d.name} (${d.email})`"
+                                            aria-label="organisation admin name"
+                                            disabled
+                                            readonly
+                                        />
+                                    </div>
                                 </div>
-                                <div v-else class="col-sm-6">
-                                    <h4>
-                                        {{ d.name }}
-                                        ({{ d.email }})
-                                    </h4>
+                                <div v-else class="row mb-1">
+                                    <div class="col-sm-6">
+                                        <i
+                                            class="bi bi-person-fill"
+                                            style="color: #007bff"
+                                        ></i
+                                        >&nbsp;
+                                        <strong>Organisation User:</strong>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input
+                                            class="form-control w-100"
+                                            type="text"
+                                            :value="`${d.name} (${d.email})`"
+                                            aria-label="organisation user name"
+                                            disabled
+                                            readonly
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-sm-12 top-buffer-s mb-3">
-                                <strong
-                                    >Persons linked to the organisation are
-                                    controlled by the organisation. The
-                                    Department cannot manage this list of
-                                    people.</strong
+                            <div class="col-sm-12 top-buffer-s mb-3 mt-3">
+                                <alert
+                                    type="info"
+                                    icon="info-circle"
+                                    class="alert alert-info"
                                 >
+                                    <i
+                                        class="bi bi-exclamation-triangle-fill"
+                                        style="color: #dc3545"
+                                    ></i
+                                    >&nbsp; The Department cannot manage this
+                                    list of people. The organisation is
+                                    responsible for managing people linked to
+                                    the organisation.
+                                    <br />
+                                </alert>
                             </div>
                         </div>
                     </div>
@@ -123,7 +159,7 @@
 </template>
 
 <script>
-import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
+import { api_endpoints, helpers, utils } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
@@ -137,16 +173,16 @@ export default {
     },
     beforeRouteEnter: function (to, from, next) {
         let initialisers = [
-            // utils.fetchCountries(),
-            // utils.fetchOrganisation(to.params.org_id),
+            utils.fetchCountries(),
+            utils.fetchLinkedOrganisation(to.params.org_id),
             utils.fetchProfile(),
         ];
         Promise.all(initialisers).then((data) => {
             next((vm) => {
-                // vm.countries = data[0];
-                // vm.org = data[1];
-                // vm.profile = data[2];
-                vm.profile = data[0];
+                vm.countries = data[0];
+                vm.org = data[1];
+                vm.profile = data[2];
+                // vm.profile = data[1];
                 vm.org.organisation_address =
                     vm.org.organisation_address != null
                         ? vm.org.organisation_address
@@ -155,6 +191,10 @@ export default {
                 vm.is_commercialoperator_admin =
                     vm.profile.is_commercialoperator_admin;
                 vm.is_org_access_member = vm.profile.is_org_access_member;
+
+                console.log('countries', vm.countries);
+                console.log('profile', vm.profile);
+                console.log('org', vm.org);
             });
         });
     },
@@ -247,11 +287,11 @@ export default {
         },
     },
     created: function () {
-        console.log('account.vue created');
+        console.log('organisation.vue created');
         // this.fetchInitialData();
     },
     mounted: function () {
-        console.log('account.vue mounted');
+        console.log('organisation.vue mounted');
     },
     methods: {},
 };
