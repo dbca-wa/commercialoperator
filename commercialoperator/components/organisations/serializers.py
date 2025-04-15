@@ -460,7 +460,7 @@ class OrganisationRequestSerializer(serializers.ModelSerializer):
             )
             return None
 
-        return OrganisationSerializer(organisation).data
+        return OrganisationSerializer(organisation, context=self.context).data
 
 
 class OrganisationRequestDTSerializer(OrganisationRequestSerializer):
