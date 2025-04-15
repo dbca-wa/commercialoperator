@@ -1,159 +1,165 @@
 <template>
     <!-- <div v-if="email_user" class="card"> -->
-    <div class="card">
-        <div class="card-header fw-bold h4" style="padding: 30px">
-            <div class="row">
-                <div class="col-6">Organisations</div>
-                <div class="col-6 text-end">
-                    <i
-                        class="bi fw-bold chevron-toggle down-chevron-open"
-                        data-bs-target="#organisations-tab-body"
-                        onclick=""
-                    ></i>
+    <div v-if="org" class="row">
+        <div class="card">
+            <div class="card-header fw-bold h4" style="padding: 30px">
+                <div class="row">
+                    <div class="col-6">Organisations</div>
+                    <div class="col-6 text-end">
+                        <i
+                            class="bi fw-bold chevron-toggle down-chevron-open"
+                            data-bs-target="#organisations-tab-body"
+                            onclick=""
+                        ></i>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="organisations-tab-body" class="card-body">
-            <FormSection
-                :form-collapse="false"
-                label="Linked User Accounts"
-                index="linked_user_accounts"
-                subtitle="Manage the user accounts linked to the organisation"
-            >
-                <div class="row">
-                    <div class="col-sm-12">
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <h4>Persons linked to this organisation:</h4>
-                            </div>
-                            <div v-for="d in org.delegates" :key="d.id">
-                                <div v-if="d.is_admin" class="row mb-1">
-                                    <div class="col-sm-6">
-                                        <i
-                                            class="bi bi-shield-lock-fill"
-                                            style="color: #007bff"
-                                        ></i
-                                        >&nbsp;
-                                        <strong>Organisation Admin:</strong>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <input
-                                            class="form-control w-100"
-                                            type="text"
-                                            :value="`${d.name} (${d.email})`"
-                                            aria-label="organisation admin name"
-                                            disabled
-                                            readonly
-                                        />
-                                    </div>
-                                </div>
-                                <div v-else class="row mb-1">
-                                    <div class="col-sm-6">
-                                        <i
-                                            class="bi bi-person-fill"
-                                            style="color: #007bff"
-                                        ></i
-                                        >&nbsp;
-                                        <strong>Organisation User:</strong>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <input
-                                            class="form-control w-100"
-                                            type="text"
-                                            :value="`${d.name} (${d.email})`"
-                                            aria-label="organisation user name"
-                                            disabled
-                                            readonly
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-12 top-buffer-s mb-3 mt-3">
-                                <alert
-                                    type="info"
-                                    icon="info-circle"
-                                    class="alert alert-info"
-                                >
-                                    <i
-                                        class="bi bi-exclamation-triangle-fill"
-                                        style="color: #dc3545"
-                                    ></i
-                                    >&nbsp; The Department cannot manage this
-                                    list of people. The organisation is
-                                    responsible for managing people linked to
-                                    the organisation.
-                                    <br />
-                                </alert>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <form
-                    v-if="org.pins"
-                    class="form-horizontal"
-                    action="index.html"
-                    method="post"
+            <div id="organisations-tab-body" class="card-body">
+                <FormSection
+                    :form-collapse="false"
+                    label="Linked User Accounts"
+                    index="linked_user_accounts"
+                    subtitle="Manage the user accounts linked to the organisation"
                 >
                     <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group row mb-3">
-                                <label for="" class="col-sm-6 control-label">
-                                    Organisation User Pin Code 1:</label
-                                >
-                                <div class="col-sm-6">
-                                    <label class="control-label">{{
-                                        org.pins.three
-                                    }}</label>
+                        <div class="col-sm-12">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <h4>
+                                        Persons linked to this organisation:
+                                    </h4>
                                 </div>
-                            </div>
-                            <div class="form-group row mb-3">
-                                <label for="" class="col-sm-6 control-label"
-                                    >Organisation User Pin Code 2:</label
-                                >
-                                <div class="col-sm-6">
-                                    <label class="control-label">{{
-                                        org.pins.four
-                                    }}</label>
+                                <div v-for="d in org.delegates" :key="d.id">
+                                    <div v-if="d.is_admin" class="row mb-1">
+                                        <div class="col-sm-6">
+                                            <i
+                                                class="bi bi-shield-lock-fill"
+                                                style="color: #007bff"
+                                            ></i
+                                            >&nbsp;
+                                            <strong>Organisation Admin:</strong>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input
+                                                class="form-control w-100"
+                                                type="text"
+                                                :value="`${d.name} (${d.email})`"
+                                                aria-label="organisation admin name"
+                                                disabled
+                                                readonly
+                                            />
+                                        </div>
+                                    </div>
+                                    <div v-else class="row mb-1">
+                                        <div class="col-sm-6">
+                                            <i
+                                                class="bi bi-person-fill"
+                                                style="color: #007bff"
+                                            ></i
+                                            >&nbsp;
+                                            <strong>Organisation User:</strong>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <input
+                                                class="form-control w-100"
+                                                type="text"
+                                                :value="`${d.name} (${d.email})`"
+                                                aria-label="organisation user name"
+                                                disabled
+                                                readonly
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group row mb-3">
-                                <label for="" class="col-sm-6 control-label">
-                                    Organisation Administrator Pin Code
-                                    1:</label
-                                >
-                                <div class="col-sm-6">
-                                    <label class="control-label">{{
-                                        org.pins.one
-                                    }}</label>
-                                </div>
-                            </div>
-                            <div class="form-group row mb-3">
-                                <label for="" class="col-sm-6 control-label"
-                                    >Organisation Administrator Pin Code
-                                    2:</label
-                                >
-                                <div class="col-sm-6">
-                                    <label class="control-label">{{
-                                        org.pins.two
-                                    }}</label>
+                                <div class="col-sm-12 top-buffer-s mb-3 mt-3">
+                                    <alert
+                                        type="info"
+                                        icon="info-circle"
+                                        class="alert alert-info"
+                                    >
+                                        <i
+                                            class="bi bi-exclamation-triangle-fill"
+                                            style="color: #dc3545"
+                                        ></i
+                                        >&nbsp; The Department cannot manage
+                                        this list of people. The organisation is
+                                        responsible for managing people linked
+                                        to the organisation.
+                                        <br />
+                                    </alert>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </form>
-                <div>
-                    <datatable
-                        id="organisation_contacts_datatable_ref"
-                        ref="contacts_datatable_user"
-                        v-model="filterOrgContactStatus"
-                        :dt-options="contacts_options_ref"
-                        :dt-headers="contacts_headers_ref"
-                    />
-                </div>
-            </FormSection>
+
+                    <form
+                        v-if="org.pins"
+                        class="form-horizontal"
+                        action="index.html"
+                        method="post"
+                    >
+                        <div class="row mb-2">
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                User Pin Code 1:</label
+                            >
+                            <span class="col-sm-3 fw-light">
+                                {{ org.pins.three }}
+                            </span>
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                User Pin Code 2:</label
+                            >
+                            <div class="col-sm-3 fw-light">
+                                {{ org.pins.four }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                Admin Pin Code 1:</label
+                            >
+                            <span class="col-sm-3 fw-light">
+                                {{ org.pins.one }}
+                            </span>
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                Admin Pin Code 2:</label
+                            >
+                            <div class="col-sm-3 fw-light">
+                                {{ org.pins.two }}
+                            </div>
+                        </div>
+                    </form>
+                    <div>
+                        <datatable
+                            id="organisation_contacts_datatable_ref"
+                            ref="contacts_datatable_user"
+                            v-model="filterOrgContactStatus"
+                            :dt-options="contacts_options_ref"
+                            :dt-headers="contacts_headers_ref"
+                        />
+                    </div>
+                </FormSection>
+            </div>
+        </div>
+    </div>
+    <div v-else>
+        <div class="d-flex justify-content-center align-items-center mt-5">
+            <div class="spinner-grow text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center align-items-center mb-5">
+            <strong>Loading</strong>
         </div>
     </div>
 </template>
@@ -213,7 +219,7 @@ export default {
                 pin2: '',
             },
             helpers: helpers,
-            org: {},
+            org: null,
             contacts_headers_ref: ['Name', 'Role', 'Email', 'Status', 'Action'],
             contacts_options_ref: {
                 language: {
