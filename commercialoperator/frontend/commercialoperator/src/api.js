@@ -4,6 +4,7 @@ var filming = 'Filming';
 var event = 'Event';
 
 module.exports = {
+    organisation: '/api/organisations',
     organisations: '/api/organisations.json',
     filtered_organisations: '/api/filtered_organisations',
     organisation_request: '/api/organisation_requests',
