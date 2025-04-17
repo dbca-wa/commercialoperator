@@ -426,9 +426,10 @@ class Organisation(models.Model):
     @transaction.atomic
     def relink_user(self, user, request):
         try:
+            # NOTE: Try to understand why relinking a user that is linked to an organisation (it has a userdelegation object) is supposed to throw the error in the next line
             UserDelegation.objects.get(organisation=self, user=user)
             raise ValidationError(
-                "This user has not yet been linked to {}".format(str(self.organisation))
+                f"This user has not yet been linked to {self.name}"
             )
         except UserDelegation.DoesNotExist:
             delegate = UserDelegation.objects.create(organisation=self, user=user)

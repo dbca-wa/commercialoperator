@@ -891,7 +891,7 @@ export default {
                     swal.fire({
                         title: 'Relink User',
                         text:
-                            'Are you sure you want to Relink  ' +
+                            'Are you sure you want to relink  ' +
                             name +
                             ' (' +
                             vm.contact_user.email +
@@ -926,7 +926,7 @@ export default {
                     swal.fire({
                         title: 'Suspend User',
                         text:
-                            'Are you sure you want to Suspend  ' +
+                            'Are you sure you want to suspend  ' +
                             name +
                             ' (' +
                             vm.contact_user.email +
@@ -1156,10 +1156,6 @@ export default {
                 vm.is_commercialoperator_admin =
                     vm.profile.is_commercialoperator_admin;
                 vm.is_org_access_member = vm.profile.is_org_access_member;
-
-                console.log('countries', vm.countries);
-                console.log('profile', vm.profile);
-                console.log('org', vm.org);
 
                 return { success: true };
             });
