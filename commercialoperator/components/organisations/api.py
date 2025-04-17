@@ -72,6 +72,39 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             return Organisation.objects.filter(organisation_id__in=user_orgs)
         return Organisation.objects.none()
 
+    def get_object(self):
+        org_id = self.kwargs.get("pk", None)
+        if not org_id:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "An Organisation PK is required"},
+            )
+
+        is_ledger_org_query = bool(self.request.POST.get("is_ledger_org_query", False))
+        if is_ledger_org_query:
+            try:
+                return self.get_queryset().get(organisation_id=org_id)
+            except Organisation.DoesNotExist:
+                return Response(
+                    status=status.HTTP_404_NOT_FOUND,
+                    data={
+                        "message": f"Organisation with ledger id {org_id} not found not found in COLS"
+                    },
+                )
+        else:
+            try:
+                return super().get_object()
+            except Organisation.DoesNotExist:
+                raise serializers.ValidationError(
+                    {
+                        "message": f"Organisation does not exist in COLS.{"Did you attempt to query a ledger organisation in COLS?" if not is_ledger_org_query else ""}"
+                    }
+                )
+            except serializers.ValidationError:
+                raise serializers.ValidationError(
+                    {"message": "Organisation does not exist"}
+                )
+
     @action(
         methods=[
             "GET",
