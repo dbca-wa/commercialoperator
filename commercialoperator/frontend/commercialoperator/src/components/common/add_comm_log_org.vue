@@ -267,6 +267,7 @@ export default {
     data: function () {
         return {
             isModalOpen: false,
+            isLedgerOrgQuery: false,
             form: null,
             comms: {},
             state: 'proposed_approval',
@@ -348,6 +349,7 @@ export default {
         },
         close: function () {
             let vm = this;
+            this.isLedgerOrgQuery = false;
             this.isModalOpen = false;
             this.comms = {};
             this.hasErrors = false;
@@ -366,8 +368,9 @@ export default {
             let vm = this;
             vm.hasErrors = false;
             let comms = new FormData(vm.form);
+            comms.append('is_ledger_org_query', vm.isLedgerOrgQuery);
             vm.addingComms = true;
-            vm.$http.post(vm.url, comms, {}).then(
+            vm.$http.post(vm.url, comms).then(
                 () => {
                     vm.addingComms = false;
                     vm.$emit('refreshActionFromResponse', this.localAction);

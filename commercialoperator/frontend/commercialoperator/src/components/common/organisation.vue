@@ -163,7 +163,6 @@
                                 :dt-options="contacts_options_ref"
                                 :dt-headers="contacts_headers_ref"
                             />
-                            Refs: {{ $refs }}
                         </div>
                     </FormSection>
                 </div>
@@ -1183,6 +1182,7 @@ export default {
             this.contact_user = { ...new_user };
         },
         addComm: function () {
+            this.$refs.add_comm_org.isLedgerOrgQuery = true;
             this.$refs.add_comm_org.isModalOpen = true;
         },
     },
