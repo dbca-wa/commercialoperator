@@ -578,32 +578,6 @@ export default {
         });
     },
     methods: {
-        make_payment: function (fee_invoice_reference) {
-            const vm = this;
-            vm.$http
-                .post('/existing_invoice_payment/' + fee_invoice_reference)
-                .then(
-                    (response) => {
-                        vm.res = response.body;
-                    },
-                    (error) => {
-                        console.log(error);
-                    }
-                );
-        },
-        make_payment2: function (fee_invoice_reference) {
-            let vm = this;
-            var form = document.forms.new_payment;
-            if (vm.payment_method == 'existing_invoice') {
-                form.action =
-                    '/existing_invoice_payment/' +
-                    fee_invoice_reference +
-                    '/?method=' +
-                    vm.payment_method;
-                form.submit();
-            }
-        },
-
         fetchFilterLists: function () {
             let vm = this;
             vm.$http.get(api_endpoints.filter_list).then(
