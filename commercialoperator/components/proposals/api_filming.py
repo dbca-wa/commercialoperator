@@ -52,7 +52,7 @@ from commercialoperator.components.proposals.serializers_filming import (
 
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
+#from django.core.files.storage import default_storage
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
