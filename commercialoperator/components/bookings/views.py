@@ -75,7 +75,7 @@ from commercialoperator.components.bookings.models import (
 )
 
 from commercialoperator.components.stubs.utils import update_payments
-from commercialoperator.components.stubs.classes import CreateInvoiceBasket, Order
+from commercialoperator.components.stubs.classes import CreateInvoiceBasket
 
 from ledger_api_client.ledger_models import Basket, Invoice
 from ledger_api_client.utils import Order
@@ -91,7 +91,6 @@ logger = logging.getLogger("payment_checkout")
 
 
 class ApplicationFeeView(TemplateView):
-    # template_name = 'commercialoperator/booking/preview.html'
     template_name = ""  #'commercialoperator/booking/preview_deferred.html'
 
     def get_object(self):
@@ -290,7 +289,7 @@ class DeferredInvoicingPreviewView(TemplateView):
             logger.error("Error creating booking preview: {}".format(e))
             raise
 
-
+# NOTE: Is this used still?
 class DeferredInvoicingView(TemplateView):
     template_name = "commercialoperator/booking/success.html"
 
@@ -381,7 +380,7 @@ class DeferredInvoicingView(TemplateView):
             logger.error("Error Creating booking: {}".format(e))
             raise
 
-
+# NOTE: Is this used still?
 class MakePaymentView(TemplateView):
     # template_name = 'mooring/booking/make_booking.html'
     template_name = "commercialoperator/booking/success.html"
