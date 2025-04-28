@@ -25,6 +25,7 @@ from commercialoperator.components.organisations.utils import (
 from commercialoperator.components.main.serializers import (
     CommunicationLogEntrySerializer,
 )
+from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import retrieve_email_user
 from commercialoperator.helpers import is_commercialoperator_admin
 
@@ -174,10 +175,10 @@ class OrganisationSerializer(serializers.ModelSerializer):
         """
 
         delegates = []
-        organisation_id = obj.organisation_id
+        cols_org_id = obj.id
         # organisation_id = 9
         delegates_all_ids = UserDelegation.objects.filter(
-            organisation_id=organisation_id
+            organisation_id=cols_org_id
         ).values_list("user_id", flat=True)
 
         for user_id in delegates_all_ids:
@@ -217,20 +218,18 @@ class OrganisationSerializer(serializers.ModelSerializer):
             return organisation_response["data"]["organisation_trading_name"]
         return None
 
+    @basic_exception_handler
     def get_pins(self, obj):
-        try:
-            user = self.context["request"].user
-            # Check if the request user is among the first five delegates in the organisation
-            if can_manage_org(obj, user):
-                return {
-                    "one": obj.admin_pin_one,
-                    "two": obj.admin_pin_two,
-                    "three": obj.user_pin_one,
-                    "four": obj.user_pin_two,
-                }
-            else:
-                return None
-        except KeyError:
+        user = self.context["request"].user
+        # Check if the request user is among the first five delegates in the organisation
+        if can_manage_org(obj, user):
+            return {
+                "one": obj.admin_pin_one,
+                "two": obj.admin_pin_two,
+                "three": obj.user_pin_one,
+                "four": obj.user_pin_two,
+            }
+        else:
             return None
 
 
@@ -461,7 +460,7 @@ class OrganisationRequestSerializer(serializers.ModelSerializer):
             )
             return None
 
-        return OrganisationSerializer(organisation).data
+        return OrganisationSerializer(organisation, context=self.context).data
 
 
 class OrganisationRequestDTSerializer(OrganisationRequestSerializer):

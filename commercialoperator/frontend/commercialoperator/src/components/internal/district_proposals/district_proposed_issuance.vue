@@ -260,13 +260,6 @@ export default {
             startDateErrorString: '',
             successString: '',
             success: false,
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {
@@ -306,7 +299,12 @@ export default {
         let vm = this;
         vm.form = document.forms.approvalForm;
         this.$nextTick(() => {
-            vm.addDateFieldMinValues();
+            helpers.addDateFieldMinValues(
+                vm,
+                null,
+                'start_date',
+                'expiry_date'
+            );
         });
     },
     methods: {
@@ -357,8 +355,32 @@ export default {
         },
 
         ok: function () {
-            let vm = this;
-            if (helpers.validateForm(vm.form) && vm.validateFormDates()) {
+            const vm = this;
+            const start_date = $(this.$refs.start_date).find('input').val();
+            const expiry_date = $(this.$refs.expiry_date).find('input').val();
+            const datesValid = helpers.validateFormDates(
+                '<',
+                start_date,
+                expiry_date
+            );
+            if (datesValid) {
+                this.startDateError = false;
+                this.startDateErrorString = '';
+                this.toDateError = false;
+                this.toDateErrorString = '';
+                this.approval.start_date =
+                    moment(start_date).format('YYYY-MM-DD');
+                this.approval.expiry_date =
+                    moment(expiry_date).format('YYYY-MM-DD');
+            } else {
+                this.startDateError = true;
+                this.toDateError = true;
+                this.startDateErrorString =
+                    'Please select a Start date that is before Expiry date';
+                this.toDateErrorString =
+                    'Please select an Expiry date that is after Start date';
+            }
+            if (helpers.validateForm(vm.form) && datesValid) {
                 vm.sendData();
             }
         },
@@ -440,68 +462,6 @@ export default {
                         }
                     );
             }
-        },
-        addDateFieldMinValues: function () {
-            const vm = this;
-
-            const date = new Date();
-            let today = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-            );
-            today = moment(today).format('YYYY-MM-DD');
-            // Start and expiry dates cannot be selected prior to today
-            $(vm.$refs.start_date).find('input').attr('min', today);
-            $(vm.$refs.expiry_date).find('input').attr('min', today);
-        },
-        validateFormDates: function () {
-            const vm = this;
-
-            const start_date = $(vm.$refs.start_date).find('input').val();
-            const expiry_date = $(vm.$refs.expiry_date).find('input').val();
-
-            let isValid = false;
-            if (Date.parse(expiry_date)) {
-                // Unix timestamp comparison
-                if (Date.parse(expiry_date) < Date.parse(start_date)) {
-                    vm.toDateError = true;
-                    vm.toDateErrorString =
-                        'Please select an Expiry date that is after Start date';
-                    vm.approval.expiry_date = '';
-                } else {
-                    vm.toDateError = false;
-                    vm.toDateErrorString = '';
-                    vm.approval.expiry_date =
-                        moment(expiry_date).format('YYYY-MM-DD');
-                    isValid = true;
-                }
-            } else if (expiry_date === '') {
-                vm.approval.expiry_date = '';
-            }
-
-            if (Date.parse(start_date)) {
-                // Unix timestamp comparison
-                if (
-                    Date.parse(expiry_date) &&
-                    Date.parse(expiry_date) < Date.parse(start_date)
-                ) {
-                    vm.startDateError = true;
-                    vm.startDateErrorString =
-                        'Please select a Start date that is before Expiry date';
-                    vm.approval.start_date = '';
-                } else {
-                    vm.startDateError = false;
-                    vm.startDateErrorString = '';
-                    vm.approval.start_date =
-                        moment(start_date).format('YYYY-MM-DD');
-                    isValid = true;
-                }
-            } else if (start_date === '') {
-                vm.approval.start_date = '';
-            }
-
-            return isValid;
         },
     },
 };

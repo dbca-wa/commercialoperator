@@ -40,7 +40,6 @@
                                                 <input
                                                     ref="Checkbox"
                                                     v-model="s.checked"
-                                                    :onclick="isClickable"
                                                     class="form-check-input"
                                                     type="checkbox"
                                                     data-parsley-required
@@ -79,7 +78,6 @@
                                                         !s.checked ||
                                                         !canEditActivities
                                                     "
-                                                    :onclick="isClickable"
                                                     class="form-check-input"
                                                     type="checkbox"
                                                     :value="a.id"

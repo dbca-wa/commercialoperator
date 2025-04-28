@@ -16,6 +16,7 @@ from ledger_api_client.utils import update_organisation_obj, get_all_organisatio
 
 from commercialoperator.components.approvals.serializers import EmailUserSerializer
 from commercialoperator.components.organisations.utils import can_admin_org
+from commercialoperator.components.permission.permission import organisation_permissions
 from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
@@ -71,6 +72,39 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             return Organisation.objects.filter(organisation_id__in=user_orgs)
         return Organisation.objects.none()
 
+    def get_object(self):
+        org_id = self.kwargs.get("pk", None)
+        if not org_id:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "An Organisation PK is required"},
+            )
+
+        is_ledger_org_query = bool(self.request.POST.get("is_ledger_org_query", False))
+        if is_ledger_org_query:
+            try:
+                return self.get_queryset().get(organisation_id=org_id)
+            except Organisation.DoesNotExist:
+                return Response(
+                    status=status.HTTP_404_NOT_FOUND,
+                    data={
+                        "message": f"Organisation with ledger id {org_id} not found not found in COLS"
+                    },
+                )
+        else:
+            try:
+                return super().get_object()
+            except Organisation.DoesNotExist:
+                raise serializers.ValidationError(
+                    {
+                        "message": f"Organisation does not exist in COLS.{"Did you attempt to query a ledger organisation in COLS?" if not is_ledger_org_query else ""}"
+                    }
+                )
+            except serializers.ValidationError:
+                raise serializers.ValidationError(
+                    {"message": "Organisation does not exist"}
+                )
+
     @action(
         methods=[
             "GET",
@@ -121,21 +155,29 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def contacts_exclude(self, request, *args, **kwargs):
+        ledger_organisation_id = kwargs.get("pk", None)
+        if not ledger_organisation_id:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "An Organisation ID is required"},
+            )
+
         try:
-            instance = self.get_object()
-            qs = instance.contacts.exclude(user_status="draft")
-            serializer = OrganisationContactSerializer(qs, many=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+            cols_organisation = Organisation.objects.get(
+                organisation_id=ledger_organisation_id
+            )
+        except Organisation.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"message": "Organisation not found"},
+            )
+
+        contacts = cols_organisation.contacts.exclude(user_status="draft")
+        serializer = OrganisationContactSerializer(contacts, many=True)
+
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -428,30 +470,17 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def relink_user(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = OrgUserAcceptSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user_obj = EmailUser.objects.get(
-                email=serializer.validated_data["email"].lower()
-            )
-            instance.relink_user(user_obj, request)
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        serializer = OrgUserAcceptSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_obj = EmailUser.objects.get(
+            email=serializer.validated_data["email"].lower()
+        )
+        instance.relink_user(user_obj, request)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -665,7 +694,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         filtered_organisations = filter_organisation_list(
             self, request, *args, **kwargs
         )
-        filtered_organisations
         organisation_ids = [o.organisation_id for o in filtered_organisations]
         organisations = self.get_queryset().filter(organisation_id__in=organisation_ids)
 
@@ -678,6 +706,41 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             for organisation in organisations
         ]
         return Response({"results": data_transform})
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+        # permission_classes=[IsAuthenticated],
+    )
+    @basic_exception_handler
+    def linked_organisation(self, request, *args, **kwargs):
+        org_id = request.GET.get("org_id", None)
+        if not org_id:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": "An Organisation ID is required"},
+            )
+        try:
+            org = self.get_queryset().get(organisation_id=org_id)
+        except Organisation.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"message": f"Organisation with ledger id {org_id} not found"},
+            )
+        else:
+            if not organisation_permissions(request, org_id):
+                return Response(
+                    status=status.HTTP_403_FORBIDDEN,
+                    data={
+                        "message": "You do not have permission to view this organisation."
+                    },
+                )
+
+        serializer = OrganisationSerializer(org, context={"request": request})
+
+        return Response(serializer.data)
 
 
 class OrganisationListFilterView(generics.ListAPIView):
@@ -801,7 +864,9 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         ]
 
         serializer = OrganisationRequestSerializer(
-            qs.filter(abn__in=organisation_abns), many=True
+            qs.filter(abn__in=organisation_abns),
+            context={"request": request},
+            many=True,
         )
         return Response(serializer.data)
 

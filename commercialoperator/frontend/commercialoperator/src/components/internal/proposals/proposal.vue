@@ -1614,6 +1614,7 @@ export default {
         amendmentRequest: function () {
             this.save_wo();
             let values = '';
+            // Note: What are these values for? The only deficiency class is in comment.vue and that component is not imported here
             $('.deficiency').each((i, d) => {
                 values +=
                     $(d).val() != ''
@@ -1635,6 +1636,15 @@ export default {
         save: function () {
             let vm = this;
             vm.savingProposal = true;
+            if (!helpers.validateForm(vm.form)) {
+                vm.savingProposal = false;
+                swal.fire({
+                    title: 'Error',
+                    text: 'Please fix the form errors before saving',
+                    icon: 'error',
+                });
+                return;
+            }
             let formData = new FormData(vm.form);
             formData.append(
                 'selected_parks_activities',
@@ -1669,6 +1679,14 @@ export default {
         },
         save_wo: function () {
             let vm = this;
+            if (!helpers.validateForm(vm.form)) {
+                swal.fire({
+                    title: 'Error',
+                    text: 'Please fix the form errors before saving',
+                    icon: 'error',
+                });
+                return;
+            }
             let formData = new FormData(vm.form);
             formData.append(
                 'selected_parks_activities',

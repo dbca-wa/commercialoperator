@@ -4,6 +4,7 @@ var filming = 'Filming';
 var event = 'Event';
 
 module.exports = {
+    organisation: '/api/organisations',
     organisations: '/api/organisations.json',
     filtered_organisations: '/api/filtered_organisations',
     organisation_request: '/api/organisation_requests',
@@ -46,6 +47,8 @@ module.exports = {
     event_trail_container: '/api/event_trail_container',
     event_park_container: '/api/event_park_container',
     overdue_invoices: '/api/overdue_invoices.json',
+    proposal_search_keywords:
+        '/api/search_proposals/search_keywords/?format=datatables',
 
     //filming
     proposal_filming_parks: '/api/proposal_filming_parks.json',

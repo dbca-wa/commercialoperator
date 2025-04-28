@@ -132,13 +132,6 @@ export default {
             filterComplianceDueTo: '',
             filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             external_status: [
                 { value: 'due', name: 'Due' },
                 { value: 'future', name: 'Future' },

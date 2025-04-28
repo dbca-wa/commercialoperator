@@ -316,7 +316,12 @@ export default {
         TextFilteredField,
         TextFilteredOrgField,
     },
-    props: {},
+    props: {
+        proposalSearchKeywordsUrl: {
+            type: String,
+            default: api_endpoints.proposal_search_keywords,
+        },
+    },
     data() {
         let vm = this;
         return {
@@ -354,13 +359,29 @@ export default {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
                 },
                 responsive: true,
-                data: vm.results,
+                serverSide: true,
+                ajax: {
+                    url: vm.proposalSearchKeywordsUrl,
+                    dataSrc: 'data',
+                    data: function (d) {
+                        d.searchKeywords = JSON.stringify(vm.searchKeywords);
+                        d.searchProposal = vm.searchProposal;
+                        d.searchApproval = vm.searchApproval;
+                        d.searchCompliance = vm.searchCompliance;
+                        d.is_internal = true;
+                    },
+                },
+                order: [[0, 'desc']],
+                pageLength: 10,
                 columns: [
-                    { data: 'number' },
-                    { data: 'type' },
-                    { data: 'applicant' },
+                    { data: 'number', name: 'lodgement_number' },
+                    // NOTE: Changing all columns below to be neither searchable nor orderable, b/c this table's dataset consists of thee different models
+                    { data: 'type', searchable: false, orderable: false },
+                    { data: 'applicant', searchable: false, orderable: false },
                     {
                         data: 'text',
+                        searchable: false,
+                        orderable: false,
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
                             if (data.value) {
@@ -372,6 +393,8 @@ export default {
                     },
                     {
                         data: 'id',
+                        searchable: false,
+                        orderable: false,
                         mRender: function (data, type, full) {
                             let links = '';
                             if (
@@ -409,10 +432,6 @@ export default {
     },
     watch: {},
     mounted: function () {
-        let vm = this;
-        vm.proposal_options.data = vm.results;
-        //vm.proposal_options.processing=true;
-        vm.$refs.proposal_datatable.vmDataTable.draw();
         $('a[data-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {
@@ -458,10 +477,10 @@ export default {
                     params: { org_id: org_id },
                 });
             } else {
-                swal({
+                swal.fire({
                     title: 'Organisation not selected',
                     html: 'Please select the organisation to view the details',
-                    type: 'error',
+                    icon: 'error',
                 }).then(() => {});
                 return;
             }
@@ -477,10 +496,10 @@ export default {
                     params: { user_id: user_id },
                 });
             } else {
-                swal({
+                swal.fire({
                     title: 'User not selected',
                     html: 'Please select the user to view the details',
-                    type: 'error',
+                    icon: 'error',
                 }).then(() => {});
                 return;
             }
@@ -513,38 +532,16 @@ export default {
 
         search: function () {
             let vm = this;
-            if (this.searchKeywords.length > 0) {
-                vm.messages = true;
-                vm.messageString =
-                    "Searching <i class='fa fa-2x fa-spinner fa-spin'></i>";
-                vm.$http
-                    .post('/api/search_keywords.json', {
-                        searchKeywords: vm.searchKeywords,
-                        searchProposal: vm.searchProposal,
-                        searchApproval: vm.searchApproval,
-                        searchCompliance: vm.searchCompliance,
-                        is_internal: true,
-                    })
-                    .then(
-                        (res) => {
-                            vm.results = res.body;
-                            vm.$refs.proposal_datatable.vmDataTable.clear();
-                            vm.$refs.proposal_datatable.vmDataTable.rows.add(
-                                vm.results
-                            );
-                            vm.$refs.proposal_datatable.vmDataTable.draw();
-                            vm.message = false;
-                            vm.messageString = '';
-                        },
-                        (err) => {
-                            console.log(err);
-                        }
-                    );
-            }
+            console.log('Calling search');
+            vm.$refs.proposal_datatable.vmDataTable.clear();
+            vm.$refs.proposal_datatable.vmDataTable.draw();
+
+            return;
         },
 
         search_reference: function () {
             let vm = this;
+            console.log('Calling search_reference');
             if (vm.referenceWord) {
                 vm.$http
                     .post('/api/search_reference.json', {

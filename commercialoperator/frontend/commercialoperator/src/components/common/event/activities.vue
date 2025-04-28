@@ -62,6 +62,7 @@
                                                 class="form-control"
                                                 name="event_activity_commencement_date"
                                                 placeholder="Commencement date"
+                                                required
                                                 :disabled="
                                                     !canEditPeriod ||
                                                     proposal.pending_amendment_request ||
@@ -90,6 +91,7 @@
                                                 class="form-control"
                                                 name="event_activity_completion_date"
                                                 placeholder="Completion date"
+                                                required
                                                 :disabled="
                                                     !canEditPeriod ||
                                                     proposal.pending_amendment_request ||
@@ -389,13 +391,6 @@ export default {
             trail_activities: [],
             selected_trails_activities: [],
             global_settings: [],
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {
@@ -621,7 +616,12 @@ export default {
         vm.fetchParkTreeview();
         vm.fetchGlobalSettings();
         this.$nextTick(() => {
-            vm.eventListeners();
+            helpers.addDateFieldMinValues(
+                vm,
+                null,
+                'event_activity_commencement_date',
+                'event_activity_completion_date'
+            );
         });
         vm.proposal.selected_trails_activities = [];
         vm.store_trails(vm.proposal.trails);
@@ -713,22 +713,6 @@ export default {
                 result.push(el);
             });
             return result;
-        },
-        eventListeners: function () {
-            let vm = this;
-            var date = new Date();
-            var today = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-            );
-
-            //Set minimum date on datetimepicker so that nominated
-            //start date cannot be selected prior to today
-            $(vm.$refs.event_activity_commencement_date).attr('min', today);
-            //Set minimum date on datetimepicker so that nominated
-            //start date cannot be selected prior to today
-            $(vm.$refs.event_activity_completion_date).attr('min', today);
         },
         fetchGlobalSettings: function () {
             let vm = this;

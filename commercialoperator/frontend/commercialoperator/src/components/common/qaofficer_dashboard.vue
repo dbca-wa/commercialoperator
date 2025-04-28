@@ -138,13 +138,6 @@ export default {
             filterProposalLodgedTo: '',
             filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             internal_status: [
                 { value: 'draft', name: 'Draft' },
                 { value: 'with_assessor', name: 'With Assessor' },

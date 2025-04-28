@@ -47,7 +47,8 @@
                                 :key="index"
                                 width="30%"
                             >
-                                <template v-if="col_types[index] == 'select'">
+                                <!-- NOTE: [Invoice and InvoiceBooking] See that the table logic works with all the dependent disabled logic and then continue investigating into make payment view and creation of booking and bookinginvoice models -->
+                                <div v-if="col_types[index] == 'select'">
                                     <select
                                         v-model="row[index]"
                                         class="tbl_input form-control"
@@ -75,7 +76,7 @@
                                             {{ o.label }}
                                         </option>
                                     </select>
-                                </template>
+                                </div>
                                 <template v-if="col_types[index] == 'date'">
                                     <input
                                         id="id_arrival_date"

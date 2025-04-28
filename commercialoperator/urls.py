@@ -173,6 +173,11 @@ router.register(
     proposal_api_event.ProposalEventsTrailsViewSet,
     "proposal_events_trails",
 )
+router.register(
+    r"search_proposals",
+    proposal_api.SearchProposalsViewSet,
+    "search-proposals",
+),
 
 api_patterns = [
     url(
@@ -252,17 +257,19 @@ api_patterns = [
         name="filming_licence_charge_choices ",
     ),
     url(r"^api/oracle_job$", main_api.OracleJob.as_view(), name="get-oracle"),
-    url(
-        r"^api/reports/booking_settlements$",
-        main_api.BookingSettlementReportView.as_view(),
-        name="booking-settlements-report",
-    ),
     # Filming
     url(
         r"^api/filming_activity_tab",
         proposal_api_filming.FilmingActivityTabView.as_view(),
         name="filming_activity_tab",
     ),
+    # NOTE: [Booking and BookingInvoice] I added this pattern while trying to figure out how to get a deferred booking working in segregated COLS
+    url(
+        r"^api/complete_booking/(?P<booking_hash>[\w]+)/(?P<booking_id>[0-9]+)/",
+        booking_api.complete_booking,
+        name="complete_booking",
+    ),
+    # url(r'^api/create_booking', booking_api.create_booking, name='create_booking'),
 ]
 
 # URL Patterns
@@ -481,7 +488,7 @@ urlpatterns = (
             organisation_views.OrganisationHistoryCompareView.as_view(),
             name="organisation_history",
         ),
-        url("ckeditor5/", include('django_ckeditor_5.urls')),
+        url("ckeditor5/", include("django_ckeditor_5.urls")),
     ]
     + ledger_patterns
     + media_serv_patterns

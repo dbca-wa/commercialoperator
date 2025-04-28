@@ -307,6 +307,7 @@
                                                 class="form-control"
                                                 name="insurance_expiry"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                                 :disabled="proposal.readonly"
                                             />
                                             <span class="input-group-addon">
@@ -392,6 +393,7 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import FileField from '@/components/forms/filefield.vue';
+import { helpers } from '@/utils/hooks.js';
 
 export default {
     components: {
@@ -420,13 +422,6 @@ export default {
             dBody: 'dBody' + vm._uid,
             values: null,
             global_settings: [],
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {
@@ -469,7 +464,7 @@ export default {
         let vm = this;
         vm.fetchGlobalSettings();
         this.$nextTick(() => {
-            vm.eventListeners();
+            helpers.addDateFieldMinValues(vm, null, 'insurance_expiry');
         });
     },
     methods: {
@@ -483,22 +478,6 @@ export default {
                     console.log(error);
                 }
             );
-        },
-
-        eventListeners: function () {
-            let vm = this;
-
-            var date = new Date();
-            var today = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-            );
-            today = moment(today).format('YYYY-MM-DD');
-
-            //Set minimum date on datetimepicker so that
-            //insurance expiry date cannot be selected prior to today
-            $(vm.$refs.insurance_expiry).attr('min', today);
         },
     },
 };

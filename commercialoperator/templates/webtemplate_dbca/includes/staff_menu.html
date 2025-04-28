@@ -4,14 +4,6 @@
 
 {% if is_commercialoperator_admin_user or request.user.is_superuser %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+        <a class="dropdown-item" target="_blank" href="{% url 'admin:index' %}">Admin</a>
     </li>
-{% endif %}
-{% if is_commercialoperator_admin_user or request.user.is_superuser or is_payment_officer %}
-    <li class="nav-item">
-        <a class="nav-link" href="/internal/reports">Reports</a>
-    </li>
-{% endif %}
-{% if is_commercialoperator_admin_user or request.user.is_superuser %}
-    <li role="separator" class="divider"></li>
 {% endif %}

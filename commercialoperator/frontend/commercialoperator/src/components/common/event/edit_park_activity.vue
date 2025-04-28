@@ -177,13 +177,6 @@ export default {
             successString: '',
             success: false,
             dateFormat: 'YYYY-MM-DD',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             localParkAction: JSON.parse(JSON.stringify(this.park_action)),
         };
     },

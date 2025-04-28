@@ -15,6 +15,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.pagination import PageNumberPagination
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.utils import (
+    get_chained_list,
     get_proposal_serializer_by_application_type,
     save_proponent_data,
     save_assessor_data,
@@ -22,9 +23,10 @@ from commercialoperator.components.proposals.utils import (
     get_cached_application_types,
     get_cached_proposal_submitters,
     get_cached_proposal_processing_status,
+    paginate_chained_list,
+    searchKeyWords,
 )
 from commercialoperator.components.proposals.models import (
-    searchKeyWords,
     search_reference,
     ProposalUserAction,
 )
@@ -122,6 +124,7 @@ from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.stubs.decorators import basic_exception_handler
 from commercialoperator.components.stubs.utils import (
+    QuerySetChain,
     retrieve_delegate_organisation_ids,
     retrieve_group_members,
     retrieve_user_groups,
@@ -1430,7 +1433,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-
     @action(
         methods=[
             "GET",
@@ -2109,23 +2111,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
     @action(methods=["post"], detail=True)
     @renderer_classes((JSONRenderer,))
+    @basic_exception_handler
     def draft(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            save_proponent_data(instance, request, self)
-            return redirect(reverse("external"))
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-        raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        save_proponent_data(instance, request, self)
+        return redirect(reverse("external"))
 
     @action(methods=["post"], detail=True)
     def update_training_flag(self, request, *args, **kwargs):
@@ -3002,6 +2992,7 @@ class FilmingLicenceChargeView(views.APIView):
 
 
 class SearchKeywordsView(views.APIView):
+
     renderer_classes = [
         JSONRenderer,
     ]
@@ -3014,11 +3005,68 @@ class SearchKeywordsView(views.APIView):
         searchCompliance = request.data.get("searchCompliance")
         if searchWords:
             qs = searchKeyWords(
-                searchWords, searchProposal, searchApproval, searchCompliance
+                request, searchWords, searchProposal, searchApproval, searchCompliance
             )
         # queryset = list(set(qs))
         serializer = SearchKeywordSerializer(qs, many=True)
         return Response(serializer.data)
+
+
+class SearchProposalsFilterBackend(DatatablesFilterBackend):
+    """
+    Custom filters
+    """
+
+    def filter_queryset(self, request, queryset, view):
+        searchWords = json.loads(request.GET.get("searchKeywords"))
+        searchProposal = json.loads(request.GET.get("searchProposal"))
+        searchApproval = json.loads(request.GET.get("searchApproval"))
+        searchCompliance = json.loads(request.GET.get("searchCompliance"))
+
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+
+        proposal_list, approval_list, compliance_list = get_chained_list(
+            view,
+            searchWords,
+            searchProposal,
+            searchApproval,
+            searchCompliance,
+            is_internal=True,
+        )
+        chained_qs = QuerySetChain(proposal_list, approval_list, compliance_list)
+        chained_qs.order_by(*ordering)
+
+        setattr(view, "_datatables_total_count", chained_qs.count())
+        return chained_qs
+
+
+class SearchProposalsViewSet(viewsets.ModelViewSet):
+    queryset = Proposal.objects.none()
+    serializer_class = SearchKeywordSerializer
+    filter_backends = (SearchProposalsFilterBackend,)
+    pagination_class = DatatablesPageNumberPagination
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        return qs
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
+    def search_keywords(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        searchWords = json.loads(request.GET.get("searchKeywords"))
+        chained_qs = self.filter_queryset(qs)
+        result_page = paginate_chained_list(self, request, chained_qs, searchWords)
+        serializer = SearchKeywordSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
 
 
 class SearchReferenceView(views.APIView):

@@ -112,7 +112,7 @@ def search_compliance(compliance, searchWords):
 					'number': c.reference,
 					'id': c.id,
 					'type': 'Compliance',
-					'applicant': c.proposal.applicant,
+					'applicant': c.proposal.applicant_obj,
 					'text': c.text,
 					}
 				qs.append(res)
@@ -129,7 +129,7 @@ def search_compliance(compliance, searchWords):
 					'number': c.reference,
 					'id': c.id,
 					'type': 'Compliance',
-					'applicant': c.proposal.applicant,
+					'applicant': c.proposal.applicant_obj,
 					'text': c.requirement.requirement,
 					}
 				qs.append(res)
@@ -282,7 +282,7 @@ def missing_required_fields(proposal):
 		for item in sections:
 			if flat_key[0].endswith(item['name']):
 				if not flat_key[1].strip():
-				   missing_fields.append( dict(name=flat_key[0], label=item['label']) )
+					missing_fields.append( dict(name=flat_key[0], label=item['label']) )
 	return missing_fields
 
 def test_search_multiple_keys():

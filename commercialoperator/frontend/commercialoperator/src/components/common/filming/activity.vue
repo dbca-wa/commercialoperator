@@ -40,6 +40,7 @@
                                                 class="form-control"
                                                 name="commencement_date"
                                                 placeholder="Commencement date"
+                                                required
                                                 :disabled="
                                                     !canEditPeriod ||
                                                     proposal.pending_amendment_request ||
@@ -69,6 +70,7 @@
                                                 class="form-control"
                                                 name="completion_date"
                                                 placeholder="Completion date"
+                                                required
                                                 :disabled="
                                                     !canEditPeriod ||
                                                     proposal.pending_amendment_request ||
@@ -411,6 +413,7 @@
 
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
+import { helpers } from '@/utils/hooks.js';
 
 export default {
     name: 'FilmingActivity',
@@ -457,13 +460,6 @@ export default {
             selected_film_type: [],
             selected_film_purpose: [],
             selected_film_usage: [],
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: false,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {
@@ -521,6 +517,12 @@ export default {
         this.fetchActivityTabData();
         this.$nextTick(() => {
             vm.eventListeners();
+            helpers.addDateFieldMinValues(
+                vm,
+                null,
+                'commencement_date',
+                'completion_date'
+            );
         });
     },
     methods: {
@@ -587,22 +589,6 @@ export default {
                     var selected = $(e.currentTarget);
                     vm.proposal.filming_activity.film_usage = selected.val();
                 });
-
-            var date = new Date();
-            var today = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-            );
-            today = moment(today).format('DD/MM/YYYY');
-
-            //Set minimum date on datetimepicker so that nominated
-            //start date cannot be selected prior to today
-            $(vm.$refs.commencement_date).attr('min', today);
-
-            //Set minimum date on datetimepicker so that nominated
-            //start date cannot be selected prior to today
-            $(vm.$refs.completion_date).attr('min', today);
         },
     },
 };

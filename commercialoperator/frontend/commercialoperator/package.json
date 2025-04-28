@@ -18,6 +18,8 @@
     "datatables.net-bs5": "^1.13.11",
     "datatables.net-buttons-bs5": "^2.4.3",
     "datatables.net-responsive-bs5": "^2.5.1",
+    "//": "Dependency of webpack-dev-server. Pinned here to 2.5.3 to avoid index.js not found error in version 2.6.0+",
+    "html-entities": "2.5.3",
     "jquery": "^3.7.1",
     "jquery-validation": "^1.21.0",
     "jquery.easing": "^1.4.1",

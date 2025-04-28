@@ -1,6 +1,7 @@
 <template lang="html">
     <div>
         <Treeselect
+            ref="treeselect"
             v-model="localValue"
             :options="options"
             :open-on-click="true"
@@ -15,38 +16,46 @@
             :disabled="disabled"
             :open-on-focus="true"
             :limit="localLimit"
+            :close-on-select="closeOnSelect"
+            :disable-branch-nodes="disableBranchNodes"
+            :z-index="zIndex"
         >
-            <template slot="option-label" slot-scope="{ node }">
-                <label class="col-sm-8 control-label">{{
-                    node.raw.name
-                }}</label>
-                <div v-if="node.raw.can_edit" class="option-label-container">
-                    <span v-if="is_checked(node)">
-                        <a
-                            class="col-sm-4 control-label pull-right"
-                            @click.stop="edit_activities(node)"
-                            >{{ edit_display_text(node) }}
-                            <i class="fa fa-edit"></i
-                        ></a>
-                    </span>
-                    <span v-else>
-                        <p
-                            class="col-sm-4 control-label pull-right"
-                            style="color: grey"
-                        >
-                            {{ edit_display_text(node) }}
-                            <i class="fa fa-edit"></i>
-                        </p>
-                    </span>
+            <label
+                slot="option-label"
+                slot-scope="{ node, labelClassName }"
+                :class="labelClassName"
+            >
+                <div class="row">
+                    <div class="col-sm-8 text-nowrap">
+                        {{ node.raw.name }}
+                    </div>
+                    <div
+                        v-if="node.raw.can_edit"
+                        class="col-sm-4 option-label-container"
+                    >
+                        <!-- Note: I changed the listener from click to mousedown, because when opening the multiselect list, click would deselect/select a list option item before opening the modal -->
+                        <div class="text-nowrap pull-right">
+                            <a
+                                v-if="is_checked(node)"
+                                @mousedown.stop="edit_activities($event, node)"
+                                >{{ edit_display_text(node) }}
+                                <i class="fa fa-edit"></i
+                            ></a>
+                            <a v-else style="color: grey">
+                                {{ edit_display_text(node) }}
+                                <i class="fa fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </template>
+            </label>
 
             <div slot="value-label" slot-scope="{ node }">
                 <div v-if="allow_edit">
                     <a
                         :disabled="!is_checked(node)"
                         :title="edit_display_text(node)"
-                        @click.stop="edit_activities(node)"
+                        @mousedown.stop="edit_activities($event, node)"
                     >
                         {{ node.label }}
                     </a>
@@ -135,6 +144,18 @@ export default {
             type: Number,
             default: Infinity,
         },
+        closeOnSelect: {
+            type: Boolean,
+            default: false,
+        },
+        disableBranchNodes: {
+            type: Boolean,
+            default: false,
+        },
+        zIndex: {
+            type: Number,
+            default: 999,
+        },
     },
     data() {
         return {
@@ -169,9 +190,7 @@ export default {
         },
     },
 
-    updated: function () {
-        this.mousedown_event_stop_propagation();
-    },
+    updated: function () {},
 
     mounted: function () {
         if (!this.disabled) {
@@ -191,12 +210,6 @@ export default {
                 return node.name;
             }
         },
-        edit_activities_test: function (node) {
-            //alert("event: " + event + " park_id: " + node.raw.id + ", park_name: " + node.raw.label );
-            alert(
-                ' park_id: ' + node.raw.id + ', park_name: ' + node.raw.label
-            );
-        },
         edit_display_text: function (node) {
             // eslint-disable-next-line no-prototype-builtins
             if (node.raw.hasOwnProperty('sections')) {
@@ -205,31 +218,30 @@ export default {
                 return 'Edit access and activities';
             }
         },
-        edit_activities: function (node) {
+        edit_activities: function (event, node) {
+            event.stopPropagation();
             // eslint-disable-next-line no-prototype-builtins
             if (node.raw.hasOwnProperty('sections')) {
-                this.$parent.edit_sections(node);
+                this.$parent.$parent.edit_sections(node);
                 // eslint-disable-next-line no-prototype-builtins
             } else if (node.raw.hasOwnProperty('allowed_zone_activities')) {
-                this.$parent.edit_activities(node);
+                this.$parent.$parent.edit_activities(node);
             } else {
-                this.$parent.edit_activities(node);
+                this.$parent.$parent.edit_activities(node);
             }
         },
         is_checked: function (node) {
             return this.value.includes(node.id);
         },
-        mousedown_event_stop_propagation: function () {
-            $('.option-label-container').on('mousedown', function (e) {
-                e.stopPropagation();
-                return false;
-            });
-        },
     },
 };
 </script>
 
-<style lang="css" scoped></style>
+<style lang="css" scoped>
+.option-label-container {
+    z-index: 999;
+}
+</style>
 
 /* data() { return { normalizer(node) { return { id: node.name, label:
 node.name, children: node.children, } }, /* _selected_items: [], _options: [],

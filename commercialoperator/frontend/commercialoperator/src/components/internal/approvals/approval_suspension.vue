@@ -169,13 +169,6 @@ export default {
             errorString: '',
             successString: '',
             success: false,
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
         };
     },
     computed: {
@@ -279,18 +272,7 @@ export default {
         },
         eventListeners: function () {
             let vm = this;
-            // Initialise Date Picker
 
-            // $(vm.$refs.from_date).datetimepicker(vm.datepickerOptions);
-            $(vm.$refs.from_date).on('dp.change', function (e) {
-                if ($(vm.$refs.from_date).data('DateTimePicker').date()) {
-                    vm.approval.from_date = e.date.format('DD/MM/YYYY');
-                } else if ($(vm.$refs.from_date).data('date') === '') {
-                    vm.approval.from_date = '';
-                }
-            });
-
-            // $(vm.$refs.to_date).datetimepicker(vm.datepickerOptions);
             $(vm.$refs.to_date).on('dp.change', function (e) {
                 if ($(vm.$refs.to_date).data('DateTimePicker').date()) {
                     vm.approval.to_date = e.date.format('DD/MM/YYYY');

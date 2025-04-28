@@ -209,13 +209,6 @@ export default {
             successString: '',
             success: false,
             dateFormat: 'YYYY-MM-DD',
-            datepickerOptions: {
-                format: 'DD/MM/YYYY',
-                showClear: true,
-                useCurrent: false,
-                keepInvalid: true,
-                allowInputToggle: true,
-            },
             localVehicleAction: JSON.parse(JSON.stringify(this.vehicle_action)),
         };
     },
