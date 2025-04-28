@@ -319,6 +319,8 @@ export default {
             trail_error_list: [],
             park_error_list: [],
             isLoading: false,
+            selected_activities_initialised: false, //track whether or not selected activities have been initialised - prevent other values being altered until initial state loaded
+            selected_access_initialised: false,
         };
     },
     computed: {},
@@ -517,9 +519,14 @@ export default {
             var removed = $(vm.selected_activities_before)
                 .not(vm.selected_activities)
                 .get();
-            var added = $(vm.selected_activities)
-                .not(vm.selected_activities_before)
-                .get();
+            var added = [];
+            if (vm.selected_activities_initialised) {
+                added = $(vm.selected_activities)
+                    .not(vm.selected_activities_before)
+                    .get();
+            } else {
+                vm.selected_activities_initialised = true;
+            }
             vm.selected_activities_before = vm.selected_activities;
             if (vm.selected_parks_activities.length == 0) {
                 for (var i = 0; i < vm.selected_parks.length; i++) {
@@ -568,9 +575,14 @@ export default {
             var removed = $(vm.selected_access_before)
                 .not(vm.selected_access)
                 .get();
-            var added = $(vm.selected_access)
-                .not(vm.selected_access_before)
-                .get();
+            var added = [];
+            if (vm.selected_access_initialised) {
+                added = $(vm.selected_access)
+                    .not(vm.selected_access_before)
+                    .get();
+            } else {
+                vm.selected_access_initialised = true;
+            }
             vm.selected_access_before = vm.selected_access;
             if (vm.selected_parks_activities.length == 0) {
                 for (var i = 0; i < vm.selected_parks.length; i++) {
