@@ -455,10 +455,10 @@ class BookingInvoice(RevisionedMixin):
     def invoice(self):
         try:
             invoice = Invoice.objects.get(reference=self.invoice_reference)
-            return invoice
         except Invoice.DoesNotExist:
-            pass
-        return False
+            return None
+        else:
+            return invoice
 
     @property
     def overdue(self):
