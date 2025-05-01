@@ -647,6 +647,7 @@ export default {
             helpers.initialiseSelect2.bind(this)(
                 'select_proposal_status',
                 'select_proposal_status_parent',
+                'filterProposalStatus',
                 'Select Status'
             );
         },
