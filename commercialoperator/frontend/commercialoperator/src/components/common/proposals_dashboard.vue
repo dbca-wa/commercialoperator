@@ -27,9 +27,16 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Submitter</label>
+                        <div
+                            id="select_proposal_submitter_parent"
+                            class="form-group"
+                        >
+                            <label for="select_proposal_submitter"
+                                >Submitter</label
+                            >
                             <select
+                                id="select_proposal_submitter"
+                                ref="select_proposal_submitter"
                                 v-model="filterProposalSubmitter"
                                 class="form-control"
                             >
@@ -93,9 +100,16 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Licence Type</label>
+                        <div
+                            id="select_proposal_application_type_parent"
+                            class="form-group"
+                        >
+                            <label for="select_proposal_application_type"
+                                >Licence Type</label
+                            >
                             <select
+                                id="select_proposal_application_type"
+                                ref="select_proposal_application_type"
                                 v-model="filterApplicationType"
                                 class="form-control"
                             >
@@ -649,6 +663,18 @@ export default {
                 'select_proposal_status_parent',
                 'filterProposalStatus',
                 'Select Status'
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_application_type',
+                'select_proposal_application_type_parent',
+                'filterApplicationType',
+                'Select Application Type'
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_submitter',
+                'select_proposal_submitter_parent',
+                'filterProposalSubmitter',
+                'Select Submitter'
             );
         },
         initialiseSearch: function () {
