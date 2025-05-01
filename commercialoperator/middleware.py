@@ -8,6 +8,7 @@ from commercialoperator.components.bookings.models import ApplicationFee
 from reversion.middleware import RevisionMiddleware
 from reversion.views import _request_creates_revision
 
+from urllib.parse import quote_plus
 import hashlib
 import re
 
@@ -41,14 +42,11 @@ class FirstTimeNagScreenMiddleware(object):
         ):
             return self.get_response(request)
 
-        path_ft = reverse("first_time")
-        path_logout = reverse("logout")
-        if request.path not in ("/sso/setting", path_ft, path_logout):
-            return redirect(
-                reverse("first_time")
-                + "?next="
-                + urlquote_plus(request.get_full_path())
-            )
+        path_ft = reverse("account-firstime")
+        if request.path in ("/sso/setting", path_ft, reverse("logout")):
+            return self.get_response(request)
+
+        return redirect(path_ft + "?next=" + quote_plus(request.get_full_path()))
 
 
 class BookingTimerMiddleware(object):
@@ -101,14 +99,14 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 
 #         redirect_path = 'internal' if is_internal(request) else 'external'
 
-#         if (request.user.is_authenticated 
+#         if (request.user.is_authenticated
 #         and (CHECKOUT_PATH.match(request.path)
-#         or request.path.startswith("/ledger-api/process-payment") 
+#         or request.path.startswith("/ledger-api/process-payment")
 #         or request.path.startswith('/ledger-api/payment-details'))):
 #             if 'payment_model' in request.session and 'payment_pk' in request.session:
 #                 if request.path.startswith("/ledger-api/process-payment"):
 
-#                     checkouthash =  hashlib.sha256(str(str(request.session["payment_model"])+str(request.session["payment_pk"])).encode('utf-8')).hexdigest() 
+#                     checkouthash =  hashlib.sha256(str(str(request.session["payment_model"])+str(request.session["payment_pk"])).encode('utf-8')).hexdigest()
 #                     checkouthash_cookie = request.COOKIES.get('checkouthash')
 #                     # validation_cookie = request.COOKIES.get(request.POST['payment-csrfmiddlewaretoken']) # Commented out
 
@@ -118,7 +116,7 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 #                     #     proposal_count = DcvPermit.objects.filter(pk=request.session['payment_pk']).count()
 #                     # elif request.session['payment_model6'] == "dcv_admission":
 #                     #     proposal_count = DcvAdmission.objects.filter(pk=request.session['payment_pk']).count()
-#                     # elif request.session['payment_model'] == "sticker":  
+#                     # elif request.session['payment_model'] == "sticker":
 #                     #     proposal_count = StickerActionDetail.objects.filter(pk=request.session['payment_pk']).count()
 #                     else:
 #                         proposal_count = 0
@@ -135,18 +133,18 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 #                     url_redirect = reverse(redirect_path)
 #                     response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
 #                     return response
-                 
+
 #         return None
 
 
 #     def __call__(self, request):
-        
+
 #         response= self.get_response(request)
 #         redirect_path = 'internal' if is_internal(request) else 'external'
-        
-#         if (request.user.is_authenticated 
+
+#         if (request.user.is_authenticated
 #         and (CHECKOUT_PATH.match(request.path)
-#         or request.path.startswith("/ledger-api/process-payment") 
+#         or request.path.startswith("/ledger-api/process-payment")
 #         or request.path.startswith('/ledger-api/payment-details'))):
 #             if 'payment_model' in request.session and 'payment_pk' in request.session:
 #                 try:
@@ -156,7 +154,7 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 #                     #     proposal_count = DcvPermit.objects.get(pk=request.session['payment_pk'])
 #                     # elif request.session['payment_model'] == "dcv_admission":
 #                     #     proposal_count = DcvAdmission.objects.get(pk=request.session['payment_pk'])
-#                     # elif request.session['payment_model'] == "sticker":  
+#                     # elif request.session['payment_model'] == "sticker":
 #                     #     proposal_count = StickerActionDetail.objects.get(pk=request.session['payment_pk'])
 #                     else:
 #                         proposal_count = 0
@@ -167,13 +165,13 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 #                     return response
 
 #                 if request.path.startswith("/ledger-api/process-payment"):
-                    
+
 #                     if "payment_pk" not in request.session:
 #                          url_redirect = reverse(redirect_path)
 #                          response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
-#                          return response    
+#                          return response
 
-#                     checkouthash =  hashlib.sha256(str(str(request.session["payment_model"])+str(request.session["payment_pk"])).encode('utf-8')).hexdigest() 
+#                     checkouthash =  hashlib.sha256(str(str(request.session["payment_model"])+str(request.session["payment_pk"])).encode('utf-8')).hexdigest()
 #                     checkouthash_cookie = request.COOKIES.get('checkouthash')
 #                     validation_cookie = request.COOKIES.get(request.POST['payment-csrfmiddlewaretoken'])
 
@@ -183,15 +181,15 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 #                     #     proposal_count = DcvPermit.objects.filter(pk=request.session['payment_pk']).count()
 #                     # elif request.session['payment_model'] == "dcv_admission":
 #                     #     proposal_count = DcvAdmission.objects.filter(pk=request.session['payment_pk']).count()
-#                     # elif request.session['payment_model'] == "sticker":  
+#                     # elif request.session['payment_model'] == "sticker":
 #                     #     proposal_count = StickerActionDetail.objects.filter(pk=request.session['payment_pk']).count()
 #                     else:
 #                         proposal_count = 0
 
-#                     if checkouthash_cookie != checkouthash or checkouthash_cookie != validation_cookie or proposal_count == 0:                         
+#                     if checkouthash_cookie != checkouthash or checkouthash_cookie != validation_cookie or proposal_count == 0:
 #                          url_redirect = reverse(redirect_path)
 #                          response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
-#                          return response                                                                                                 
+#                          return response
 #             else:
 #                  if request.path.startswith("/ledger-api/process-payment"):
 #                     url_redirect = reverse(redirect_path)
@@ -203,5 +201,5 @@ class RevisionOverrideMiddleware(RevisionMiddleware):
 #                 url_redirect = reverse(redirect_path)
 #                 response = HttpResponse("<script> window.location='"+url_redirect+"';</script> <center><div class='container'><div class='alert alert-primary' role='alert'><a href='"+url_redirect+"'> Redirecting please wait: "+url_redirect+"</a><div></div></center>")
 #                 return response
-                
+
 #         return response
