@@ -296,7 +296,6 @@ urlpatterns = (
             name="internal-referral-detail",
         ),
         url(r"^external/", views.ExternalView.as_view(), name="external"),
-        url(r"^firsttime/$", views.first_time, name="first_time"),
         # url(r"^account/", views.AccountView.as_view(), name="manage-account"), # Commented out in favor of ledger-ui/accounts
         url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
         url(
