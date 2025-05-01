@@ -315,6 +315,52 @@ module.exports = {
             }
         });
     },
+    /**
+     * Initialises a select2 dropdown with the specified options
+     * @param {String} selectRef The reference to the select element
+     * @param {String} dropdownParentId The ID of the dropdown parent element
+     * @param {String=} placeholder A placeholder text for the select element. Defaults to 'Select a value'
+     * @param {Boolean=} allowClear The option to allow clearing the selection. Defaults to true
+     * @param {Integer=} minimumInputLength The minimum input length for the select2 search. Defaults to 0
+     */
+    initialiseSelect2: function (
+        selectRef,
+        dropdownParentId,
+        placeholder = 'Select a value',
+        allowClear = true,
+        minimumInputLength = 0
+    ) {
+        const vm = this;
+        let dropdownParent;
+        if (dropdownParentId === undefined) {
+            dropdownParent = $(document.body);
+        } else {
+            dropdownParent = $(`#${dropdownParentId}`);
+        }
+        $(vm.$refs[selectRef])
+            .select2({
+                minimumInputLength: minimumInputLength,
+                dropdownParent: dropdownParent,
+                theme: 'bootstrap-5',
+                allowClear: allowClear,
+                placeholder: placeholder,
+            })
+            .on('select2:select', function (e) {
+                let data = e.params.data.id;
+                vm['filterProposalStatus'] = data;
+                // NOTE: Possibly add session storage later on
+            })
+            .on('select2:unselect', function () {
+                vm['filterProposalStatus'] = 'all';
+                // NOTE: Possibly add session storage later on
+            })
+            .on('select2:open', function () {
+                const searchField = $(
+                    `[aria-controls="select2-${selectRef}-results"]`
+                );
+                searchField[0].focus();
+            });
+    },
     formatABN: function (abn) {
         if (abn.length == 11) {
             return (

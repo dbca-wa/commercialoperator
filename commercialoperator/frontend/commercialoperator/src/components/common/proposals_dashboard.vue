@@ -4,9 +4,14 @@
             <div class="panel panel-default">
                 <div class="row mb-1">
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Status</label>
+                        <div
+                            id="select_proposal_status_parent"
+                            class="form-group"
+                        >
+                            <label for="select_proposal_status">Status</label>
                             <select
+                                id="select_proposal_status"
+                                ref="select_proposal_status"
                                 v-model="filterProposalStatus"
                                 class="form-control"
                             >
@@ -637,6 +642,12 @@ export default {
                     var id = $(this).attr('data-discard-proposal');
                     vm.discardProposal(id);
                 }
+            );
+
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_status',
+                'select_proposal_status_parent',
+                'Select Status'
             );
         },
         initialiseSearch: function () {
