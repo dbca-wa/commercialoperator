@@ -4,9 +4,16 @@
             <div class="panel panel-default">
                 <div class="row mb-1">
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Status</label>
+                        <div
+                            id="select_referral_proposal_status_parent"
+                            class="form-group"
+                        >
+                            <label for="select_referral_proposal_status"
+                                >Status</label
+                            >
                             <select
+                                id="select_referral_proposal_status"
+                                ref="select_referral_proposal_status"
                                 v-model="filterProposalStatus"
                                 class="form-control"
                             >
@@ -23,8 +30,14 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Licence Type</label>
+                            <label
+                                id="select_referral_application_type_parent"
+                                for="select_referral_application_type"
+                                >Licence Type</label
+                            >
                             <select
+                                id="select_referral_application_type"
+                                ref="select_referral_application_type"
                                 v-model="filterApplicationType"
                                 class="form-control"
                             >
@@ -80,9 +93,16 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Submitter</label>
+                        <div
+                            id="select_referral_submitter_parent"
+                            class="form-group"
+                        >
+                            <label for="select_referral_submitter"
+                                >Submitter</label
+                            >
                             <select
+                                id="select_referral_submitter"
+                                ref="select_referral_submitter"
                                 v-model="filterProposalSubmitter"
                                 class="form-control"
                             >
@@ -387,6 +407,28 @@ export default {
                     var id = $(this).attr('data-discard-proposal');
                     vm.discardProposal(id);
                 }
+            );
+
+            helpers.initialiseSelect2.bind(this)(
+                'select_referral_proposal_status',
+                'select_referral_proposal_status_parent',
+                'filterProposalStatus',
+                'Select Status',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_referral_application_type',
+                'select_referral_application_type_parent',
+                'filterApplicationType',
+                'Select Application Type',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_referral_submitter',
+                'select_referral_submitter_parent',
+                'filterProposalSubmitter',
+                'Select Submitter',
+                false
             );
         },
         initialiseSearch: function () {

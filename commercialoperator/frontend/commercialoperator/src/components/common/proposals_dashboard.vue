@@ -662,19 +662,22 @@ export default {
                 'select_proposal_status',
                 'select_proposal_status_parent',
                 'filterProposalStatus',
-                'Select Status'
+                'Select Status',
+                false
             );
             helpers.initialiseSelect2.bind(this)(
                 'select_proposal_application_type',
                 'select_proposal_application_type_parent',
                 'filterApplicationType',
-                'Select Application Type'
+                'Select Application Type',
+                false
             );
             helpers.initialiseSelect2.bind(this)(
                 'select_proposal_submitter',
                 'select_proposal_submitter_parent',
                 'filterProposalSubmitter',
-                'Select Submitter'
+                'Select Submitter',
+                false
             );
         },
         initialiseSearch: function () {
