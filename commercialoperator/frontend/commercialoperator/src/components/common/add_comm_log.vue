@@ -61,8 +61,13 @@
                                             >Type</label
                                         >
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div
+                                        id="select_add_comm_log_type_parent"
+                                        class="col-sm-4"
+                                    >
                                         <select
+                                            id="select_add_comm_log_type"
+                                            ref="select_add_comm_log_type"
                                             v-model="comms.type"
                                             class="form-control"
                                             name="type"
@@ -290,6 +295,15 @@ export default {
         let vm = this;
         vm.form = document.forms.commsForm;
         vm.addFormValidations();
+        this.$nextTick(() => {
+            helpers.initialiseSelect2.bind(this)(
+                'select_add_comm_log_type',
+                'select_add_comm_log_type_parent',
+                'comms.type',
+                'Select a Type',
+                false
+            );
+        });
     },
     methods: {
         ok: function () {
