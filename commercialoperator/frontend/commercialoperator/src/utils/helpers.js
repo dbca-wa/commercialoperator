@@ -349,11 +349,11 @@ module.exports = {
             })
             .on('select2:select', function (e) {
                 let data = e.params.data.id;
-                vm[modelVariableName] = data;
+                _.set(vm, modelVariableName, data);
                 // NOTE: Possibly add session storage later on
             })
             .on('select2:unselect', function () {
-                vm[modelVariableName] = 'all';
+                _.set(vm, modelVariableName, 'all');
                 // NOTE: Possibly add session storage later on
             })
             .on('select2:open', function () {
