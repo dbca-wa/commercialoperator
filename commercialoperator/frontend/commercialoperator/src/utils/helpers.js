@@ -334,7 +334,7 @@ module.exports = {
     ) {
         const vm = this;
         let dropdownParent;
-        if (dropdownParentId === undefined) {
+        if ([undefined, null].includes(dropdownParentId)) {
             dropdownParent = $(document.body);
         } else {
             dropdownParent = $(`#${dropdownParentId}`);
