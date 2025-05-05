@@ -48,9 +48,16 @@
                 >
                     <div class="row">
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Park</label>
+                            <div
+                                id="select_park_entry_fees_parks_parent"
+                                class="form-group"
+                            >
+                                <label for="select_park_entry_fees_parks"
+                                    >Park</label
+                                >
                                 <select
+                                    id="select_park_entry_fees_parks"
+                                    ref="select_park_entry_fees_parks"
                                     v-model="filterProposalPark"
                                     class="form-control"
                                 >
@@ -66,9 +73,16 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Status</label>
+                            <div
+                                id="select_park_entry_fees_status_parent"
+                                class="form-group"
+                            >
+                                <label for="select_park_entry_fees_status"
+                                    >Status</label
+                                >
                                 <select
+                                    id="select_park_entry_fees_status"
+                                    ref="select_park_entry_fees_status"
                                     v-model="filterProposalStatus"
                                     class="form-control"
                                 >
@@ -84,9 +98,17 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="">Payment Method</label>
+                            <div
+                                id="select_park_entry_fees_payment_method_parent"
+                                class="form-group"
+                            >
+                                <label
+                                    for="select_park_entry_fees_payment_method"
+                                    >Payment Method</label
+                                >
                                 <select
+                                    id="select_park_entry_fees_payment_method"
+                                    ref="select_park_entry_fees_payment_method"
                                     v-model="filterProposalPaymentMethod"
                                     class="form-control"
                                 >
@@ -652,9 +674,27 @@ export default {
                 }
             );
 
-            //if(vm.is_external){
-            //    vm.$refs.proposal_datatable.vmDataTable.column(7).visible(false);
-            //}
+            helpers.initialiseSelect2.bind(this)(
+                'select_park_entry_fees_parks',
+                'select_park_entry_fees_parks_parent',
+                'filterProposalPark',
+                'Select Park',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_park_entry_fees_status',
+                'select_park_entry_fees_status_parent',
+                'filterProposalStatus',
+                'Select Status',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_park_entry_fees_payment_method',
+                'select_park_entry_fees_payment_method_parent',
+                'filterProposalPaymentMethod',
+                'Select Payment Method',
+                false
+            );
         },
         initialiseSearch: function () {
             this.dateSearch();
