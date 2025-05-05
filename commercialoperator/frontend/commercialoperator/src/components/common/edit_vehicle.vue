@@ -19,12 +19,16 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="access_type"
                                             >Vehicle Type</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="access_type_parent"
+                                        class="col-sm-9"
+                                    >
                                         <select
+                                            id="access_type"
                                             ref="access_type"
                                             v-model="vehicle_access_id"
                                             class="form-control"
@@ -237,7 +241,7 @@ export default {
         vm.form = document.forms.vehicleForm;
         vm.addFormValidations();
         this.$nextTick(() => {
-            vm.eventListeners();
+            vm.addEventListeners();
         });
     },
     methods: {
@@ -391,7 +395,14 @@ export default {
                 },
             });
         },
-        eventListeners: function () {},
+        addEventListeners: function () {
+            helpers.initialiseSelect2.bind(this)(
+                'access_type',
+                'access_type_parent',
+                'vehicle_access_id',
+                'Select a type'
+            );
+        },
     },
 };
 </script>
