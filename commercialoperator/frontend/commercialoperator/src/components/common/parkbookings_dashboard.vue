@@ -49,9 +49,16 @@
                     >
                         <div class="row mb-1">
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Park</label>
+                                <div
+                                    id="select_parkbookings_park_parent"
+                                    class="form-group"
+                                >
+                                    <label for="select_parkbookings_park"
+                                        >Park</label
+                                    >
                                     <select
+                                        id="select_parkbookings_park"
+                                        ref="select_parkbookings_park"
                                         v-model="filterProposalPark"
                                         class="form-control"
                                     >
@@ -67,9 +74,16 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Status</label>
+                                <div
+                                    id="select_parkbooking_status_parent"
+                                    class="form-group"
+                                >
+                                    <label for="select_parkbooking_status"
+                                        >Status</label
+                                    >
                                     <select
+                                        id="select_parkbookings_status"
+                                        ref="select_parkbookings_status"
                                         v-model="filterProposalStatus"
                                         class="form-control"
                                     >
@@ -85,9 +99,17 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Payment Method</label>
+                                <div
+                                    id="select_parkbookings_payment_method_parent"
+                                    class="form-group"
+                                >
+                                    <label
+                                        for="select_parkbookings_payment_method"
+                                        >Payment Method</label
+                                    >
                                     <select
+                                        id="select_parkbookings_payment_method"
+                                        ref="select_parkbookings_payment_method"
                                         v-model="filterProposalPaymentMethod"
                                         class="form-control"
                                     >
@@ -551,6 +573,28 @@ export default {
                     var id = $(this).attr('data-reissue-approval');
                     vm.reissueApproval(id);
                 }
+            );
+
+            helpers.initialiseSelect2.bind(this)(
+                'select_parkbookings_park',
+                'select_parkbookings_park_parent',
+                'filterProposalPark',
+                'Select a Park',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_parkbookings_status',
+                'select_parkbooking_status_parent',
+                'filterProposalStatus',
+                'Select a Status',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_parkbookings_payment_method',
+                'select_parkbookings_payment_method_parent',
+                'filterProposalPaymentMethod',
+                'Select a Payment Method',
+                false
             );
         },
         initialiseSearch: function () {
