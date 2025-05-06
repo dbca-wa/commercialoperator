@@ -323,6 +323,7 @@ module.exports = {
      * @param {String=} placeholder A placeholder text for the select element. Defaults to 'Select a value'
      * @param {Boolean=} allowClear The option to allow clearing the selection. Defaults to true
      * @param {Integer=} minimumInputLength The minimum input length for the select2 search. Defaults to 0
+     * @param {String=} unselectValue The value to set when the select2 is unselected. Defaults to 'all'
      */
     initialiseSelect2: function (
         selectRef,
@@ -330,7 +331,8 @@ module.exports = {
         modelVariableName,
         placeholder = 'Select a value',
         allowClear = true,
-        minimumInputLength = 0
+        minimumInputLength = 0,
+        unselectValue = 'all'
     ) {
         const vm = this;
         let dropdownParent;
@@ -339,7 +341,7 @@ module.exports = {
         } else {
             dropdownParent = $(`#${dropdownParentId}`);
         }
-        $(vm.$refs[selectRef])
+        return $(vm.$refs[selectRef])
             .select2({
                 minimumInputLength: minimumInputLength,
                 dropdownParent: dropdownParent,
@@ -353,7 +355,7 @@ module.exports = {
                 // NOTE: Possibly add session storage later on
             })
             .on('select2:unselect', function () {
-                _.set(vm, modelVariableName, 'all');
+                _.set(vm, modelVariableName, unselectValue);
                 // NOTE: Possibly add session storage later on
             })
             .on('select2:open', function () {
