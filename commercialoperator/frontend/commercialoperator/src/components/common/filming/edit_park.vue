@@ -19,7 +19,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="filming_park"
                                             >Park or Reserve</label
                                         >
                                     </div>
@@ -28,6 +28,7 @@
                                         class="col-sm-9"
                                     >
                                         <select
+                                            id="filming_park"
                                             ref="filming_park"
                                             v-model="selected_park_id"
                                             class="form-control"
@@ -50,12 +51,13 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="feature_of_interest"
                                             >Feature or site of Interest</label
                                         >
                                     </div>
                                     <div class="col-sm-9">
                                         <input
+                                            id="feature_of_interest"
                                             ref="feature_of_interest"
                                             v-model="park.feature_of_interest"
                                             class="form-control"
@@ -71,7 +73,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="park_from_date"
                                             >From</label
                                         >
                                     </div>
@@ -82,6 +84,7 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                id="park_from_date"
                                                 v-model="park.from_date"
                                                 type="date"
                                                 class="form-control"
@@ -102,7 +105,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="park_to_date"
                                             >To</label
                                         >
                                     </div>
@@ -113,6 +116,7 @@
                                             style="width: 70%"
                                         >
                                             <input
+                                                id="park_to_date"
                                                 v-model="park.to_date"
                                                 type="date"
                                                 class="form-control"
@@ -132,7 +136,7 @@
                             <div class="form-group">
                                 <div class="row">
                                     <div class="col-sm-3">
-                                        <label class="text-left" for="Name"
+                                        <label class="text-left" for="filefield"
                                             >Please attach a detailed itinerary
                                             and maps which outline specific
                                             locations and roads/tracks/trails to
@@ -146,6 +150,7 @@
                                             style="width: 70%"
                                         >
                                             <FileField2
+                                                id="filefield"
                                                 ref="filefield"
                                                 :uploaded_documents="
                                                     park.filming_park_documents
