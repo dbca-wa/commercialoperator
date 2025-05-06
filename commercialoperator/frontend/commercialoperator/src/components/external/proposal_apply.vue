@@ -713,7 +713,7 @@ export default {
                 'select_proposal_apply_copy_license',
                 'select_proposal_apply_copy_license_parent',
                 'selected_copy_from',
-                'Select a Event Licence to copy from *',
+                'Select an Event License to copy from *',
                 false
             );
         });
