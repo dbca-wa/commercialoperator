@@ -75,7 +75,7 @@
                     </div>
 
                     <div
-                        v-if="org_applicant != '' || yourself != ''"
+                        v-show="org_applicant != '' || yourself != ''"
                         class="panel panel-default"
                     >
                         <FormSection
@@ -85,7 +85,9 @@
                             subtitle=""
                         >
                             <div>
-                                <label for="" class="control-label"
+                                <label
+                                    for="select_proposal_apply_license_type"
+                                    class="control-label"
                                     >Licence Type *
                                     <a
                                         :href="proposal_type_help_url"
@@ -98,8 +100,13 @@
                                     ></label
                                 >
                                 <div class="col-sm-12">
-                                    <div class="form-group">
+                                    <div
+                                        id="select_proposal_apply_license_type_parent"
+                                        class="form-group"
+                                    >
                                         <select
+                                            id="select_proposal_apply_license_type"
+                                            ref="select_proposal_apply_license_type"
                                             v-model="selected_application_id"
                                             class="form-control"
                                             style="width: 40%"
@@ -126,13 +133,20 @@
 
                             <div v-show="has_event_proposals()" class="">
                                 <div>
-                                    <label for="" class="control-label"
+                                    <label
+                                        for="select_proposal_apply_copy_license"
+                                        class="control-label"
                                         >Prefill application with details from
                                         previously approved event
                                     </label>
                                     <div class="col-sm-12">
-                                        <div class="form-group">
+                                        <div
+                                            id="select_proposal_apply_copy_license_parent"
+                                            class="form-group"
+                                        >
                                             <select
+                                                id="select_proposal_apply_copy_license"
+                                                ref="select_proposal_apply_copy_license"
                                                 v-model="selected_copy_from"
                                                 class="form-control"
                                                 style="width: 40%"
@@ -163,7 +177,9 @@
                             </div>
 
                             <div v-if="display_region_selectbox">
-                                <label for="" class="control-label"
+                                <label
+                                    for="select_proposal_apply_region"
+                                    class="control-label"
                                     >Region *
                                     <a :href="region_help_url" target="_blank"
                                         ><i
@@ -174,8 +190,13 @@
                                     >
                                 </label>
                                 <div class="col-sm-12">
-                                    <div class="form-group">
+                                    <div
+                                        id="select_proposal_apply_region_parent"
+                                        class="form-group"
+                                    >
                                         <select
+                                            id="select_proposal_apply_region"
+                                            ref="select_proposal_apply_region"
                                             v-model="selected_region"
                                             class="form-control"
                                             style="width: 40%"
@@ -206,7 +227,7 @@
                                 "
                             >
                                 <label
-                                    for=""
+                                    for="select_proposal_apply_district"
                                     class="control-label"
                                     style="font-weight: normal"
                                     >District
@@ -219,8 +240,13 @@
                                     ></label
                                 >
                                 <div class="col-sm-12">
-                                    <div class="form-group">
+                                    <div
+                                        id="select_proposal_apply_district_parent"
+                                        class="form-group"
+                                    >
                                         <select
+                                            id="select_proposal_apply_district"
+                                            ref="select_proposal_apply_district"
                                             v-model="selected_district"
                                             class="form-control"
                                             style="width: 40%"
@@ -242,7 +268,9 @@
 
                             <div v-if="display_activity_matrix_selectbox">
                                 <div v-if="activities.length > 0">
-                                    <label for="" class="control-label"
+                                    <label
+                                        for="select_proposal_apply_activity"
+                                        class="control-label"
                                         >Activity Type *
                                         <a
                                             :href="activity_type_help_url"
@@ -255,8 +283,13 @@
                                         ></label
                                     >
                                     <div class="col-sm-12">
-                                        <div class="form-group">
+                                        <div
+                                            id="select_proposal_apply_activity_parent"
+                                            class="form-group"
+                                        >
                                             <select
+                                                id="select_proposal_apply_activity"
+                                                ref="select_proposal_apply_activity"
                                                 v-model="selected_activity"
                                                 class="form-control"
                                                 style="width: 40%"
@@ -286,7 +319,9 @@
                                 </div>
 
                                 <div v-if="sub_activities1.length > 0">
-                                    <label for="" class="control-label"
+                                    <label
+                                        for="select_proposal_apply_sub_activity1"
+                                        class="control-label"
                                         >Sub Activity 1 *
                                         <a
                                             :href="sub_activity_1_help_url"
@@ -299,8 +334,13 @@
                                         ></label
                                     >
                                     <div class="col-sm-12">
-                                        <div class="form-group">
+                                        <div
+                                            id="select_proposal_apply_sub_activity1_parent"
+                                            class="form-group"
+                                        >
                                             <select
+                                                id="select_proposal_apply_sub_activity1"
+                                                ref="select_proposal_apply_sub_activity1"
                                                 v-model="selected_sub_activity1"
                                                 class="form-control"
                                                 style="width: 40%"
@@ -330,7 +370,9 @@
                                 </div>
 
                                 <div v-if="sub_activities2.length > 0">
-                                    <label for="" class="control-label"
+                                    <label
+                                        for="select_proposal_apply_sub_activity2"
+                                        class="control-label"
                                         >Sub Activity 2 *
                                         <a
                                             :href="sub_activity_2_help_url"
@@ -343,8 +385,13 @@
                                         ></label
                                     >
                                     <div class="col-sm-12">
-                                        <div class="form-group">
+                                        <div
+                                            id="select_proposal_apply_sub_activity2_parent"
+                                            class="form-group"
+                                        >
                                             <select
+                                                id="select_proposal_apply_sub_activity2"
+                                                ref="select_proposal_apply_sub_activity2"
                                                 v-model="selected_sub_activity2"
                                                 class="form-control"
                                                 style="width: 40%"
@@ -374,7 +421,9 @@
                                 </div>
 
                                 <div v-if="categories.length > 0">
-                                    <label for="" class="control-label"
+                                    <label
+                                        for="select_proposal_apply_category"
+                                        class="control-label"
                                         >Category *
                                         <a
                                             :href="category_help_url"
@@ -387,8 +436,13 @@
                                         ></label
                                     >
                                     <div class="col-sm-12">
-                                        <div class="form-group">
+                                        <div
+                                            id="select_proposal_apply_category_parent"
+                                            class="form-group"
+                                        >
                                             <select
+                                                id="select_proposal_apply_category"
+                                                ref="select_proposal_apply_category"
                                                 v-model="selected_category"
                                                 class="form-control"
                                                 style="width: 40%"
@@ -453,7 +507,7 @@
     </div>
 </template>
 <script>
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, helpers } from '@/utils/hooks';
 import utils from './utils';
 import FormSection from '@/components/forms/section_toggle.vue';
 
@@ -580,6 +634,89 @@ export default {
         // Note: ActivityMatrix is not used in cols
         // vm.fetchActivityMatrix();
         vm.form = document.forms.new_proposal;
+
+        vm.$nextTick(() => {
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_proposal_apply_license_type',
+                    'select_proposal_apply_license_type_parent',
+                    'selected_application_id',
+                    'Select a License Type *',
+                    false
+                )
+                .on('select2:select', function () {
+                    vm.chainedSelectAppType(vm.selected_application_id);
+                });
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_proposal_apply_region',
+                    'select_proposal_apply_region_parent',
+                    'selected_region',
+                    'Select a Region',
+                    false
+                )
+                .on('select2:select', function () {
+                    vm.chainedSelectDistricts(vm.selected_region);
+                });
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_apply_district',
+                'select_proposal_apply_district_parent',
+                'selected_district',
+                'Select a District',
+                false
+            );
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_proposal_apply_activity',
+                    'select_proposal_apply_activity_parent',
+                    'selected_activity',
+                    'Select an Activity Type',
+                    false
+                )
+                .on('select2:select', function () {
+                    vm.chainedSelectSubActivities1(vm.selected_activity);
+                });
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_proposal_apply_sub_activity1',
+                    'select_proposal_apply_sub_activity1_parent',
+                    'selected_sub_activity1',
+                    'Select Sub Activity 1',
+                    false
+                )
+                .on('select2:select', function () {
+                    vm.chainedSelectSubActivities2(vm.selected_sub_activity1);
+                });
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_proposal_apply_sub_activity2',
+                    'select_proposal_apply_sub_activity2_parent',
+                    'selected_sub_activity2',
+                    'Select Sub Activity 2',
+                    false
+                )
+                .on('select2:select', function () {
+                    vm.chainedSelectCategories(vm.selected_sub_activity2);
+                });
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_proposal_apply_category',
+                    'select_proposal_apply_category_parent',
+                    'selected_category',
+                    'Select a Category',
+                    false
+                )
+                .on('select2:select', function () {
+                    vm.get_approval_level(vm.selected_category);
+                });
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_apply_copy_license',
+                'select_proposal_apply_copy_license_parent',
+                'selected_copy_from',
+                'Select a Event Licence to copy from *',
+                false
+            );
+        });
     },
     methods: {
         has_active_proposals: function () {
