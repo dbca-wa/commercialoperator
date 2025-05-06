@@ -48,8 +48,13 @@
                                 width="30%"
                             >
                                 <!-- NOTE: [Invoice and InvoiceBooking] See that the table logic works with all the dependent disabled logic and then continue investigating into make payment view and creation of booking and bookinginvoice models -->
-                                <div v-if="col_types[index] == 'select'">
+                                <div
+                                    v-if="col_types[index] == 'select'"
+                                    id="select_order_table_park_parent"
+                                >
                                     <select
+                                        :id="`select_order_table_park-${row_idx}-${index}`"
+                                        :ref="`select_order_table_park-${row_idx}-${index}`"
                                         v-model="row[index]"
                                         class="tbl_input form-control"
                                         :title="
@@ -203,6 +208,8 @@
 </template>
 
 <script>
+import { helpers } from '@/utils/hooks';
+
 export default {
     components: {},
     filters: {
@@ -417,6 +424,22 @@ export default {
 
         $('#id_arrival_date').keypress(function (event) {
             event.preventDefault();
+        });
+
+        this.$nextTick(() => {
+            vm.filteredRows.forEach((row, row_idx) => {
+                console.log(row_idx);
+                row.forEach((_, idx) => {
+                    helpers.initialiseSelect2
+                        .bind(this)(
+                            `select_order_table_park-${row_idx}-${idx}`,
+                            'select_order_table_park_parent'
+                        )
+                        .on('select2:select', function () {
+                            vm.park_change(row[idx], row, row_idx);
+                        });
+                });
+            });
         });
     },
 
