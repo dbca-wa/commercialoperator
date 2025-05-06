@@ -202,12 +202,17 @@
                                     </div>
                                     <div class="form-group row mb-3">
                                         <label
-                                            for=""
+                                            for="select_manage_org_address_country"
                                             class="col-sm-3 control-label"
                                             >Country</label
                                         >
-                                        <div class="col-sm-4">
+                                        <div
+                                            id="select_manage_org_address_country_parent"
+                                            class="col-sm-4"
+                                        >
                                             <select
+                                                id="select_manage_org_address_country"
+                                                ref="select_manage_org_address_country"
                                                 v-model="
                                                     org.organisation_address
                                                         .country
@@ -782,6 +787,15 @@ export default {
                     ? vm.org.organisation_address
                     : {};
             vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
+        });
+
+        this.$nextTick(() => {
+            helpers.initialiseSelect2.bind(this)(
+                'select_manage_org_address_country',
+                'select_manage_org_address_country_parent',
+                'org.organisation_address.country',
+                'Select a Country'
+            );
         });
     },
     updated: function () {
