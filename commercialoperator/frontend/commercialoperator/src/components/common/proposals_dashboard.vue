@@ -632,14 +632,12 @@ export default {
                             vm.level == 'internal'
                                 ? vm.internal_status
                                 : vm.external_status;
-                        console.log('Done loading filter lists');
                     },
                     (error) => {
                         console.log(error);
                     }
                 )
                 .finally(() => {
-                    console.log('Finally done loading filter lists');
                     vm.isLoading = false;
                 });
         },
