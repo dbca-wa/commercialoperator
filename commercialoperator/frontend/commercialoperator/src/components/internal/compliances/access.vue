@@ -46,42 +46,51 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Currently assigned to</strong><br />
-                                    <div class="form-group">
-                                        <select
-                                            v-show="isLoading"
-                                            class="form-control"
-                                        >
-                                            <option value="">Loading...</option>
-                                        </select>
-                                        <select
-                                            v-if="!isLoading"
-                                            v-model="compliance.assigned_to"
-                                            :disabled="
-                                                canViewonly || !check_assessor()
-                                            "
-                                            class="form-control"
-                                            @change="assignTo"
-                                        >
-                                            <option value="null">
-                                                Unassigned
-                                            </option>
-                                            <option
-                                                v-for="member in compliance.allowed_assessors"
-                                                :key="member.id"
-                                                :value="member.id"
+                                    <div
+                                        id="select_compliance_assigned_to_parent"
+                                        class="form-group"
+                                    >
+                                        <div v-show="isLoading">
+                                            <select class="form-control">
+                                                <option value="">
+                                                    Loading...
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div v-show="!isLoading">
+                                            <select
+                                                id="select_compliance_assigned_to"
+                                                ref="select_compliance_assigned_to"
+                                                v-model="compliance.assigned_to"
+                                                :disabled="
+                                                    canViewonly ||
+                                                    !check_assessor()
+                                                "
+                                                class="form-control"
+                                                @change="assignTo"
                                             >
-                                                {{ member.first_name }}
-                                                {{ member.last_name }}
-                                            </option>
-                                        </select>
-                                        <a
-                                            v-if="
-                                                !canViewonly && check_assessor()
-                                            "
-                                            class="actionBtn pull-right"
-                                            @click.prevent="assignMyself()"
-                                            >Assign to me</a
-                                        >
+                                                <option value="null">
+                                                    Unassigned
+                                                </option>
+                                                <option
+                                                    v-for="member in compliance.allowed_assessors"
+                                                    :key="member.id"
+                                                    :value="member.id"
+                                                >
+                                                    {{ member.first_name }}
+                                                    {{ member.last_name }}
+                                                </option>
+                                            </select>
+                                            <a
+                                                v-if="
+                                                    !canViewonly &&
+                                                    check_assessor()
+                                                "
+                                                class="actionBtn pull-right"
+                                                @click.prevent="assignMyself()"
+                                                >Assign to me</a
+                                            >
+                                        </div>
                                     </div>
                                 </div>
                                 <div
@@ -259,7 +268,23 @@ export default {
     },
     watch: {},
     mounted: function () {
+        const assignTo = this.assignTo;
         this.fetchProfile();
+        this.$nextTick(() => {
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_compliance_assigned_to',
+                    'select_compliance_assigned_to_parent',
+                    'compliance.assigned_to',
+                    'Select an Assessor',
+                    false,
+                    0,
+                    'null'
+                )
+                .on('select2:select', function () {
+                    assignTo();
+                });
+        });
     },
     methods: {
         commaToNewline(s) {
