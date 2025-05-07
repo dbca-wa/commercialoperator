@@ -46,41 +46,52 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Currently assigned to</strong><br />
-                                    <div class="form-group">
-                                        <select
-                                            v-show="isLoading"
-                                            class="form-control"
-                                        >
-                                            <option value="">Loading...</option>
-                                        </select>
-                                        <select
-                                            v-if="!isLoading"
-                                            v-model="access.assigned_officer"
-                                            :disabled="
-                                                isFinalised || !check_assessor()
-                                            "
-                                            class="form-control"
-                                            @change="assignTo"
-                                        >
-                                            <option value="null">
-                                                Unassigned
-                                            </option>
-                                            <option
-                                                v-for="member in members"
-                                                :key="member.id"
-                                                :value="member.id"
+                                    <div
+                                        id="select_org_access_assigned_to_parent"
+                                        class="form-group"
+                                    >
+                                        <div v-show="isLoading">
+                                            <select class="form-control">
+                                                <option value="">
+                                                    Loading...
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div v-show="!isLoading">
+                                            <select
+                                                id="select_org_access_assigned_to"
+                                                ref="select_org_access_assigned_to"
+                                                v-model="
+                                                    access.assigned_officer
+                                                "
+                                                :disabled="
+                                                    isFinalised ||
+                                                    !check_assessor()
+                                                "
+                                                class="form-control"
+                                                @change="assignTo"
                                             >
-                                                {{ member.name }}
-                                            </option>
-                                        </select>
-                                        <a
-                                            v-if="
-                                                !isFinalised && check_assessor()
-                                            "
-                                            class="actionBtn pull-right"
-                                            @click.prevent="assignMyself()"
-                                            >Assign to me</a
-                                        >
+                                                <option value="null">
+                                                    Unassigned
+                                                </option>
+                                                <option
+                                                    v-for="member in members"
+                                                    :key="member.id"
+                                                    :value="member.id"
+                                                >
+                                                    {{ member.name }}
+                                                </option>
+                                            </select>
+                                            <a
+                                                v-if="
+                                                    !isFinalised &&
+                                                    check_assessor()
+                                                "
+                                                class="actionBtn pull-right"
+                                                @click.prevent="assignMyself()"
+                                                >Assign to me</a
+                                            >
+                                        </div>
                                     </div>
                                 </div>
                                 <div
@@ -479,8 +490,24 @@ export default {
     },
     watch: {},
     mounted: function () {
+        const assignTo = this.assignTo;
         this.fetchAccessGroupMembers();
         this.fetchProfile();
+        this.$nextTick(() => {
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_org_access_assigned_to',
+                    'select_org_access_assigned_to_parent',
+                    'access.assigned_officer',
+                    'Select an Assessor',
+                    false,
+                    0,
+                    'null'
+                )
+                .on('select2:select', function () {
+                    assignTo();
+                });
+        });
     },
     methods: {
         commaToNewline(s) {
