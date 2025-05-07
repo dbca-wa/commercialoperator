@@ -242,8 +242,13 @@
                                                             class="col-sm-3 control-label"
                                                             >Country</label
                                                         >
-                                                        <div class="col-sm-4">
+                                                        <div
+                                                            id="select_manage_user_address_country_parent"
+                                                            class="col-sm-4"
+                                                        >
                                                             <select
+                                                                id="select_manage_user_address_country"
+                                                                ref="select_manage_user_address_country"
                                                                 v-model="
                                                                     user
                                                                         .residential_address
@@ -682,7 +687,9 @@ export default {
     },
     mounted: function () {
         this.personal_form = document.forms.personal_form;
-        this.eventListeners();
+        this.$nextTick(() => {
+            this.eventListeners();
+        });
     },
     methods: {
         eventListeners: function () {
@@ -699,6 +706,13 @@ export default {
                     .adjust()
                     .responsive.recalc();
             });
+
+            helpers.initialiseSelect2.bind(this)(
+                'select_manage_user_address_country',
+                'select_manage_user_address_country_parent',
+                'user.residential_address.country',
+                'Select a Country'
+            );
         },
         updateContact: function () {
             let vm = this;
