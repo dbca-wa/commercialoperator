@@ -72,8 +72,10 @@
                                 </div>
                             </div>
 
-                            <label>Licence</label>
+                            <label for="select_id_licence">Licence</label>
                             <select
+                                id="select_id_licence"
+                                ref="select_id_licence"
                                 v-model="selected_licence_id"
                                 class="form-control"
                                 :clearable="false"
@@ -260,6 +262,24 @@ export default {
     mounted: function () {
         let vm = this;
         vm.get_user_approvals();
+        this.$nextTick(() => {
+            const select2 = helpers.initialiseSelect2.bind(this)(
+                'select_id_licence',
+                null,
+                'selected_licence_id',
+                'Select a License',
+                true,
+                0,
+                null
+            );
+            select2
+                .on('select2:select', function () {
+                    vm.proposal_parks();
+                })
+                .on('select2:unselect', function () {
+                    vm.proposal_parks();
+                });
+        });
     },
     methods: {
         today: function () {

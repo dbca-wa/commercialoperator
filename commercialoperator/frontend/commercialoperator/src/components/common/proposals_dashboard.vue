@@ -4,39 +4,65 @@
             <div class="panel panel-default">
                 <div class="row mb-1">
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Status</label>
-                            <select
-                                v-model="filterProposalStatus"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in proposal_status"
-                                    :key="s.value"
-                                    :value="s.value"
+                        <div
+                            id="select_proposal_status_parent"
+                            class="form-group"
+                        >
+                            <label for="select_proposal_status">Status</label>
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_proposal_status"
+                                    ref="select_proposal_status"
+                                    v-model="filterProposalStatus"
+                                    class="form-control"
                                 >
-                                    {{ s.name }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in proposal_status"
+                                        :key="s.value"
+                                        :value="s.value"
+                                    >
+                                        {{ s.name }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Submitter</label>
-                            <select
-                                v-model="filterProposalSubmitter"
-                                class="form-control"
+                        <div
+                            id="select_proposal_submitter_parent"
+                            class="form-group"
+                        >
+                            <label for="select_proposal_submitter"
+                                >Submitter</label
                             >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in proposal_submitters"
-                                    :key="s.email"
-                                    :value="s.email"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_proposal_submitter"
+                                    ref="select_proposal_submitter"
+                                    v-model="filterProposalSubmitter"
+                                    class="form-control"
                                 >
-                                    {{ s.search_term }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in proposal_submitters"
+                                        :key="s.email"
+                                        :value="s.email"
+                                    >
+                                        {{ s.search_term }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div v-if="is_external" class="col-md-6">
@@ -88,21 +114,35 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Licence Type</label>
-                            <select
-                                v-model="filterApplicationType"
-                                class="form-control"
+                        <div
+                            id="select_proposal_application_type_parent"
+                            class="form-group"
+                        >
+                            <label for="select_proposal_application_type"
+                                >Licence Type</label
                             >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in application_types"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_proposal_application_type"
+                                    ref="select_proposal_application_type"
+                                    v-model="filterApplicationType"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in application_types"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -492,6 +532,7 @@ export default {
                 ],
                 processing: true,
             },
+            isLoading: false,
         };
     },
     computed: {
@@ -580,27 +621,33 @@ export default {
     methods: {
         fetchFilterLists: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.filter_list).then(
-                (response) => {
-                    vm.proposal_submitters = response.body.submitters;
-                    vm.application_types = response.body.application_types;
-                    vm.proposal_status =
-                        vm.level == 'internal'
-                            ? vm.internal_status
-                            : vm.external_status;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            vm.isLoading = true;
+            vm.$http
+                .get(api_endpoints.filter_list)
+                .then(
+                    (response) => {
+                        vm.proposal_submitters = response.body.submitters;
+                        vm.application_types = response.body.application_types;
+                        vm.proposal_status =
+                            vm.level == 'internal'
+                                ? vm.internal_status
+                                : vm.external_status;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
 
         discardProposal: function (proposal_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Application',
                 text: 'Are you sure you want to discard this proposal?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Application',
                 confirmButtonColor: '#d9534f',
@@ -610,11 +657,11 @@ export default {
                         .delete(api_endpoints.discard_proposal(proposal_id))
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your proposal has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your proposal has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.proposal_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
@@ -637,6 +684,28 @@ export default {
                     var id = $(this).attr('data-discard-proposal');
                     vm.discardProposal(id);
                 }
+            );
+
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_status',
+                'select_proposal_status_parent',
+                'filterProposalStatus',
+                'Select Status',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_application_type',
+                'select_proposal_application_type_parent',
+                'filterApplicationType',
+                'Select Application Type',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_proposal_submitter',
+                'select_proposal_submitter_parent',
+                'filterProposalSubmitter',
+                'Select Submitter',
+                false
             );
         },
         initialiseSearch: function () {

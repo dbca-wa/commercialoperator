@@ -8,11 +8,19 @@
                     index="organisation_access_requests"
                 >
                     <div class="panel panel-default">
-                        <div class="row">
+                        <div class="row mb-1">
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Organisation</label>
+                                <div
+                                    id="select_organisation_access_organisation_parent"
+                                    class="form-group"
+                                >
+                                    <label
+                                        for="select_organisation_access_organisation"
+                                        >Organisation</label
+                                    >
                                     <select
+                                        id="select_organisation_access_organisation"
+                                        ref="select_organisation_access_organisation"
                                         v-model="filterOrganisation"
                                         class="form-control"
                                     >
@@ -28,9 +36,17 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Applicant</label>
+                                <div
+                                    id="select_organisation_access_applicant_parent"
+                                    class="form-group"
+                                >
+                                    <label
+                                        for="select_organisation_access_applicant"
+                                        >Applicant</label
+                                    >
                                     <select
+                                        id="select_organisation_access_applicant"
+                                        ref="select_organisation_access_applicant"
                                         v-model="filterApplicant"
                                         class="form-control"
                                     >
@@ -46,9 +62,16 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Role</label>
+                                <div
+                                    id="select_organisation_access_role_parent"
+                                    class="form-group"
+                                >
+                                    <label for="select_organisation_access_role"
+                                        >Role</label
+                                    >
                                     <select
+                                        id="select_organisation_access_role"
+                                        ref="select_organisation_access_role"
                                         v-model="filterRole"
                                         class="form-control"
                                     >
@@ -64,9 +87,17 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="">Status</label>
+                                <div
+                                    id="select_organisation_access_status_parent"
+                                    class="form-group"
+                                >
+                                    <label
+                                        for="select_organisation_access_status"
+                                        >Status</label
+                                    >
                                     <select
+                                        id="select_organisation_access_status"
+                                        ref="select_organisation_access_status"
                                         v-model="filterStatus"
                                         class="form-control"
                                     >
@@ -82,12 +113,14 @@
                                 </div>
                             </div>
                         </div>
-                        <datatable
-                            id="org-access-table"
-                            ref="org_access_table"
-                            :dt-options="dtOptions"
-                            :dt-headers="dtHeaders"
-                        ></datatable>
+                        <div class="row">
+                            <datatable
+                                id="org-access-table"
+                                ref="org_access_table"
+                                :dt-options="dtOptions"
+                                :dt-headers="dtHeaders"
+                            ></datatable>
+                        </div>
                     </div>
                 </FormSection>
             </div>
@@ -99,7 +132,7 @@ import Vue from 'vue';
 import $ from 'jquery';
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'OrganisationAccessDashboard',
     components: {
@@ -349,6 +382,9 @@ export default {
     mounted: function () {
         this.fetchAccessGroupMembers();
         this.fetchProfile();
+        this.$nextTick(() => {
+            this.addEventListeners();
+        });
     },
     methods: {
         is_assessor: function () {
@@ -384,6 +420,36 @@ export default {
             });
             if (assessor.length > 0) return true;
             else return false;
+        },
+        addEventListeners: function () {
+            helpers.initialiseSelect2.bind(this)(
+                'select_organisation_access_organisation',
+                'select_organisation_access_organisation_parent',
+                'filterOrganisation',
+                'Select Organisation',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_organisation_access_applicant',
+                'select_organisation_access_applicant_parent',
+                'filterApplicant',
+                'Select Applicant',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_organisation_access_role',
+                'select_organisation_access_role_parent',
+                'filterRole',
+                'Select Role',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_organisation_access_status',
+                'select_organisation_access_status_parent',
+                'filterStatus',
+                'Select Status',
+                false
+            );
         },
     },
 };

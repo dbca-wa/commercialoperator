@@ -63,8 +63,13 @@
                                             >Type</label
                                         >
                                     </div>
-                                    <div class="col-sm-4">
+                                    <div
+                                        id="select_add_comm_log_org_type_parent"
+                                        class="col-sm-4"
+                                    >
                                         <select
+                                            id="select_add_comm_log_org_type"
+                                            ref="select_add_comm_log_org_type"
                                             v-model="comms.type"
                                             class="form-control"
                                             name="type"
@@ -308,6 +313,15 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.commsOrgForm;
+        this.$nextTick(() => {
+            helpers.initialiseSelect2.bind(this)(
+                'select_add_comm_log_org_type',
+                'select_add_comm_log_org_type_parent',
+                'comms.type',
+                'Select  Type',
+                false
+            );
+        });
     },
     methods: {
         ok: function () {

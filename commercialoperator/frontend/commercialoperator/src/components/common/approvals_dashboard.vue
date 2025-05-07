@@ -4,9 +4,16 @@
             <div class="panel panel-default">
                 <div class="row">
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Status</label>
+                        <div
+                            id="select_approval_proposal_status_parent"
+                            class="form-group"
+                        >
+                            <label for="select_approval_proposal_status"
+                                >Status</label
+                            >
                             <select
+                                id="select_approval_proposal_status"
+                                ref="select_approval_proposal_status"
                                 v-model="filterProposalStatus"
                                 class="form-control"
                             >
@@ -22,9 +29,16 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Licence Type</label>
+                        <div
+                            id="select_approval_licence_type_parent"
+                            class="form-group"
+                        >
+                            <label for="select_approval_licence_type"
+                                >Licence Type</label
+                            >
                             <select
+                                id="select_approval_licence_type"
+                                ref="select_approval_licence_type"
                                 v-model="filterApplicationType"
                                 class="form-control"
                             >
@@ -749,6 +763,21 @@ export default {
                     var id = $(this).attr('data-amend-approval');
                     vm.amendApproval(id);
                 }
+            );
+
+            helpers.initialiseSelect2.bind(this)(
+                'select_approval_proposal_status',
+                'select_approval_proposal_status_parent',
+                'filterProposalStatus',
+                'Select Status',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_approval_licence_type',
+                'select_approval_licence_type_parent',
+                'filterApplicationType',
+                'Select Application Type',
+                false
             );
         },
         initialiseSearch: function () {

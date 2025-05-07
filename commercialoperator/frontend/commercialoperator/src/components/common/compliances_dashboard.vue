@@ -4,9 +4,14 @@
             <div class="panel panel-default">
                 <div class="row mb-1">
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Status</label>
+                        <div
+                            id="select_compliance_status_parent"
+                            class="form-group"
+                        >
+                            <label for="select_compliance_status">Status</label>
                             <select
+                                id="select_compliance_status"
+                                ref="select_compliance_status"
                                 v-model="filterComplianceStatus"
                                 class="form-control"
                             >
@@ -22,9 +27,16 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="">Licence Type</label>
+                        <div
+                            id="select_compliance_application_type_parent"
+                            class="form-group"
+                        >
+                            <label for="select_compliance_application_type"
+                                >Licence Type</label
+                            >
                             <select
+                                id="select_compliance_application_type"
+                                ref="select_compliance_application_type"
                                 v-model="filterApplicationType"
                                 class="form-control"
                             >
@@ -379,7 +391,22 @@ export default {
             );
         },
 
-        addEventListeners: function () {},
+        addEventListeners: function () {
+            helpers.initialiseSelect2.bind(this)(
+                'select_compliance_status',
+                'select_compliance_status_parent',
+                'filterComplianceStatus',
+                'Select Compliance Status',
+                false
+            );
+            helpers.initialiseSelect2.bind(this)(
+                'select_compliance_application_type',
+                'select_compliance_application_type_parent',
+                'filterApplicationType',
+                'Select Application Type',
+                false
+            );
+        },
         initialiseSearch: function () {
             this.dateSearch();
         },

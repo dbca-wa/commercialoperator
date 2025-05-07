@@ -19,7 +19,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="filming_activity_commencement_date"
                                             >Period of proposed filming/
                                             photography</label
                                         >
@@ -32,6 +32,7 @@
                                         >
                                             <input
                                                 v-if="proposal.filming_activity"
+                                                id="filming_activity_commencement_date"
                                                 v-model="
                                                     proposal.filming_activity
                                                         .commencement_date
@@ -90,7 +91,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="filming_activity_title"
                                             >Title of film/ name of program/
                                             name of product</label
                                         >
@@ -101,6 +102,7 @@
                                     >
                                         <input
                                             v-if="proposal.filming_activity"
+                                            id="filming_activity_title"
                                             v-model="
                                                 proposal.filming_activity
                                                     .activity_title
@@ -118,7 +120,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="filming_activity_previous_contact_person"
                                             >Previous contact person in the
                                             Department</label
                                         >
@@ -129,6 +131,7 @@
                                     >
                                         <input
                                             v-if="proposal.filming_activity"
+                                            id="filming_activity_previous_contact_person"
                                             v-model="
                                                 proposal.filming_activity
                                                     .previous_contact_person
@@ -145,7 +148,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="filming_activity_sponsorship_choices"
                                             >Does the film have Tourism WA
                                             sponsorship</label
                                         >
@@ -154,7 +157,10 @@
                                         class="col-sm-9"
                                         style="margin-bottom: 5px"
                                     >
-                                        <ul class="list-inline">
+                                        <ul
+                                            id="filming_activity_sponsorship_choices"
+                                            class="list-inline"
+                                        >
                                             <li
                                                 v-for="s in sponsorship_choices"
                                                 :key="s.key"
@@ -201,7 +207,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-right"
-                                            for="Name"
+                                            for="filming_activity_sponsorship_choices"
                                             >Details</label
                                         >
                                     </div>
@@ -211,6 +217,7 @@
                                     >
                                         <textarea
                                             v-if="proposal.filming_activity"
+                                            id="filming_activity_sponsorship_details"
                                             v-model="
                                                 proposal.filming_activity
                                                     .sponsorship_details
@@ -225,7 +232,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-right"
-                                            for="Name"
+                                            for="filming_activity_production_description"
                                             >Description of production</label
                                         >
                                     </div>
@@ -235,6 +242,7 @@
                                     >
                                         <textarea
                                             v-if="proposal.filming_activity"
+                                            id="filming_activity_production_description"
                                             v-model="
                                                 proposal.filming_activity
                                                     .production_description
@@ -250,7 +258,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-right"
-                                            for="Name"
+                                            for="film_type_select"
                                             >Type of film to be
                                             undertaken</label
                                         >
@@ -261,6 +269,7 @@
                                     >
                                         <select
                                             v-if="proposal.filming_activity"
+                                            id="film_type_select"
                                             ref="film_type_select"
                                             v-model="
                                                 proposal.filming_activity
@@ -286,7 +295,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-right"
-                                            for="Name"
+                                            for="filmPurposeSelect"
                                             >Purpose of still or motion
                                             film</label
                                         >
@@ -297,6 +306,7 @@
                                     >
                                         <select
                                             v-if="proposal.filming_activity"
+                                            id="filmPurposeSelect"
                                             ref="filmPurposeSelect"
                                             v-model="
                                                 proposal.filming_activity
@@ -321,7 +331,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-right"
-                                            for="Name"
+                                            for="filming_activity_film_purpose_details"
                                             >Please provide details</label
                                         >
                                     </div>
@@ -330,6 +340,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            id="filming_activity_film_purpose_details"
                                             v-model="
                                                 proposal.filming_activity
                                                     .film_purpose_details
@@ -346,7 +357,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="filmUsageSelect"
                                             >How will the still or motion film
                                             be used or shown</label
                                         >
@@ -357,6 +368,7 @@
                                     >
                                         <select
                                             v-if="proposal.filming_activity"
+                                            id="filmUsageSelect"
                                             ref="filmUsageSelect"
                                             v-model="
                                                 proposal.filming_activity
@@ -381,7 +393,7 @@
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-right"
-                                            for="Name"
+                                            for="filming_activity_film_usage_details"
                                             >Please specify
                                         </label>
                                     </div>
@@ -390,6 +402,7 @@
                                         style="margin-bottom: 5px"
                                     >
                                         <textarea
+                                            id="filming_activity_film_usage_details"
                                             v-model="
                                                 proposal.filming_activity
                                                     .film_usage_details

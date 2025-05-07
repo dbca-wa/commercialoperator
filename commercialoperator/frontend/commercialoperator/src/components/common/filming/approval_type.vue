@@ -78,10 +78,12 @@
                                         </label>
                                     </div>
                                     <div
+                                        id="filming_licence_charge_parent"
                                         class="col-sm-6"
                                         style="margin-bottom: 5px"
                                     >
                                         <select
+                                            id="filming_licence_charge"
                                             ref="filming_licence_charge"
                                             v-model="
                                                 // eslint-disable-next-line vue/no-mutating-props
@@ -146,6 +148,7 @@
 
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
+import { helpers } from '@/utils/hooks.js';
 
 export default {
     components: { FormSection },
@@ -178,6 +181,14 @@ export default {
     mounted: function () {
         this.selected_approval_type = this.proposal.filming_approval_type;
         this.fetchLicenceChargeChoices();
+        this.$nextTick(() => {
+            helpers.initialiseSelect2.bind(this)(
+                'filming_licence_charge',
+                'filming_licence_charge_parent',
+                'proposal.filming_licence_charge_type',
+                'Select a filming licence charge type'
+            );
+        });
     },
     methods: {
         fetchLicenceChargeChoices: function () {
