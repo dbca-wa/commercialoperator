@@ -48,25 +48,32 @@
                                         class="col-sm-9"
                                     >
                                         <div
-                                            v-if="requirements.length > 0"
+                                            v-show="requirements.length > 0"
                                             style="width: 70% !important"
                                         >
-                                            <select
-                                                ref="standard_req"
-                                                v-model="
-                                                    requirement.standard_requirement
-                                                "
-                                                class="form-control"
-                                                name="standard_requirement"
+                                            <div
+                                                id="standard_req_parent"
+                                                class="form-group"
                                             >
-                                                <option
-                                                    v-for="r in requirements"
-                                                    :key="r.id"
-                                                    :value="r.id"
+                                                <select
+                                                    id="standard_req"
+                                                    ref="standard_req"
+                                                    v-model="
+                                                        requirement.standard_requirement
+                                                    "
+                                                    class="form-control"
+                                                    name="standard_requirement"
                                                 >
-                                                    {{ r.code }} {{ r.text }}
-                                                </option>
-                                            </select>
+                                                    <option
+                                                        v-for="r in requirements"
+                                                        :key="r.id"
+                                                        :value="r.id"
+                                                    >
+                                                        {{ r.code }}
+                                                        {{ r.text }}
+                                                    </option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                     <div v-else class="col-sm-9">
@@ -448,6 +455,14 @@ export default {
                 'DD/MM/YYYY'
             ).isValid();
         },
+        'requirement.standard': function (val) {
+            if (val == true) {
+                const vm = this;
+                this.$nextTick(() => {
+                    vm.eventListeners();
+                });
+            }
+        },
     },
     mounted: function () {
         let vm = this;
@@ -657,8 +672,9 @@ export default {
                 .select2({
                     theme: 'bootstrap-5',
                     allowClear: true,
-                    minimumInputLength: 2,
+                    minimumInputLength: 0,
                     placeholder: 'Select Requirement',
+                    dropdownParent: '#standard_req_parent',
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);
