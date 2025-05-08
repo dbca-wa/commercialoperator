@@ -65,13 +65,18 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="is_external" class="col-md-6">
-                        <router-link
-                            style="margin-top: 25px"
-                            class="btn btn-primary pull-right"
-                            :to="{ name: 'apply_proposal' }"
-                            >New Application</router-link
-                        >
+                    <div
+                        v-if="is_external"
+                        class="col-md-6 d-flex align-items-baseline"
+                    >
+                        <div class="form-group mt-auto mb-0">
+                            <router-link
+                                type="button"
+                                class="btn btn-primary pull-right"
+                                :to="{ name: 'apply_proposal' }"
+                                >New Application</router-link
+                            >
+                        </div>
                     </div>
                 </div>
                 <div class="row">
