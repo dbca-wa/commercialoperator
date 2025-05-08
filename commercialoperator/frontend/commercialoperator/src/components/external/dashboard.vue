@@ -35,7 +35,7 @@
         </FormSection>
         <FormSection
             :form-collapse="false"
-            label="Compliances"
+            label="Compliances with requirements"
             index="compliances"
             subtitle="View submitted compliances and submit new ones"
         >
