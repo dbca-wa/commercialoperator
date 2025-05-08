@@ -57,12 +57,15 @@
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Start From</label>
+                            <label for="input_start_from_date"
+                                >Start From</label
+                            >
                             <div
                                 ref="startDateFromPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_start_from_date"
                                     v-model="filterStartFrom"
                                     type="date"
                                     class="form-control"
@@ -78,12 +81,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Start To</label>
+                            <label for="input_start_to_date">Start To</label>
                             <div
                                 ref="startDateToPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_start_to_date"
                                     v-model="filterStartTo"
                                     type="date"
                                     class="form-control"
@@ -99,12 +103,15 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Expiry From</label>
+                            <label for="input_expiry_from_date"
+                                >Expiry From</label
+                            >
                             <div
                                 ref="expiryDateFromPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_expiry_from_date"
                                     v-model="filterExpiryFrom"
                                     type="date"
                                     class="form-control"
@@ -120,12 +127,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Expiry To</label>
+                            <label for="input_expiry_to_date">Expiry To</label>
                             <div
                                 ref="expiryDateToPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_expiry_to_date"
                                     v-model="filterExpiryTo"
                                     type="date"
                                     class="form-control"

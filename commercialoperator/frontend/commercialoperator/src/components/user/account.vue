@@ -161,7 +161,9 @@
                         @submit.prevent=""
                     >
                         <div class="row mb-3">
-                            <label for="" class="col-sm-3 col-form-label"
+                            <label
+                                for="link_search_again"
+                                class="col-sm-3 col-form-label"
                                 >&nbsp;</label
                             >
                             <div class="col-auto">
@@ -177,7 +179,7 @@
                                     </ul>
                                 </BootstrapAlert>
                             </div>
-                            <div class="col">
+                            <div id="link_search_again" class="col">
                                 <a href="#" @click="searchAgain"
                                     >Search Again</a
                                 >
@@ -352,12 +354,15 @@
                             method="post"
                         >
                             <div class="form-group row mb-3">
-                                <label for="" class="col-sm-3"
+                                <label
+                                    for="input_system_settings_one_row_per_park"
+                                    class="col-sm-3"
                                     >Park Entry Fees dashboard view</label
                                 >
                                 <div class="col-sm-3">
                                     <label>
                                         <input
+                                            id="input_system_settings_one_row_per_park"
                                             v-model="
                                                 email_user.system_settings
                                                     .one_row_per_park

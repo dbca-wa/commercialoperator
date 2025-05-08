@@ -267,11 +267,14 @@
                         index="reference"
                     >
                         <div class="row">
-                            <label for="" class="control-label col-lg-12"
+                            <label
+                                for="input_search_reference"
+                                class="control-label col-lg-12"
                                 >Reference</label
                             >
                             <div class="col-md-8">
                                 <input
+                                    id="input_search_reference"
                                     v-model="referenceWord"
                                     type="search"
                                     class="form-control input-sm"

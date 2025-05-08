@@ -76,12 +76,13 @@
                 </div>
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label for="">Lodged From</label>
+                        <label for="input_lodged_from_date">Lodged From</label>
                         <div
                             ref="proposalDateFromPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_lodged_from_date"
                                 v-model="filterProposalLodgedFrom"
                                 type="date"
                                 class="form-control"
@@ -95,12 +96,13 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="">Lodged To</label>
+                        <label for="input_lodged_to_date">Lodged To</label>
                         <div
                             ref="proposalDateToPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_lodged_to_date"
                                 v-model="filterProposalLodgedTo"
                                 type="date"
                                 class="form-control"

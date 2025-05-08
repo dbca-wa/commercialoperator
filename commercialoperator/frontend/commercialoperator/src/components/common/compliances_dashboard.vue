@@ -54,12 +54,15 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <label for="">Due date From</label>
+                        <label for="input_compliance_due_date_from"
+                            >Due date From</label
+                        >
                         <div
                             ref="complianceDateFromPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_compliance_due_date_from"
                                 v-model="filterComplianceDueFrom"
                                 type="date"
                                 class="form-control"
@@ -73,12 +76,15 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="">Due date To</label>
+                        <label for="input_compliance_due_date_to"
+                            >Due date To</label
+                        >
                         <div
                             ref="complianceDateToPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_compliance_due_date_to"
                                 v-model="filterComplianceDueTo"
                                 type="date"
                                 class="form-control"
