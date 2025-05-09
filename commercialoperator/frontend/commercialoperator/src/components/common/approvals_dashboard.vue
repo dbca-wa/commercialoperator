@@ -11,21 +11,28 @@
                             <label for="select_approval_proposal_status"
                                 >Status</label
                             >
-                            <select
-                                id="select_approval_proposal_status"
-                                ref="select_approval_proposal_status"
-                                v-model="filterProposalStatus"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in approval_status"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_approval_proposal_status"
+                                    ref="select_approval_proposal_status"
+                                    v-model="filterProposalStatus"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in approval_status"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -36,21 +43,28 @@
                             <label for="select_approval_licence_type"
                                 >Licence Type</label
                             >
-                            <select
-                                id="select_approval_licence_type"
-                                ref="select_approval_licence_type"
-                                v-model="filterApplicationType"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in application_types"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_approval_licence_type"
+                                    ref="select_approval_licence_type"
+                                    v-model="filterApplicationType"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in application_types"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -561,6 +575,7 @@ export default {
                 ],
                 processing: true,
             },
+            isLoading: false,
         };
     },
     computed: {
@@ -669,17 +684,24 @@ export default {
 
         fetchFilterLists: function () {
             let vm = this;
+            vm.isLoading = true;
 
-            vm.$http.get(api_endpoints.filter_list_approvals).then(
-                (response) => {
-                    vm.proposal_submitters = response.body.submitters;
-                    vm.approval_status = response.body.approval_status_choices;
-                    vm.application_types = response.body.application_types;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            vm.$http
+                .get(api_endpoints.filter_list_approvals)
+                .then(
+                    (response) => {
+                        vm.proposal_submitters = response.body.submitters;
+                        vm.approval_status =
+                            response.body.approval_status_choices;
+                        vm.application_types = response.body.application_types;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
 
         addEventListeners: function () {

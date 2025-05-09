@@ -18,21 +18,28 @@
                                         for="select_organisation_access_organisation"
                                         >Organisation</label
                                     >
-                                    <select
-                                        id="select_organisation_access_organisation"
-                                        ref="select_organisation_access_organisation"
-                                        v-model="filterOrganisation"
-                                        class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="o in organisationChoices"
-                                            :key="o"
-                                            :value="o"
+                                    <div v-show="isLoading">
+                                        <select class="form-control">
+                                            <option value="">Loading...</option>
+                                        </select>
+                                    </div>
+                                    <div v-show="!isLoading">
+                                        <select
+                                            id="select_organisation_access_organisation"
+                                            ref="select_organisation_access_organisation"
+                                            v-model="filterOrganisation"
+                                            class="form-control"
                                         >
-                                            {{ o }}
-                                        </option>
-                                    </select>
+                                            <option value="All">All</option>
+                                            <option
+                                                v-for="o in organisationChoices"
+                                                :key="o"
+                                                :value="o"
+                                            >
+                                                {{ o }}
+                                            </option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -44,21 +51,28 @@
                                         for="select_organisation_access_applicant"
                                         >Applicant</label
                                     >
-                                    <select
-                                        id="select_organisation_access_applicant"
-                                        ref="select_organisation_access_applicant"
-                                        v-model="filterApplicant"
-                                        class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="a in applicantChoices"
-                                            :key="a"
-                                            :value="a"
+                                    <div v-show="isLoading">
+                                        <select class="form-control">
+                                            <option value="">Loading...</option>
+                                        </select>
+                                    </div>
+                                    <div v-show="!isLoading">
+                                        <select
+                                            id="select_organisation_access_applicant"
+                                            ref="select_organisation_access_applicant"
+                                            v-model="filterApplicant"
+                                            class="form-control"
                                         >
-                                            {{ a }}
-                                        </option>
-                                    </select>
+                                            <option value="All">All</option>
+                                            <option
+                                                v-for="a in applicantChoices"
+                                                :key="a"
+                                                :value="a"
+                                            >
+                                                {{ a }}
+                                            </option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -69,21 +83,28 @@
                                     <label for="select_organisation_access_role"
                                         >Role</label
                                     >
-                                    <select
-                                        id="select_organisation_access_role"
-                                        ref="select_organisation_access_role"
-                                        v-model="filterRole"
-                                        class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="r in roleChoices"
-                                            :key="r"
-                                            :value="r"
+                                    <div v-show="isLoading">
+                                        <select class="form-control">
+                                            <option value="">Loading...</option>
+                                        </select>
+                                    </div>
+                                    <div v-show="!isLoading">
+                                        <select
+                                            id="select_organisation_access_role"
+                                            ref="select_organisation_access_role"
+                                            v-model="filterRole"
+                                            class="form-control"
                                         >
-                                            {{ r }}
-                                        </option>
-                                    </select>
+                                            <option value="All">All</option>
+                                            <option
+                                                v-for="r in roleChoices"
+                                                :key="r"
+                                                :value="r"
+                                            >
+                                                {{ r }}
+                                            </option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -95,21 +116,28 @@
                                         for="select_organisation_access_status"
                                         >Status</label
                                     >
-                                    <select
-                                        id="select_organisation_access_status"
-                                        ref="select_organisation_access_status"
-                                        v-model="filterStatus"
-                                        class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="s in statusChoices"
-                                            :key="s"
-                                            :value="s"
+                                    <div v-show="isLoading">
+                                        <select class="form-control">
+                                            <option value="">Loading...</option>
+                                        </select>
+                                    </div>
+                                    <div v-show="!isLoading">
+                                        <select
+                                            id="select_organisation_access_status"
+                                            ref="select_organisation_access_status"
+                                            v-model="filterStatus"
+                                            class="form-control"
                                         >
-                                            {{ s }}
-                                        </option>
-                                    </select>
+                                            <option value="All">All</option>
+                                            <option
+                                                v-for="s in statusChoices"
+                                                :key="s"
+                                                :value="s"
+                                            >
+                                                {{ s }}
+                                            </option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -302,6 +330,8 @@ export default {
                             });
                             vm.statusChoices = statusChoices.sort();
                         });
+
+                    vm.isLoading = false;
                 },
             },
             dtHeaders: [
@@ -314,12 +344,8 @@ export default {
                 'Assigned To',
                 'Action',
             ],
+            isLoading: false,
         };
-    },
-    computed: {
-        isLoading: function () {
-            return this.loading.length == 0;
-        },
     },
     watch: {
         filterOrganisation: function () {
@@ -380,6 +406,7 @@ export default {
         },
     },
     mounted: function () {
+        this.isLoading = true;
         this.fetchAccessGroupMembers();
         this.fetchProfile();
         this.$nextTick(() => {
