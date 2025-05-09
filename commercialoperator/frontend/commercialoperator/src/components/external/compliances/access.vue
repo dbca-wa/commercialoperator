@@ -662,13 +662,13 @@ export default {
                     vm.errorString =
                         'Please upload at least one document prior to submitting.';
                 } else {
-                    swal({
+                    swal.fire({
                         title: vm.submit_text() + ' Compliance',
                         text:
                             'Are you sure you want to ' +
                             vm.submit_text().toLowerCase() +
                             ' this requirement?',
-                        type: 'question',
+                        icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: vm.submit_text(),
                     }).then(() => {
@@ -743,13 +743,13 @@ export default {
             vm.submitting = true;
             vm.paySubmitting = true;
 
-            swal({
+            swal.fire({
                 title: vm.submit_text() + ' Compliance',
                 text:
                     'Are you sure you want to ' +
                     vm.submit_text().toLowerCase() +
                     ' this application?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: vm.submit_text(),
             }).then(
@@ -791,11 +791,11 @@ export default {
                                     });
                                 },
                                 (err) => {
-                                    swal(
-                                        'Submit Error',
-                                        helpers.apiVueResourceError(err),
-                                        'error'
-                                    );
+                                    swal.fire({
+                                        title: 'Submit Error',
+                                        text: helpers.apiVueResourceError(err),
+                                        icon: 'error',
+                                    });
                                 }
                             );
                     }
