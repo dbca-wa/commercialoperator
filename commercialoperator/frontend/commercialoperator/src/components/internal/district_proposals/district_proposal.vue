@@ -117,7 +117,10 @@
                                     class="col-sm-12 top-buffer-s"
                                 >
                                     <strong>Currently assigned to</strong><br />
-                                    <div class="form-group">
+                                    <div
+                                        id="assigned_officer_parent"
+                                        class="form-group"
+                                    >
                                         <template
                                             v-if="
                                                 district_proposal.processing_status ==
@@ -125,6 +128,7 @@
                                             "
                                         >
                                             <select
+                                                id="assigned_officer"
                                                 ref="assigned_officer"
                                                 v-model="
                                                     district_proposal.assigned_approver
@@ -157,6 +161,7 @@
                                         </template>
                                         <template v-else>
                                             <select
+                                                id="assigned_officer"
                                                 ref="assigned_officer"
                                                 v-model="
                                                     district_proposal.assigned_officer
@@ -855,7 +860,9 @@ export default {
     },
     watch: {},
     mounted: function () {
-        this.initialiseSelects();
+        this.$nextTick(() => {
+            this.initialiseSelects();
+        });
     },
     updated: function () {
         let vm = this;
@@ -1261,6 +1268,7 @@ export default {
                         vm.selected_referral = selected.val();
                     });
                 // Assigned officer select
+                // MONDAY: currently assigned officer select2 initialisation http://localhost:9106/internal/proposal/3650/district_proposal/875
                 $(vm.$refs.assigned_officer)
                     .select2({
                         theme: 'bootstrap-5',
