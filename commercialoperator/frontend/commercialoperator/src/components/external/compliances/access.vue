@@ -565,7 +565,7 @@ export default {
             this.compliance = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
+            // this.validation_form.resetForm();
             let file_length = vm.files.length;
             this.files = [];
             for (var i = 0; i < file_length; i++) {
