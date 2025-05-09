@@ -1086,13 +1086,21 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Amend licence',
             }).then(
-                () => {
+                (result) => {
+                    if (!result || !result.isConfirmed) {
+                        return;
+                    }
                     swal.fire({
                         title: 'Loading...',
+                        icon: 'info',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
+                        showConfirmButton: false,
                         onOpen: () => {
                             swal.showLoading();
+                        },
+                        customClass: {
+                            container: 'swal2-popover',
                         },
                     });
                     vm.$http
@@ -1150,4 +1158,9 @@ export default {
     },
 };
 </script>
-<style scoped></style>
+
+<style scoped>
+.swal2-popover {
+    z-index: 1090 !important;
+}
+</style>
