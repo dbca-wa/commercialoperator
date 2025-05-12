@@ -859,11 +859,7 @@ export default {
         },
     },
     watch: {},
-    mounted: function () {
-        this.$nextTick(() => {
-            this.initialiseSelects();
-        });
-    },
+    mounted: function () {},
     updated: function () {
         let vm = this;
         if (!vm.panelClickersInitialised) {
@@ -880,6 +876,7 @@ export default {
         this.$nextTick(() => {
             vm.initialiseOrgContactTable();
             vm.form = document.forms.new_proposal;
+            vm.initialiseSelects();
         });
     },
     methods: {
