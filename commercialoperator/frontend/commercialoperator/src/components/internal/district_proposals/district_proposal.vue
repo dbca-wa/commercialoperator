@@ -1265,7 +1265,6 @@ export default {
                         vm.selected_referral = selected.val();
                     });
                 // Assigned officer select
-                // MONDAY: currently assigned officer select2 initialisation http://localhost:9106/internal/proposal/3650/district_proposal/875
                 $(vm.$refs.assigned_officer)
                     .select2({
                         theme: 'bootstrap-5',
