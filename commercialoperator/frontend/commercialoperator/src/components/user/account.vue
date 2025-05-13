@@ -816,12 +816,19 @@ export default {
             data.append('abn', vm.newOrganisation.abn);
             data.append('identification', vm.newOrganisation.identification);
             data.append('role', vm.role);
+
             const requestOptions = {
+                emulateJSON: true,
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: data,
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'X-CSRFToken': vm.csrf_token,
+                    body: data,
+                },
+                credentials: 'same-origin',
             };
-            fetch(api_endpoints.organisation_requests, requestOptions)
+            fetch(api_endpoints.organisation_requests + '/', requestOptions)
                 .then(async (response) => {
                     const data = await response.json();
                     if (!response.ok) {

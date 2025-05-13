@@ -791,6 +791,8 @@ class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
 
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):
+    http_method_names = ["head", "get", "post", "put", "patch"]
+
     queryset = OrganisationRequest.objects.none()
     serializer_class = OrganisationRequestSerializer
     filter_backends = (OrganisationRequestDatatableFilterBackend,)
@@ -1178,37 +1180,28 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+    @basic_exception_handler
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.validated_data["requester"] = request.user
-            if request.data["role"] == "consultant":
-                # Check if consultant can be relinked to org.
-                data = Organisation.existance(request.data["abn"])
-                data.update([("user", request.user.id)])
-                data.update([("abn", request.data["abn"])])
-                existing_org = OrganisationCheckExistSerializer(data=data)
-                existing_org.is_valid(raise_exception=True)
-            with transaction.atomic():
-                instance = serializer.save()
-                instance.log_user_action(
-                    OrganisationRequestUserAction.ACTION_LODGE_REQUEST.format(
-                        instance.id
-                    ),
-                    request,
-                )
-                instance.send_organisation_request_email_notification(request)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data["requester"] = request.user
+        if request.data["role"] == "consultant":
+            # Check if consultant can be relinked to org.
+            data = Organisation.existance(request.data["abn"])
+            data.update([("user", request.user.id)])
+            data.update([("abn", request.data["abn"])])
+            existing_org = OrganisationCheckExistSerializer(data=data)
+            existing_org.is_valid(raise_exception=True)
+        with transaction.atomic():
+            instance = serializer.save()
+            instance.log_user_action(
+                OrganisationRequestUserAction.ACTION_LODGE_REQUEST.format(
+                    instance.id
+                ),
+                request,
+            )
+            instance.send_organisation_request_email_notification(request)
+        return Response(serializer.data)
 
 
 class OrganisationAccessGroupMembersView(views.APIView):
