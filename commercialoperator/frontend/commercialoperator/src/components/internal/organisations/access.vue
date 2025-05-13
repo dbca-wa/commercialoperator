@@ -275,7 +275,7 @@ export default {
         Vue.http
             .get(
                 helpers.add_endpoint_json(
-                    api_endpoints.organisation_request,
+                    api_endpoints.organisation_requests,
                     to.params.access_id
                 )
             )
@@ -302,15 +302,15 @@ export default {
             members: [],
             // Filters
             logs_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_request,
+                api_endpoints.organisation_requests,
                 vm.$route.params.access_id + '/action_log'
             ),
             comms_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_request,
+                api_endpoints.organisation_requests,
                 vm.$route.params.access_id + '/comms_log'
             ),
             comms_add_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_request,
+                api_endpoints.organisation_requests,
                 vm.$route.params.access_id + '/add_comms_log'
             ),
             actionDtOptions: {
@@ -328,7 +328,7 @@ export default {
                 processing: true,
                 ajax: {
                     url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_request,
+                        api_endpoints.organisation_requests,
                         vm.$route.params.access_id + '/action_log'
                     ),
                     dataSrc: '',
@@ -532,7 +532,7 @@ export default {
             vm.$http
                 .get(
                     helpers.add_endpoint_json(
-                        api_endpoints.organisation_request,
+                        api_endpoints.organisation_requests,
                         vm.access.id + '/assign_request_user'
                     )
                 )
@@ -553,7 +553,7 @@ export default {
                 vm.$http
                     .post(
                         helpers.add_endpoint_json(
-                            api_endpoints.organisation_request,
+                            api_endpoints.organisation_requests,
                             vm.access.id + '/assign_to'
                         ),
                         JSON.stringify(data),
@@ -575,7 +575,7 @@ export default {
                 vm.$http
                     .get(
                         helpers.add_endpoint_json(
-                            api_endpoints.organisation_request,
+                            api_endpoints.organisation_requests,
                             vm.access.id + '/unassign'
                         )
                     )
@@ -603,7 +603,7 @@ export default {
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
-                                api_endpoints.organisation_request,
+                                api_endpoints.organisation_requests,
                                 vm.access.id + '/accept'
                             )
                         )
@@ -653,7 +653,7 @@ export default {
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
-                                api_endpoints.organisation_request,
+                                api_endpoints.organisation_requests,
                                 vm.access.id + '/decline'
                             )
                         )

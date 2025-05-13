@@ -634,6 +634,7 @@ export default {
         searchAgain: function () {
             this.selectedOrganisation = null;
             this.newOrganisation = null;
+            this.errorMessage = null;
             this.$nextTick(() => {
                 $('#search-organisations').select2('open');
             });
