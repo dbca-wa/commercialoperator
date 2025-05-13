@@ -362,7 +362,7 @@ export default {
                 processing: true,
                 ajax: {
                     url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_requests,
+                        api_endpoints.organisation_requests_datatable,
                         vm.$route.params.access_id + '/comms_log'
                     ),
                     dataSrc: '',

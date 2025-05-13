@@ -191,7 +191,7 @@ export default {
                 processing: true,
                 order: [[0, 'desc']],
                 ajax: {
-                    url: api_endpoints.organisation_requests,
+                    url: api_endpoints.organisation_requests_datatable,
                     dataSrc: 'data',
                     data: function (d) {
                         d.filter_organisation = vm.filterOrganisation;
