@@ -330,8 +330,8 @@ export default {
                                 var result = '';
                                 var popTemplate = '';
                                 var message = '';
-                                let tick = '';
-                                tick =
+                                let icon = '';
+                                icon =
                                     "<i class='fa fa-exclamation-triangle' style='color:red'></i>";
                                 result = full.reserved_licence
                                     ? '<span>' +
@@ -354,19 +354,15 @@ export default {
                                             message =
                                                 'This Licence is marked for surrendering to future date';
                                         }
-                                        popTemplate = _.template(
-                                            '<a href="#" ' +
-                                                'role="button" ' +
-                                                'data-toggle="popover" ' +
-                                                'data-trigger="hover" ' +
-                                                'data-placement="top auto"' +
-                                                'data-html="true" ' +
-                                                'data-content="<%= text %>" ' +
-                                                '><%= tick %></a>'
-                                        );
+                                        const title = full.lodgement_number;
+                                        popTemplate =
+                                            helpers.initialisePopoverTemplate(
+                                                title,
+                                                ''
+                                            );
                                         result += popTemplate({
                                             text: message,
-                                            tick: tick,
+                                            icon: icon,
                                         });
                                     }
                                 }
@@ -375,7 +371,7 @@ export default {
                                 return full.lodgement_number;
                             }
                         },
-                        createdCell: helpers.dtPopoverCellFn,
+                        // createdCell: helpers.dtPopoverCellFn,
                         name: 'lodgement_number',
                     },
                     {
@@ -433,19 +429,16 @@ export default {
                                 var icon =
                                     "<i class='fa fa-file-pdf' style='color:red'></i>";
                                 var message = 'This is a migrated licence';
-                                popTemplate = _.template(
-                                    '<a href="#" ' +
-                                        'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="hover" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
-                                        '><%= tick %></a>'
+
+                                const title = `License ${full.lodgement_number}`;
+                                popTemplate = helpers.initialisePopoverTemplate(
+                                    title,
+                                    ''
                                 );
+
                                 result += popTemplate({
                                     text: message,
-                                    tick: icon,
+                                    icon: icon,
                                 });
                             }
                             if (full.requirement_docs) {
@@ -664,17 +657,20 @@ export default {
         this.fetchFilterLists();
         this.fetchProfile();
         let vm = this;
-        $('a[data-toggle="collapse"]').on('click', function () {
-            var chev = $(this).children()[0];
-            window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'glyphicon-chevron-down glyphicon-chevron-up'
-                );
-            }, 100);
-        });
+        // $('a[data-toggle="collapse"]').on('click', function () {
+        //     var chev = $(this).children()[0];
+        //     window.setTimeout(function () {
+        //         $(chev).toggleClass(
+        //             'glyphicon-chevron-down glyphicon-chevron-up'
+        //         );
+        //     }, 100);
+        // });
         this.$nextTick(() => {
             vm.addEventListeners();
             vm.initialiseSearch();
+            // const table = this.$refs.proposal_datatable.vmDataTable;
+            // helpers.addEllipsisEventListeners(table);
+            // helpers.enablePopovers();
         });
     },
     methods: {
@@ -794,6 +790,38 @@ export default {
                     vm.amendApproval(id);
                 }
             );
+
+            vm.$refs.proposal_datatable.vmDataTable.on('draw.dt', function () {
+                var popoverTriggerList = [].slice.call(
+                    document.querySelectorAll('a[data-bs-toggle="popover"]')
+                );
+                popoverTriggerList.map(function (popoverTriggerEl) {
+                    let popover = new bootstrap.Popover(popoverTriggerEl);
+                    // Listeners to hide popovers on 'x'-click
+                    vm.$refs.proposal_datatable.vmDataTable.on(
+                        'click',
+                        'a[data-bs-toggle="popover"]',
+                        function (e) {
+                            e.preventDefault();
+                            let attributes = e.currentTarget.attributes;
+                            let popoverId;
+                            if (attributes && attributes.length > 0) {
+                                popoverId = attributes['10'].value;
+                            }
+
+                            if (popover.tip && popover.tip.id == popoverId) {
+                                // Ideally the listener would only be shown on popover show, but that does work okay for now
+                                $(`#${popoverId}`)
+                                    .find('.popover-close')
+                                    .off('click')
+                                    .on('click', () => popover.hide());
+                            }
+                        }
+                    );
+
+                    return popover;
+                });
+            });
 
             helpers.initialiseSelect2.bind(this)(
                 'select_approval_proposal_status',
