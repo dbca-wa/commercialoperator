@@ -133,11 +133,11 @@
                                 >&nbsp;</label
                             >
                             <div class="col-sm-4">
-                                <BootstrapAlert
+                                <alert
                                     type="danger"
                                     icon="exclamation-triangle-fill"
                                     >{{ validatePinsError }}
-                                </BootstrapAlert>
+                                </alert>
                             </div>
                         </div>
                         <div v-if="pinCodesEntered" class="row mb-3">
@@ -167,7 +167,7 @@
                                 >&nbsp;</label
                             >
                             <div class="col-auto">
-                                <BootstrapAlert>
+                                <alert type="warning">
                                     <ul class="list-group">
                                         <li class="list-group-item">
                                             The organisation you searched for
@@ -177,7 +177,7 @@
                                             Please enter the details below
                                         </li>
                                     </ul>
-                                </BootstrapAlert>
+                                </alert>
                             </div>
                             <div id="link_search_again" class="col">
                                 <a href="#" @click="searchAgain"
