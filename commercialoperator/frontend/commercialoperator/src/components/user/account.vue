@@ -160,6 +160,16 @@
                         novalidate
                         @submit.prevent=""
                     >
+                        <div class="row" style="margin: auto">
+                            <alert
+                                v-if="hasErrorMessage"
+                                class="mb-1 ml-1"
+                                type="danger"
+                                icon="exclamation-triangle-fill"
+                            >
+                                <span> {{ errorMessage }} </span>
+                            </alert>
+                        </div>
                         <div class="row mb-3">
                             <label
                                 for="link_search_again"
@@ -451,6 +461,7 @@ export default {
             loadingOrganisationRequests: false,
             helpers: helpers,
             updatingSystemSettings: false,
+            errorMessage: null,
         };
     },
     computed: {
@@ -465,6 +476,10 @@ export default {
         },
         csrf_token: function () {
             return helpers.getCookie('csrftoken');
+        },
+        hasErrorMessage: function () {
+            let vm = this;
+            return vm.errorMessage !== null;
         },
     },
     created: function () {
@@ -792,7 +807,8 @@ export default {
             return false;
         },
         submitOrganisationRequest: function () {
-            let vm = this;
+            const vm = this;
+            vm.errorMessage = null;
             vm.loadingOrganisationRequest = true;
             let data = new FormData();
             data.append('name', vm.newOrganisation.name);
