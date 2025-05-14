@@ -428,9 +428,7 @@ class Organisation(models.Model):
         try:
             # NOTE: Try to understand why relinking a user that is linked to an organisation (it has a userdelegation object) is supposed to throw the error in the next line
             UserDelegation.objects.get(organisation=self, user=user)
-            raise ValidationError(
-                f"This user has not yet been linked to {self.name}"
-            )
+            raise ValidationError(f"This user has not yet been linked to {self.name}")
         except UserDelegation.DoesNotExist:
             delegate = UserDelegation.objects.create(organisation=self, user=user)
         try:
@@ -1076,11 +1074,6 @@ class OrganisationAccessGroup(models.Model, MembersPropertiesMixin):
 
     def __str__(self):
         return "Organisation Access Group"
-
-    @property
-    def filtered_members(self):
-        # return self.members.all()
-        return retrieve_members(self).all()
 
     class Meta:
         app_label = "commercialoperator"
