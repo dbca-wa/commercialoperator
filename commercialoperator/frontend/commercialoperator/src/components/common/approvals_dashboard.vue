@@ -371,7 +371,6 @@ export default {
                                 return full.lodgement_number;
                             }
                         },
-                        // createdCell: helpers.dtPopoverCellFn,
                         name: 'lodgement_number',
                     },
                     {
