@@ -107,8 +107,6 @@ module.exports = {
         );
         // eslint-disable-next-line no-unused-vars
         let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-            // eslint-disable-next-line no-unused-vars
-            // let popover = new bootstrap.Popover(popoverTriggerEl);
             return new bootstrap.Popover(popoverTriggerEl);
         });
     },
