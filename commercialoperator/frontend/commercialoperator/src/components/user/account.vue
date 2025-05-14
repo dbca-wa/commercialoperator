@@ -450,7 +450,7 @@ export default {
             newOrganisation: null,
             organisation_requests: null,
             term: null,
-            role: 'Employee',
+            role: 'employee',
             loadingOrganisationRequest: false,
             validatePinsError: null,
             validatingPins: false,
@@ -820,11 +820,10 @@ export default {
             const requestOptions = {
                 emulateJSON: true,
                 method: 'POST',
+                body: data,
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json; charset=UTF-8',
                     'X-CSRFToken': vm.csrf_token,
-                    body: data,
                 },
                 credentials: 'same-origin',
             };
