@@ -673,7 +673,7 @@ class Organisation(models.Model):
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_name", "")
         return None
-    
+
     @property
     def trading_name(self):
         organisation_response = get_organisation(self.organisation_id)
@@ -695,6 +695,21 @@ class Organisation(models.Model):
         organisation_response = get_organisation(organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("postal_address", "")
+        return None
+
+    @property
+    def address_summary(self):
+        organisation_id = self.organisation_id
+        # organisation_id = 1
+        organisation_response = get_organisation(organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            address = organisation_response.get("data", {}).get("postal_address", "")
+            address_values = [
+                a.encode("utf-8").decode("unicode-escape").strip()
+                for a in address.values()
+                if a
+            ]
+            return ", ".join(address_values)
         return None
 
     @property
