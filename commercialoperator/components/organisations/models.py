@@ -6,7 +6,11 @@ from django.core.validators import MinValueValidator
 from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import get_organisation, get_search_organisation
+from ledger_api_client.utils import (
+    get_organisation,
+    get_search_organisation,
+    create_organisation,
+)
 from commercialoperator.components.main.models import (
     UserAction,
     CommunicationsLogEntry,
@@ -36,9 +40,12 @@ from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
-    retrieve_members,
     retrieve_organisation_delegate_ids,
 )
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Organisation(models.Model):
@@ -945,14 +952,15 @@ class OrganisationRequest(models.Model):
         ordering = ["name"]
 
     def accept(self, request):
+        # I moved the __accept method to the top of the method to allow it to gracefully error out
+        self.__accept(request)
+        # Continue with remaining logic
         self.status = "approved"
         self.save()
         self.log_user_action(
             OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
             request,
         )
-        # Continue with remaining logic
-        self.__accept(request)
 
     @transaction.atomic
     def __accept(self, request):
@@ -962,10 +970,12 @@ class OrganisationRequest(models.Model):
         response_status = organisation_response.get("status", None)
 
         if response_status == status.HTTP_404_NOT_FOUND:
-            # Note: Do we want to create a new organisation here?
-            raise NotImplementedError(
-                "Organisation does not exist in the ledger. Please create it first."
-            )
+            # Create a new organisation in ledger
+            create_organisation(self.name, self.abn)
+            organisation_response = get_search_organisation(self.name, self.abn)
+            response_status = organisation_response.get("status", None)
+            if response_status == status.HTTP_200_OK:
+                logger.info(f"Organisation created in ledger: {self.name} ({self.abn})")
 
         if response_status != status.HTTP_200_OK:
             raise ValidationError(
@@ -978,6 +988,9 @@ class OrganisationRequest(models.Model):
         org, created = Organisation.objects.get_or_create(
             organisation_id=ledger_org["organisation_id"]
         )
+        if created:
+            logger.info(f"Organisation created in COLS: {org}")
+
         # Link requester to organisation
         delegate = UserDelegation.objects.create(user=self.requester, organisation=org)
         # log who approved the request
