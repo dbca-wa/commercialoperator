@@ -673,6 +673,13 @@ class Organisation(models.Model):
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("organisation_name", "")
         return None
+    
+    @property
+    def trading_name(self):
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("trading_name", "")
+        return None
 
     @property
     def abn(self):
