@@ -494,19 +494,7 @@ export default {
         this.fetchAccessGroupMembers();
         this.fetchProfile();
         this.$nextTick(() => {
-            helpers.initialiseSelect2
-                .bind(this)(
-                    'select_org_access_assigned_to',
-                    'select_org_access_assigned_to_parent',
-                    'access.assigned_officer',
-                    'Select an Assessor',
-                    false,
-                    0,
-                    'null'
-                )
-                .on('select2:select', function () {
-                    assignTo();
-                });
+            this.initialiseAssessorSelect(assignTo);
         });
     },
     methods: {
@@ -539,7 +527,10 @@ export default {
                 .then(
                     (response) => {
                         console.log(response);
-                        vm.access = response.body;
+                        vm.access = Object.assign({}, response.body);
+                        vm.$nextTick(() => {
+                            vm.initialiseAssessorSelect(vm.assignTo);
+                        });
                     },
                     (error) => {
                         console.log(error);
@@ -570,7 +561,6 @@ export default {
                             console.log(error);
                         }
                     );
-                console.log('there');
             } else {
                 vm.$http
                     .get(
@@ -682,7 +672,6 @@ export default {
                 }
             );
         },
-
         check_assessor: function () {
             let vm = this;
 
@@ -691,6 +680,25 @@ export default {
             });
             if (assessor.length > 0) return true;
             else return false;
+        },
+        /**
+         * Initialise the select2 for the Assessor
+         * @param callback A function to call when the select2 is initialised
+         */
+        initialiseAssessorSelect: function (callback) {
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_org_access_assigned_to',
+                    'select_org_access_assigned_to_parent',
+                    'access.assigned_officer',
+                    'Select an Assessor',
+                    false,
+                    0,
+                    'null'
+                )
+                .on('select2:select', function () {
+                    callback();
+                });
         },
     },
 };
