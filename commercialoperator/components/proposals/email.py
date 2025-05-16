@@ -1082,7 +1082,7 @@ def _log_org_email(email_message, organisation, customer, sender=None):
 
 
 def _log_user_email(email_message, emailuser, customer, sender=None):
-    from ledger.accounts.models import EmailUserLogEntry
+    from commercialoperator.components.stubs.models import EmailUserLogEntry
 
     if isinstance(
         email_message,
