@@ -843,11 +843,6 @@ class Approval(RevisionedMixin):
         if not retrieve_organisation_delegate_ids(organisation_pk).filter(
             user_id=request.user.id
         ):
-            # Note: This was existing code:
-            # In almost exlusively all cases, this filter will return an empty queryset (comparing organisation_id to user_id) and thus evaluate to True
-            # if not request.user.commercialoperator_organisations.filter(
-            #     organisation_id=self.applicant_id
-            # ):
             if request.user not in self.allowed_assessors and not is_customer(request):
                 raise ValidationError(
                     "You do not have access to surrender this approval"

@@ -24,7 +24,6 @@
                 </div>
             </div>
         </div>
-        <!-- Note: I'm removing :vehicle_id="vehicle_id" because it is not used in the component -->
         <editVehicle
             ref="edit_vehicle"
             :access_types="access_types"

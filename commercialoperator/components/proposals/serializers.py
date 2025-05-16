@@ -1083,7 +1083,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
     def get_reversion_ids(self, obj):
         if hasattr(obj, "reversion_ids"):
             return obj.reversion_ids[:5]
-        return  # TODO: (Ash) make sure this is fine
+        return
 
     def get_fee_invoice_url(self, obj):
         return (
@@ -1581,7 +1581,7 @@ class InternalFilmingProposalSerializer(
     def get_reversion_ids(self, obj):
         if hasattr(obj, "reversion_ids"):
             return obj.reversion_ids[:5]
-        return  # TODO: (Ash) make sure this is fine
+        return
 
     def get_fee_invoice_url(self, obj):
         return (
@@ -1828,7 +1828,9 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
         return obj.assessor_data
 
     def get_reversion_ids(self, obj):
-        return obj.reversion_ids[:5]
+        if hasattr(obj, "reversion_ids"):
+            return obj.reversion_ids[:5]
+        return
 
     def get_fee_invoice_url(self, obj):
         return (

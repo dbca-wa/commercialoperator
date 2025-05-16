@@ -278,6 +278,18 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
     commercialoperator_organisations = []
 
     for org_id in user_ledger_org_ids:
+
+        cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(org_id)
+        cache_timeout = settings.CACHE_TIMEOUT_5_SECONDS
+
+        ledger_organisation = cache.get(cache_key)
+
+        if ledger_organisation:
+            # If the organisation is in the cache, use it
+            logger.debug(f"Organisation {org_id} found in cache")
+            commercialoperator_organisations.append(ledger_organisation)
+            continue
+
         organisations_response = get_organisation(org_id)
 
         if organisations_response.get("status", None) == status.HTTP_200_OK:
@@ -289,7 +301,8 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
             )
             ledger_organisation["id"] = commercialoperator_organisation.id
             commercialoperator_organisations.append(ledger_organisation)
-            # Note: Set a cache here
+
+            cache.set(cache_key, ledger_organisation, cache_timeout)
         else:
             raise ValueError(f"Error retrieving organisations for user {user_id}")
         logger.info(

@@ -113,7 +113,6 @@
                             ></ApprovalType>
                         </div>
                         <div v-if="is_internal">
-                            <!-- Note: Adding the if-condition here because proposal assessments don't seem to exist (yet) on proposals in draft status -->
                             <Assessment
                                 v-if="proposal.assessor_assessment"
                                 :proposal="proposal"

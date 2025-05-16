@@ -290,7 +290,6 @@ class DeferredInvoicingPreviewView(TemplateView):
             raise
 
 
-# NOTE: Is this used still?
 class DeferredInvoicingView(TemplateView):
     template_name = "commercialoperator/booking/success.html"
 
@@ -382,7 +381,6 @@ class DeferredInvoicingView(TemplateView):
             raise
 
 
-# NOTE: Is this used still?
 class MakePaymentView(TemplateView):
     # template_name = 'mooring/booking/make_booking.html'
     template_name = "commercialoperator/booking/success.html"

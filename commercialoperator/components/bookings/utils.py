@@ -1091,30 +1091,7 @@ def checkout_existing_invoice(
             payment_session.get("message", "Error generating payment session")
         )
 
-    # NOTE: I commented out the old way of redirecting to index
-    # response = HttpResponseRedirect(reverse('checkout:index'))
-    # use HttpResponse instead of HttpResponseRedirect - HttpResonseRedirect does not pass cookies which is important for ledger to get the correct basket
-    # response = HttpResponse(
-    #     "<script> window.location='"
-    #     + reverse("checkout:index")
-    #     + "';</script> <a href='"
-    #     + reverse("checkout:index")
-    #     + "'> Redirecting please wait: "
-    #     + reverse("checkout:index")
-    #     + "</a>"
-    # )
-
-    # inject the current basket into the redirect response cookies
-    # or else, anonymous users will be directionless
-    # response.set_cookie(
-    #     settings.OSCAR_BASKET_COOKIE_OPEN,
-    #     basket_hash,
-    #     max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-    #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-    #     httponly=True,
-    # )
-
-    # NOTE: Not sure if we need these session variables
+    # Set session variables
     request.session["payment_pk"] = proposal.pk
     request.session["payment_model"] = "proposal"
 
