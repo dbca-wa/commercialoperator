@@ -7,6 +7,8 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from dateutil.relativedelta import relativedelta
 
+import traceback
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -70,6 +72,7 @@ class Command(BaseCommand):
                         a.lodgement_number
                     )
                     logger.error("{}\n{}".format(err_msg, str(e)))
+                    logger.error("{}".format(traceback.format_exc()))
                     errors.append(err_msg)
 
         cmd_name = __name__.split(".")[-1].replace("_", " ").upper()
