@@ -488,6 +488,11 @@ urlpatterns = (
             name="organisation_history",
         ),
         url("ckeditor5/", include("django_ckeditor_5.urls")),
+        url(
+            r"^booking-session/abort-redirect$",
+            booking_views.SessionAbortRedirectView.as_view(),
+            name="public-booking-aborted-redirect",
+        ),
     ]
     + ledger_patterns
     + media_serv_patterns
