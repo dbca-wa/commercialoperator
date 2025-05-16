@@ -1181,7 +1181,7 @@ def get_invoice_properties(invoice_id):
 
 def get_invoice_properties_all():
     invoices = Invoice.objects.all()
-    # TODO: (Karsten) Caching
+    # NOTE: (Karsten) Caching
     invoices_properties = [
         get_invoice_properties(invoice.id) for invoice in invoices if invoice.id
     ]
