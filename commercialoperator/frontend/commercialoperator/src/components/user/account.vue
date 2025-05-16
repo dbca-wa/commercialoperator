@@ -420,13 +420,13 @@
             </div>
         </div>
     </div>
-    <!-- TODO: commented -->
-    <!-- <BootstrapSpinner v-else class="text-primary" /> -->
+    <BootstrapSpinner v-else class="text-primary" />
 </template>
 
 <script>
 import OrganisationSearch from '@/components/internal/search/OrganisationSearch.vue';
 import BootstrapLoadingButton from '../../utils/vue/BootstrapLoadingButton.vue';
+import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import alert from '@vue-utils/alert.vue';
 // import Swal from 'sweetalert2';
@@ -437,6 +437,7 @@ export default {
     components: {
         BootstrapLoadingButton,
         OrganisationSearch,
+        BootstrapSpinner,
         FormSection,
         alert,
     },
