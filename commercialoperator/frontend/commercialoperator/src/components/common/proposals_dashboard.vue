@@ -65,23 +65,29 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="is_external" class="col-md-6">
-                        <router-link
-                            style="margin-top: 25px"
-                            class="btn btn-primary pull-right"
-                            :to="{ name: 'apply_proposal' }"
-                            >New Application</router-link
-                        >
+                    <div
+                        v-if="is_external"
+                        class="col-md-6 d-flex align-items-baseline"
+                    >
+                        <div class="form-group mt-auto mb-0">
+                            <router-link
+                                type="button"
+                                class="btn btn-primary pull-right"
+                                :to="{ name: 'apply_proposal' }"
+                                >New Application</router-link
+                            >
+                        </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label for="">Lodged From</label>
+                        <label for="input_lodged_from_date">Lodged From</label>
                         <div
                             ref="proposalDateFromPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_lodged_from_date"
                                 v-model="filterProposalLodgedFrom"
                                 type="date"
                                 class="form-control"
@@ -95,12 +101,13 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="">Lodged To</label>
+                        <label for="input_lodged_to_date">Lodged To</label>
                         <div
                             ref="proposalDateToPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_lodged_to_date"
                                 v-model="filterProposalLodgedTo"
                                 type="date"
                                 class="form-control"
@@ -652,7 +659,10 @@ export default {
                 confirmButtonText: 'Discard Application',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .delete(api_endpoints.discard_proposal(proposal_id))
                         .then(

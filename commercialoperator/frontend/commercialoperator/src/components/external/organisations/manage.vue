@@ -381,7 +381,6 @@
                             <div>
                                 <div class="col-sm-12">
                                     <div class="form-group row">
-                                        <!-- TODO: -->
                                         <datatable
                                             id="organisation_contacts_datatable_ref"
                                             ref="contacts_datatable_user"
@@ -605,7 +604,6 @@ export default {
                             return result;
                         },
                         createdCell: function (cell) {
-                            //TODO why this is not working?
                             // the call to popover is done in the 'draw' event
                             $(cell).popover();
                         },

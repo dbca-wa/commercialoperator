@@ -11,21 +11,28 @@
                             <label for="select_qaofficer_proposal_status"
                                 >Status</label
                             >
-                            <select
-                                id="select_qaofficer_proposal_status"
-                                ref="select_qaofficer_proposal_status"
-                                v-model="filterProposalStatus"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in proposal_status"
-                                    :key="s.value"
-                                    :value="s.value"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_qaofficer_proposal_status"
+                                    ref="select_qaofficer_proposal_status"
+                                    v-model="filterProposalStatus"
+                                    class="form-control"
                                 >
-                                    {{ s.name }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in proposal_status"
+                                        :key="s.value"
+                                        :value="s.value"
+                                    >
+                                        {{ s.name }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div v-if="is_external" class="col-md-3">
@@ -39,12 +46,15 @@
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <label for="">Lodged From</label>
+                        <label for="select_qaofficer_proposal_date_from"
+                            >Lodged From</label
+                        >
                         <div
                             ref="proposalDateFromPicker"
                             class="input-group date"
                         >
                             <input
+                                id="select_qaofficer_proposal_date_from"
                                 v-model="filterProposalLodgedFrom"
                                 type="date"
                                 class="form-control"
@@ -58,12 +68,15 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="">Lodged To</label>
+                        <label for="select_qaofficer_proposal_date_to"
+                            >Lodged To</label
+                        >
                         <div
                             ref="proposalDateToPicker"
                             class="input-group date"
                         >
                             <input
+                                id="select_qaofficer_proposal_date_to"
                                 v-model="filterProposalLodgedTo"
                                 type="date"
                                 class="form-control"
@@ -84,21 +97,28 @@
                             <label for="select_qaofficer_proposal_submitter"
                                 >Submitter</label
                             >
-                            <select
-                                id="select_qaofficer_proposal_submitter"
-                                ref="select_qaofficer_proposal_submitter"
-                                v-model="filterProposalSubmitter"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in proposal_submitters"
-                                    :key="s.email"
-                                    :value="s.email"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_qaofficer_proposal_submitter"
+                                    ref="select_qaofficer_proposal_submitter"
+                                    v-model="filterProposalSubmitter"
+                                    class="form-control"
                                 >
-                                    {{ s.search_term }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in proposal_submitters"
+                                        :key="s.email"
+                                        :value="s.email"
+                                    >
+                                        {{ s.search_term }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -285,6 +305,7 @@ export default {
                 ],
                 processing: true,
             },
+            isLoading: false,
         };
     },
     computed: {
@@ -358,19 +379,25 @@ export default {
     methods: {
         fetchFilterLists: function () {
             let vm = this;
+            vm.isLoading = true;
 
-            vm.$http.get(api_endpoints.filter_list).then(
-                (response) => {
-                    vm.proposal_submitters = response.body.submitters;
-                    vm.proposal_status =
-                        vm.level == 'internal'
-                            ? vm.internal_status
-                            : vm.external_status;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            vm.$http
+                .get(api_endpoints.filter_list)
+                .then(
+                    (response) => {
+                        vm.proposal_submitters = response.body.submitters;
+                        vm.proposal_status =
+                            vm.level == 'internal'
+                                ? vm.internal_status
+                                : vm.external_status;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
 
         discardProposal: function (proposal_id) {

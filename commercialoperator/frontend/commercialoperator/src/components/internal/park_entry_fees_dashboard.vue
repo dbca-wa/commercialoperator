@@ -7,20 +7,20 @@
         <div v-else-if="one_row_per_park == false">
             <PaymentDash level="internal" />
         </div>
-        <div v-else>
-            <i class="fa fa-2x fa-spinner fa-spin"></i>
-        </div>
+        <BootstrapSpinner v-else class="text-primary" />
     </div>
 </template>
 <script>
 import ParkBookingDash from '@common-utils/parkbookings_dashboard.vue';
 import PaymentDash from '@common-utils/payments_dashboard.vue';
 import { api_endpoints } from '@/utils/hooks';
+import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 export default {
     name: 'ParkEntryFeesDashboard',
     components: {
         ParkBookingDash,
         PaymentDash,
+        BootstrapSpinner,
     },
     data() {
         return {

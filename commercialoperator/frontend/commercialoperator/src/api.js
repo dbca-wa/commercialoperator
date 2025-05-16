@@ -7,8 +7,8 @@ module.exports = {
     organisation: '/api/organisations',
     organisations: '/api/organisations.json',
     filtered_organisations: '/api/filtered_organisations',
-    organisation_request: '/api/organisation_requests',
-    organisation_requests:
+    organisation_requests: '/api/organisation_requests',
+    organisation_requests_datatable:
         '/api/organisation_requests/datatable_list/?format=datatables',
     organisation_contacts: '/api/organisation_contacts.json',
     organisation_access_group_members: '/api/organisation_access_group_members',

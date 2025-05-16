@@ -9,21 +9,28 @@
                             class="form-group"
                         >
                             <label for="select_compliance_status">Status</label>
-                            <select
-                                id="select_compliance_status"
-                                ref="select_compliance_status"
-                                v-model="filterComplianceStatus"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in status"
-                                    :key="s.value"
-                                    :value="s.value"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_compliance_status"
+                                    ref="select_compliance_status"
+                                    v-model="filterComplianceStatus"
+                                    class="form-control"
                                 >
-                                    {{ s.name }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in status"
+                                        :key="s.value"
+                                        :value="s.value"
+                                    >
+                                        {{ s.name }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -34,32 +41,42 @@
                             <label for="select_compliance_application_type"
                                 >Licence Type</label
                             >
-                            <select
-                                id="select_compliance_application_type"
-                                ref="select_compliance_application_type"
-                                v-model="filterApplicationType"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in application_types"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_compliance_application_type"
+                                    ref="select_compliance_application_type"
+                                    v-model="filterApplicationType"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in application_types"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <label for="">Due date From</label>
+                        <label for="input_compliance_due_date_from"
+                            >Due date From</label
+                        >
                         <div
                             ref="complianceDateFromPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_compliance_due_date_from"
                                 v-model="filterComplianceDueFrom"
                                 type="date"
                                 class="form-control"
@@ -73,12 +90,15 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="">Due date To</label>
+                        <label for="input_compliance_due_date_to"
+                            >Due date To</label
+                        >
                         <div
                             ref="complianceDateToPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_compliance_due_date_to"
                                 v-model="filterComplianceDueTo"
                                 type="date"
                                 class="form-control"
@@ -299,6 +319,7 @@ export default {
                 ],
                 processing: true,
             },
+            isLoading: false,
         };
     },
     computed: {
@@ -375,20 +396,26 @@ export default {
     methods: {
         fetchFilterLists: function () {
             let vm = this;
+            vm.isLoading = true;
 
             vm.status =
                 vm.level == 'external'
                     ? vm.external_status
                     : vm.internal_status;
 
-            vm.$http.get(api_endpoints.filter_list_compliances).then(
-                (response) => {
-                    vm.application_types = response.body.application_types;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            vm.$http
+                .get(api_endpoints.filter_list_compliances)
+                .then(
+                    (response) => {
+                        vm.application_types = response.body.application_types;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
 
         addEventListeners: function () {

@@ -201,6 +201,7 @@ class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
         )
         return self.paginator.get_paginated_response(serializer.data)
 
+
 # NOTE: [Booking and Booking Invoice] I added this to the API as callable method to the complete_booking url pattern
 def complete_booking(request, booking_hash, booking_id):
     jsondata = {"status": "error completing booking"}
@@ -224,15 +225,3 @@ def complete_booking(request, booking_hash, booking_id):
             jsondata = {"status": "error binding"}
     response = HttpResponse(json.dumps(jsondata), content_type="application/json")
     return response
-
-
-# from django.views.decorators.http import require_http_methods
-# from django.views.decorators.csrf import csrf_exempt
-# @csrf_exempt
-# @require_http_methods(['POST'])
-# def create_booking(request, *args, **kwargs):
-#     # NOTE: Temporary dummy for testing
-#     return HttpResponse(
-#         json.dumps({"status": "success", "message": "Dummy Test Booking created"}),
-#         content_type="application/json",
-#     )

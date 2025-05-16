@@ -631,8 +631,6 @@ export default {
         let vm = this;
         vm.fetchRegions();
         vm.fetchApplicationTypes();
-        // Note: ActivityMatrix is not used in cols
-        // vm.fetchActivityMatrix();
         vm.form = document.forms.new_proposal;
 
         vm.$nextTick(() => {

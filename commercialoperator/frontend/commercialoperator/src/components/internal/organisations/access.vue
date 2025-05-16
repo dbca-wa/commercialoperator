@@ -275,7 +275,7 @@ export default {
         Vue.http
             .get(
                 helpers.add_endpoint_json(
-                    api_endpoints.organisation_request,
+                    api_endpoints.organisation_requests,
                     to.params.access_id
                 )
             )
@@ -302,15 +302,15 @@ export default {
             members: [],
             // Filters
             logs_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_request,
+                api_endpoints.organisation_requests,
                 vm.$route.params.access_id + '/action_log'
             ),
             comms_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_request,
+                api_endpoints.organisation_requests,
                 vm.$route.params.access_id + '/comms_log'
             ),
             comms_add_url: helpers.add_endpoint_json(
-                api_endpoints.organisation_request,
+                api_endpoints.organisation_requests,
                 vm.$route.params.access_id + '/add_comms_log'
             ),
             actionDtOptions: {
@@ -328,7 +328,7 @@ export default {
                 processing: true,
                 ajax: {
                     url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_request,
+                        api_endpoints.organisation_requests,
                         vm.$route.params.access_id + '/action_log'
                     ),
                     dataSrc: '',
@@ -362,7 +362,7 @@ export default {
                 processing: true,
                 ajax: {
                     url: helpers.add_endpoint_json(
-                        api_endpoints.organisation_requests,
+                        api_endpoints.organisation_requests_datatable,
                         vm.$route.params.access_id + '/comms_log'
                     ),
                     dataSrc: '',
@@ -432,7 +432,6 @@ export default {
                             return result;
                         },
                         createdCell: function (cell) {
-                            //TODO why this is not working?
                             // the call to popover is done in the 'draw' event
                             $(cell).popover();
                         },
@@ -494,19 +493,7 @@ export default {
         this.fetchAccessGroupMembers();
         this.fetchProfile();
         this.$nextTick(() => {
-            helpers.initialiseSelect2
-                .bind(this)(
-                    'select_org_access_assigned_to',
-                    'select_org_access_assigned_to_parent',
-                    'access.assigned_officer',
-                    'Select an Assessor',
-                    false,
-                    0,
-                    'null'
-                )
-                .on('select2:select', function () {
-                    assignTo();
-                });
+            this.initialiseAssessorSelect(assignTo);
         });
     },
     methods: {
@@ -532,14 +519,17 @@ export default {
             vm.$http
                 .get(
                     helpers.add_endpoint_json(
-                        api_endpoints.organisation_request,
+                        api_endpoints.organisation_requests,
                         vm.access.id + '/assign_request_user'
                     )
                 )
                 .then(
                     (response) => {
                         console.log(response);
-                        vm.access = response.body;
+                        vm.access = Object.assign({}, response.body);
+                        vm.$nextTick(() => {
+                            vm.initialiseAssessorSelect(vm.assignTo);
+                        });
                     },
                     (error) => {
                         console.log(error);
@@ -553,7 +543,7 @@ export default {
                 vm.$http
                     .post(
                         helpers.add_endpoint_json(
-                            api_endpoints.organisation_request,
+                            api_endpoints.organisation_requests,
                             vm.access.id + '/assign_to'
                         ),
                         JSON.stringify(data),
@@ -570,12 +560,11 @@ export default {
                             console.log(error);
                         }
                     );
-                console.log('there');
             } else {
                 vm.$http
                     .get(
                         helpers.add_endpoint_json(
-                            api_endpoints.organisation_request,
+                            api_endpoints.organisation_requests,
                             vm.access.id + '/unassign'
                         )
                     )
@@ -603,7 +592,7 @@ export default {
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
-                                api_endpoints.organisation_request,
+                                api_endpoints.organisation_requests,
                                 vm.access.id + '/accept'
                             )
                         )
@@ -653,7 +642,7 @@ export default {
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
-                                api_endpoints.organisation_request,
+                                api_endpoints.organisation_requests,
                                 vm.access.id + '/decline'
                             )
                         )
@@ -682,7 +671,6 @@ export default {
                 }
             );
         },
-
         check_assessor: function () {
             let vm = this;
 
@@ -691,6 +679,25 @@ export default {
             });
             if (assessor.length > 0) return true;
             else return false;
+        },
+        /**
+         * Initialise the select2 for the Assessor
+         * @param callback A function to call when the select2 is initialised
+         */
+        initialiseAssessorSelect: function (callback) {
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'select_org_access_assigned_to',
+                    'select_org_access_assigned_to_parent',
+                    'access.assigned_officer',
+                    'Select an Assessor',
+                    false,
+                    0,
+                    'null'
+                )
+                .on('select2:select', function () {
+                    callback();
+                });
         },
     },
 };

@@ -60,7 +60,9 @@ export default {
     },
     fetchOrganisationRequests: function () {
         return new Promise((resolve, reject) => {
-            fetch(api_endpoints.organisation_request + '/linked_organisations/')
+            fetch(
+                api_endpoints.organisation_requests + '/linked_organisations/'
+            )
                 .then(async (response) => {
                     const data = await response.json();
                     if (!response.ok) {

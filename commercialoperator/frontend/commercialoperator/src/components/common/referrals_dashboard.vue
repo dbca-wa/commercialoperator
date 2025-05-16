@@ -11,21 +11,28 @@
                             <label for="select_referral_proposal_status"
                                 >Status</label
                             >
-                            <select
-                                id="select_referral_proposal_status"
-                                ref="select_referral_proposal_status"
-                                v-model="filterProposalStatus"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in proposal_status"
-                                    :key="s.value"
-                                    :value="s.value"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_referral_proposal_status"
+                                    ref="select_referral_proposal_status"
+                                    v-model="filterProposalStatus"
+                                    class="form-control"
                                 >
-                                    {{ s.name }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in proposal_status"
+                                        :key="s.value"
+                                        :value="s.value"
+                                    >
+                                        {{ s.name }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -35,32 +42,42 @@
                                 for="select_referral_application_type"
                                 >Licence Type</label
                             >
-                            <select
-                                id="select_referral_application_type"
-                                ref="select_referral_application_type"
-                                v-model="filterApplicationType"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in application_types"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_referral_application_type"
+                                    ref="select_referral_application_type"
+                                    v-model="filterApplicationType"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in application_types"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <label for="">Lodged From</label>
+                        <label for="input_proposal_lodged_from"
+                            >Lodged From</label
+                        >
                         <div
                             ref="proposalDateFromPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_proposal_lodged_from"
                                 v-model="filterProposalLodgedFrom"
                                 type="date"
                                 class="form-control"
@@ -74,12 +91,13 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <label for="">Lodged To</label>
+                        <label for="input_proposal_lodged_to">Lodged To</label>
                         <div
                             ref="proposalDateToPicker"
                             class="input-group date"
                         >
                             <input
+                                id="input_proposal_lodged_to"
                                 v-model="filterProposalLodgedTo"
                                 type="date"
                                 class="form-control"
@@ -100,21 +118,28 @@
                             <label for="select_referral_submitter"
                                 >Submitter</label
                             >
-                            <select
-                                id="select_referral_submitter"
-                                ref="select_referral_submitter"
-                                v-model="filterProposalSubmitter"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in proposal_submitters"
-                                    :key="s.email"
-                                    :value="s.email"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_referral_submitter"
+                                    ref="select_referral_submitter"
+                                    v-model="filterProposalSubmitter"
+                                    class="form-control"
                                 >
-                                    {{ s.search_term }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in proposal_submitters"
+                                        :key="s.email"
+                                        :value="s.email"
+                                    >
+                                        {{ s.search_term }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -299,6 +324,7 @@ export default {
                 ],
                 processing: true,
             },
+            isLoading: false,
         };
     },
     computed: {},
@@ -381,18 +407,24 @@ export default {
     methods: {
         fetchFilterLists: function () {
             let vm = this;
+            vm.isLoading = true;
 
-            vm.$http.get(api_endpoints.filter_list_referrals).then(
-                (response) => {
-                    vm.proposal_submitters = response.body.submitters;
-                    vm.proposal_status =
-                        response.body.processing_status_choices;
-                    vm.application_types = response.body.application_types;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            vm.$http
+                .get(api_endpoints.filter_list_referrals)
+                .then(
+                    (response) => {
+                        vm.proposal_submitters = response.body.submitters;
+                        vm.proposal_status =
+                            response.body.processing_status_choices;
+                        vm.application_types = response.body.application_types;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
 
         addEventListeners: function () {

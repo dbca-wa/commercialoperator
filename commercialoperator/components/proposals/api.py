@@ -600,8 +600,7 @@ class VersionableModelViewSetMixin(viewsets.ModelViewSet):
         _version_serializer = ProposalSerializer(
             [v.object for v in _versions], many=True, context=_context
         )
-        # TODO
-        # check pagination
+
         return Response(_version_serializer.data)
 
 
@@ -3293,24 +3292,6 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             queryset = DistrictProposal.objects.all()
             return queryset
         return DistrictProposal.objects.none()
-
-    # TODO: review this - seems like a workaround at the moment
-    def get_serializer_class(self):
-        try:
-            districtProposal = self.get_object()
-            return DistrictProposalSerializer
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[

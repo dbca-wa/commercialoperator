@@ -349,7 +349,6 @@ def create_other_invoice(user, booking):
                 order = create_invoice(booking, payment_method="other")
                 invoice = Invoice.objects.get(order_number=order.number)
 
-                # TODO determine actual deferred_payment_date - currently defaulting to BPAY equiv.
                 deferred_payment_date = calc_payment_due_date(
                     booking, dt
                 ) - relativedelta(days=1)
@@ -360,7 +359,6 @@ def create_other_invoice(user, booking):
                     deferred_payment_date=deferred_payment_date,
                 )
 
-                # TODO - determine what emails to be sent and when
                 # send_monthly_invoice_tclass_email_notification(user, booking, invoice, recipients=[booking.proposal.applicant_email])
                 # ProposalUserAction.log_action(booking.proposal,ProposalUserAction.ACTION_SEND_MONTHLY_INVOICE.format(booking.proposal.id),booking.proposal.applicant_email)
             except Exception as e:
@@ -1091,30 +1089,7 @@ def checkout_existing_invoice(
             payment_session.get("message", "Error generating payment session")
         )
 
-    # NOTE: I commented out the old way of redirecting to index
-    # response = HttpResponseRedirect(reverse('checkout:index'))
-    # use HttpResponse instead of HttpResponseRedirect - HttpResonseRedirect does not pass cookies which is important for ledger to get the correct basket
-    # response = HttpResponse(
-    #     "<script> window.location='"
-    #     + reverse("checkout:index")
-    #     + "';</script> <a href='"
-    #     + reverse("checkout:index")
-    #     + "'> Redirecting please wait: "
-    #     + reverse("checkout:index")
-    #     + "</a>"
-    # )
-
-    # inject the current basket into the redirect response cookies
-    # or else, anonymous users will be directionless
-    # response.set_cookie(
-    #     settings.OSCAR_BASKET_COOKIE_OPEN,
-    #     basket_hash,
-    #     max_age=settings.OSCAR_BASKET_COOKIE_LIFETIME,
-    #     secure=settings.OSCAR_BASKET_COOKIE_SECURE,
-    #     httponly=True,
-    # )
-
-    # NOTE: Not sure if we need these session variables
+    # Set session variables
     request.session["payment_pk"] = proposal.pk
     request.session["payment_model"] = "proposal"
 
@@ -1154,66 +1129,6 @@ def redirect_to_zero_payment_view(request, proposal, lines):
             "redirect_url": reverse("zero_fee_success"),
         }
         return render(request, template_name, context)
-
-
-def test_create_invoice(payment_method="bpay"):
-    """
-    This will create and invoice and order from a basket bypassing the session
-    and payment bpoint code constraints.
-
-    To test:
-            from ledger.payments.invoice.utils import test_create_invoice
-
-
-            from ledger.checkout.utils import createCustomBasket
-            from ledger.payments.invoice.utils import CreateInvoiceBasket
-            from decimal import Decimal
-
-            products = [{u'oracle_code': u'ABC123 GST', u'price_incl_tax': Decimal('10.00'), u'price_excl_tax': Decimal('9.090909090909'), u'ledger_description': u'Booking Date 2019-09-24: Neale Junction Nature Reserve - 2019-09-24 - Adult', u'quantity': 1}]
-            or
-            products = Booking.objects.last().as_line_items
-
-            user = EmailUser.objects.get(email__icontains='walter.genuit@dbca')
-            payment_method = 'bpay' (or 'monthly_invoicing')
-
-            basket  = createCustomBasket(products, user, 'S557', bpay_allowed=True, monthly_invoicing_allowed=True)
-            order = CreateInvoiceBasket(payment_method='bpay', system='0557').create_invoice_and_order(basket, 0, None, None, user=user, invoice_text='CIB7')
-
-            Invoice.objects.get(order_number=order.number)
-            <Invoice: Invoice #05572188633>
-
-            To view:
-                    http://localhost:8499/ledger/payments/invoice/05572188633
-
-    """
-    from commercialoperator.components.stubs.utils import createCustomBasket
-    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
-    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-    from decimal import Decimal
-
-    products = [
-        {
-            "oracle_code": "ABC123 GST",
-            "price_incl_tax": Decimal("10.00"),
-            "price_excl_tax": Decimal("9.090909090909"),
-            "ledger_description": "Neale Junction Nature Reserve - 2019-09-24 - Adult",
-            "quantity": 1,
-        }
-    ]
-    # products = Booking.objects.last().as_line_items
-
-    user = EmailUser.objects.get(email="jawaid.mushtaq@dbca.wa.gov.au")
-    # payment_method = 'bpay'
-    payment_method = "monthly_invoicing"
-
-    basket = createCustomBasket(products, user, "S557")
-    order = CreateInvoiceBasket(
-        payment_method=payment_method, system="0557"
-    ).create_invoice_and_order(basket, 0, None, None, user=user, invoice_text="CIB7")
-    print("Created Order: {}".format(order.number))
-    print("Created Invoice: {}".format(Invoice.objects.get(order_number=order.number)))
-
-    return order
 
 
 def create_invoice(booking, payment_method="bpay"):
@@ -1266,7 +1181,7 @@ def get_invoice_properties(invoice_id):
 
 def get_invoice_properties_all():
     invoices = Invoice.objects.all()
-    # TODO: Caching
+    # NOTE: (Karsten) Caching
     invoices_properties = [
         get_invoice_properties(invoice.id) for invoice in invoices if invoice.id
     ]

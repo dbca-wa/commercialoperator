@@ -143,11 +143,6 @@ export default {
             type: Boolean,
             default: false,
         },
-        // Note: Commented out park_id because it is a dupe and I think only the data prop is needed
-        // park_id: {
-        //     type: Number,
-        //     required: true,
-        // },
         // eslint-disable-next-line vue/prop-name-casing
         park_action: {
             type: String,

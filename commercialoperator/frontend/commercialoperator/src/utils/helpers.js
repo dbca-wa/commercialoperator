@@ -107,9 +107,47 @@ module.exports = {
         );
         // eslint-disable-next-line no-unused-vars
         let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-            // eslint-disable-next-line no-unused-vars
-            let popover = new bootstrap.Popover(popoverTriggerEl);
+            return new bootstrap.Popover(popoverTriggerEl);
         });
+    },
+    /**
+     * Initialise the popover template
+     * @param {String=} title The title of the popover
+     * @param {String=} closeButton The close button element
+     * @returns {String} The popover template
+     */
+    initialisePopoverTemplate: function (title = '', closeButton = undefined) {
+        if (typeof closeButton === 'undefined') {
+            closeButton =
+                '<div type="button" id="close" class="popover-close">' +
+                '<i class="fa fa-window-close" aria-hidden="true"></i>' +
+                '</div>';
+        }
+        // prettier-ignore
+        const popTemplate = _.template(
+            '<a tabindex="0" href="#" ' +
+                `data-bs-title="${title}" ` +
+                'data-bs-template=\'' +
+                    '<div class="popover" role="tooltip">' + 
+                        '<div class="arrow"></div>' +
+                        '<div class="row ps-0">' +
+                            '<div class="col-md-12 text-nowrap">' +
+                                '<h3 class="popover-header"></h3>' +
+                            '</div>' +
+                        '</div>' +
+                        `${closeButton}` +
+                        '<div class="popover-body"></div>' +
+                    '</div>\' ' +
+                'role="button" ' +
+                'data-bs-toggle="popover" ' +
+                'data-bs-trigger="hover" ' +
+                'data-bs-placement="top" ' +
+                'data-bs-html="true" ' +
+                `data-bs-content="<%= text.replace(/"/g, '&quot;') %>" ` +
+                '><%= icon %></a>'
+        );
+
+        return popTemplate;
     },
     /**
      * Adds an ellipsis (...) to a string in a datatable cell if it exceeds a certain length

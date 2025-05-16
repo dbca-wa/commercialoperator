@@ -39,7 +39,7 @@
 {% block menu_items_left_brand %}
 <div class="navbar-nav">
     <div class="nav-item">
-        <a class="nav-link{% if request.path == '/' %} active{% endif %}" href="{% url 'home'%}"><img src="/static/img/pwl_icon.png">Home</a>
+        <a class="nav-link{% if request.path == '/' %} active{% endif %} navbar-brand" href="{% url 'home'%}"><img src="/static/img/pwl_icon.png">Home</a>
     </div>
 </div>
 {% endblock %}

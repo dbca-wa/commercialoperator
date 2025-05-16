@@ -61,28 +61,38 @@
                                             }}</strong></alert
                                         >
 
-                                        <div class="row">
+                                        <div class="row mb-2">
                                             <div class="form-group">
                                                 <label
                                                     class="col-sm-3 control-label pull-left"
-                                                    for="Name"
+                                                    for="text_requirement"
                                                     >Requirement:</label
                                                 >
                                                 <div class="col-sm-6">
-                                                    {{ compliance.requirement }}
+                                                    <TextArea
+                                                        id="text_requirement"
+                                                        type="text"
+                                                        class="form-control w-100"
+                                                        name="requirement"
+                                                        disabled
+                                                        readonly
+                                                        >{{
+                                                            compliance.requirement
+                                                        }}</TextArea
+                                                    >
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="row">
+                                        <div class="row mb-2">
                                             <div class="form-group">
                                                 <label
                                                     class="col-sm-3 control-label pull-left"
-                                                    for="Name"
+                                                    for="text_details"
                                                     >Details:</label
                                                 >
                                                 <div class="col-sm-6">
                                                     <textarea
+                                                        id="text_details"
                                                         v-model="
                                                             compliance.text
                                                         "
@@ -95,8 +105,7 @@
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="row">
+                                        <div class="row mb-2">
                                             <div
                                                 v-if="hasDocuments"
                                                 class="form-group"
@@ -104,17 +113,21 @@
                                                 <div
                                                     class="col-sm-3 control-label pull-left"
                                                 >
-                                                    <label for="Name"
+                                                    <label
+                                                        for="compliance-document-0"
                                                         >Documents:</label
                                                     >
                                                 </div>
                                                 <div class="col-sm-6">
                                                     <div
-                                                        v-for="d in compliance.documents"
+                                                        v-for="(
+                                                            d, idx
+                                                        ) in compliance.documents"
                                                         :key="d.id"
                                                         class="row"
                                                     >
                                                         <a
+                                                            :id="`compliance-document-${idx}`"
                                                             :href="d[1]"
                                                             target="_blank"
                                                             class="control-label pull-left"
@@ -154,15 +167,14 @@
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="row">
+                                        <div class="row mb-2">
                                             <div
                                                 v-if="!isFinalised"
                                                 class="form-group"
                                             >
                                                 <label
                                                     class="col-sm-3 control-label pull-left"
-                                                    for="Name"
+                                                    :for="`file-upload-form-${files.findIndex((f) => f.file === null)}`"
                                                     >Attachments:</label
                                                 >
                                                 <div class="col-sm-6">
@@ -191,6 +203,7 @@
                                                                 >
                                                                     Attach File
                                                                     <input
+                                                                        :id="`file-upload-form-${i}`"
                                                                         type="file"
                                                                         :name="
                                                                             'file-upload-' +
@@ -218,6 +231,7 @@
                                                                 >
                                                                     Update File
                                                                     <input
+                                                                        :id="`file-upload-form-${i}`"
                                                                         type="file"
                                                                         :name="
                                                                             'file-upload-' +
@@ -327,7 +341,7 @@
                                         </div>
 
                                         <div class="row">
-                                            <div class="">
+                                            <div class="col-sm-9">
                                                 <div class="pull-right">
                                                     <button
                                                         v-if="
@@ -335,7 +349,8 @@
                                                             !isFinalised &&
                                                             !compliance.fee_paid
                                                         "
-                                                        class="btn btn-primary"
+                                                        type="button"
+                                                        class="btn btn-primary me-2"
                                                         @click.prevent="
                                                             pay_and_submit()
                                                         "
@@ -344,7 +359,8 @@
                                                     </button>
                                                     <button
                                                         v-else-if="!isFinalised"
-                                                        class="btn btn-primary"
+                                                        type="button"
+                                                        class="btn btn-primary me-2"
                                                         @click.prevent="
                                                             submit()
                                                         "
@@ -353,6 +369,7 @@
                                                     </button>
                                                     <button
                                                         v-if="!isFinalised"
+                                                        type="button"
                                                         class="btn btn-primary"
                                                         @click.prevent="close()"
                                                     >
@@ -548,7 +565,7 @@ export default {
             this.compliance = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
+            // this.validation_form.resetForm();
             let file_length = vm.files.length;
             this.files = [];
             for (var i = 0; i < file_length; i++) {
@@ -645,13 +662,13 @@ export default {
                     vm.errorString =
                         'Please upload at least one document prior to submitting.';
                 } else {
-                    swal({
+                    swal.fire({
                         title: vm.submit_text() + ' Compliance',
                         text:
                             'Are you sure you want to ' +
                             vm.submit_text().toLowerCase() +
                             ' this requirement?',
-                        type: 'question',
+                        icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: vm.submit_text(),
                     }).then(() => {
@@ -726,13 +743,13 @@ export default {
             vm.submitting = true;
             vm.paySubmitting = true;
 
-            swal({
+            swal.fire({
                 title: vm.submit_text() + ' Compliance',
                 text:
                     'Are you sure you want to ' +
                     vm.submit_text().toLowerCase() +
                     ' this application?',
-                type: 'question',
+                icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: vm.submit_text(),
             }).then(
@@ -774,11 +791,11 @@ export default {
                                     });
                                 },
                                 (err) => {
-                                    swal(
-                                        'Submit Error',
-                                        helpers.apiVueResourceError(err),
-                                        'error'
-                                    );
+                                    swal.fire({
+                                        title: 'Submit Error',
+                                        text: helpers.apiVueResourceError(err),
+                                        icon: 'error',
+                                    });
                                 }
                             );
                     }

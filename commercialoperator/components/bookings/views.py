@@ -290,7 +290,6 @@ class DeferredInvoicingPreviewView(TemplateView):
             raise
 
 
-# NOTE: Is this used still?
 class DeferredInvoicingView(TemplateView):
     template_name = "commercialoperator/booking/success.html"
 
@@ -382,7 +381,6 @@ class DeferredInvoicingView(TemplateView):
             raise
 
 
-# NOTE: Is this used still?
 class MakePaymentView(TemplateView):
     # template_name = 'mooring/booking/make_booking.html'
     template_name = "commercialoperator/booking/success.html"
@@ -1376,3 +1374,22 @@ class InvoicePaymentView(View):
             or is_internal(self.request)
             or self.request.user.is_superuser
         )
+
+
+class SessionAbortRedirectView(TemplateView):
+    template_name = "ps/booking/abort_session.html"
+
+    def get(self, request, *args, **kwargs):
+        booking = None
+        try:
+            booking = get_session_booking(request.session)
+
+            # only ever delete a booking object if it's marked as temporary
+            if booking.booking_type == 3:
+                booking.delete()
+            delete_session_booking(request.session)
+
+        except Exception as e:
+            pass
+
+        return HttpResponseRedirect("/")

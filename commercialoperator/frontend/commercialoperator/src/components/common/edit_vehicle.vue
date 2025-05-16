@@ -182,11 +182,6 @@ export default {
         alert,
     },
     props: {
-        // Note: I'm commenting out the vehicel_id prop because it doesn't seem to be initialized with a non-null value
-        // vehicle_id: {
-        //     type: Number,
-        //     required: true,
-        // },
         // eslint-disable-next-line vue/prop-name-casing
         vehicle_action: {
             type: String,

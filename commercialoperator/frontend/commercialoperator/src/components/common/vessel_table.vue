@@ -24,7 +24,6 @@
                 </div>
             </div>
         </div>
-        <!-- Note: I removed the :vessel_id="vessel_id" prop because it doesn't exist on this component -->
         <editVessel
             ref="edit_vessel"
             @refreshFromResponse="refreshFromResponse"

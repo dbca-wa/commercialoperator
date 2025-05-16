@@ -4,10 +4,12 @@ from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.utils.encoding import smart_str as smart_text
 from django.urls import reverse
 from django.conf import settings
+from rest_framework import status
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import get_or_create
 
 from commercialoperator.components.stubs.models import EmailUserLogEntry
 from commercialoperator.components.stubs.utils import retrieve_email_user
@@ -143,13 +145,14 @@ def send_approval_cancel_email_notification(approval):
         "approval": approval,
     }
     sender = settings.DEFAULT_FROM_EMAIL
-    try:
-        sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
-        # Note: Should we create a new user after segregation?
-        # EmailUser.objects.create(email=sender, password="")
-        # sender_user = EmailUser.objects.get(email__icontains=sender)
-        raise ValueError("EmailUser does not exist and creation has been disabled")
+    sender_user_response = get_or_create(sender)
+    if sender_user_response.get("status") == status.HTTP_200_OK:
+        sender_user = retrieve_email_user(
+            sender_user_response["data"].get("emailuser_id")
+        )
+    else:
+        raise ValueError(f"Error getting or creating email user for sender {sender}")
+
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -190,13 +193,14 @@ def send_approval_suspend_email_notification(approval, request=None):
         "to_date": to_date,
     }
     sender = settings.DEFAULT_FROM_EMAIL
-    try:
-        sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
-        # Note: Should we create a new user after segregation?
-        # EmailUser.objects.create(email=sender, password="")
-        # sender_user = EmailUser.objects.get(email__icontains=sender)
-        raise ValueError("EmailUser does not exist and creation has been disabled")
+    sender_user_response = get_or_create(sender)
+    if sender_user_response.get("status") == status.HTTP_200_OK:
+        sender_user = retrieve_email_user(
+            sender_user_response["data"].get("emailuser_id")
+        )
+    else:
+        raise ValueError(f"Error getting or creating email user for sender {sender}")
+
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -234,13 +238,14 @@ def send_approval_surrender_email_notification(approval, request=None):
         "surrender_date": surrender_date,
     }
     sender = settings.DEFAULT_FROM_EMAIL
-    try:
-        sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
-        # Note: Should we create a new user after segregation?
-        # EmailUser.objects.create(email=sender, password="")
-        # sender_user = EmailUser.objects.get(email__icontains=sender)
-        raise ValueError("EmailUser does not exist and creation has been disabled")
+    sender_user_response = get_or_create(sender)
+    if sender_user_response.get("status") == status.HTTP_200_OK:
+        sender_user = retrieve_email_user(
+            sender_user_response["data"].get("emailuser_id")
+        )
+    else:
+        raise ValueError(f"Error getting or creating email user for sender {sender}")
+
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -278,13 +283,14 @@ def send_approval_renewal_email_notification(approval):
         "url": url,
     }
     sender = settings.DEFAULT_FROM_EMAIL
-    try:
-        sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
-        # Note: Should we create a new user after segregation?
-        # EmailUser.objects.create(email=sender, password="")
-        # sender_user = EmailUser.objects.get(email__icontains=sender)
-        raise ValueError("EmailUser does not exist and creation has been disabled")
+    sender_user_response = get_or_create(sender)
+    if sender_user_response.get("status") == status.HTTP_200_OK:
+        sender_user = retrieve_email_user(
+            sender_user_response["data"].get("emailuser_id")
+        )
+    else:
+        raise ValueError(f"Error getting or creating email user for sender {sender}")
+
     # attach renewal notice
     if approval.renewal_document and approval.renewal_document._file is not None:
         renewal_document = approval.renewal_document._file
@@ -325,13 +331,13 @@ def send_approval_eclass_renewal_email_notification(approval):
         "proposal": approval.current_proposal,
     }
     sender = settings.DEFAULT_FROM_EMAIL
-    try:
-        sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
-        # Note: Should we create a new user after segregation?
-        # EmailUser.objects.create(email=sender, password="")
-        # sender_user = EmailUser.objects.get(email__icontains=sender)
-        raise ValueError("EmailUser does not exist and creation has been disabled")
+    sender_user_response = get_or_create(sender)
+    if sender_user_response.get("status") == status.HTTP_200_OK:
+        sender_user = retrieve_email_user(
+            sender_user_response["data"].get("emailuser_id")
+        )
+    else:
+        raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
     # cc list commented below 15-Jul-2021 --> eclass renewal emails should only go to assessors
@@ -361,13 +367,13 @@ def send_approval_eclass_expiry_email_notification(approval):
         "proposal": approval.current_proposal,
     }
     sender = settings.DEFAULT_FROM_EMAIL
-    try:
-        sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
-        # Note: Should we create a new user after segregation?
-        # EmailUser.objects.create(email=sender, password="")
-        # sender_user = EmailUser.objects.get(email__icontains=sender)
-        raise ValueError("EmailUser does not exist and creation has been disabled")
+    sender_user_response = get_or_create(sender)
+    if sender_user_response.get("status") == status.HTTP_200_OK:
+        sender_user = retrieve_email_user(
+            sender_user_response["data"].get("emailuser_id")
+        )
+    else:
+        raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
     # cc list commented below 15-Jul-2021 --> eclass expiry emails should only go to assessors
@@ -424,7 +430,6 @@ def _log_approval_email(email_message, approval, sender=None):
             EmailMessage,
         ),
     ):
-        # TODO this will log the plain text body, should we log the html instead
         text = email_message.body
         subject = email_message.subject
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
@@ -484,7 +489,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
             EmailMessage,
         ),
     ):
-        # TODO this will log the plain text body, should we log the html instead
         text = email_message.body
         subject = email_message.subject
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
@@ -534,7 +538,6 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
             EmailMessage,
         ),
     ):
-        # TODO this will log the plain text body, should we log the html instead
         text = email_message.body
         subject = email_message.subject
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)

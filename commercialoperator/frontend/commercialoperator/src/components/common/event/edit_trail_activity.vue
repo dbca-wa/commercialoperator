@@ -175,11 +175,6 @@ export default {
             type: Boolean,
             default: false,
         },
-        // Note: commented out because it is a dupe and I think only the data value is needed
-        // trail_id: {
-        //     type: Number,
-        //     required: true,
-        // },
         // eslint-disable-next-line vue/prop-name-casing
         trail_action: {
             type: String,

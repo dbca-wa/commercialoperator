@@ -133,11 +133,11 @@
                                 >&nbsp;</label
                             >
                             <div class="col-sm-4">
-                                <BootstrapAlert
+                                <alert
                                     type="danger"
                                     icon="exclamation-triangle-fill"
                                     >{{ validatePinsError }}
-                                </BootstrapAlert>
+                                </alert>
                             </div>
                         </div>
                         <div v-if="pinCodesEntered" class="row mb-3">
@@ -160,12 +160,24 @@
                         novalidate
                         @submit.prevent=""
                     >
+                        <div class="row" style="margin: auto">
+                            <alert
+                                v-if="hasErrorMessage"
+                                class="mb-1 ml-1"
+                                type="danger"
+                                icon="exclamation-triangle-fill"
+                            >
+                                <span> {{ errorMessage }} </span>
+                            </alert>
+                        </div>
                         <div class="row mb-3">
-                            <label for="" class="col-sm-3 col-form-label"
+                            <label
+                                for="link_search_again"
+                                class="col-sm-3 col-form-label"
                                 >&nbsp;</label
                             >
                             <div class="col-auto">
-                                <BootstrapAlert>
+                                <alert type="warning">
                                     <ul class="list-group">
                                         <li class="list-group-item">
                                             The organisation you searched for
@@ -175,9 +187,9 @@
                                             Please enter the details below
                                         </li>
                                     </ul>
-                                </BootstrapAlert>
+                                </alert>
                             </div>
-                            <div class="col">
+                            <div id="link_search_again" class="col">
                                 <a href="#" @click="searchAgain"
                                     >Search Again</a
                                 >
@@ -352,12 +364,15 @@
                             method="post"
                         >
                             <div class="form-group row mb-3">
-                                <label for="" class="col-sm-3"
+                                <label
+                                    for="input_system_settings_one_row_per_park"
+                                    class="col-sm-3"
                                     >Park Entry Fees dashboard view</label
                                 >
                                 <div class="col-sm-3">
                                     <label>
                                         <input
+                                            id="input_system_settings_one_row_per_park"
                                             v-model="
                                                 email_user.system_settings
                                                     .one_row_per_park
@@ -405,16 +420,15 @@
             </div>
         </div>
     </div>
-    <!-- TODO: commented -->
-    <!-- <BootstrapSpinner v-else class="text-primary" /> -->
+    <BootstrapSpinner v-else class="text-primary" />
 </template>
 
 <script>
 import OrganisationSearch from '@/components/internal/search/OrganisationSearch.vue';
 import BootstrapLoadingButton from '../../utils/vue/BootstrapLoadingButton.vue';
+import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import alert from '@vue-utils/alert.vue';
-// import Swal from 'sweetalert2';
 import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
 
 export default {
@@ -422,6 +436,7 @@ export default {
     components: {
         BootstrapLoadingButton,
         OrganisationSearch,
+        BootstrapSpinner,
         FormSection,
         alert,
     },
@@ -435,7 +450,7 @@ export default {
             newOrganisation: null,
             organisation_requests: null,
             term: null,
-            role: 'Employee',
+            role: 'employee',
             loadingOrganisationRequest: false,
             validatePinsError: null,
             validatingPins: false,
@@ -446,6 +461,7 @@ export default {
             loadingOrganisationRequests: false,
             helpers: helpers,
             updatingSystemSettings: false,
+            errorMessage: null,
         };
     },
     computed: {
@@ -460,6 +476,10 @@ export default {
         },
         csrf_token: function () {
             return helpers.getCookie('csrftoken');
+        },
+        hasErrorMessage: function () {
+            let vm = this;
+            return vm.errorMessage !== null;
         },
     },
     created: function () {
@@ -497,7 +517,6 @@ export default {
         fetchInitialData: function () {
             let vm = this;
 
-            // TODO:
             let initialisers = [
                 utils.fetchCountries(),
                 utils.fetchLedgerAccount(),
@@ -614,6 +633,7 @@ export default {
         searchAgain: function () {
             this.selectedOrganisation = null;
             this.newOrganisation = null;
+            this.errorMessage = null;
             this.$nextTick(() => {
                 $('#search-organisations').select2('open');
             });
@@ -787,19 +807,26 @@ export default {
             return false;
         },
         submitOrganisationRequest: function () {
-            let vm = this;
+            const vm = this;
+            vm.errorMessage = null;
             vm.loadingOrganisationRequest = true;
             let data = new FormData();
             data.append('name', vm.newOrganisation.name);
             data.append('abn', vm.newOrganisation.abn);
             data.append('identification', vm.newOrganisation.identification);
             data.append('role', vm.role);
+
             const requestOptions = {
+                emulateJSON: true,
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: data,
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRFToken': vm.csrf_token,
+                },
+                credentials: 'same-origin',
             };
-            fetch(api_endpoints.organisation_requests, requestOptions)
+            fetch(api_endpoints.organisation_requests + '/', requestOptions)
                 .then(async (response) => {
                     const data = await response.json();
                     if (!response.ok) {

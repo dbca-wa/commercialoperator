@@ -1037,7 +1037,6 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             return obj.approval_level_document
 
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -1083,7 +1082,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
     def get_reversion_ids(self, obj):
         if hasattr(obj, "reversion_ids"):
             return obj.reversion_ids[:5]
-        return  # TODO: make sure this is fine
+        return
 
     def get_fee_invoice_url(self, obj):
         return (
@@ -1538,7 +1537,6 @@ class InternalFilmingProposalSerializer(
             return obj.approval_level_document
 
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -1581,7 +1579,7 @@ class InternalFilmingProposalSerializer(
     def get_reversion_ids(self, obj):
         if hasattr(obj, "reversion_ids"):
             return obj.reversion_ids[:5]
-        return  # TODO: make sure this is fine
+        return
 
     def get_fee_invoice_url(self, obj):
         return (
@@ -1787,7 +1785,6 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
             return obj.approval_level_document
 
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -1828,7 +1825,9 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
         return obj.assessor_data
 
     def get_reversion_ids(self, obj):
-        return obj.reversion_ids[:5]
+        if hasattr(obj, "reversion_ids"):
+            return obj.reversion_ids[:5]
+        return
 
     def get_fee_invoice_url(self, obj):
         return (
@@ -1952,7 +1951,6 @@ class SaveInternalEventProposalSerializer(BaseProposalSerializer):
 
 class FilmingDistrictProposalSerializer(InternalFilmingProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -2081,7 +2079,6 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
 
 class ReferralProposalSerializer(InternalProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -2102,7 +2099,6 @@ class ReferralProposalSerializer(InternalProposalSerializer):
 
 class FilmingReferralProposalSerializer(InternalFilmingProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -2123,7 +2119,6 @@ class FilmingReferralProposalSerializer(InternalFilmingProposalSerializer):
 
 class EventReferralProposalSerializer(InternalEventProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user

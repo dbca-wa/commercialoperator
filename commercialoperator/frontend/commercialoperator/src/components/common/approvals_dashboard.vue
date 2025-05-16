@@ -11,21 +11,28 @@
                             <label for="select_approval_proposal_status"
                                 >Status</label
                             >
-                            <select
-                                id="select_approval_proposal_status"
-                                ref="select_approval_proposal_status"
-                                v-model="filterProposalStatus"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in approval_status"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_approval_proposal_status"
+                                    ref="select_approval_proposal_status"
+                                    v-model="filterProposalStatus"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in approval_status"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -36,33 +43,43 @@
                             <label for="select_approval_licence_type"
                                 >Licence Type</label
                             >
-                            <select
-                                id="select_approval_licence_type"
-                                ref="select_approval_licence_type"
-                                v-model="filterApplicationType"
-                                class="form-control"
-                            >
-                                <option value="All">All</option>
-                                <option
-                                    v-for="s in application_types"
-                                    :key="s"
-                                    :value="s"
+                            <div v-show="isLoading">
+                                <select class="form-control">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+                            <div v-show="!isLoading">
+                                <select
+                                    id="select_approval_licence_type"
+                                    ref="select_approval_licence_type"
+                                    v-model="filterApplicationType"
+                                    class="form-control"
                                 >
-                                    {{ s }}
-                                </option>
-                            </select>
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in application_types"
+                                        :key="s"
+                                        :value="s"
+                                    >
+                                        {{ s }}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Start From</label>
+                            <label for="input_start_from_date"
+                                >Start From</label
+                            >
                             <div
                                 ref="startDateFromPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_start_from_date"
                                     v-model="filterStartFrom"
                                     type="date"
                                     class="form-control"
@@ -78,12 +95,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Start To</label>
+                            <label for="input_start_to_date">Start To</label>
                             <div
                                 ref="startDateToPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_start_to_date"
                                     v-model="filterStartTo"
                                     type="date"
                                     class="form-control"
@@ -99,12 +117,15 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Expiry From</label>
+                            <label for="input_expiry_from_date"
+                                >Expiry From</label
+                            >
                             <div
                                 ref="expiryDateFromPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_expiry_from_date"
                                     v-model="filterExpiryFrom"
                                     type="date"
                                     class="form-control"
@@ -120,12 +141,13 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="">Expiry To</label>
+                            <label for="input_expiry_to_date">Expiry To</label>
                             <div
                                 ref="expiryDateToPicker"
                                 class="input-group date"
                             >
                                 <input
+                                    id="input_expiry_to_date"
                                     v-model="filterExpiryTo"
                                     type="date"
                                     class="form-control"
@@ -308,8 +330,8 @@ export default {
                                 var result = '';
                                 var popTemplate = '';
                                 var message = '';
-                                let tick = '';
-                                tick =
+                                let icon = '';
+                                icon =
                                     "<i class='fa fa-exclamation-triangle' style='color:red'></i>";
                                 result = full.reserved_licence
                                     ? '<span>' +
@@ -332,19 +354,15 @@ export default {
                                             message =
                                                 'This Licence is marked for surrendering to future date';
                                         }
-                                        popTemplate = _.template(
-                                            '<a href="#" ' +
-                                                'role="button" ' +
-                                                'data-toggle="popover" ' +
-                                                'data-trigger="hover" ' +
-                                                'data-placement="top auto"' +
-                                                'data-html="true" ' +
-                                                'data-content="<%= text %>" ' +
-                                                '><%= tick %></a>'
-                                        );
+                                        const title = full.lodgement_number;
+                                        popTemplate =
+                                            helpers.initialisePopoverTemplate(
+                                                title,
+                                                ''
+                                            );
                                         result += popTemplate({
                                             text: message,
-                                            tick: tick,
+                                            icon: icon,
                                         });
                                     }
                                 }
@@ -353,7 +371,6 @@ export default {
                                 return full.lodgement_number;
                             }
                         },
-                        createdCell: helpers.dtPopoverCellFn,
                         name: 'lodgement_number',
                     },
                     {
@@ -411,19 +428,16 @@ export default {
                                 var icon =
                                     "<i class='fa fa-file-pdf' style='color:red'></i>";
                                 var message = 'This is a migrated licence';
-                                popTemplate = _.template(
-                                    '<a href="#" ' +
-                                        'role="button" ' +
-                                        'data-toggle="popover" ' +
-                                        'data-trigger="hover" ' +
-                                        'data-placement="top auto"' +
-                                        'data-html="true" ' +
-                                        'data-content="<%= text %>" ' +
-                                        '><%= tick %></a>'
+
+                                const title = `License ${full.lodgement_number}`;
+                                popTemplate = helpers.initialisePopoverTemplate(
+                                    title,
+                                    ''
                                 );
+
                                 result += popTemplate({
                                     text: message,
-                                    tick: icon,
+                                    icon: icon,
                                 });
                             }
                             if (full.requirement_docs) {
@@ -553,6 +567,7 @@ export default {
                 ],
                 processing: true,
             },
+            isLoading: false,
         };
     },
     computed: {
@@ -641,17 +656,20 @@ export default {
         this.fetchFilterLists();
         this.fetchProfile();
         let vm = this;
-        $('a[data-toggle="collapse"]').on('click', function () {
-            var chev = $(this).children()[0];
-            window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'glyphicon-chevron-down glyphicon-chevron-up'
-                );
-            }, 100);
-        });
+        // $('a[data-toggle="collapse"]').on('click', function () {
+        //     var chev = $(this).children()[0];
+        //     window.setTimeout(function () {
+        //         $(chev).toggleClass(
+        //             'glyphicon-chevron-down glyphicon-chevron-up'
+        //         );
+        //     }, 100);
+        // });
         this.$nextTick(() => {
             vm.addEventListeners();
             vm.initialiseSearch();
+            // const table = this.$refs.proposal_datatable.vmDataTable;
+            // helpers.addEllipsisEventListeners(table);
+            // helpers.enablePopovers();
         });
     },
     methods: {
@@ -661,17 +679,24 @@ export default {
 
         fetchFilterLists: function () {
             let vm = this;
+            vm.isLoading = true;
 
-            vm.$http.get(api_endpoints.filter_list_approvals).then(
-                (response) => {
-                    vm.proposal_submitters = response.body.submitters;
-                    vm.approval_status = response.body.approval_status_choices;
-                    vm.application_types = response.body.application_types;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            vm.$http
+                .get(api_endpoints.filter_list_approvals)
+                .then(
+                    (response) => {
+                        vm.proposal_submitters = response.body.submitters;
+                        vm.approval_status =
+                            response.body.approval_status_choices;
+                        vm.application_types = response.body.application_types;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
 
         addEventListeners: function () {
@@ -764,6 +789,38 @@ export default {
                     vm.amendApproval(id);
                 }
             );
+
+            vm.$refs.proposal_datatable.vmDataTable.on('draw.dt', function () {
+                var popoverTriggerList = [].slice.call(
+                    document.querySelectorAll('a[data-bs-toggle="popover"]')
+                );
+                popoverTriggerList.map(function (popoverTriggerEl) {
+                    let popover = new bootstrap.Popover(popoverTriggerEl);
+                    // Listeners to hide popovers on 'x'-click
+                    vm.$refs.proposal_datatable.vmDataTable.on(
+                        'click',
+                        'a[data-bs-toggle="popover"]',
+                        function (e) {
+                            e.preventDefault();
+                            let attributes = e.currentTarget.attributes;
+                            let popoverId;
+                            if (attributes && attributes.length > 0) {
+                                popoverId = attributes['10'].value;
+                            }
+
+                            if (popover.tip && popover.tip.id == popoverId) {
+                                // Ideally the listener would only be shown on popover show, but that does work okay for now
+                                $(`#${popoverId}`)
+                                    .find('.popover-close')
+                                    .off('click')
+                                    .on('click', () => popover.hide());
+                            }
+                        }
+                    );
+
+                    return popover;
+                });
+            });
 
             helpers.initialiseSelect2.bind(this)(
                 'select_approval_proposal_status',
@@ -1056,13 +1113,21 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Amend licence',
             }).then(
-                () => {
+                (result) => {
+                    if (!result || !result.isConfirmed) {
+                        return;
+                    }
                     swal.fire({
                         title: 'Loading...',
+                        icon: 'info',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
+                        showConfirmButton: false,
                         onOpen: () => {
                             swal.showLoading();
+                        },
+                        customClass: {
+                            container: 'swal2-popover',
                         },
                     });
                     vm.$http
@@ -1120,4 +1185,9 @@ export default {
     },
 };
 </script>
-<style scoped></style>
+
+<style scoped>
+.swal2-popover {
+    z-index: 1090 !important;
+}
+</style>

@@ -339,7 +339,6 @@ def _create_header(canvas, doc, draw_page_number=True):
     bi = proposal.bookings.filter(invoices__invoice_reference=invoice.reference)
     licence_number = proposal.approval.lodgement_number if proposal.approval else None
 
-    # TODO need to fix, since individual parks can be exempt, Below calculation assumes NO PARK IS exempt
     # is_gst_exempt = proposal.application_type.is_gst_exempt if proposal.fee_invoice_reference == invoice.reference else False
 
     canvas.setFont(BOLD_FONTNAME, SMALL_FONTSIZE)
@@ -477,7 +476,6 @@ def _create_header(canvas, doc, draw_page_number=True):
 
 
 def _is_gst_exempt(proposal, invoice):
-    # TODO need to fix, since individual parks can be exempt, Below calculation assumes NO PARK IS exempt
     return (
         proposal.application_type.is_gst_exempt
         if proposal.fee_invoice_reference == invoice.reference

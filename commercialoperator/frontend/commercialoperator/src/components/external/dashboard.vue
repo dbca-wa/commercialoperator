@@ -19,8 +19,8 @@
         </div>
         <FormSection
             :form-collapse="false"
-            label="Proposals"
-            index="proposals"
+            label="Applications"
+            index="applications"
             subtitle="View existing proposals and lodge new ones"
         >
             <ProposalDashTable level="external" :url="proposals_url" />
@@ -35,7 +35,7 @@
         </FormSection>
         <FormSection
             :form-collapse="false"
-            label="Compliances"
+            label="Compliances with requirements"
             index="compliances"
             subtitle="View submitted compliances and submit new ones"
         >

@@ -24,7 +24,6 @@
                 </div>
             </div>
         </div>
-        <!-- Note: I removed the :park_id="park_id", because it does not exist on this component  -->
         <editPark
             ref="edit_park"
             :district_proposal="district_proposal"

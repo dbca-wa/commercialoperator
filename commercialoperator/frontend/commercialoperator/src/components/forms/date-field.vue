@@ -117,7 +117,6 @@ export default {
     },
     computed: {
         isChecked: function () {
-            //TODO return value from database
             return false;
         },
         options: function () {

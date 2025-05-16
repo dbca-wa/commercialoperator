@@ -6,7 +6,11 @@ from django.core.validators import MinValueValidator
 from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import get_organisation, get_search_organisation
+from ledger_api_client.utils import (
+    get_organisation,
+    get_search_organisation,
+    create_organisation,
+)
 from commercialoperator.components.main.models import (
     UserAction,
     CommunicationsLogEntry,
@@ -36,9 +40,12 @@ from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
 from commercialoperator.components.stubs.utils import (
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
-    retrieve_members,
     retrieve_organisation_delegate_ids,
 )
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Organisation(models.Model):
@@ -426,11 +433,8 @@ class Organisation(models.Model):
     @transaction.atomic
     def relink_user(self, user, request):
         try:
-            # NOTE: Try to understand why relinking a user that is linked to an organisation (it has a userdelegation object) is supposed to throw the error in the next line
             UserDelegation.objects.get(organisation=self, user=user)
-            raise ValidationError(
-                f"This user has not yet been linked to {self.name}"
-            )
+            raise ValidationError(f"This user has already been linked to {self.name}")
         except UserDelegation.DoesNotExist:
             delegate = UserDelegation.objects.create(organisation=self, user=user)
         try:
@@ -670,6 +674,13 @@ class Organisation(models.Model):
         return None
 
     @property
+    def trading_name(self):
+        organisation_response = get_organisation(self.organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            return organisation_response.get("data", {}).get("trading_name", "")
+        return None
+
+    @property
     def abn(self):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
@@ -683,6 +694,21 @@ class Organisation(models.Model):
         organisation_response = get_organisation(organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
             return organisation_response.get("data", {}).get("postal_address", "")
+        return None
+
+    @property
+    def address_summary(self):
+        organisation_id = self.organisation_id
+        # organisation_id = 1
+        organisation_response = get_organisation(organisation_id)
+        if organisation_response.get("status", None) == status.HTTP_200_OK:
+            address = organisation_response.get("data", {}).get("postal_address", "")
+            address_values = [
+                a.encode("utf-8").decode("unicode-escape").strip()
+                for a in address.values()
+                if a
+            ]
+            return ", ".join(address_values)
         return None
 
     @property
@@ -947,14 +973,15 @@ class OrganisationRequest(models.Model):
         ordering = ["name"]
 
     def accept(self, request):
+        # I moved the __accept method to the top of the method to allow it to gracefully error out
+        self.__accept(request)
+        # Continue with remaining logic
         self.status = "approved"
         self.save()
         self.log_user_action(
             OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
             request,
         )
-        # Continue with remaining logic
-        self.__accept(request)
 
     @transaction.atomic
     def __accept(self, request):
@@ -964,10 +991,12 @@ class OrganisationRequest(models.Model):
         response_status = organisation_response.get("status", None)
 
         if response_status == status.HTTP_404_NOT_FOUND:
-            # Note: Do we want to create a new organisation here?
-            raise NotImplementedError(
-                "Organisation does not exist in the ledger. Please create it first."
-            )
+            # Create a new organisation in ledger
+            create_organisation(self.name, self.abn)
+            organisation_response = get_search_organisation(self.name, self.abn)
+            response_status = organisation_response.get("status", None)
+            if response_status == status.HTTP_200_OK:
+                logger.info(f"Organisation created in ledger: {self.name} ({self.abn})")
 
         if response_status != status.HTTP_200_OK:
             raise ValidationError(
@@ -980,6 +1009,9 @@ class OrganisationRequest(models.Model):
         org, created = Organisation.objects.get_or_create(
             organisation_id=ledger_org["organisation_id"]
         )
+        if created:
+            logger.info(f"Organisation created in COLS: {org}")
+
         # Link requester to organisation
         delegate = UserDelegation.objects.create(user=self.requester, organisation=org)
         # log who approved the request
@@ -1076,11 +1108,6 @@ class OrganisationAccessGroup(models.Model, MembersPropertiesMixin):
 
     def __str__(self):
         return "Organisation Access Group"
-
-    @property
-    def filtered_members(self):
-        # return self.members.all()
-        return retrieve_members(self).all()
 
     class Meta:
         app_label = "commercialoperator"
