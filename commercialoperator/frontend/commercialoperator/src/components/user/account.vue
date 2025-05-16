@@ -429,7 +429,6 @@ import BootstrapLoadingButton from '../../utils/vue/BootstrapLoadingButton.vue';
 import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import alert from '@vue-utils/alert.vue';
-// import Swal from 'sweetalert2';
 import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
 
 export default {
@@ -518,7 +517,6 @@ export default {
         fetchInitialData: function () {
             let vm = this;
 
-            // TODO:
             let initialisers = [
                 utils.fetchCountries(),
                 utils.fetchLedgerAccount(),
