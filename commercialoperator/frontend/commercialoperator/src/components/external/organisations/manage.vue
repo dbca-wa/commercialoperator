@@ -381,7 +381,6 @@
                             <div>
                                 <div class="col-sm-12">
                                     <div class="form-group row">
-                                        <!-- TODO: -->
                                         <datatable
                                             id="organisation_contacts_datatable_ref"
                                             ref="contacts_datatable_user"

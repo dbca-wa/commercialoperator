@@ -61,7 +61,7 @@ from commercialoperator.components.organisations.serializers import (
 class OrganisationViewSet(viewsets.ModelViewSet):
     queryset = Organisation.objects.none()
     serializer_class = OrganisationSerializer
-    allow_external = False  # TODO: review this - workaround for allowing organisations to be accessed when validating pins
+    allow_external = False  # TODO: (Ash) review this - workaround for allowing organisations to be accessed when validating pins
 
     def get_queryset(self):
         user = self.request.user
