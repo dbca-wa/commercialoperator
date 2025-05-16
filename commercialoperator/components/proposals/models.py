@@ -1968,7 +1968,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     #        return selected_park_access_types
 
     def __assessor_group(self):
-        # TODO get list of assessor groups based on region and activity
         if self.region and self.activity:
             try:
                 check_group = ProposalAssessorGroup.objects.filter(
@@ -1984,7 +1983,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         return default_group
 
     def __approver_group(self):
-        # TODO get list of approver groups based on region and activity
         if self.region and self.activity:
             try:
                 check_group = ProposalApproverGroup.objects.filter(
@@ -3051,7 +3049,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 )
 
             if self.processing_status == self.PROCESSING_STATUS_APPROVED:
-                # TODO if it is an ammendment proposal then check appropriately
                 checking_proposal = self
                 if self.proposal_type == "renewal":
                     if self.previous_application:
@@ -4885,12 +4882,10 @@ class Referral(RevisionedMixin):
                 raise exceptions.ProposalNotAuthorized()
             self.processing_status = "recalled"
             self.save()
-            # TODO Log proposal action
             self.proposal.log_user_action(
                 ProposalUserAction.RECALL_REFERRAL.format(self.id, self.proposal.id),
                 request,
             )
-            # TODO log organisation action
             applicant_field = getattr(self.proposal, self.proposal.applicant_field)
             applicant_field.log_user_action(
                 ProposalUserAction.RECALL_REFERRAL.format(self.id, self.proposal.id),
@@ -4967,7 +4962,6 @@ class Referral(RevisionedMixin):
                 )
                 self.add_referral_document(request)
                 self.save()
-                # TODO Log proposal action
                 # self.proposal.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
                 self.proposal.log_user_action(
                     ProposalUserAction.CONCLUDE_REFERRAL.format(
@@ -4978,7 +4972,6 @@ class Referral(RevisionedMixin):
                     ),
                     request,
                 )
-                # TODO log organisation action
                 # self.proposal.applicant.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
                 applicant_field = getattr(self.proposal, self.proposal.applicant_field)
                 applicant_field.log_user_action(
@@ -6696,7 +6689,6 @@ class DistrictProposal(models.Model):
 
     @property
     def assessor_group(self):
-        # TODO get list of assessor groups based on region and activity
         if self.district:
             try:
                 check_group = DistrictProposalAssessorGroup.objects.filter(
@@ -6713,7 +6705,6 @@ class DistrictProposal(models.Model):
 
     @property
     def approver_group(self):
-        # TODO get list of approver groups based on region and activity
         if self.district:
             try:
                 check_group = DistrictProposalApproverGroup.objects.filter(
@@ -6729,7 +6720,6 @@ class DistrictProposal(models.Model):
         return default_group
 
     def __assessor_group(self):
-        # TODO get list of assessor groups based on region and activity
         if self.district:
             try:
                 check_group = DistrictProposalAssessorGroup.objects.filter(
@@ -6745,7 +6735,6 @@ class DistrictProposal(models.Model):
         return default_group
 
     def __approver_group(self):
-        # TODO get list of approver groups based on region and activity
         if self.district:
             try:
                 check_group = DistrictProposalApproverGroup.objects.filter(
@@ -6914,7 +6903,6 @@ class DistrictProposal(models.Model):
                     "You cannot change the current status at this time"
                 )
             if self.processing_status != status:
-                # TODO send email to District Approver group when District proposal is pushed to status with approver
                 if self.processing_status == "with_approver":
                     self.approver_comment = ""
                     if approver_comment:
@@ -7200,7 +7188,6 @@ class DistrictProposal(models.Model):
                 )
 
                 if self.processing_status == "approved":
-                    # TODO if it is an ammendment proposal then check appropriately
                     checking_district_proposal = self
                     checking_proposal = self.proposal
 

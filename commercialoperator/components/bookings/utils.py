@@ -349,7 +349,6 @@ def create_other_invoice(user, booking):
                 order = create_invoice(booking, payment_method="other")
                 invoice = Invoice.objects.get(order_number=order.number)
 
-                # TODO determine actual deferred_payment_date - currently defaulting to BPAY equiv.
                 deferred_payment_date = calc_payment_due_date(
                     booking, dt
                 ) - relativedelta(days=1)
@@ -360,7 +359,6 @@ def create_other_invoice(user, booking):
                     deferred_payment_date=deferred_payment_date,
                 )
 
-                # TODO - determine what emails to be sent and when
                 # send_monthly_invoice_tclass_email_notification(user, booking, invoice, recipients=[booking.proposal.applicant_email])
                 # ProposalUserAction.log_action(booking.proposal,ProposalUserAction.ACTION_SEND_MONTHLY_INVOICE.format(booking.proposal.id),booking.proposal.applicant_email)
             except Exception as e:

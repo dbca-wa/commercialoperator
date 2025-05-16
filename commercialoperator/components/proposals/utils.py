@@ -128,7 +128,6 @@ def _create_data_from_item(item, post_data, file_data, repetition, suffix):
         elif item["type"] == "file":
             if extended_item_name in file_data:
                 item_data[item["name"]] = str(file_data.get(extended_item_name))
-                # TODO save the file here
             elif (
                 extended_item_name + "-existing" in post_data
                 and len(post_data[extended_item_name + "-existing"]) > 0
@@ -479,7 +478,6 @@ def save_park_activity_data(
                             pass
                         else:
                             try:
-                                # TODO add logging
                                 if a not in park.park.allowed_activities_ids:
                                     # raise Exception('Activity not allowed for this park')
                                     pass
@@ -1248,7 +1246,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                                 ).date()
                                 if acc["accreditation_expiry"]
                                 else None
-                            ),  # TODO later this may be mandatory
+                            ),
                         )
                     except Exception as e:
                         logger.error(

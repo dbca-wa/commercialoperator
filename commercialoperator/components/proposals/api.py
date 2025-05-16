@@ -600,8 +600,7 @@ class VersionableModelViewSetMixin(viewsets.ModelViewSet):
         _version_serializer = ProposalSerializer(
             [v.object for v in _versions], many=True, context=_context
         )
-        # TODO
-        # check pagination
+
         return Response(_version_serializer.data)
 
 

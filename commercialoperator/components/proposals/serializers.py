@@ -1037,7 +1037,6 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             return obj.approval_level_document
 
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -1538,7 +1537,6 @@ class InternalFilmingProposalSerializer(
             return obj.approval_level_document
 
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -1787,7 +1785,6 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
             return obj.approval_level_document
 
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -1954,7 +1951,6 @@ class SaveInternalEventProposalSerializer(BaseProposalSerializer):
 
 class FilmingDistrictProposalSerializer(InternalFilmingProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -2083,7 +2079,6 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
 
 class ReferralProposalSerializer(InternalProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -2104,7 +2099,6 @@ class ReferralProposalSerializer(InternalProposalSerializer):
 
 class FilmingReferralProposalSerializer(InternalFilmingProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
@@ -2125,7 +2119,6 @@ class FilmingReferralProposalSerializer(InternalFilmingProposalSerializer):
 
 class EventReferralProposalSerializer(InternalEventProposalSerializer):
     def get_assessor_mode(self, obj):
-        # TODO check if the proposal has been accepted or declined
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user

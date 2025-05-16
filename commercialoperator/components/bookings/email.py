@@ -492,7 +492,6 @@ def _log_proposal_email(email_message, proposal, sender=None):
             EmailMessage,
         ),
     ):
-        # TODO this will log the plain text body, should we log the html instead
         text = email_message.body
         subject = email_message.subject
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
@@ -546,7 +545,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
             EmailMessage,
         ),
     ):
-        # TODO this will log the plain text body, should we log the html instead
         text = email_message.body
         subject = email_message.subject
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
@@ -600,7 +598,6 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
             EmailMessage,
         ),
     ):
-        # TODO this will log the plain text body, should we log the html instead
         text = email_message.body
         subject = email_message.subject
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
