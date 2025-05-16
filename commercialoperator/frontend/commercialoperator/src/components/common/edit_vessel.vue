@@ -162,12 +162,6 @@ export default {
         alert,
     },
     props: {
-        // Note: I'm commenting out the vessel_id prop because it doesn't seem to be initialized with a non-null value
-        // Note: Instead when the vessel_id is modified, it seems to be done through the vessel data property
-        // vessel_id: {
-        //     type: Number,
-        //     required: true,
-        // },
         // eslint-disable-next-line vue/prop-name-casing
         vessel_action: {
             type: String,

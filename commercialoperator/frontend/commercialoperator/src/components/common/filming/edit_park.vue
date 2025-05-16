@@ -212,11 +212,6 @@ export default {
         FileField2,
     },
     props: {
-        // Note: I'm commenting out the park_id prop because it doesn't seem to be initialized with a non-null value
-        // park_id: {
-        //     type: Number,
-        //     required: true,
-        // },
         // eslint-disable-next-line vue/prop-name-casing
         park_action: {
             type: String,
