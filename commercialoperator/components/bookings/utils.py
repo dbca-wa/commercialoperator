@@ -1133,66 +1133,6 @@ def redirect_to_zero_payment_view(request, proposal, lines):
         return render(request, template_name, context)
 
 
-def test_create_invoice(payment_method="bpay"):
-    """
-    This will create and invoice and order from a basket bypassing the session
-    and payment bpoint code constraints.
-
-    To test:
-            from ledger.payments.invoice.utils import test_create_invoice
-
-
-            from ledger.checkout.utils import createCustomBasket
-            from ledger.payments.invoice.utils import CreateInvoiceBasket
-            from decimal import Decimal
-
-            products = [{u'oracle_code': u'ABC123 GST', u'price_incl_tax': Decimal('10.00'), u'price_excl_tax': Decimal('9.090909090909'), u'ledger_description': u'Booking Date 2019-09-24: Neale Junction Nature Reserve - 2019-09-24 - Adult', u'quantity': 1}]
-            or
-            products = Booking.objects.last().as_line_items
-
-            user = EmailUser.objects.get(email__icontains='walter.genuit@dbca')
-            payment_method = 'bpay' (or 'monthly_invoicing')
-
-            basket  = createCustomBasket(products, user, 'S557', bpay_allowed=True, monthly_invoicing_allowed=True)
-            order = CreateInvoiceBasket(payment_method='bpay', system='0557').create_invoice_and_order(basket, 0, None, None, user=user, invoice_text='CIB7')
-
-            Invoice.objects.get(order_number=order.number)
-            <Invoice: Invoice #05572188633>
-
-            To view:
-                    http://localhost:8499/ledger/payments/invoice/05572188633
-
-    """
-    from commercialoperator.components.stubs.utils import createCustomBasket
-    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
-    from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-    from decimal import Decimal
-
-    products = [
-        {
-            "oracle_code": "ABC123 GST",
-            "price_incl_tax": Decimal("10.00"),
-            "price_excl_tax": Decimal("9.090909090909"),
-            "ledger_description": "Neale Junction Nature Reserve - 2019-09-24 - Adult",
-            "quantity": 1,
-        }
-    ]
-    # products = Booking.objects.last().as_line_items
-
-    user = EmailUser.objects.get(email="jawaid.mushtaq@dbca.wa.gov.au")
-    # payment_method = 'bpay'
-    payment_method = "monthly_invoicing"
-
-    basket = createCustomBasket(products, user, "S557")
-    order = CreateInvoiceBasket(
-        payment_method=payment_method, system="0557"
-    ).create_invoice_and_order(basket, 0, None, None, user=user, invoice_text="CIB7")
-    print("Created Order: {}".format(order.number))
-    print("Created Invoice: {}".format(Invoice.objects.get(order_number=order.number)))
-
-    return order
-
-
 def create_invoice(booking, payment_method="bpay"):
     """
     This will create and invoice and order from a basket bypassing the session
