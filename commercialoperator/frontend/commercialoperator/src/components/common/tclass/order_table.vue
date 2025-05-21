@@ -12,7 +12,6 @@
                 style="display: none"
             ></textarea
             ><br />
-
             <div id="content-editable-table">
                 <table class="table table-striped editable-table">
                     <thead v-if="table.thead.length">
@@ -43,31 +42,34 @@
                             :key="row_idx"
                         >
                             <td
-                                v-for="(_, index) in row"
-                                :key="index"
+                                v-for="(_, col_idx) in row"
+                                :key="col_idx"
+                                :set="
+                                    row_item_value = rowItem(row_idx, col_idx)
+                                "
                                 width="30%"
                             >
                                 <!-- NOTE: [Invoice and InvoiceBooking] See that the table logic works with all the dependent disabled logic and then continue investigating into make payment view and creation of booking and bookinginvoice models -->
                                 <div
-                                    v-if="col_types[index] == 'select'"
+                                    v-if="col_types[col_idx] == 'select'"
                                     id="select_order_table_park_parent"
                                 >
                                     <select
-                                        :id="`select_order_table_park-${row_idx}-${index}`"
-                                        :ref="`select_order_table_park-${row_idx}-${index}`"
-                                        v-model="row[index]"
+                                        :id="`select_order_table_park-${row_idx}-${col_idx}`"
+                                        :ref="`select_order_table_park-${row_idx}-${col_idx}`"
+                                        v-model="row[col_idx]"
                                         class="tbl_input form-control"
                                         :title="
                                             'Adult Price: ' +
-                                            row[index] +
+                                            row[col_idx] +
                                             ', Child Price: ' +
-                                            row[index]
+                                            row[col_idx]
                                         "
                                         :disabled="disabled"
                                         :clearable="false"
                                         @change="
                                             park_change(
-                                                row[index],
+                                                row[col_idx],
                                                 row,
                                                 row_idx
                                             )
@@ -82,37 +84,42 @@
                                         </option>
                                     </select>
                                 </div>
-                                <template v-if="col_types[index] == 'date'">
+                                <template v-if="col_types[col_idx] == 'date'">
                                     <input
                                         id="id_arrival_date"
-                                        v-model="row[index]"
+                                        v-model="row[col_idx]"
                                         class="tbl_input form-control"
-                                        :type="col_types[index]"
+                                        :type="col_types[col_idx]"
                                         :max="expiry_date"
                                         :min="today()"
                                         :required="isRequired"
                                         :onclick="isClickable"
                                         :disabled="
-                                            row[0] == '' || row[0] == null
+                                            [undefined, null, ''].includes(
+                                                row[0]
+                                            ) === true
                                         "
                                         @change="
                                             date_change(
-                                                row[index],
+                                                row[col_idx],
                                                 row,
                                                 row_idx
                                             )
                                         "
                                     />
                                 </template>
-                                <template v-if="col_types[index] == 'checkbox'">
+                                <template
+                                    v-if="col_types[col_idx] == 'checkbox'"
+                                >
                                     <input
                                         :id="'id_checkbox_' + row_idx"
-                                        v-model="row[index]"
+                                        v-model="row[col_idx]"
                                         class="tbl_input form-check-input"
-                                        :type="col_types[index]"
+                                        :type="col_types[col_idx]"
                                         :checkbox="
-                                            same_tour_group_checkbox[row_idx]
-                                                .checked
+                                            get_same_tour_group_checkbox(
+                                                row_idx
+                                            ).checked
                                         "
                                         :title="
                                             tooltip_same_group_tour(
@@ -121,23 +128,26 @@
                                             )
                                         "
                                         :disabled="
-                                            same_tour_group_checkbox[row_idx]
-                                                .disabled
+                                            get_same_tour_group_checkbox(
+                                                row_idx
+                                            ).disabled
                                         "
-                                        @change="calcPrice(row, row_idx, index)"
+                                        @change="
+                                            calcPrice(row, row_idx, col_idx)
+                                        "
                                     />
                                 </template>
                                 <template
                                     v-if="
-                                        col_types[index] == 'text' ||
-                                        col_types[index] == 'number'
+                                        col_types[col_idx] == 'text' ||
+                                        col_types[col_idx] == 'number'
                                     "
                                 >
                                     <input
-                                        v-model="row[index]"
+                                        v-model="row[col_idx]"
                                         :readonly="readonly"
                                         class="tbl_input form-control"
-                                        :type="col_types[index]"
+                                        :type="col_types[col_idx]"
                                         min="0"
                                         value="0"
                                         :required="isRequired"
@@ -146,12 +156,12 @@
                                         @change="calcPrice(row, row_idx)"
                                     />
                                 </template>
-                                <template v-if="col_types[index] == 'total'">
+                                <template v-if="col_types[col_idx] == 'total'">
                                     <div class="currencyinput">
                                         <input
-                                            v-model="row[index]"
+                                            v-model="row[col_idx]"
                                             class="tbl_input form-control"
-                                            :type="col_types[index]"
+                                            :type="col_types[col_idx]"
                                             min="0"
                                             value="0"
                                             disabled
@@ -222,22 +232,52 @@ export default {
         },
     },
     props: {
-        // eslint-disable-next-line vue/require-default-prop, vue/require-prop-types
-        headers: [],
-        // eslint-disable-next-line vue/require-default-prop, vue/require-prop-types
-        options: [],
-        // eslint-disable-next-line vue/require-default-prop
-        name: String,
-        // eslint-disable-next-line vue/require-default-prop
-        label: String,
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
-        expiry_date: String,
-        // eslint-disable-next-line vue/require-default-prop
-        id: String,
-        // eslint-disable-next-line vue/require-default-prop
-        isRequired: String,
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
-        comment_value: String,
+        headers: {
+            type: String,
+            required: true,
+        },
+        options: {
+            type: Array,
+            required: true,
+        },
+        name: {
+            type: String,
+            default: function () {
+                return '';
+            },
+        },
+        label: {
+            type: String,
+            default: function () {
+                return '';
+            },
+        },
+        // eslint-disable-next-line vue/prop-name-casing
+        expiry_date: {
+            type: String,
+            default: function () {
+                return '';
+            },
+        },
+        id: {
+            type: String,
+            default: function () {
+                return '';
+            },
+        },
+        isRequired: {
+            type: Boolean,
+            default: function () {
+                return false;
+            },
+        },
+        // eslint-disable-next-line vue/prop-name-casing
+        comment_value: {
+            type: String,
+            default: function () {
+                return '';
+            },
+        },
         disabled: Boolean,
         readonly: Boolean,
         value: {
@@ -256,45 +296,6 @@ export default {
        }
     */
     data() {
-        let vm = this;
-        var value = JSON.parse(vm.value);
-
-        var headers = JSON.parse(vm.headers);
-        vm.col_headers = Object.keys(headers);
-        vm.col_types = Object.values(headers);
-
-        vm._options = [
-            { label: 'Nungarin', value: 'Nungarin' },
-            { label: 'Ngaanyatjarraku', value: 'Ngaanyatjarraku' },
-            { label: 'Cuballing', value: 'Cuballing' },
-        ];
-
-        // setup initial empty row for display
-        vm.init_row = vm.reset_row();
-
-        if (value == null) {
-            vm.table = {
-                //thead: ['Heading 1'],
-                thead: vm.col_headers,
-                tbody: [
-                    //['No header specified']
-                    vm.init_row,
-                ],
-            };
-        } else {
-            vm.table = {
-                thead: value['thead'],
-                tbody: value['tbody'],
-            };
-        }
-        vm.same_tour_group_checkbox = [];
-        for (var i = 0; i < vm.table.tbody.length; i++) {
-            vm.same_tour_group_checkbox.push({
-                disabled: true,
-                checked: false,
-            });
-        }
-
         /*
         [
           {
@@ -351,6 +352,11 @@ export default {
             arrival_dates: [],
             region_arrival_map: [],
             localValue: JSON.parse(JSON.stringify(this.value)),
+            table: {
+                thead: [],
+                tbody: [],
+            },
+            same_tour_group_checkbox: [],
         };
     },
 
@@ -372,6 +378,13 @@ export default {
                 return row.slice(0, this.table.thead.length);
             });
         },
+        rowItem: {
+            get: function () {
+                return (row_idx, col_idx) => {
+                    return this.table.tbody[row_idx][col_idx];
+                };
+            },
+        },
     },
     watch: {
         options: function () {
@@ -381,9 +394,11 @@ export default {
             console.log('regions: ' + this.regions);
             console.log('arrivals: ' + this.arrival_dates);
         },
-        table: function () {
-            this.update_arrival_dates();
-            console.log('arrival_dates: ' + this.arrival_dates);
+        'table.tbody': {
+            handler: function () {
+                this.update_arrival_dates();
+            },
+            deep: true,
         },
         value: {
             handler: function (value) {
@@ -393,7 +408,38 @@ export default {
         },
     },
     beforeUpdate() {},
+    created: function () {
+        console.log('In created');
+        let vm = this;
+        var value = JSON.parse(vm.value);
 
+        var headers = JSON.parse(vm.headers);
+        vm.col_headers = Object.keys(headers);
+        vm.col_types = Object.values(headers);
+
+        // setup initial empty row for display
+        vm.init_row = vm.reset_row();
+
+        if (value == null) {
+            for (let header_item of vm.col_headers) {
+                vm.table.thead.push(header_item);
+            }
+            vm.table.tbody.push(vm.init_row);
+        } else {
+            for (let header_item of value['thead']) {
+                vm.table.thead.push(header_item);
+            }
+            for (let body_item of value['tbody']) {
+                vm.table.tbody.push(body_item);
+            }
+        }
+        for (var i = 0; i < vm.table.tbody.length; i++) {
+            vm.same_tour_group_checkbox.push({
+                disabled: true,
+                checked: false,
+            });
+        }
+    },
     mounted: function () {
         let vm = this;
 
@@ -435,8 +481,26 @@ export default {
                             `select_order_table_park-${row_idx}-${idx}`,
                             'select_order_table_park_parent'
                         )
-                        .on('select2:select', function () {
-                            vm.park_change(row[idx], row, row_idx);
+                        .on('select2:select', function (e) {
+                            const data = e.params.data.id;
+                            const tbody = [...vm.table.tbody];
+                            tbody[row_idx][idx] = data;
+                            vm.table.tbody = tbody;
+                            // Trigger change event to update the model being selected
+                            vm.$refs[
+                                `select_order_table_park-${row_idx}-${idx}`
+                            ][0].dispatchEvent(
+                                new Event('change', { target: e.target })
+                            );
+                        })
+                        .on('select2:unselect', function (e) {
+                            vm.table.tbody[row_idx][idx] = '';
+                            // Trigger change event to update the model being unselected
+                            vm.$refs[
+                                `select_order_table_park-${row_idx}-${idx}`
+                            ][0].dispatchEvent(
+                                new Event('change', { target: e.target })
+                            );
                         });
                 });
             });
@@ -474,7 +538,7 @@ export default {
             var init_row = [];
             var length = this.col_headers.length + 3; // adding 3, for 3 same_tour_group values for number of adults, children and free_of_charge
             for (var i = 0; i < length; i++) {
-                init_row.push('');
+                init_row.push(i == 2 ? false : '');
             }
             return init_row;
         },
@@ -530,10 +594,12 @@ export default {
         },
 
         adult_price: function (row) {
-            return row[this.idx_park] ? row[this.idx_park].prices.adult : '';
+            const options = this.options_by_row(row);
+            return row[this.idx_park] ? options.prices.adult : '';
         },
         child_price: function (row) {
-            return row[this.idx_park] ? row[this.idx_park].prices.child : '';
+            const options = this.options_by_row(row);
+            return row[this.idx_park] ? options.prices.child : '';
         },
         // eslint-disable-next-line no-unused-vars
         check: function (selected_park, row, row_idx) {
@@ -543,8 +609,9 @@ export default {
         tooltip_same_group_tour: function (row, row_idx) {
             let vm = this;
             var selected_arrival = row[vm.idx_arrival_date];
-            var selected_region_name = row[vm.idx_park].region_name;
-            if (selected_arrival == '' || selected_region_name == '') {
+            var selected_region_name = row[vm.idx_park]?.region_name;
+
+            if ([undefined, null, ''].includes(selected_region_name) === true) {
                 return '';
             }
             return (
@@ -617,8 +684,10 @@ export default {
                             var same_tour_group_checked =
                                 row[vm.idx_same_group_tour];
 
+                            const options = vm.options_by_row(row);
+                            const park_region_id = options.region_id;
                             if (
-                                region_id == row[vm.idx_park].region_id &&
+                                region_id == park_region_id &&
                                 arrival == row[vm.idx_arrival_date]
                             ) {
                                 selected_adults = isNaN(
@@ -834,30 +903,36 @@ export default {
             return arrival_dates.sort();
         },
 
-        update_arrival_dates: function () {
+        update_arrival_dates: function (selected_date = '') {
             /* updates vm.arrival_dates list with current arrival dates from the table
                (initial update to vm.arrival_dates occured 
             */
             let vm = this;
-            var selected_date = [];
 
             for (var i = 0; i < vm.table.tbody.length; i++) {
-                selected_date = vm.table.tbody[i][1];
-                if (!(vm.arrival_dates.indexOf(selected_date) > -1)) {
+                selected_date = selected_date
+                    ? selected_date
+                    : vm.table.tbody[i][1];
+                if (
+                    selected_date.length &&
+                    !(vm.arrival_dates.indexOf(selected_date) > -1)
+                ) {
                     vm.arrival_dates.push(selected_date);
                 }
             }
+            console.log('arrival_dates: ' + vm.arrival_dates);
         },
 
         park_change: function (selected_park, row, row_idx) {
             let vm = this;
             var selected_date = row[vm.idx_arrival_date];
-            if (row[vm.idx_park] !== null) {
+
+            if ([null, undefined].includes(row[vm.idx_park]) === false) {
                 // eslint-disable-next-line no-unused-vars
                 var selected_region_id = row[vm.idx_park].region_id;
             }
 
-            if (selected_park === null || selected_park === '') {
+            if ([null, undefined, ''].includes(selected_park) === true) {
                 // reset the row
                 vm.table.tbody[row_idx] = vm.reset_row();
             }
@@ -880,17 +955,15 @@ export default {
         },
         date_change: function (selected_date, row, row_idx) {
             let vm = this;
-            // eslint-disable-next-line no-unused-vars
-            var selected_region_id = row[0].region_id;
 
-            if (selected_date === null || selected_date === '') {
+            if ([null, undefined, ''].includes(selected_date) === true) {
                 // reset part of the row (date onwards)
                 vm.table.tbody[row_idx] = vm.reset_row_part(row);
             }
             vm.updateTableJSON();
 
             /* need to recalc table prices, because same_tour group calc may have changed for one or more rows */
-            vm.update_arrival_dates();
+            vm.update_arrival_dates(selected_date);
             vm.calcPrice(row, row_idx, vm.idx_arrival_date);
 
             var is_disabled = vm.disable_same_tour_group_checkbox(row, row_idx);
@@ -1057,6 +1130,28 @@ export default {
                     });
                 }
             }
+        },
+        /**
+         * Get the options object by park id for a specific row
+         * @param row A row of the table
+         */
+        options_by_row: function (row) {
+            const park_id = row[this.idx_park];
+            return this.options.find((option) => option.value == park_id);
+        },
+        /**
+         * Get the same tour group checkbox for a specific row
+         * @param row_idx The index of the row
+         */
+        get_same_tour_group_checkbox: function (row_idx) {
+            const checkbox = this.same_tour_group_checkbox[row_idx];
+            if (!checkbox) {
+                console.error(
+                    `Checkbox not found for row index ${row_idx}. Please check the data structure.`
+                );
+                return {};
+            }
+            return checkbox;
         },
     },
 };
