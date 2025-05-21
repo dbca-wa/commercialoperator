@@ -396,6 +396,7 @@ export default {
         },
         'table.tbody': {
             handler: function () {
+                console.log('In table.tbody watcher');
                 this.update_arrival_dates();
             },
             deep: true,
@@ -581,10 +582,8 @@ export default {
         deleteRow: function (row, row_idx) {
             let vm = this;
 
-            // pop row from data structure
-            vm.table.tbody = vm.table.tbody.filter(function (item) {
-                return item !== row;
-            });
+            // pop row from data structure by row index
+            vm.table.tbody = vm.table.tbody.filter((_, idx) => idx != row_idx);
             vm.updateTableJSON();
 
             /* need to recalc table prices, because same_tour group calc may have changed for one or more rows */
@@ -1149,7 +1148,8 @@ export default {
                 console.error(
                     `Checkbox not found for row index ${row_idx}. Please check the data structure.`
                 );
-                return {};
+                // Default to unchecked and disabled
+                return { checked: false, disabled: true };
             }
             return checkbox;
         },
