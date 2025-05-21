@@ -383,6 +383,8 @@ module.exports = {
             .select2({
                 minimumInputLength: minimumInputLength,
                 dropdownParent: dropdownParent,
+                dropdownAutoWidth: true,
+                width: 'auto',
                 theme: 'bootstrap-5',
                 allowClear: allowClear,
                 placeholder: placeholder,
