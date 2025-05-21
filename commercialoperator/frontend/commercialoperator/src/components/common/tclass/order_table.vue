@@ -475,35 +475,8 @@ export default {
 
         this.$nextTick(() => {
             vm.filteredRows.forEach((row, row_idx) => {
-                console.log(row_idx);
-                row.forEach((_, idx) => {
-                    helpers.initialiseSelect2
-                        .bind(this)(
-                            `select_order_table_park-${row_idx}-${idx}`,
-                            'select_order_table_park_parent'
-                        )
-                        .on('select2:select', function (e) {
-                            const data = e.params.data.id;
-                            const tbody = [...vm.table.tbody];
-                            tbody[row_idx][idx] = data;
-                            vm.table.tbody = tbody;
-                            // Trigger change event to update the model being selected
-                            vm.$refs[
-                                `select_order_table_park-${row_idx}-${idx}`
-                            ][0].dispatchEvent(
-                                new Event('change', { target: e.target })
-                            );
-                        })
-                        .on('select2:unselect', function (e) {
-                            vm.table.tbody[row_idx][idx] = '';
-                            // Trigger change event to update the model being unselected
-                            vm.$refs[
-                                `select_order_table_park-${row_idx}-${idx}`
-                            ][0].dispatchEvent(
-                                new Event('change', { target: e.target })
-                            );
-                        });
-                });
+                // Initialise select2 for each row
+                vm.initialiseRowSelect2(row, row_idx);
             });
         });
     },
@@ -578,6 +551,9 @@ export default {
             });
 
             vm.updateTableJSON();
+            this.$nextTick(() => {
+                vm.initialiseRowSelect2(newRow, vm.table.tbody.length - 1);
+            });
         },
         deleteRow: function (row, row_idx) {
             let vm = this;
@@ -1152,6 +1128,37 @@ export default {
                 return { checked: false, disabled: true };
             }
             return checkbox;
+        },
+        initialiseRowSelect2: function (row, row_idx) {
+            const vm = this;
+            row.forEach((_, idx) => {
+                helpers.initialiseSelect2
+                    .bind(this)(
+                        `select_order_table_park-${row_idx}-${idx}`,
+                        'select_order_table_park_parent'
+                    )
+                    .on('select2:select', function (e) {
+                        const data = e.params.data.id;
+                        const tbody = [...vm.table.tbody];
+                        tbody[row_idx][idx] = data;
+                        vm.table.tbody = tbody;
+                        // Trigger change event to update the model being selected
+                        vm.$refs[
+                            `select_order_table_park-${row_idx}-${idx}`
+                        ][0].dispatchEvent(
+                            new Event('change', { target: e.target })
+                        );
+                    })
+                    .on('select2:unselect', function (e) {
+                        vm.table.tbody[row_idx][idx] = '';
+                        // Trigger change event to update the model being unselected
+                        vm.$refs[
+                            `select_order_table_park-${row_idx}-${idx}`
+                        ][0].dispatchEvent(
+                            new Event('change', { target: e.target })
+                        );
+                    });
+            });
         },
     },
 };
