@@ -67,6 +67,7 @@
                                         "
                                         :disabled="disabled"
                                         :clearable="false"
+                                        :required="!disabled"
                                         @change="
                                             park_change(
                                                 row[col_idx],
@@ -92,12 +93,16 @@
                                         :type="col_types[col_idx]"
                                         :max="expiry_date"
                                         :min="today()"
-                                        :required="isRequired"
                                         :onclick="isClickable"
                                         :disabled="
                                             [undefined, null, ''].includes(
                                                 row[0]
                                             ) === true
+                                        "
+                                        :required="
+                                            [undefined, null, ''].includes(
+                                                row[0]
+                                            ) === false
                                         "
                                         @change="
                                             date_change(

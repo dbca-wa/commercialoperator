@@ -78,6 +78,7 @@
                                 v-model="selected_licence_id"
                                 class="form-control"
                                 :clearable="false"
+                                required
                                 @change="proposal_parks()"
                             >
                                 <option
@@ -284,6 +285,7 @@ export default {
     },
     mounted: function () {
         let vm = this;
+        vm.form = document.forms.new_payment;
         vm.get_user_approvals();
         this.$nextTick(() => {
             const select2 = helpers.initialiseSelect2.bind(this)(
@@ -349,7 +351,7 @@ export default {
         },
         calc_order: function () {
             let vm = this;
-            var formData = new FormData(document.forms.new_payment);
+            var formData = new FormData(vm.form);
             vm.order_details = formData.get('payment');
             vm.$refs.payment_calc.order_details = vm.order_details;
             vm.$refs.payment_calc.isModalOpen = true;
@@ -466,14 +468,13 @@ export default {
         },
         submit: function () {
             let vm = this;
-            var form = document.forms.new_payment;
             if (vm.payment_method == 'existing_invoice') {
-                form.action =
+                vm.form.action =
                     '/existing_invoice_payment/' +
                     '05572566192' +
                     '/?method=' +
                     vm.payment_method;
-                form.submit();
+                vm.form.submit();
             }
 
             vm.formErrors = vm.check_form_valid();
@@ -494,19 +495,22 @@ export default {
                                 vm.payment_method == 'bpay' ||
                                 vm.payment_method == 'other'
                             ) {
-                                form.action =
+                                vm.form.action =
                                     '/preview_deferred/' +
                                     vm.selected_licence.value +
                                     '/?method=' +
                                     vm.payment_method;
                             } else {
-                                form.action =
+                                vm.form.action =
                                     '/payment/' +
                                     vm.selected_licence.value +
                                     '/';
                             }
-                            if (vm.formErrors.length == 0) {
-                                form.submit();
+                            if (
+                                helpers.validateForm(vm.form) &&
+                                vm.formErrors.length == 0
+                            ) {
+                                vm.form.submit();
                             } else {
                                 return;
                             }
@@ -522,16 +526,20 @@ export default {
                     vm.payment_method == 'bpay' ||
                     vm.payment_method == 'other'
                 ) {
-                    form.action =
+                    vm.form.action =
                         '/preview_deferred/' +
                         vm.selected_licence.value +
                         '/?method=' +
                         vm.payment_method;
                 } else {
-                    form.action = '/payment/' + vm.selected_licence.value + '/';
+                    vm.form.action =
+                        '/payment/' + vm.selected_licence.value + '/';
                 }
-                if (vm.formErrors.length == 0) {
-                    form.submit();
+                if (
+                    helpers.validateForm(vm.form) &&
+                    vm.formErrors.length == 0
+                ) {
+                    // vm.form.submit();
                 } else {
                     return;
                 }
