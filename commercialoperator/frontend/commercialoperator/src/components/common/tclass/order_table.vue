@@ -152,10 +152,11 @@
                                         v-model="row[col_idx]"
                                         :readonly="readonly"
                                         class="tbl_input form-control"
+                                        :class="`row-input row-${row_idx}-input`"
                                         :type="col_types[col_idx]"
                                         min="0"
                                         value="0"
-                                        :required="isRequired"
+                                        :required="true"
                                         :onclick="isClickable"
                                         :disabled="row[1] == ''"
                                         @change="calcPrice(row, row_idx)"
@@ -401,7 +402,6 @@ export default {
         },
         'table.tbody': {
             handler: function () {
-                console.log('In table.tbody watcher');
                 this.update_arrival_dates();
             },
             deep: true,
@@ -753,6 +753,42 @@ export default {
                             }
                         }
                     }
+                }
+
+                // Get a list of the number of visitors for each category for the current row (as string values)
+                const visitors = $(`.row-${row_idx}-input`)
+                    .map(function () {
+                        return $(this).val();
+                    })
+                    .get();
+                // The total number of visitors
+                const totalVisitors = _.sum(visitors.map(Number));
+                if (totalVisitors == 0) {
+                    if (
+                        visitors.every(function (element) {
+                            return String(element).length > 0;
+                        })
+                    ) {
+                        // Cannot have _all_ visitors to be zero, even though 0 is a valid number in the input field
+                        $(`.row-${row_idx}-input`).each(function () {
+                            this.setCustomValidity(
+                                'The numbers must not be all zero!'
+                            );
+                            this.reportValidity();
+                        });
+                    }
+                    $(`.row-${row_idx}-input`).prop('required', true);
+                } else {
+                    // If at least one category of visitors is greater than zero, then any other category can be zero and doesn't need to be required anymore
+                    $(`.row-${row_idx}-input`).each(function () {
+                        if (Number($(this).val()) > 0) {
+                            this.setCustomValidity('');
+                            $(this).prop('required', true);
+                        } else {
+                            this.setCustomValidity('');
+                            $(this).prop('required', false);
+                        }
+                    });
                 }
             }
         },
@@ -1176,7 +1212,7 @@ export default {
 }
 
 .editable-table input[type='number'] {
-    width: 60px;
+    width: 90px;
 }
 
 .editable-table input[type='total'] {
@@ -1201,5 +1237,14 @@ div.currencyinput:after {
     left: 6px;
     top: 2px;
     content: '$';
+}
+.select2-container--bootstrap-5
+    .select2-selection--single
+    .select2-selection__rendered {
+    word-wrap: break-word !important;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: inherit;
+    height: 35px !important;
 }
 </style>

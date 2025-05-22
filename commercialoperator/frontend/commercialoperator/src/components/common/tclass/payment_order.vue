@@ -401,11 +401,14 @@ export default {
             var tbody = vm.$refs.order_table.table.tbody;
             for (var row_idx in tbody) {
                 var row = tbody[row_idx];
+                const adults = Number(row[idx_adult]) || 0;
+                const children = Number(row[idx_child]) || 0;
+                const free = Number(row[idx_free]) || 0;
+                // Whether there is any visitor at all
+                const anyVisitor = adults + children + free > 0;
 
-                if (
-                    !(row[idx_park] || row[idx_arrival_date]) ||
-                    !(row[idx_adult] || row[idx_child] || row[idx_free])
-                ) {
+                if (!(row[idx_park] || row[idx_arrival_date]) || !anyVisitor) {
+                    // Cannot have no selected park, no arrival date, or no visitors
                     errors.push({
                         id: parseInt(row_idx),
                         name: 'Row',
@@ -539,7 +542,7 @@ export default {
                     helpers.validateForm(vm.form) &&
                     vm.formErrors.length == 0
                 ) {
-                    // vm.form.submit();
+                    vm.form.submit();
                 } else {
                     return;
                 }
