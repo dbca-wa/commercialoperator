@@ -131,9 +131,12 @@
                                     aria-labelledby="dropdownMenuButton"
                                 >
                                     <li>
-                                        <a class="dropdown-item" type="submit">
+                                        <button
+                                            class="dropdown-item"
+                                            type="submit"
+                                        >
                                             Pay by Credit Card
-                                        </a>
+                                        </button>
                                     </li>
                                     <li
                                         v-if="
@@ -145,13 +148,13 @@
                                         <hr class="dropdown-divider" />
                                     </li>
                                     <li v-if="selected_licence.bpay_allowed">
-                                        <a
+                                        <button
                                             class="dropdown-item"
                                             type="submit"
                                             @click="payment_method = 'bpay'"
                                         >
                                             Pay by BPAY
-                                        </a>
+                                        </button>
                                     </li>
                                     <li
                                         v-if="
@@ -166,7 +169,7 @@
                                             selected_licence.monthly_invoicing_allowed
                                         "
                                     >
-                                        <a
+                                        <button
                                             type="submit"
                                             class="dropdown-item"
                                             @click="
@@ -175,16 +178,16 @@
                                             "
                                         >
                                             Monthly Invoicing
-                                        </a>
+                                        </button>
                                     </li>
                                     <li v-if="selected_licence.other_allowed">
-                                        <a
+                                        <button
                                             type="submit"
                                             class="dropdown-item"
                                             @click="payment_method = 'other'"
                                         >
                                             Record Payment
-                                        </a>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
