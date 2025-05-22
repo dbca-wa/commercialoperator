@@ -117,7 +117,7 @@
                                     :disabled="!parks_available"
                                     class="btn btn-primary dropdown-toggle"
                                     type="button"
-                                    data-toggle="dropdown"
+                                    data-bs-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false"
                                     name="payment_method"
@@ -125,28 +125,48 @@
                                 >
                                     Proceed
                                 </button>
-                                <div
+
+                                <ul
                                     class="dropdown-menu"
                                     aria-labelledby="dropdownMenuButton"
                                 >
-                                    <button class="dropdown-item" type="submit">
-                                        Pay by Credit Card</button
-                                    ><br />
-                                    <span v-if="selected_licence.bpay_allowed">
-                                        <button
+                                    <li>
+                                        <a class="dropdown-item" type="submit">
+                                            Pay by Credit Card
+                                        </a>
+                                    </li>
+                                    <li
+                                        v-if="
+                                            selected_licence.bpay_allowed ||
+                                            selected_licence.monthly_invoicing_allowed ||
+                                            selected_licence.other_allowed
+                                        "
+                                    >
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li v-if="selected_licence.bpay_allowed">
+                                        <a
                                             class="dropdown-item"
                                             type="submit"
                                             @click="payment_method = 'bpay'"
                                         >
-                                            Pay by BPAY</button
-                                        ><br />
-                                    </span>
-                                    <span
+                                            Pay by BPAY
+                                        </a>
+                                    </li>
+                                    <li
+                                        v-if="
+                                            selected_licence.monthly_invoicing_allowed ||
+                                            selected_licence.other_allowed
+                                        "
+                                    >
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li
                                         v-if="
                                             selected_licence.monthly_invoicing_allowed
                                         "
                                     >
-                                        <button
+                                        <a
                                             type="submit"
                                             class="dropdown-item"
                                             @click="
@@ -155,18 +175,18 @@
                                             "
                                         >
                                             Monthly Invoicing
-                                        </button>
-                                    </span>
-                                    <span v-if="selected_licence.other_allowed">
-                                        <button
+                                        </a>
+                                    </li>
+                                    <li v-if="selected_licence.other_allowed">
+                                        <a
                                             type="submit"
                                             class="dropdown-item"
                                             @click="payment_method = 'other'"
                                         >
                                             Record Payment
-                                        </button>
-                                    </span>
-                                </div>
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
 
                             <button
@@ -585,15 +605,3 @@ export default {
     },
 };
 </script>
-
-<style lang="css" scoped>
-.dropdown-item {
-    border: 2px solid white;
-    background-color: white;
-    color: blue;
-    padding: 10px 20px;
-    font-size: 10;
-    cursor: pointer;
-    min-width: 180px;
-}
-</style>
