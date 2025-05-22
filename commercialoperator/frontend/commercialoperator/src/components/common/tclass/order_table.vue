@@ -2,16 +2,6 @@
     <div>
         <div class="form-group">
             <label :id="id" for="label" class="inline">{{ label }}</label>
-            <!-- the next line required for saving value JSON-ified table to application.data - creates an invisible field -->
-            <textarea
-                v-model="localValue"
-                :readonly="readonly"
-                class="form-control"
-                rows="5"
-                :name="name"
-                style="display: none"
-            ></textarea
-            ><br />
             <div id="content-editable-table">
                 <table class="table table-striped editable-table">
                     <thead v-if="table.thead.length">
@@ -219,7 +209,13 @@
                 </table>
             </div>
         </div>
-        <input type="hidden" class="form-control" :name="name" :value="value" />
+        <!-- Hidden input field for form submission (by name and value) -->
+        <input
+            type="hidden"
+            class="form-control"
+            :name="name"
+            :value="localValue"
+        />
     </div>
 </template>
 
