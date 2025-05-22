@@ -31,15 +31,14 @@
                                     border: 1px solid red;
                                 "
                             >
-                                <b>Please correct errors in row(s):</b>
-                                <ul>
-                                    <li
-                                        v-for="error in formErrors"
-                                        :key="error.id"
-                                    >
-                                        {{ error.name }}: {{ error.label }}
-                                    </li>
-                                </ul>
+                                <b>Please correct the error(s) in row(s):</b>
+                                <BootstrapAlert
+                                    v-for="(error, index) in formErrors"
+                                    :key="`bs-alert-${index}-${error.id}`"
+                                    type="danger"
+                                >
+                                    {{ error.name }}: {{ error.label }}
+                                </BootstrapAlert>
                             </div>
 
                             <div
@@ -211,13 +210,14 @@
 import OrderTable from './order_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
+import BootstrapAlert from '@/components/vue2-components/BootstrapAlert.vue';
 
 export default {
-    // eslint-disable-next-line vue/multi-word-component-names, vue/component-definition-name-casing
-    name: 'payment',
+    name: 'PaymentOrder',
     components: {
         OrderTable,
         FormSection,
+        BootstrapAlert,
     },
     props: {
         // I commented this out because a proposal is not passed in as a property
@@ -476,7 +476,7 @@ export default {
                 form.submit();
             }
 
-            vm.errors = vm.check_form_valid();
+            vm.formErrors = vm.check_form_valid();
             vm.warnings = vm.check_duplicate_parks();
 
             if (vm.warnings.length > 0) {
