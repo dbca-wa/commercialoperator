@@ -389,6 +389,7 @@ class MakePaymentView(TemplateView):
 
         proposal_id = int(kwargs["proposal_pk"])
         proposal = Proposal.objects.get(id=proposal_id)
+        booking = None
 
         try:
             booking = create_booking(

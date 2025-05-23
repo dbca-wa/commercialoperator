@@ -92,7 +92,7 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         lines = json.loads(payment_serialized).get("tbody", [])
 
     for row in lines:
-        park_id = row[0]["value"]
+        park_id = row[0]#["value"]
         arrival = row[1]
         same_tour_group = True if row[2] == True else False
         no_adults = int(row[3]) if row[3] else 0
@@ -101,9 +101,9 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         park = Park.objects.get(id=park_id)
 
         # same tour group visitors
-        no_adults_same_tour = int(row[7]) if row[7] else 0
-        no_children_same_tour = int(row[8]) if row[8] else 0
-        no_free_of_charge_same_tour = int(row[9]) if row[9] else 0
+        no_adults_same_tour = int(row[7]) if len(row) > 7 and row[7] else 0
+        no_children_same_tour = int(row[8]) if len(row) > 8 and row[8] else 0
+        no_free_of_charge_same_tour = int(row[9]) if len(row) > 9 and row[9] else 0
 
         if any([no_adults, no_children, no_free_of_charge]) > 0:
             park_booking = ParkBooking.objects.create(
