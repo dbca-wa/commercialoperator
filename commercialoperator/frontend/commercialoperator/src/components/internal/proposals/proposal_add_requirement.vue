@@ -247,7 +247,7 @@
                                                         v-model="
                                                             requirement.recurrence_schedule
                                                         "
-                                                        class="pull-left"
+                                                        class="form-control w-50 pull-left"
                                                         style="
                                                             width: 10%;
                                                             margin-left: 10px;
@@ -450,10 +450,7 @@ export default {
     },
     watch: {
         due_date: function () {
-            this.validDate = moment(
-                this.requirement.due_date,
-                'DD/MM/YYYY'
-            ).isValid();
+            this.validDate = moment(this.requirement.due_date).isValid();
         },
         'requirement.standard': function (val) {
             if (val == true) {
