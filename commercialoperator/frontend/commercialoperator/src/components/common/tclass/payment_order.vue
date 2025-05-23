@@ -100,7 +100,10 @@
                                 label=""
                             />
 
-                            <div v-if="selected_licence.org_applicant == null">
+                            <div
+                                v-if="selected_licence.org_applicant == null"
+                                style="float: right"
+                            >
                                 <!-- Individual applicants must pay using Credit Card -->
                                 <button
                                     :disabled="!parks_available"
