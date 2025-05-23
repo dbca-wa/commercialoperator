@@ -43,6 +43,7 @@
                                 <div
                                     v-if="col_types[col_idx] == 'select'"
                                     id="select_order_table_park_parent"
+                                    class="select_order_table_park_parent"
                                 >
                                     <select
                                         :id="`select_order_table_park-${row_idx}-${col_idx}`"
@@ -1240,14 +1241,23 @@ div.currencyinput:after {
     top: 2px;
     content: '$';
 }
+.select_order_table_park_parent {
+    display: block;
+}
+</style>
+<!-- Having this rule non-scoped to ensure it takes precedence -->
+<style lang="css">
 .select2-container--bootstrap-5
     .select2-selection--single
     .select2-selection__rendered {
+    display: inline-block;
+    padding: 0px 0px 0px 8px !important;
     word-wrap: break-word;
-    white-space: normal;
-    overflow: ellipsis;
-    text-overflow: inherit;
-    max-width: 40px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     height: 35px;
+    width: calc(90%);
+    position: sticky;
 }
 </style>
