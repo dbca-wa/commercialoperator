@@ -370,7 +370,8 @@ module.exports = {
         placeholder = 'Select a value',
         allowClear = true,
         minimumInputLength = 0,
-        unselectValue = 'all'
+        unselectValue = 'all',
+        width = 'auto'
     ) {
         const vm = this;
         let dropdownParent;
@@ -384,7 +385,7 @@ module.exports = {
                 minimumInputLength: minimumInputLength,
                 dropdownParent: dropdownParent,
                 dropdownAutoWidth: true,
-                width: 'auto',
+                width: width,
                 theme: 'bootstrap-5',
                 allowClear: allowClear,
                 placeholder: placeholder,

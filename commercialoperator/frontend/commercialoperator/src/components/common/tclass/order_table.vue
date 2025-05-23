@@ -1171,8 +1171,14 @@ export default {
             row.forEach((_, idx) => {
                 helpers.initialiseSelect2
                     .bind(this)(
-                        `select_order_table_park-${row_idx}-${idx}`,
-                        'select_order_table_park_parent'
+                        `select_order_table_park-${row_idx}-${idx}`, // select id
+                        'select_order_table_park_parent', // parent id
+                        vm.table.tbody[row_idx][0], // selected value (v-model)
+                        'Select a park', // placeholder
+                        true, // allow clear
+                        0, // minimum input length
+                        '', // unselect value
+                        '15rem' // width
                     )
                     .on('select2:select', function (e) {
                         const data = e.params.data.id;
@@ -1237,10 +1243,11 @@ div.currencyinput:after {
 .select2-container--bootstrap-5
     .select2-selection--single
     .select2-selection__rendered {
-    word-wrap: break-word !important;
+    word-wrap: break-word;
     white-space: normal;
-    overflow: hidden;
+    overflow: ellipsis;
     text-overflow: inherit;
-    height: 35px !important;
+    max-width: 40px;
+    height: 35px;
 }
 </style>
