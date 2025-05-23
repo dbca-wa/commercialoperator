@@ -71,7 +71,6 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
                 "created": timezone.now(),
             },
         )
-        # lines = ast.literal_eval(request.POST['line_details'])['tbody']
         lines = json.loads(request.POST["line_details"])["tbody"]
 
     elif (
@@ -79,23 +78,19 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         and proposal.org_applicant
         and proposal.org_applicant.bpay_allowed
     ) or (booking_type == Booking.BOOKING_TYPE_RECEPTION):
-        # (booking_type == Booking.BOOKING_TYPE_RECEPTION and proposal.org_applicant.other_allowed):
         booking = Booking.objects.create(
             proposal_id=proposal.id, created_by=request.user, booking_type=booking_type
         )
-        # lines = ast.literal_eval(request.POST['line_details'])['tbody']
         lines = json.loads(request.POST["line_details"])["tbody"]
 
     else:
         booking = Booking.objects.create(
             proposal_id=proposal.id, created_by=request.user, booking_type=booking_type
         )
-        lines = json.loads(request.POST["payment"])["tbody"]
 
-    # Booking.objects.filter(invoices__isnull=True, booking_type=4, proposal_id=478, proposal__org_applicant=org)
+        payment_serialized = request.POST.getlist("payment", [''])[0]
+        lines = json.loads(payment_serialized).get("tbody", [])
 
-    # tbody = json.loads(request.POST['payment'])['tbody']
-    # lines = ast.literal_eval(request.POST['line_details'])['tbody']
     for row in lines:
         park_id = row[0]["value"]
         arrival = row[1]
@@ -109,10 +104,6 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         no_adults_same_tour = int(row[7]) if row[7] else 0
         no_children_same_tour = int(row[8]) if row[8] else 0
         no_free_of_charge_same_tour = int(row[9]) if row[9] else 0
-
-        # no_adults = no_adults if no_adults_same_tour==0 else no_adults_same_tour
-        # no_children = no_children if no_children_same_tour==0 else no_children_same_tour
-        # no_free_of_charge = no_free_of_charge if no_free_of_charge_same_tour==0 else no_free_of_charge_same_tour
 
         if any([no_adults, no_children, no_free_of_charge]) > 0:
             park_booking = ParkBooking.objects.create(
@@ -1077,6 +1068,15 @@ def checkout_existing_invoice(
         "force_redirect": True,
         "invoice_text": invoice.text,
     }
+
+    # Proposal 3638
+    # request.build_absolute_uri(reverse("complete_booking", args=[proposal.booking_hash, proposal.id]))
+    # request.build_absolute_uri(
+    #     reverse("complete_booking", args=[booking.booking_hash, str(booking.id)])
+    # )
+
+    proposal.bookings.all()
+    reverse("complete_booking", args=['xxxxx', str(1)])
 
     return_url = request.build_absolute_uri(reverse(return_url_ns))
 
