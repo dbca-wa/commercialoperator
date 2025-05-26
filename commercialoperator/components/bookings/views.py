@@ -382,7 +382,8 @@ class DeferredInvoicingView(TemplateView):
 
 
 class MakePaymentView(TemplateView):
-    # template_name = 'mooring/booking/make_booking.html'
+    """View to handle Park Entry Fees:Make Payment"""
+
     template_name = "commercialoperator/booking/success.html"
 
     def post(self, request, *args, **kwargs):
@@ -1002,7 +1003,7 @@ class BookingSuccessView(TemplateView):
                     status="Submitted", owner=booking.proposal.submitter
                 ).order_by("-id")[:1]
 
-            order = Order.objects.get(basket=basket[0])
+            order = Order.objects.get(basket_id=basket[0].id)
             invoice = Invoice.objects.get(order_number=order.number)
             invoice_ref = invoice.reference
             book_inv, created = BookingInvoice.objects.get_or_create(
@@ -1010,20 +1011,20 @@ class BookingSuccessView(TemplateView):
                 invoice_reference=invoice_ref,
                 payment_method=invoice.payment_method,
             )
+            if created:
+                logger.info(
+                    "{} Created Park Bookings Invoice {} for Booking ID {}".format(
+                        "User {} with id {}".format(
+                            proposal.submitter.get_full_name(), proposal.submitter.id
+                        ),
+                        invoice_ref,
+                        booking.id,
+                    )
+                )
 
             if booking.booking_type == Booking.BOOKING_TYPE_TEMPORARY:
                 try:
                     inv = Invoice.objects.get(reference=invoice_ref)
-                    # if (inv.payment_method == Invoice.PAYMENT_METHOD_BPAY):
-                    #    # will return 1st of the next month + monthly_payment_due_period (days) e.g 20th of next month
-                    #    now = timezone.now().date()
-                    #    dt = date(now.year, now.month, 1) + relativedelta(months=1)
-                    #    inv.settlement_date = calc_payment_due_date(booking, dt) - relativedelta(days=1)
-                    #    inv.save()
-
-                    order = Order.objects.get(number=inv.order_number)
-                    order.user = submitter
-                    order.save()
                 except Invoice.DoesNotExist:
                     logger.error(
                         "{} tried paying an admission fee with an incorrect invoice".format(
@@ -1036,7 +1037,7 @@ class BookingSuccessView(TemplateView):
                         )
                     )
                     return redirect("external-proposal-detail", args=(proposal.id,))
-                if inv.system not in ["0557"]:
+                if invoice.system not in ["0557"]:
                     logger.error(
                         "{} tried paying an admission fee with an invoice from another system with reference number {}".format(
                             (
@@ -1055,15 +1056,14 @@ class BookingSuccessView(TemplateView):
                 if book_inv:
                     booking.booking_type = Booking.BOOKING_TYPE_INTERNET
                     booking.expiry_time = None
-                    # booking.set_admission_number()
-                    update_payments(invoice_ref)
+                    # NOTE: Does the ledger method update_payments need to be replaced with anything
+                    # update_payments(invoice_ref)
+                    invoice_properties = get_invoice_properties(inv.id)
+                    invoice = invoice_properties.get("invoice", {})
 
                     if (
-                        not (
-                            invoice.payment_status == "paid"
-                            or invoice.payment_status == "over_paid"
-                        )
-                        and invoice.payment_method == Invoice.PAYMENT_METHOD_CC
+                        not invoice.get("payment_status") in ["paid", "over_paid"]
+                        and invoice.get("payment_method") == Invoice.PAYMENT_METHOD_CC
                     ):
                         logger.error(
                             "Payment Method={} - Admission Fee Invoice payment status is {}".format(
@@ -1095,7 +1095,6 @@ class BookingSuccessView(TemplateView):
                     return render(request, self.template_name, context)
 
         except Exception as e:
-            # logger.error('{}'.format(e))
             if ("cols_last_booking" in request.session) and Booking.objects.filter(
                 id=request.session["cols_last_booking"]
             ).exists():
