@@ -263,13 +263,6 @@ api_patterns = [
         proposal_api_filming.FilmingActivityTabView.as_view(),
         name="filming_activity_tab",
     ),
-    # NOTE: [Booking and BookingInvoice] I added this pattern while trying to figure out how to get a deferred booking working in segregated COLS
-    url(
-        r"^api/complete_booking/(?P<booking_hash>[\w]+)/(?P<booking_id>[0-9]+)/",
-        booking_api.complete_booking,
-        name="complete_booking",
-    ),
-    # url(r'^api/create_booking', booking_api.create_booking, name='create_booking'),
 ]
 
 # URL Patterns
