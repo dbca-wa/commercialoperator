@@ -1238,9 +1238,7 @@ class ConfirmationPDFView(View):
     def get(self, request, *args, **kwargs):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
         bi = BookingInvoice.objects.filter(invoice_reference=invoice.reference).last()
-        organisation = (
-            bi.booking.proposal.org_applicant.organisation.organisation_set.all()[0]
-        )
+        organisation = bi.booking.proposal.org_applicant
 
         if self.check_owner(organisation):
             # GST ignored here because GST amount is not included on the confirmation PDF
