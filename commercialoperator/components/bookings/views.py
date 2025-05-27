@@ -1078,10 +1078,10 @@ class BookingSuccessView(TemplateView):
                     delete_session_booking(request.session)
 
                     send_invoice_tclass_email_notification(
-                        request.user, booking, invoice, recipients=recipients
+                        request.user, booking, inv, recipients=recipients
                     )
                     send_confirmation_tclass_email_notification(
-                        request.user, booking, invoice, recipients=recipients
+                        request.user, booking, inv, recipients=recipients
                     )
 
                     context.update(
