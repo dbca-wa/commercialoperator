@@ -1,7 +1,7 @@
 import os
 
 from io import BytesIO
-from ledger_api_client.utils import currency
+from ledger_api_client.utils import format_currency
 from reportlab.lib import enums
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import Flowable
@@ -269,8 +269,8 @@ class Remittance(Flowable):
     #        canvas.setFont(DEFAULT_FONTNAME, MEDIUM_FONTSIZE)
     #        canvas.drawString(current_x, current_y, self.invoice.reference)
     #        canvas.drawString(PAGE_WIDTH/4, current_y, self.invoice.created.strftime(DATE_FORMAT))
-    #        canvas.drawString((PAGE_WIDTH/4) * 2, current_y, currency(self.invoice.amount - calculate_excl_gst(self.invoice.amount)))
-    #        canvas.drawString((PAGE_WIDTH/4) * 3, current_y, currency(self.invoice.amount))
+    #        canvas.drawString((PAGE_WIDTH/4) * 2, current_y, format_currency(self.invoice.amount - calculate_excl_gst(self.invoice.amount)))
+    #        canvas.drawString((PAGE_WIDTH/4) * 3, current_y, format_currency(self.invoice.amount))
     #
     #    def draw(self):
     #        if settings.BPAY_ALLOWED:
@@ -404,7 +404,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 6,
-        currency(total_amount),
+        format_currency(total_amount),
     )
     #    if hasattr(booking, 'booking_type'):
     #        canvas.drawRightString(current_x + 20, current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 5, 'Booking No.')
