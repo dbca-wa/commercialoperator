@@ -88,11 +88,11 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
             proposal_id=proposal.id, created_by=request.user, booking_type=booking_type
         )
 
-        payment_serialized = request.POST.getlist("payment", [''])[0]
+        payment_serialized = request.POST.getlist("payment", [""])[0]
         lines = json.loads(payment_serialized).get("tbody", [])
 
     for row in lines:
-        park_id = row[0]#["value"]
+        park_id = row[0]  # ["value"]
         arrival = row[1]
         same_tour_group = True if row[2] == True else False
         no_adults = int(row[3]) if row[3] else 0
@@ -1068,15 +1068,6 @@ def checkout_existing_invoice(
         "force_redirect": True,
         "invoice_text": invoice.text,
     }
-
-    # Proposal 3638
-    # request.build_absolute_uri(reverse("complete_booking", args=[proposal.booking_hash, proposal.id]))
-    # request.build_absolute_uri(
-    #     reverse("complete_booking", args=[booking.booking_hash, str(booking.id)])
-    # )
-
-    proposal.bookings.all()
-    reverse("complete_booking", args=['xxxxx', str(1)])
 
     return_url = request.build_absolute_uri(reverse(return_url_ns))
 
