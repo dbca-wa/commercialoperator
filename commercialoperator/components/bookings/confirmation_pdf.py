@@ -1,7 +1,7 @@
 import os
 
 from io import BytesIO
-from ledger_api_client.utils import currency, calculate_excl_gst
+from ledger_api_client.utils import format_currency, calculate_excl_gst
 from reportlab.lib import enums
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (
@@ -23,17 +23,29 @@ from django.conf import settings
 
 from commercialoperator.components.main.utils import to_local_tz
 
+from ledger_api_client.utils import OrderLine
+
 DPAW_HEADER_LOGO = os.path.join(
-    settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
+    settings.BASE_DIR,
+    "commercialoperator",
+    "static",
+    "commercialoperator",
+    "img",
+    "dbca_logo.jpg",
 )
 DPAW_HEADER_LOGO_SM = os.path.join(
-    settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo_small.png"
+    settings.BASE_DIR,
+    "commercialoperator",
+    "static",
+    "commercialoperator",
+    "img",
+    "dbca_logo_small.png",
 )
 BPAY_LOGO = os.path.join(
-    settings.PROJECT_DIR,
-    "payments",
+    settings.BASE_DIR,
+    "commercialoperator",
     "static",
-    "payments",
+    "commercialoperator",
     "img",
     "BPAY_2012_PORT_BLUE.png",
 )
@@ -278,10 +290,12 @@ class Remittance(Flowable):
         canvas.drawString(
             (PAGE_WIDTH / 4) * 2,
             current_y,
-            currency(self.invoice.amount - calculate_excl_gst(self.invoice.amount)),
+            format_currency(
+                self.invoice.amount - calculate_excl_gst(self.invoice.amount)
+            ),
         )
         canvas.drawString(
-            (PAGE_WIDTH / 4) * 3, current_y, currency(self.invoice.amount)
+            (PAGE_WIDTH / 4) * 3, current_y, format_currency(self.invoice.amount)
         )
 
     def draw(self):
@@ -333,7 +347,7 @@ def _create_header(canvas, doc, draw_page_number=True):
         canvas.drawString(
             current_x,
             current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER),
-            booking.proposal.applicant,
+            booking.proposal.applicant_obj.name,
         )
     canvas.drawString(
         current_x,
@@ -392,7 +406,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 5,
-        currency(invoice.payment_amount),
+        format_currency(invoice.payment_amount),
     )
     if hasattr(booking, "booking_type"):
         canvas.drawRightString(
@@ -410,10 +424,16 @@ def _create_header(canvas, doc, draw_page_number=True):
 
 
 def _create_confirmation(confirmation_buffer, invoice, booking):
+    from commercialoperator.components.bookings.utils import get_invoice_properties
 
     global DPAW_HEADER_LOGO
     DPAW_HEADER_LOGO = os.path.join(
-        settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
+        settings.BASE_DIR,
+        "commercialoperator",
+        "static",
+        "commercialoperator",
+        "img",
+        "dbca_logo.jpg",
     )
 
     every_page_frame = Frame(
@@ -454,7 +474,8 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
             ("ALIGN", (0, 0), (-1, -1), "LEFT"),
         ]
     )
-    items = invoice.order.lines.all()
+
+    items = OrderLine.objects.filter(number=invoice.order_number)
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
 
     data = [["Item", "Product", "Quantity", "Fees"]]
@@ -462,13 +483,16 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
     s = styles["BodyText"]
     s.wordWrap = "CJK"
 
+    invoice_properties = get_invoice_properties(invoice.id)
+    payment_status = invoice_properties.get("invoice", {}).get("payment_status", "")
+
     for item in items:
         data.append(
             [
                 val,
-                Paragraph(item.description, s),
+                Paragraph(item.title, s),
                 item.quantity,
-                invoice.payment_status.capitalize(),
+                payment_status.capitalize(),
             ]
         )
         val += 1
@@ -488,7 +512,7 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
     elements.append(t)
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
     # /Products Table
-    if invoice.payment_status != "paid" and invoice.payment_status != "over_paid":
+    if payment_status != "paid" and payment_status != "over_paid":
         elements.append(Paragraph(settings.INVOICE_UNPAID_WARNING, styles["Left"]))
 
     elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 6))

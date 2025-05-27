@@ -522,8 +522,17 @@ class BookingInvoice(RevisionedMixin):
 
     @property
     def _payment_status(self):
+        """get payment status from invoice, if it exists"""
+
+        from commercialoperator.components.bookings.utils import get_invoice_properties
+
         if self.invoice:
-            payment_status = self.invoice.payment_status
+            invoice_properties = get_invoice_properties(self.invoice.id)
+            invoice = invoice_properties.get("invoice", {})
+            if not invoice:
+                return None
+            payment_status = invoice.get("payment_status")
+
             return " ".join(
                 [i.capitalize() for i in payment_status.replace("_", " ").split()]
             )

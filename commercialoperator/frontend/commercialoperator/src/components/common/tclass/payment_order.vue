@@ -31,15 +31,14 @@
                                     border: 1px solid red;
                                 "
                             >
-                                <b>Please correct errors in row(s):</b>
-                                <ul>
-                                    <li
-                                        v-for="error in formErrors"
-                                        :key="error.id"
-                                    >
-                                        {{ error.name }}: {{ error.label }}
-                                    </li>
-                                </ul>
+                                <b>Please correct the error(s) in row(s):</b>
+                                <BootstrapAlert
+                                    v-for="(error, index) in formErrors"
+                                    :key="`bs-alert-${index}-${error.id}`"
+                                    type="danger"
+                                >
+                                    {{ error.name }}: {{ error.label }}
+                                </BootstrapAlert>
                             </div>
 
                             <div
@@ -79,6 +78,7 @@
                                 v-model="selected_licence_id"
                                 class="form-control"
                                 :clearable="false"
+                                required
                                 @change="proposal_parks()"
                             >
                                 <option
@@ -100,7 +100,10 @@
                                 label=""
                             />
 
-                            <div v-if="selected_licence.org_applicant == null">
+                            <div
+                                v-if="selected_licence.org_applicant == null"
+                                style="float: right"
+                            >
                                 <!-- Individual applicants must pay using Credit Card -->
                                 <button
                                     :disabled="!parks_available"
@@ -117,7 +120,7 @@
                                     :disabled="!parks_available"
                                     class="btn btn-primary dropdown-toggle"
                                     type="button"
-                                    data-toggle="dropdown"
+                                    data-bs-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false"
                                     name="payment_method"
@@ -125,23 +128,46 @@
                                 >
                                     Proceed
                                 </button>
-                                <div
+
+                                <ul
                                     class="dropdown-menu"
                                     aria-labelledby="dropdownMenuButton"
                                 >
-                                    <button class="dropdown-item" type="submit">
-                                        Pay by Credit Card</button
-                                    ><br />
-                                    <span v-if="selected_licence.bpay_allowed">
+                                    <li>
+                                        <button
+                                            class="dropdown-item"
+                                            type="submit"
+                                        >
+                                            Pay by Credit Card
+                                        </button>
+                                    </li>
+                                    <li
+                                        v-if="
+                                            selected_licence.bpay_allowed ||
+                                            selected_licence.monthly_invoicing_allowed ||
+                                            selected_licence.other_allowed
+                                        "
+                                    >
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li v-if="selected_licence.bpay_allowed">
                                         <button
                                             class="dropdown-item"
                                             type="submit"
                                             @click="payment_method = 'bpay'"
                                         >
-                                            Pay by BPAY</button
-                                        ><br />
-                                    </span>
-                                    <span
+                                            Pay by BPAY
+                                        </button>
+                                    </li>
+                                    <li
+                                        v-if="
+                                            selected_licence.monthly_invoicing_allowed ||
+                                            selected_licence.other_allowed
+                                        "
+                                    >
+                                        <hr class="dropdown-divider" />
+                                    </li>
+                                    <li
                                         v-if="
                                             selected_licence.monthly_invoicing_allowed
                                         "
@@ -156,8 +182,8 @@
                                         >
                                             Monthly Invoicing
                                         </button>
-                                    </span>
-                                    <span v-if="selected_licence.other_allowed">
+                                    </li>
+                                    <li v-if="selected_licence.other_allowed">
                                         <button
                                             type="submit"
                                             class="dropdown-item"
@@ -165,8 +191,8 @@
                                         >
                                             Record Payment
                                         </button>
-                                    </span>
-                                </div>
+                                    </li>
+                                </ul>
                             </div>
 
                             <button
@@ -188,13 +214,14 @@
 import OrderTable from './order_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
+import BootstrapAlert from '@/components/vue2-components/BootstrapAlert.vue';
 
 export default {
-    // eslint-disable-next-line vue/multi-word-component-names, vue/component-definition-name-casing
-    name: 'payment',
+    name: 'PaymentOrder',
     components: {
         OrderTable,
         FormSection,
+        BootstrapAlert,
     },
     props: {
         // I commented this out because a proposal is not passed in as a property
@@ -261,6 +288,7 @@ export default {
     },
     mounted: function () {
         let vm = this;
+        vm.form = document.forms.new_payment;
         vm.get_user_approvals();
         this.$nextTick(() => {
             const select2 = helpers.initialiseSelect2.bind(this)(
@@ -326,7 +354,7 @@ export default {
         },
         calc_order: function () {
             let vm = this;
-            var formData = new FormData(document.forms.new_payment);
+            var formData = new FormData(vm.form);
             vm.order_details = formData.get('payment');
             vm.$refs.payment_calc.order_details = vm.order_details;
             vm.$refs.payment_calc.isModalOpen = true;
@@ -376,11 +404,14 @@ export default {
             var tbody = vm.$refs.order_table.table.tbody;
             for (var row_idx in tbody) {
                 var row = tbody[row_idx];
+                const adults = Number(row[idx_adult]) || 0;
+                const children = Number(row[idx_child]) || 0;
+                const free = Number(row[idx_free]) || 0;
+                // Whether there is any visitor at all
+                const anyVisitor = adults + children + free > 0;
 
-                if (
-                    !(row[idx_park] || row[idx_arrival_date]) ||
-                    !(row[idx_adult] || row[idx_child] || row[idx_free])
-                ) {
+                if (!(row[idx_park] || row[idx_arrival_date]) || !anyVisitor) {
+                    // Cannot have no selected park, no arrival date, or no visitors
                     errors.push({
                         id: parseInt(row_idx),
                         name: 'Row',
@@ -443,17 +474,16 @@ export default {
         },
         submit: function () {
             let vm = this;
-            var form = document.forms.new_payment;
             if (vm.payment_method == 'existing_invoice') {
-                form.action =
+                vm.form.action =
                     '/existing_invoice_payment/' +
                     '05572566192' +
                     '/?method=' +
                     vm.payment_method;
-                form.submit();
+                vm.form.submit();
             }
 
-            vm.errors = vm.check_form_valid();
+            vm.formErrors = vm.check_form_valid();
             vm.warnings = vm.check_duplicate_parks();
 
             if (vm.warnings.length > 0) {
@@ -471,19 +501,22 @@ export default {
                                 vm.payment_method == 'bpay' ||
                                 vm.payment_method == 'other'
                             ) {
-                                form.action =
+                                vm.form.action =
                                     '/preview_deferred/' +
                                     vm.selected_licence.value +
                                     '/?method=' +
                                     vm.payment_method;
                             } else {
-                                form.action =
+                                vm.form.action =
                                     '/payment/' +
                                     vm.selected_licence.value +
                                     '/';
                             }
-                            if (vm.formErrors.length == 0) {
-                                form.submit();
+                            if (
+                                helpers.validateForm(vm.form) &&
+                                vm.formErrors.length == 0
+                            ) {
+                                vm.form.submit();
                             } else {
                                 return;
                             }
@@ -499,16 +532,20 @@ export default {
                     vm.payment_method == 'bpay' ||
                     vm.payment_method == 'other'
                 ) {
-                    form.action =
+                    vm.form.action =
                         '/preview_deferred/' +
                         vm.selected_licence.value +
                         '/?method=' +
                         vm.payment_method;
                 } else {
-                    form.action = '/payment/' + vm.selected_licence.value + '/';
+                    vm.form.action =
+                        '/payment/' + vm.selected_licence.value + '/';
                 }
-                if (vm.formErrors.length == 0) {
-                    form.submit();
+                if (
+                    helpers.validateForm(vm.form) &&
+                    vm.formErrors.length == 0
+                ) {
+                    vm.form.submit();
                 } else {
                     return;
                 }
@@ -585,15 +622,3 @@ export default {
     },
 };
 </script>
-
-<style lang="css" scoped>
-.dropdown-item {
-    border: 2px solid white;
-    background-color: white;
-    color: blue;
-    padding: 10px 20px;
-    font-size: 10;
-    cursor: pointer;
-    min-width: 180px;
-}
-</style>

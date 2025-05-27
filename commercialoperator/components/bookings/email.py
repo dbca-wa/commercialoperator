@@ -136,17 +136,17 @@ class PaymentDueNotificationFailedTClassEmail(TemplateEmailBase):
 def send_application_invoice_filming_email_notification(
     request, proposal, invoice, recipients, is_test=False
 ):
+    from commercialoperator.components.bookings.utils import get_invoice_pdf
+
     email = ApplicationInvoiceFilmingSendNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-proposal-detail',kwargs={'proposal_pk': proposal.id}))
 
     context = {
         "proposal_lodgement_number": proposal.lodgement_number,
-        #'url': url,
     }
 
     filename = "invoice.pdf"
-    doc = create_invoice_pdf_bytes(filename, invoice, proposal)
-    attachment = (filename, doc, "application/pdf")
+    invoice_pdf = get_invoice_pdf(invoice.get("reference"))
+    attachment = (filename, invoice_pdf.content, "application/pdf")
 
     msg = email.send(recipients, attachments=[attachment], context=context)
     if is_test:
@@ -195,17 +195,17 @@ def send_compliance_fee_invoice_events_email_notification(
 def send_application_fee_invoice_tclass_email_notification(
     request, proposal, invoice, recipients, is_test=False
 ):
+    from commercialoperator.components.bookings.utils import get_invoice_pdf
+
     email = ApplicationFeeInvoiceTClassSendNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-proposal-detail',kwargs={'proposal_pk': proposal.id}))
 
     context = {
         "lodgement_number": proposal.lodgement_number,
-        #'url': url,
     }
 
     filename = "invoice.pdf"
-    doc = create_invoice_pdf_bytes(filename, invoice, proposal)
-    attachment = (filename, doc, "application/pdf")
+    invoice_pdf = get_invoice_pdf(invoice.get("reference"))
+    attachment = (filename, invoice_pdf.content, "application/pdf")
 
     msg = email.send(recipients, attachments=[attachment], context=context)
     if is_test:
@@ -213,10 +213,6 @@ def send_application_fee_invoice_tclass_email_notification(
 
     sender = request.user if request else settings.DEFAULT_FROM_EMAIL
     _log_proposal_email(msg, proposal, sender=sender)
-    #    try:
-    #        _log_org_email(msg, proposal.applicant, proposal.submitter, sender=sender)
-    #    except:
-    #        _log_org_email(msg, proposal.submitter, proposal.submitter, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
     else:
@@ -237,7 +233,6 @@ def send_application_fee_confirmation_tclass_email_notification(
 
     filename = "confirmation.pdf"
     doc = create_confirmation_pdf_bytes(filename, invoice, application_fee)
-    # doc = create_invoice_pdf_bytes(filename, invoice, proposal)
     attachment = (filename, doc, "application/pdf")
 
     msg = email.send(recipients, attachments=[attachment], context=context)
@@ -255,23 +250,23 @@ def send_application_fee_confirmation_tclass_email_notification(
 def send_invoice_tclass_email_notification(
     sender, booking, invoice, recipients, is_test=False
 ):
+    from commercialoperator.components.bookings.utils import get_invoice_pdf
+
     email = InvoiceTClassSendNotificationEmail()
 
     context = {
         "booking_number": booking.booking_number,
-        #'url': url,
     }
 
     filename = "invoice.pdf"
-    doc = create_invoice_pdf_bytes(filename, invoice, booking.proposal)
-    attachment = (filename, doc, "application/pdf")
+    invoice_pdf = get_invoice_pdf(invoice.reference)
+    attachment = (filename, invoice_pdf.content, "application/pdf")
 
     msg = email.send(recipients, attachments=[attachment], context=context)
     if is_test:
         return
 
     _log_proposal_email(msg, booking.proposal, sender=sender)
-    # _log_org_email(msg, booking.proposal.applicant, booking.proposal.submitter, sender=sender)
     if booking.proposal.org_applicant:
         _log_org_email(
             msg,
@@ -303,7 +298,6 @@ def send_confirmation_tclass_email_notification(
         return
 
     _log_proposal_email(msg, booking.proposal, sender=sender)
-    # _log_org_email(msg, booking.proposal.applicant, booking.proposal.submitter, sender=sender)
     if booking.proposal.org_applicant:
         _log_org_email(
             msg,
@@ -356,7 +350,6 @@ def send_monthly_confirmation_tclass_email_notification(
 ):
     """Monthly confirmation has deferred invoicing, deferred to the following month. So invoice is created later by Cron"""
     email = ConfirmationTClassSendNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-proposal-detail',kwargs={'proposal_pk': proposal.id}))
 
     context = {
         "booking_number": booking.booking_number,
@@ -371,7 +364,6 @@ def send_monthly_confirmation_tclass_email_notification(
         return
 
     _log_proposal_email(msg, booking.proposal, sender=sender)
-    # _log_org_email(msg, booking.proposal.applicant, booking.proposal.submitter, sender=sender)
     if booking.proposal.org_applicant:
         _log_org_email(
             msg,
@@ -388,6 +380,8 @@ def send_monthly_confirmation_tclass_email_notification(
 def send_monthly_invoice_tclass_email_notification(
     sender, booking, invoice, recipients, is_test=False
 ):
+    from commercialoperator.components.bookings.utils import get_invoice_pdf
+
     email = MonthlyInvoiceTClassSendNotificationEmail()
 
     context = {
@@ -395,8 +389,8 @@ def send_monthly_invoice_tclass_email_notification(
     }
 
     filename = "monthly_invoice.pdf"
-    doc = create_invoice_pdf_bytes(filename, invoice, booking.proposal)
-    attachment = (filename, doc, "application/pdf")
+    invoice_pdf = get_invoice_pdf(invoice.get("reference"))
+    attachment = (filename, invoice_pdf.content, "application/pdf")
 
     msg = email.send(recipients, attachments=[attachment], context=context)
     if is_test:

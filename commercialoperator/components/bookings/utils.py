@@ -71,7 +71,6 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
                 "created": timezone.now(),
             },
         )
-        # lines = ast.literal_eval(request.POST['line_details'])['tbody']
         lines = json.loads(request.POST["line_details"])["tbody"]
 
     elif (
@@ -79,25 +78,21 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         and proposal.org_applicant
         and proposal.org_applicant.bpay_allowed
     ) or (booking_type == Booking.BOOKING_TYPE_RECEPTION):
-        # (booking_type == Booking.BOOKING_TYPE_RECEPTION and proposal.org_applicant.other_allowed):
         booking = Booking.objects.create(
             proposal_id=proposal.id, created_by=request.user, booking_type=booking_type
         )
-        # lines = ast.literal_eval(request.POST['line_details'])['tbody']
         lines = json.loads(request.POST["line_details"])["tbody"]
 
     else:
         booking = Booking.objects.create(
             proposal_id=proposal.id, created_by=request.user, booking_type=booking_type
         )
-        lines = json.loads(request.POST["payment"])["tbody"]
 
-    # Booking.objects.filter(invoices__isnull=True, booking_type=4, proposal_id=478, proposal__org_applicant=org)
+        payment_serialized = request.POST.getlist("payment", [""])[0]
+        lines = json.loads(payment_serialized).get("tbody", [])
 
-    # tbody = json.loads(request.POST['payment'])['tbody']
-    # lines = ast.literal_eval(request.POST['line_details'])['tbody']
     for row in lines:
-        park_id = row[0]["value"]
+        park_id = row[0]  # ["value"]
         arrival = row[1]
         same_tour_group = True if row[2] == True else False
         no_adults = int(row[3]) if row[3] else 0
@@ -106,13 +101,9 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         park = Park.objects.get(id=park_id)
 
         # same tour group visitors
-        no_adults_same_tour = int(row[7]) if row[7] else 0
-        no_children_same_tour = int(row[8]) if row[8] else 0
-        no_free_of_charge_same_tour = int(row[9]) if row[9] else 0
-
-        # no_adults = no_adults if no_adults_same_tour==0 else no_adults_same_tour
-        # no_children = no_children if no_children_same_tour==0 else no_children_same_tour
-        # no_free_of_charge = no_free_of_charge if no_free_of_charge_same_tour==0 else no_free_of_charge_same_tour
+        no_adults_same_tour = int(row[7]) if len(row) > 7 and row[7] else 0
+        no_children_same_tour = int(row[8]) if len(row) > 8 and row[8] else 0
+        no_free_of_charge_same_tour = int(row[9]) if len(row) > 9 and row[9] else 0
 
         if any([no_adults, no_children, no_free_of_charge]) > 0:
             park_booking = ParkBooking.objects.create(
@@ -1013,14 +1004,6 @@ def checkout(
 
     checkouthash = request.session.get("checkouthash", "")
 
-    # NOTE:[Booking and BookingInvoice] I have a feeling return_preload_url needs to route to complete_booking, but not sure if it needs to do so in this method or in checkout_existing_invoice
-    # "return_preload_url": settings.PARKSTAY_EXTERNAL_URL+'/api/complete_booking/'+booking.booking_hash+'/'+str(booking.id)+'/',
-    # proposal = Proposal.objects.get(id=3639)
-    # request.build_absolute_uri(reverse("complete_booking", args=[proposal.booking_hash, proposal.id]))
-    # request.build_absolute_uri(
-    #     reverse("complete_booking", args=[booking.booking_hash, str(booking.id)])
-    # )
-
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri(
@@ -1198,148 +1181,3 @@ def get_invoice_pdf(invoice_reference):
         + invoice_reference
     )
     return requests.get(url=url)
-
-
-# NOTE: [Booking and BookingInvoice] Copied this method from ps2. Haven't yet understood if and where I need it.
-def bind_booking(booking, basket):
-    if booking.booking_type == 3:
-        logger.info("bind_booking start {}".format(booking.id))
-        order = Order.objects.get(basket_id=basket[0].id)
-        invoice = Invoice.objects.get(order_number=order.number)
-        invoice_ref = invoice.reference
-        book_inv, created = BookingInvoice.objects.get_or_create(
-            booking=booking, invoice_reference=invoice_ref
-        )
-        logger.info(
-            "{} finished temporary booking {}, creating new BookingInvoice with reference {}".format(
-                (
-                    "User {} with id {}".format(
-                        booking.customer.get_full_name(), booking.customer.id
-                    )
-                    if booking.customer
-                    else "An anonymous user"
-                ),
-                booking.id,
-                invoice_ref,
-            )
-        )
-        try:
-            inv = Invoice.objects.get(reference=invoice_ref)
-        except Invoice.DoesNotExist:
-            logger.error(
-                "{} tried making a booking with an incorrect invoice".format(
-                    "User {} with id {}".format(
-                        booking.customer.get_full_name(), booking.customer.id
-                    )
-                    if booking.customer
-                    else "An anonymous user"
-                )
-            )
-            raise BindBookingException
-
-        if inv.system not in [settings.PS_PAYMENT_SYSTEM_ID.replace("S", "0")]:
-            logger.error(
-                "{} tried making a booking with an invoice from another system with reference number {}".format(
-                    (
-                        "User {} with id {}".format(
-                            booking.customer.get_full_name(), booking.customer.id
-                        )
-                        if booking.customer
-                        else "An anonymous user"
-                    ),
-                    inv.reference,
-                )
-            )
-            raise BindBookingException
-        # try:
-        #    b = BookingInvoice.objects.get(invoice_reference=invoice_ref)
-        #    logger.error(u'{} tried making a booking with an already used invoice with reference number {}'.format(u'User {} with id {}'.format(booking.customer.get_full_name(), booking.customer.id) if booking.customer else u'An anonymous user', inv.reference))
-        #    raise BindBookingException
-        # except BookingInvoice.DoesNotExist:
-        #    logger.info(u'{} finished temporary booking {}, creating new BookingInvoice with reference {}'.format(u'User {} with id {}'.format(booking.customer.get_full_name(), booking.customer.id) if booking.customer else u'An anonymous user', booking.id, invoice_ref))
-        # FIXME: replace with server side notify_url callback
-        # book_inv, created = BookingInvoice.objects.get_or_create(booking=booking, invoice_reference=invoice_ref)
-        # set booking to be permanent fixture
-
-        logger.info("preparing to complete booking {}".format(booking.id))
-        booking.booking_type = 1  # internet booking
-        booking.expiry_time = None
-        booking.save()
-        parkstay_models.BookingLog.objects.create(
-            booking=booking, message="Booking Completed"
-        )
-        if booking.old_booking:
-            if booking.old_booking > 0:
-                logger.info(
-                    "cancelling old booking started {}".format(booking.old_booking)
-                )
-                old_booking = Booking.objects.get(id=int(booking.old_booking))
-                old_booking.is_canceled = True
-                if booking.created_by is not None:
-                    logger.info("created by {}".format(booking.created_by))
-                    old_booking.canceled_by = EmailUser.objects.get(
-                        id=int(booking.created_by)
-                    )
-                old_booking.cancelation_time = timezone.now()
-                old_booking.cancellation_reason = "Booking Changed Online"
-                old_booking.save()
-                logger.info(
-                    "cancelling old booking completed {}".format(booking.old_booking)
-                )
-
-                # start - send signal to availability cache to rebuild
-                cb = parkstay_models.CampsiteBooking.objects.filter(booking=old_booking)
-                for c in cb:
-                    try:
-                        ac = parkstay_models.AvailabilityCache.objects.filter(
-                            date=c.date, campground=c.campsite.campground
-                        )
-                        if ac.count() > 0:
-                            for a in ac:
-                                a.stale = True
-                                a.save()
-                        else:
-                            parkstay_models.AvailabilityCache.objects.create(
-                                date=c.date,
-                                campground=c.campsite.campground,
-                                stale=True,
-                            )
-                    except Exception as e:
-                        print(e)
-                        logger.info(
-                            "error updating availablity cache {}".format(old_booking.id)
-                        )
-                        print(
-                            "Error Updating campsite availablity for campsitebooking.id "
-                            + str(c.id)
-                        )
-                logger.info(
-                    "availablity cache flagged for update {}".format(old_booking.id)
-                )
-                # end - send signal to availability cache to rebuild
-
-        logger.info("booking completed {}".format(booking.id))
-
-        cb = parkstay_models.CampsiteBooking.objects.filter(booking=booking)
-        for c in cb:
-            try:
-                ac = parkstay_models.AvailabilityCache.objects.filter(
-                    date=c.date, campground=c.campsite.campground
-                )
-                if ac.count() > 0:
-
-                    for a in ac:
-                        a.stale = True
-                        a.save()
-                else:
-                    parkstay_models.AvailabilityCache.objects.create(
-                        date=c.date, campground=c.campsite.campground, stale=True
-                    )
-            except Exception as e:
-                print(e)
-                logger.info("error updating availablity cache {}".format(booking.id))
-                print(
-                    "Error Updating campsite availablity for campsitebooking.id "
-                    + str(c.id)
-                )
-        logger.info("availablity cache flagged for update {}".format(booking.id))

@@ -1,7 +1,7 @@
 import os
 
 from io import BytesIO
-from ledger_api_client.utils import currency
+from ledger_api_client.utils import format_currency
 from reportlab.lib import enums
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (
@@ -276,14 +276,14 @@ class Remittance(Flowable):
         canvas.drawString(
             (PAGE_WIDTH / 4) * 2,
             current_y,
-            currency(
+            format_currency(
                 self.invoice.order.total_tax
                 if not _is_gst_exempt(self.proposal, self.invoice)
                 else 0.0
             ),
         )
         canvas.drawString(
-            (PAGE_WIDTH / 4) * 3, current_y, currency(self.invoice.amount)
+            (PAGE_WIDTH / 4) * 3, current_y, format_currency(self.invoice.amount)
         )
 
     def draw(self):
@@ -404,7 +404,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 5,
-        currency(invoice.amount),
+        format_currency(invoice.amount),
     )
     canvas.drawRightString(
         current_x + 20,
@@ -414,7 +414,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 6,
-        currency(
+        format_currency(
             invoice.order.total_tax if not _is_gst_exempt(proposal, invoice) else 0.0
         ),
     )
@@ -426,7 +426,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 7,
-        currency(invoice.payment_amount),
+        format_currency(invoice.payment_amount),
     )
     canvas.drawRightString(
         current_x + 20,
@@ -436,7 +436,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 8,
-        currency(invoice.balance),
+        format_currency(invoice.balance),
     )
 
     #    if bi and bi[0].deferred_payment_date and invoice.payment_method in [invoice.PAYMENT_METHOD_MONTHLY_INVOICING, invoice.PAYMENT_METHOD_BPAY]:
@@ -524,8 +524,8 @@ def _create_invoice(invoice_buffer, invoice, proposal):
                     val,
                     Paragraph(item["ledger_description"], s),
                     item["quantity"],
-                    currency(item["price_incl_tax"]),
-                    currency(amount),
+                    format_currency(item["price_incl_tax"]),
+                    format_currency(amount),
                 ]
             )
             val += 1
@@ -538,8 +538,8 @@ def _create_invoice(invoice_buffer, invoice, proposal):
                     val,
                     Paragraph(item.description, s),
                     item.quantity,
-                    currency(item.unit_price_incl_tax),
-                    currency(item.line_price_before_discounts_incl_tax),
+                    format_currency(item.unit_price_incl_tax),
+                    format_currency(item.line_price_before_discounts_incl_tax),
                 ]
             )
             val += 1
