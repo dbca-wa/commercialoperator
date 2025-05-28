@@ -25,7 +25,7 @@ from commercialoperator.components.proposals.serializers_event import (
     SaveProposalEventsTrailsSerializer,
 )
 
-from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
+from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 
 import logging

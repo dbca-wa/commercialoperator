@@ -16,8 +16,8 @@ from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
 from ledger_api_client.api import get_account_details
 from commercialoperator.components.organisations.models import OrganisationRequest
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.models import EmailUserAction
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.models import EmailUserAction
 
 from commercialoperator.components.users.serializers import (
     UserSerializer,

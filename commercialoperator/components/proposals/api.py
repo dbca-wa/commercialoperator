@@ -122,8 +122,8 @@ from commercialoperator.components.bookings.models import (
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.utils import (
     QuerySetChain,
     retrieve_delegate_organisation_ids,
     retrieve_group_members,

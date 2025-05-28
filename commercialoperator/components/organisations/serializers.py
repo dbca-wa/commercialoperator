@@ -25,8 +25,8 @@ from commercialoperator.components.organisations.utils import (
 from commercialoperator.components.main.serializers import (
     CommunicationLogEntrySerializer,
 )
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.utils import retrieve_email_user
 from commercialoperator.helpers import is_commercialoperator_admin
 
 

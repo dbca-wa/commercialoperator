@@ -9,7 +9,7 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from django.db.models import JSONField
 
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.utils import retrieve_email_user
 
 
 class Region(models.Model):

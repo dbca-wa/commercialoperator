@@ -17,9 +17,9 @@ from ledger_api_client.utils import update_organisation_obj, get_all_organisatio
 from commercialoperator.components.approvals.serializers import EmailUserSerializer
 from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.permission.permission import organisation_permissions
-from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.api import LedgerOrganisationFilterBackend
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.utils import (
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
@@ -758,7 +758,7 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Organisation.objects.filter(id__in=org_list)
 
     def list(self, request, *args, **kwargs):
-        from commercialoperator.components.stubs.serializers import (
+        from commercialoperator.components.segregation.serializers import (
             OrganisationListSerializer,
         )
 

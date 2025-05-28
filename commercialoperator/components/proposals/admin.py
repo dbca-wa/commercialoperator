@@ -26,7 +26,7 @@ from commercialoperator.components.main.models import (
 from reversion.admin import VersionAdmin
 from django.urls import re_path as url
 from django.http import HttpResponseRedirect
-from commercialoperator.components.stubs.models import (
+from commercialoperator.components.segregation.models import (
     DistrictProposalApproverGroupMembers,
     DistrictProposalAssessorGroupMembers,
     ProposalApproverGroupMembers,

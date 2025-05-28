@@ -7,8 +7,8 @@ from commercialoperator.components.compliances.models import (
 )
 from rest_framework import serializers
 
-from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.serializers import EmailUserRoSerializer
+from commercialoperator.components.segregation.utils import retrieve_email_user
 
 
 class EmailUserSerializer(EmailUserRoSerializer):

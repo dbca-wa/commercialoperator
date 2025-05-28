@@ -18,11 +18,11 @@ from commercialoperator.components.organisations.utils import (
     is_consultant,
     is_org_access_member,
 )
-from commercialoperator.components.stubs.models import (
+from commercialoperator.components.segregation.models import (
     EmailUserAction,
     EmailUserLogEntry,
 )
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_ledger_user_info_by_id,
 )

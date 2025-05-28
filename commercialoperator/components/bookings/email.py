@@ -583,7 +583,7 @@ def _log_org_email(email_message, organisation, customer, sender=None):
 
 
 def _log_user_email(email_message, emailuser, customer, sender=None):
-    from commercialoperator.components.stubs.models import EmailUserLogEntry
+    from commercialoperator.components.segregation.models import EmailUserLogEntry
 
     if isinstance(
         email_message,

@@ -24,7 +24,7 @@ from commercialoperator.components.compliances.serializers import (
     ComplianceAmendmentRequestSerializer,
     CompAmendmentRequestDisplaySerializer,
 )
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_delegate_organisation_ids,
 )

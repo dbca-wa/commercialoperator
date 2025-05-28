@@ -2,7 +2,7 @@ from django.db import models
 from reversion.models import Version
 from reversion import revisions
 
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_ledger_user_info_by_id,
 )
 

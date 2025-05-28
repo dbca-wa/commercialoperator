@@ -5,7 +5,7 @@ from commercialoperator.components.organisations import models
 from commercialoperator.components.organisations.forms import (
     OrganisationAccessGroupAdminForm,
 )
-from commercialoperator.components.stubs.models import OrganisationAccessGroupMembers
+from commercialoperator.components.segregation.models import OrganisationAccessGroupMembers
 
 
 class UserDelegationAdminInline(admin.TabularInline):

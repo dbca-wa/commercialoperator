@@ -28,7 +28,7 @@ from django.core.exceptions import ValidationError
 
 from commercialoperator.components.approvals.models import ApprovalDocument
 from commercialoperator.components.main.models import ApplicationType
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )

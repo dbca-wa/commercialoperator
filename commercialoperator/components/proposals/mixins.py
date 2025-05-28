@@ -6,7 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_group_members,
 )

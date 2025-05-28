@@ -326,7 +326,7 @@ class ListAsQuerySet(list):
 
 
 def filter_organisation_list(view, request, *args, **kwargs):
-    from commercialoperator.components.stubs.models import LedgerOrganisation
+    from commercialoperator.components.segregation.models import LedgerOrganisation
 
     queryset = view.get_queryset()
 

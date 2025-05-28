@@ -29,7 +29,7 @@ from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
 )
-from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
+from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend

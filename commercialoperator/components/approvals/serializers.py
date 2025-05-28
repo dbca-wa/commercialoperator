@@ -11,7 +11,7 @@ from commercialoperator.components.main.serializers import (
 )
 from rest_framework import serializers
 
-from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
+from commercialoperator.components.segregation.serializers import EmailUserRoSerializer
 
 
 class EmailUserSerializer(EmailUserRoSerializer):

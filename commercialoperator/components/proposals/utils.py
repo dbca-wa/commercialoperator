@@ -61,8 +61,8 @@ from datetime import datetime
 
 import logging
 
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.utils import QuerySetChain
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.utils import QuerySetChain
 
 logger = logging.getLogger(__name__)
 

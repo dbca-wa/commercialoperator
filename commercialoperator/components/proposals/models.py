@@ -50,9 +50,9 @@ from commercialoperator.components.proposals.email import (
     send_amendment_email_notification,
 )
 from commercialoperator.components.proposals.mixins import MembersEmailMixin
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.mixins import MembersPropertiesMixin
+from commercialoperator.components.segregation.utils import (
     EmailUserQuerySet,
     QuerySetChain,
     retrieve_email_user,

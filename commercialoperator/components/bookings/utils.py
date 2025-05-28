@@ -36,9 +36,9 @@ from ledger_api_client.utils import (
     create_checkout_session,
     generate_payment_session,
 )
-from commercialoperator.components.stubs.classes import DecimalEncoder
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.utils import createCustomBasket, oracle_parser
+from commercialoperator.components.segregation.classes import DecimalEncoder
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.utils import createCustomBasket, oracle_parser
 from ledger_api_client.ledger_models import Invoice
 
 import json
@@ -1119,8 +1119,8 @@ def create_invoice(booking, payment_method="bpay"):
     This will create and invoice and order from a basket bypassing the session
     and payment bpoint code constraints.
     """
-    from commercialoperator.components.stubs.utils import createCustomBasket
-    from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+    from commercialoperator.components.segregation.utils import createCustomBasket
+    from commercialoperator.components.segregation.classes import CreateInvoiceBasket
     from ledger_api_client.ledger_models import EmailUserRO as EmailUser
     from decimal import Decimal
 

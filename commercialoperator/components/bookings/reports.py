@@ -2,7 +2,7 @@ import csv
 import pytz
 from six import StringIO
 from django.utils import timezone
-from commercialoperator.components.stubs.classes import (
+from commercialoperator.components.segregation.classes import (
     CashTransaction,
     BpointTransaction,
     BpayTransaction,
@@ -11,7 +11,7 @@ from commercialoperator.components.bookings.models import (
     BookingInvoice,
     ApplicationFeeInvoice,
 )
-from commercialoperator.components.stubs.decorators import basic_exception_handler
+from commercialoperator.components.segregation.decorators import basic_exception_handler
 
 from ledger_api_client.ledger_models import Invoice
 

@@ -32,7 +32,7 @@ from commercialoperator.components.approvals.email import (
     send_approval_reinstate_email_notification,
     send_approval_surrender_email_notification,
 )
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )
