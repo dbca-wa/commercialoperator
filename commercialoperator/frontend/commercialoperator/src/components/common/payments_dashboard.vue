@@ -437,7 +437,7 @@ export default {
                                     full.payment_status.toLowerCase() ==
                                         'over_paid'
                                 ) {
-                                    links += `<a href='/cols/payments/invoice-payment-view/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-payment-view/${full.invoice_reference}' target='_blank'>View Payment</a><br/>`;
                                 } else if (full.invoice_reference !== null) {
                                     links += `<a href='/cols/payments/invoice-payment-view/${full.invoice_reference}' target='_blank'>Record Payment</a><br/>`;
                                 }
