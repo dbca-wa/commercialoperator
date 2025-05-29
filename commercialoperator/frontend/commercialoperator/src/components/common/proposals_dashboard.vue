@@ -452,11 +452,13 @@ export default {
                             return '';
                         },
                         name: 'submitter__email',
+                        orderable: false,
                         searchable: false, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
                         name: 'applicant',
+                        orderable: false,
                         searchable: false, // Note: disabled for now during segregation
                     },
                     {
@@ -476,6 +478,7 @@ export default {
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        orderable: false,
                         searchable: false, // Note: disabled for now during segregation
                     },
                     {
