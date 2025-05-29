@@ -4709,6 +4709,8 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
 
 
 class Referral(RevisionedMixin):
+    objects = EmailUserQuerySet.as_manager()
+
     SENT_CHOICES = ((1, "Sent From Assessor"), (2, "Sent From Referral"))
     PROCESSING_STATUS_CHOICES = (
         ("with_referral", "Awaiting"),
@@ -6065,6 +6067,7 @@ def duplicate_event(p):
         #         print('new trail activity', act, section)
 
     return p
+
 
 def search_reference(reference_number):
     from commercialoperator.components.approvals.models import Approval
