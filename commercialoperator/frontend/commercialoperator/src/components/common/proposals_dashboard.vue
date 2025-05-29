@@ -451,8 +451,8 @@ export default {
                             }
                             return '';
                         },
-                        name: 'submitter__email',
-                        orderable: false,
+                        name: 'submitter__email, submitter__first_name, submitter__last_name',
+                        orderable: true,
                         searchable: false, // Note: disabled for now during segregation
                     },
                     {

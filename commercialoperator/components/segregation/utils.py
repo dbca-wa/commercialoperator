@@ -16,6 +16,8 @@ from ledger_api_client.utils import (
 )
 from ledger_api_client.common import get_ledger_user_info_by_id
 
+from typing import override
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -148,6 +150,40 @@ class EmailUserQuerySet(models.QuerySet):
         ).annotate(**case_whens)
 
         return self
+
+    @override
+    def order_by(self, *field_names, **kwargs):
+        ledger_lookup_fields = kwargs.get("ledger_lookup_fields", {})
+
+        # Check if any of the field names are ledger lookup fields. Only have to look at the first part of the field name before the '__'
+        field_name_sublists = [f.split("__") for f in field_names]
+        is_ledger_lookup = any(
+            sublist[0].replace("-", "") in ledger_lookup_fields
+            for sublist in field_name_sublists
+        )
+
+        if not is_ledger_lookup:
+            # If no ledger lookup fields are provided, use the default ordering
+            return super().order_by(*field_names)
+
+        # A dictionary of each ledger lookup field and its subfields
+        expand_fields = {}
+        for sublist in field_name_sublists:
+            # The field name is the first part of the sublist, e.g. "submitter" in "submitter__email"
+            field_name = sublist[0].replace("-", "")
+            if field_name not in expand_fields:
+                expand_fields[field_name] = []
+
+            expand_fields[field_name] += sublist[1:]
+
+        # Expand the queryset with annotations in the form of submitter__email translates to submitter_email
+        for key, value in expand_fields.items():
+            self = self.expand_emailuser_fields(key, value)
+
+        # A list of field names that have been expanded in the prior step to order by, e.g. ["submitter_email", "submitter_first_name"] or ['-submitter_first_name', '-submitter_last_name']
+        expanded_field_names = [("_").join(sublist) for sublist in field_name_sublists]
+
+        return super().order_by(*expanded_field_names)
 
 
 def createCustomBasket(*args, **kwargs):

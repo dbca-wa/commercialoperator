@@ -411,6 +411,8 @@ class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
             #     .distinct()
             #     .order_by(preserved_order)
             # )
+
+            # NOTE: We might need to add the kwargs object to the order_by here as well
             queryset = (
                 queryset.filter(pk__in=pk_list).distinct().order_by(preserved_order)
             )
@@ -421,7 +423,7 @@ class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
             queryset = queryset.filter(pk__in=pk_list).distinct()
             if len(orderings):
                 try:
-                    queryset = queryset.order_by(*orderings[0].split(","))
+                    queryset = queryset.order_by(*orderings[0].split(","), **kwargs)
                 except (KeyError, FieldError) as e:
                     logger.exception(
                         f"Could not order queryset by {orderings} due to exception: {e}"
@@ -429,6 +431,15 @@ class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
 
                     raise APIException(
                         code=500, detail=f"Could not order queryset by {orderings}"
+                    )
+                except TypeError as e:
+                    logger.exception(
+                        f"Could not order queryset by {orderings} due to exception: {e}"
+                    )
+
+                    raise APIException(
+                        code=500,
+                        detail=f"Could not order queryset by {orderings}. Queryset needs to inherit from EmailUserQueryset or overwrite the order_by method to accept **kwargs parameter (ledger_lookup_fields).",
                     )
 
         return queryset
