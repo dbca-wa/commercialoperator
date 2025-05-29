@@ -54,7 +54,6 @@ from commercialoperator.components.segregation.decorators import basic_exception
 from commercialoperator.components.segregation.mixins import MembersPropertiesMixin
 from commercialoperator.components.segregation.utils import (
     EmailUserQuerySet,
-    QuerySetChain,
     retrieve_email_user,
     retrieve_group_members,
     retrieve_user_groups,
@@ -6540,7 +6539,7 @@ class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
                 )
 
 
-class DistrictProposalQuerySet(models.QuerySet):
+class DistrictProposalQuerySet(EmailUserQuerySet):
     def with_approver_group_id(self):
         try:
             default_group = DistrictProposalApproverGroup.objects.get(default=True)
