@@ -123,7 +123,9 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.filters import LedgerDatatablesFilterBackend
+from commercialoperator.components.segregation.filters import (
+    LedgerDatatablesFilterBackend,
+)
 from commercialoperator.components.segregation.utils import (
     QuerySetChain,
     retrieve_delegate_organisation_ids,
@@ -327,6 +329,9 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
 
                 queryset = queryset.filter(id__in=ids)
 
+        # Initialise ledger lookup fields (fields that query an emailuser)
+        ledger_lookup_fields = []
+
         date_from = request.GET.get("date_from")
         date_to = request.GET.get("date_to")
         if queryset.model is Proposal:
@@ -335,6 +340,14 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
 
             if date_to:
                 queryset = queryset.filter(lodgement_date__lte=date_to)
+
+            ledger_lookup_fields = [
+                "submitter",
+            ]
+            # Prevent the external user from searching for officers
+            if is_internal(request):
+                ledger_lookup_fields += ["assigned_officer"]
+
         elif queryset.model is Approval:
             if date_from:
                 queryset = queryset.filter(expiry_date__gte=date_from)
@@ -376,6 +389,13 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
             if date_to:
                 queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
 
+            ledger_lookup_fields = [
+                "submitter",
+            ]
+            # Prevent the external user from searching for officers
+            if is_internal(request):
+                ledger_lookup_fields += ["assigned_officer"]
+
         # fields = self.get_fields(request)
         # ordering = self.get_ordering(request, view, fields)
         # queryset = queryset.order_by(*ordering)
@@ -386,13 +406,6 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
         #     request, queryset, view
         # )
 
-        ledger_lookup_fields = [
-            "submitter",
-        ]
-        # Prevent the external user from searching for officers
-        if is_internal(request):
-            # ledger_lookup_fields += ["assigned_officer"]
-            pass
         queryset = self.apply_request(
             request,
             queryset,
@@ -3592,12 +3605,11 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
 
             return (
                 DistrictProposal.objects.with_approver_group_id()
-                .filter(approver_group_id__in=user_approver_groups)
-                # .union(
-                #     DistrictProposal.objects.with_assessor_group_id().filter(
-                #         assessor_group_id__in=user_assessor_groups
-                #     )
-                # )
+                .with_assessor_group_id()
+                .filter(
+                    Q(approver_group_id__in=user_approver_groups)
+                    | Q(assessor_group_id__in=user_assessor_groups)
+                )
             )
 
         return DistrictProposal.objects.none()
