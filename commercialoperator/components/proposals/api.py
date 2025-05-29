@@ -123,6 +123,7 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.filters import LedgerDatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
     QuerySetChain,
     retrieve_delegate_organisation_ids,
@@ -190,7 +191,8 @@ class GetEmptyList(views.APIView):
 """
 
 
-class ProposalFilterBackend(DatatablesFilterBackend):
+# class ProposalFilterBackend(DatatablesFilterBackend):
+class ProposalFilterBackend(LedgerDatatablesFilterBackend):
     """
     Custom filters
     """
@@ -374,15 +376,30 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             if date_to:
                 queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
 
-        fields = self.get_fields(request)
-        ordering = self.get_ordering(request, view, fields)
-        queryset = queryset.order_by(*ordering)
-        if len(ordering):
-            queryset = queryset.order_by(*ordering)
+        # fields = self.get_fields(request)
+        # ordering = self.get_ordering(request, view, fields)
+        # queryset = queryset.order_by(*ordering)
+        # if len(ordering):
+        #     queryset = queryset.order_by(*ordering)
 
-        queryset = super(ProposalFilterBackend, self).filter_queryset(
-            request, queryset, view
+        # queryset = super(ProposalFilterBackend, self).filter_queryset(
+        #     request, queryset, view
+        # )
+
+        ledger_lookup_fields = [
+            "submitter",
+        ]
+        # Prevent the external user from searching for officers
+        if is_internal(request):
+            # ledger_lookup_fields += ["assigned_officer"]
+            pass
+        queryset = self.apply_request(
+            request,
+            queryset,
+            view,
+            ledger_lookup_fields=ledger_lookup_fields,
         )
+
         setattr(view, "_datatables_total_count", total_count)
 
         return queryset
@@ -3576,11 +3593,11 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
             return (
                 DistrictProposal.objects.with_approver_group_id()
                 .filter(approver_group_id__in=user_approver_groups)
-                .union(
-                    DistrictProposal.objects.with_assessor_group_id().filter(
-                        assessor_group_id__in=user_assessor_groups
-                    )
-                )
+                # .union(
+                #     DistrictProposal.objects.with_assessor_group_id().filter(
+                #         assessor_group_id__in=user_assessor_groups
+                #     )
+                # )
             )
 
         return DistrictProposal.objects.none()
