@@ -62,7 +62,35 @@ def retrieve_email_user(email_user_id):
         return email_user
 
 
+def retrieve_organisation(organisation_id):
+    if not organisation_id:
+        logger.error("Needs an organisation_id to retrieve a Ledger Organisation object")
+        return None
+
+    cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(organisation_id)
+    cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
+    organisation = cache.get(cache_key)
+
+    if organisation is None:
+        organisation_response = get_organisation(organisation_id)
+        if organisation_response.get("status", None) != status.HTTP_200_OK:
+            logger.error(f"Error retrieving organisation {organisation_id}: {organisation_response.get('message', '')}")
+            return None
+        else:
+            organisation = organisation_response.get("data", {})
+            cache.set(cache_key, organisation, cache_timeout)
+            return organisation
+    else:
+        return organisation
+
 class EmailUserQuerySet(models.QuerySet):
+    LEDGER_EXPAND_TARGET_EMAILUSER = "emailuser"
+    LEDGER_EXPAND_TARGET_ORGANISATION = "organisation"
+    LEDGER_EXPAND_TARGETS = {
+        LEDGER_EXPAND_TARGET_EMAILUSER: "expand_emailuser_fields",
+        LEDGER_EXPAND_TARGET_ORGANISATION: "expand_organisation_fields",
+    }
+
     def expand_emailuser_fields(self, emailuser_fk_field, emailuser_properties={}):
         """
         Adds the emailuser object to the QuerySet and expands it with additional fields that are properties
@@ -151,9 +179,99 @@ class EmailUserQuerySet(models.QuerySet):
 
         return self
 
+    def expand_organisation_fields(self, organisation_foreign_key_field, organisation_properties={}):
+        if not organisation_foreign_key_field:
+            raise ValueError(
+                "A organisation_foreign_key_field that points to an Organisation foreign key must be provided"
+            )
+
+        organisation_foreign_key_field_id = f"{organisation_foreign_key_field}_id"
+
+        if not getattr(self.model, organisation_foreign_key_field_id, None):
+            raise ValueError(f"Field {organisation_foreign_key_field} does not exist in the model")
+
+        for obj in self:
+            pass
+        
+        if True:
+            obj = self.last()
+            cols_organisation = getattr(obj, organisation_foreign_key_field, None)
+
+            ledger_organisations = {}
+            for organisation_property in organisation_properties:
+                props = organisation_property.split("__")
+                ledger_object_name = props[0]
+                ledger_object_value = props[1]
+
+                ledger_organisation_id_name = f"{ledger_object_name}_id"
+
+                if ledger_organisation_id_name not in ledger_organisations:
+                    ledger_organisations[ledger_organisation_id_name] = []
+                
+                ledger_organisations[ledger_organisation_id_name] += [ledger_object_value]
+
+            ledger_organisation_ids = []
+            ledger_organisation_property_values = {}
+            for ledger_organisation_id_name, ledger_organisation_id_properties in ledger_organisations.items():
+                if not ledger_organisation_id_properties:
+                    continue
+
+                ledger_organisation_id = getattr(cols_organisation, ledger_organisation_id_name, None)
+                ledger_organisation = retrieve_organisation(ledger_organisation_id)
+                if not ledger_organisation:
+                    logger.error(
+                        f"Organisation with id {ledger_organisation_id} does not exist in the ledger"
+                    )
+                    continue
+
+            if ledger_organisation:
+                if ledger_organisation_id not in ledger_organisation_ids:
+                    # Collect unique organisation ids
+                    ledger_organisation_ids.append(ledger_organisation_id)
+                if ledger_organisation_id not in ledger_organisation_property_values:
+                    # Collect organisation properties
+                    ledger_organisation_property_values[ledger_organisation_id] = {}
+                for property in ledger_organisation_id_properties:
+                    # Collect organisation property values
+                    ledger_organisation_property_values[ledger_organisation_id][property] = (
+                        ledger_organisation.get(property, "")
+                    )
+
+        # MONDAY continue here
+        case_whens = {
+            f"{organisation_foreign_key_field}_{property}": models.Case(
+                *[
+                    models.When(
+                        **{f"{organisation_foreign_key_field_id}": ledger_organisation_id_value},
+                        then=models.Value(
+                            ledger_organisation_property_values[
+                                ledger_organisation_id_value
+                            ][property]
+                        ),
+                    )
+                    for ledger_organisation_id_value in ledger_organisation_ids
+                ],
+                default=models.Value(""),
+                output_field=models.CharField(),
+            )
+            for property in organisation_properties
+        }
+
+
+
+
+
+
+
+
+
+        
+
+
     @override
     def order_by(self, *field_names, **kwargs):
         ledger_lookup_fields = kwargs.get("ledger_lookup_fields", {})
+        ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
 
         # Check if any of the field names are ledger lookup fields. Only have to look at the first part of the field name before the '__'
         field_name_sublists = [f.split("__") for f in field_names]
@@ -174,11 +292,26 @@ class EmailUserQuerySet(models.QuerySet):
             if field_name not in expand_fields:
                 expand_fields[field_name] = []
 
-            expand_fields[field_name] += sublist[1:]
+            expand_fields[field_name] += ["__".join(sublist[1:])]
 
         # Expand the queryset with annotations in the form of submitter__email translates to submitter_email
         for key, value in expand_fields.items():
-            self = self.expand_emailuser_fields(key, value)
+            # Emailuser or organisation (default is emailuser if not provided in the kwargs)
+            retrieve_function_target = ledger_lookup_extras.get(key, self.LEDGER_EXPAND_TARGET_EMAILUSER)
+            retrieve_function_name = self.LEDGER_EXPAND_TARGETS.get(retrieve_function_target)
+            retrieve_function = getattr(self, retrieve_function_name, None)
+            if not retrieve_function:
+                raise ValueError(
+                    f"Invalid ledger lookup target '{retrieve_function_target}' for field '{key}'."
+                )
+            
+            # Call the proper retrieve function with the key and value
+            self = retrieve_function(
+                key,
+                value
+            )
+            # self = self.expand_emailuser_fields(key, value)
+            # self.expand_organisation_fields(key)
 
         # A list of field names that have been expanded in the prior step to order by, e.g. ["submitter_email", "submitter_first_name"] or ['-submitter_first_name', '-submitter_last_name']
         expanded_field_names = [("_").join(sublist) for sublist in field_name_sublists]

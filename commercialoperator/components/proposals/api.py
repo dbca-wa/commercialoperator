@@ -127,9 +127,11 @@ from commercialoperator.components.segregation.filters import (
     LedgerDatatablesFilterBackend,
 )
 from commercialoperator.components.segregation.utils import (
+    EmailUserQuerySet,
     QuerySetChain,
     retrieve_delegate_organisation_ids,
     retrieve_group_members,
+    retrieve_organisation,
     retrieve_user_groups,
 )
 from commercialoperator.helpers import is_customer, is_internal
@@ -342,7 +344,7 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 queryset = queryset.filter(lodgement_date__lte=date_to)
 
             ledger_lookup_fields = [
-                "submitter",
+                "submitter", "org_applicant", "proxy_applicant"
             ]
             # Prevent the external user from searching for officers
             if is_internal(request):
@@ -406,11 +408,16 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
         #     request, queryset, view
         # )
 
+        ledger_lookup_extras = {
+            "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
+        }
+
         queryset = self.apply_request(
             request,
             queryset,
             view,
             ledger_lookup_fields=ledger_lookup_fields,
+            ledger_lookup_extras=ledger_lookup_extras,
         )
 
         setattr(view, "_datatables_total_count", total_count)
