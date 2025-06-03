@@ -180,7 +180,7 @@ class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
             cache.set(
                 cache_key,
                 _ledger_cache,
-                settings.LOV_CACHE_TIMEOUT,
+                settings.CACHE_TIMEOUT_10_SECONDS
             )
         else:
             logger.info(f"Returning ledger user accounts for `{name}` from cache")
