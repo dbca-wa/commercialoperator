@@ -313,7 +313,7 @@ export default {
                     },
                     {
                         data: 'applicant',
-                        name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
                         searchable: false, // Note: disabled for now during segregation
                     },
                     {
