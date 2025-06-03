@@ -195,7 +195,6 @@ class GetEmptyList(views.APIView):
 """
 
 
-# class ProposalFilterBackend(DatatablesFilterBackend):
 class ProposalFilterBackend(LedgerDatatablesFilterBackend):
     """
     Custom filters
