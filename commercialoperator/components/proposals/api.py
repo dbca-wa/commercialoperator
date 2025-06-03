@@ -398,16 +398,6 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
             if is_internal(request):
                 ledger_lookup_fields += ["assigned_officer"]
 
-        # fields = self.get_fields(request)
-        # ordering = self.get_ordering(request, view, fields)
-        # queryset = queryset.order_by(*ordering)
-        # if len(ordering):
-        #     queryset = queryset.order_by(*ordering)
-
-        # queryset = super(ProposalFilterBackend, self).filter_queryset(
-        #     request, queryset, view
-        # )
-
         ledger_lookup_extras = {
             "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
         }
