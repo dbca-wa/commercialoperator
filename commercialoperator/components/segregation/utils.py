@@ -198,6 +198,10 @@ class EmailUserQuerySet(models.QuerySet):
             raise ValueError(
                 f"Field {organisation_foreign_key_field} does not exist in the model"
             )
+        
+        ledger_organisation_ids = []
+        cols_organisation_ids = []
+        ledger_organisation_property_values = {}
 
         for obj in self:
             cols_organisation = getattr(obj, organisation_foreign_key_field, None)
@@ -217,9 +221,6 @@ class EmailUserQuerySet(models.QuerySet):
                     ledger_object_value
                 ]
 
-            ledger_organisation_ids = []
-            cols_organisation_ids = []
-            ledger_organisation_property_values = {}
             for (
                 ledger_organisation_id_name,
                 ledger_organisation_id_properties,
@@ -252,6 +253,20 @@ class EmailUserQuerySet(models.QuerySet):
                         property
                     ] = ledger_organisation.get(property, "")
 
+        # Create a dictionary of Case expressions for each organisation property
+        # E.g. {
+        #     "org_applicant_organisation_organisation_name": Case(
+        #         When(org_applicant_id=1, then=Value("Organisation 1 Name")),
+        #         When(org_applicant_id=2, then=Value("Organisation 2 Name")),
+        #         default=Value(""),
+        #         output_field=CharField()
+        #     ),
+        #     "org_applicant_organisation_organisation_email": Case(
+        #         When(org_applicant_id=1, then=Value("Organisation 1 Email")),
+        #         When(org_applicant_id=2, then=Value("Organisation 2 Email")),
+        #         default=Value(""),
+        #         output_field=CharField()
+        #     )
         case_whens = {
             f"{organisation_foreign_key_field}_{property.replace('__', '_')}": models.Case(
                 *[
