@@ -457,7 +457,7 @@ export default {
                     },
                     {
                         data: 'applicant',
-                        name: 'org_applicant__organisation__organisation_email, org_applicant__organisation__organisation_name',
+                        name: 'org_applicant__organisation__organisation_name',
                         orderable: true,
                         searchable: false, // Note: disabled for now during segregation
                     },
