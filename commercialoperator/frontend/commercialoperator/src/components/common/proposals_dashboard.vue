@@ -478,7 +478,7 @@ export default {
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
-                        orderable: false,
+                        orderable: true,
                         searchable: false, // Note: disabled for now during segregation
                     },
                     {
