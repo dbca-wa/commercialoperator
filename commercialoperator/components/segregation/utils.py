@@ -244,7 +244,7 @@ class EmailUserQuerySet(models.QuerySet):
                     # Collect unique organisation ids
                     ledger_organisation_ids.append(ledger_organisation_id)
                     cols_organisation_ids.append(cols_organisation_id)
-                if ledger_organisation_id not in ledger_organisation_property_values:
+                if cols_organisation_id not in ledger_organisation_property_values:
                     # Collect organisation properties
                     ledger_organisation_property_values[cols_organisation_id] = {}
                 for property in ledger_organisation_id_properties:
