@@ -53,12 +53,6 @@ class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
-        def get_choice(status, choices=Proposal.PROCESSING_STATUS_CHOICES):
-            for i in choices:
-                if i[1] == status:
-                    return i[0]
-            return None
-
         # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
         regions = request.GET.get("regions")
         if regions:
