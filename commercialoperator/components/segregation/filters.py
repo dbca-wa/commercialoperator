@@ -13,12 +13,15 @@ from rest_framework.exceptions import APIException
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
+class LedgerDatatablesFilterBackend(
+    DatatablesFilterBackend, RecursiveGetAttributeMixin
+):
     """
     Class extending `DatatablesFilterBackend` to allow search in and ordering of querysets
     with Ledger not-constrained foreign keys. Connects a model's ledger foreign key integer
@@ -103,16 +106,6 @@ class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
         return result_dict
 
     @basic_exception_handler
-    def rgetattr(self, obj, attr, *args):
-        def _getattr(obj, attr):
-            if isinstance(obj, dict):
-                return obj.get(attr, None)
-            else:
-                return getattr(obj, attr, *args) if hasattr(obj, attr) else None
-
-        return functools.reduce(_getattr, [obj] + attr.split("."))
-
-    @basic_exception_handler
     def get_ordering(self, request, view, fields):
         """Overwrite `filters::get_ordering` fn
         Returns list of order literals if provided in the form of
@@ -177,11 +170,7 @@ class LedgerDatatablesFilterBackend(DatatablesFilterBackend):
             # Query ledger for all user accounts referenced in this model
             _ledger_cache = EmailUser.objects.filter(pk__in=_lfks)
             # Cache
-            cache.set(
-                cache_key,
-                _ledger_cache,
-                settings.CACHE_TIMEOUT_10_SECONDS
-            )
+            cache.set(cache_key, _ledger_cache, settings.CACHE_TIMEOUT_10_SECONDS)
         else:
             logger.info(f"Returning ledger user accounts for `{name}` from cache")
 
