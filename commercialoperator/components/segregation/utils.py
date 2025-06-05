@@ -136,7 +136,11 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
                     f"Property {emailuser_fk_field_id_dotnotation} does not exist in the {self.model.__name__} object"
                 )
 
-            emailuser = retrieve_email_user(emailuser_fk_field_id_value)
+            emailuser = (
+                retrieve_email_user(emailuser_fk_field_id_value)
+                if emailuser_fk_field_id_value
+                else None
+            )
             if emailuser:
                 setattr(obj, emailuser_fk_field, emailuser)
                 if emailuser.id not in emailuser_fk_field_ids:
@@ -178,6 +182,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
             for property in emailuser_properties
         }
 
+        logger.debug(f"Annotating queryset with emailuser properties: {case_whens.keys()}")
         # Add the emailuser_fk_field_exists field, e.g. submitter_exists
         self = self.annotate(
             **{
@@ -307,6 +312,9 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
             for property in organisation_properties
         }
 
+        logger.debug(
+            f"Annotating queryset with organisation properties: {case_whens.keys()}"
+        )
         self = self.annotate(
             **{
                 f"{organisation_foreign_key_field}_exists": models.Case(
@@ -390,6 +398,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
         # A list of field names that have been expanded in the prior step to order by, e.g. ["submitter_email", "submitter_first_name"] or ['-submitter_first_name', '-submitter_last_name']
         expanded_field_names = [f.replace("__", "_") for f in field_names]
 
+        logger.debug(f"Ordering queryset by expanded fields: {expanded_field_names}")
         return super().order_by(*expanded_field_names)
 
 
