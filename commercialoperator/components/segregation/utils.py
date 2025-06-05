@@ -20,6 +20,8 @@ from typing import override
 
 import logging
 
+from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
+
 logger = logging.getLogger(__name__)
 
 
@@ -88,7 +90,7 @@ def retrieve_organisation(organisation_id):
         return organisation
 
 
-class EmailUserQuerySet(models.QuerySet):
+class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
     LEDGER_EXPAND_TARGET_EMAILUSER = "emailuser"
     LEDGER_EXPAND_TARGET_ORGANISATION = "organisation"
     LEDGER_EXPAND_TARGETS = {
@@ -118,14 +120,22 @@ class EmailUserQuerySet(models.QuerySet):
 
         emailuser_fk_field_id = f"{emailuser_fk_field}_id"
 
-        if not getattr(self.model, emailuser_fk_field_id, None):
-            raise ValueError(f"Field {emailuser_fk_field} does not exist in the model")
+        emailuser_fk_field_id_dotnotation = emailuser_fk_field_id.replace("__", ".")
 
         emailuser_fk_field_ids = []
         emailuser_fk_field_property_values = {}
 
         for obj in self:
-            emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id)
+            emailuser_fk_field_id_value = None
+            try:
+                emailuser_fk_field_id_value = self.rgetattr(
+                    obj, emailuser_fk_field_id_dotnotation, raise_exception=True
+                )
+            except ValueError as e:
+                raise ValueError(
+                    f"Property {emailuser_fk_field_id_dotnotation} does not exist in the {self.model.__name__} object"
+                )
+
             emailuser = retrieve_email_user(emailuser_fk_field_id_value)
             if emailuser:
                 setattr(obj, emailuser_fk_field, emailuser)
@@ -150,7 +160,7 @@ class EmailUserQuerySet(models.QuerySet):
         #         output_field=CharField()
         #     ),
         case_whens = {
-            f"{emailuser_fk_field}_{property}": models.Case(
+            f"{emailuser_fk_field}_{property}".replace("__", "_"): models.Case(
                 *[
                     models.When(
                         **{f"{emailuser_fk_field_id}": emailuser_fk_field_id_value},
@@ -193,18 +203,25 @@ class EmailUserQuerySet(models.QuerySet):
             )
 
         organisation_foreign_key_field_id = f"{organisation_foreign_key_field}_id"
+        organisation_fk_field_dotnotation = organisation_foreign_key_field.replace(
+            "__", "."
+        )
 
-        if not getattr(self.model, organisation_foreign_key_field_id, None):
-            raise ValueError(
-                f"Field {organisation_foreign_key_field} does not exist in the model"
-            )
-        
         ledger_organisation_ids = []
         cols_organisation_ids = []
         ledger_organisation_property_values = {}
 
         for obj in self:
-            cols_organisation = getattr(obj, organisation_foreign_key_field, None)
+            cols_organisation = None
+
+            try:
+                cols_organisation = self.rgetattr(
+                    obj, organisation_fk_field_dotnotation, raise_exception=True
+                )
+            except ValueError as e:
+                raise ValueError(
+                    f"Property {organisation_fk_field_dotnotation} does not exist in the {self.model.__name__} object"
+                )
 
             ledger_organisations = {}
             for organisation_property in organisation_properties:
@@ -268,7 +285,9 @@ class EmailUserQuerySet(models.QuerySet):
         #         output_field=CharField()
         #     )
         case_whens = {
-            f"{organisation_foreign_key_field}_{property.replace('__', '_')}": models.Case(
+            f"{organisation_foreign_key_field}_{property}".replace(
+                "__", "_"
+            ): models.Case(
                 *[
                     models.When(
                         **{
@@ -310,12 +329,14 @@ class EmailUserQuerySet(models.QuerySet):
         ledger_lookup_fields = kwargs.get("ledger_lookup_fields", {})
         ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
 
-        # Check if any of the field names are ledger lookup fields. Only have to look at the first part of the field name before the '__'
-        field_name_sublists = [f.split("__") for f in field_names]
-        is_ledger_lookup = any(
-            sublist[0].replace("-", "") in ledger_lookup_fields
-            for sublist in field_name_sublists
-        )
+        # Check if any of the field names start with a ledger lookup field (ignoring asc or desc ordering)
+        fields_by_ledger_lookup = [
+            {l: f}
+            for f in field_names
+            for l in ledger_lookup_fields
+            if f.replace("-", "").startswith(l)
+        ]
+        is_ledger_lookup = bool(fields_by_ledger_lookup)
 
         if not is_ledger_lookup:
             # If no ledger lookup fields are provided, use the default ordering
@@ -323,13 +344,30 @@ class EmailUserQuerySet(models.QuerySet):
 
         # A dictionary of each ledger lookup field and its subfields
         expand_fields = {}
-        for sublist in field_name_sublists:
-            # The field name is the first part of the sublist, e.g. "submitter" in "submitter__email"
-            field_name = sublist[0].replace("-", "")
-            if field_name not in expand_fields:
-                expand_fields[field_name] = []
+        for item in fields_by_ledger_lookup:
+            for field_name, ledger_lookup in item.items():
+                if field_name not in expand_fields:
+                    expand_fields[field_name] = []
+                # Add the ledger lookup to the expand fields
+                ll_no_ordering = ledger_lookup.replace("-", "")
+                if not ll_no_ordering.startswith(field_name):
+                    # If the ledger lookup does not start with the field name, raise an error
+                    raise ValueError(
+                        f"Ledger lookup field '{ledger_lookup}' does not start with the field name '{field_name}'."
+                    )
 
-            expand_fields[field_name] += ["__".join(sublist[1:])]
+                ledger_lookup_property = ll_no_ordering.replace(field_name, "")
+                if not ledger_lookup_property.startswith("__"):
+                    # If the ledger lookup property does not start with __, raise an error
+                    raise ValueError(
+                        f"Ledger lookup property '{ledger_lookup_property}' does not start with '__'."
+                    )
+                # Remove the __ from the ledger lookup property
+                ledger_lookup_property = ledger_lookup_property[2:]
+                expand_fields[field_name].append(ledger_lookup_property)
+                logger.debug(
+                    f"Expanding field {field_name} with ledger lookup {ledger_lookup}"
+                )
 
         # Expand the queryset with annotations in the form of submitter__email translates to submitter_email
         for key, value in expand_fields.items():
@@ -350,7 +388,7 @@ class EmailUserQuerySet(models.QuerySet):
             self = retrieve_function(key, value)
 
         # A list of field names that have been expanded in the prior step to order by, e.g. ["submitter_email", "submitter_first_name"] or ['-submitter_first_name', '-submitter_last_name']
-        expanded_field_names = [("_").join(sublist) for sublist in field_name_sublists]
+        expanded_field_names = [f.replace("__", "_") for f in field_names]
 
         return super().order_by(*expanded_field_names)
 
