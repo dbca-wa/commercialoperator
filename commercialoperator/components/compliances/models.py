@@ -31,11 +31,14 @@ from commercialoperator.components.compliances.email import (
 
 import logging
 
+from commercialoperator.components.segregation.utils import EmailUserQuerySet
+
 logger = logging.getLogger(__name__)
 
 
 # class Compliance(models.Model):
 class Compliance(RevisionedMixin):
+    objects = EmailUserQuerySet.as_manager()
 
     PROCESSING_STATUS_CHOICES = (
         ("due", "Due"),

@@ -101,9 +101,7 @@ class ComplianceSerializer(serializers.ModelSerializer):
 
     def get_holder(self, obj):
         if obj.proposal and obj.proposal.applicant_id:
-            emailuser = retrieve_email_user(obj.proposal.applicant_id)
-            if emailuser:
-                return f"{emailuser.first_name} {emailuser.last_name}"
+            return obj.proposal.applicant
         return None
 
 
