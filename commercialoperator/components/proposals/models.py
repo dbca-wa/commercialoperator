@@ -2888,6 +2888,8 @@ class ProposalOtherDetails(models.Model):
                 end_date=self.nominated_start_date + relativedelta(months=+84)- relativedelta(days=1)
             if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_10_YEAR:
                 end_date=self.nominated_start_date + relativedelta(months=+120)- relativedelta(days=1)
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_20_YEAR:
+                end_date=self.nominated_start_date + relativedelta(months=+240)- relativedelta(days=1)
         return end_date
 
     @property
