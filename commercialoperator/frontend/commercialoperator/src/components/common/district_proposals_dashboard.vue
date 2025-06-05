@@ -217,11 +217,15 @@ export default {
                             }
                             return '';
                         },
-                        name: 'proposal__submitter__email',
+                        name: 'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
+                        orderable: true,
+                        searchable: false,
                         // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
                             if (data && data.full_name) {
