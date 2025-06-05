@@ -256,7 +256,7 @@ export default {
             proposal_submitters: [],
             proposal_parks: [],
             proposal_headers: [
-                ' Number',
+                'Number',
                 'Licence',
                 'Trading name',
                 'Arrival',
@@ -328,7 +328,7 @@ export default {
                     },
                     {
                         data: 'trading_name',
-                        name: 'booking__proposal__org_applicant__organisation__trading_name, booking__proposal__org_applicant__organisation__name',
+                        name: 'booking__proposal__org_applicant__organisation__organisation_trading_name, booking__proposal__org_applicant__organisation__organisation_name',
                     },
                     {
                         data: 'arrival',

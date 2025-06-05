@@ -112,7 +112,7 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def get_trading_name(self, obj):
         try:
-            return obj.proposal.approval.org_applicant.organisation.trading_name
+            return obj.proposal.approval.org_applicant.trading_name
         except:
             return ""
 

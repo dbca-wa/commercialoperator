@@ -203,6 +203,10 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
+        # Initialise ledger lookup fields (fields that query an emailuser)
+        ledger_lookup_fields = []
+        ledger_lookup_extras = {}
+
         # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
         regions = request.GET.get("regions")
         if regions:
@@ -330,9 +334,6 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
 
                 queryset = queryset.filter(id__in=ids)
 
-        # Initialise ledger lookup fields (fields that query an emailuser)
-        ledger_lookup_fields = []
-
         date_from = request.GET.get("date_from")
         date_to = request.GET.get("date_to")
         if queryset.model is Proposal:
@@ -346,6 +347,10 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
             # Prevent the external user from searching for officers
             if is_internal(request):
                 ledger_lookup_fields += ["assigned_officer"]
+
+            ledger_lookup_extras.update(
+                {"org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION}
+            )
 
         elif queryset.model is Approval:
             if date_from:
@@ -364,6 +369,11 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 "approval__org_applicant",
                 "approval__proxy_applicant",
             ]
+            ledger_lookup_extras.update(
+                {
+                    "approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+                }
+            )
             # Prevent the external user from searching for officers
             if is_internal(request):
                 ledger_lookup_fields += ["assigned_to"]
@@ -382,6 +392,18 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 queryset = queryset.filter(park_bookings__arrival__gte=date_from)
             elif date_to:
                 queryset = queryset.filter(park_bookings__arrival__lte=date_to)
+
+            ledger_lookup_fields = [
+                "proposal__approval__org_applicant",
+                "proposal__approval__proxy_applicant",
+                "proposal__org_applicant",
+            ]
+            ledger_lookup_extras.update(
+                {
+                    "proposal__approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+                }
+            )
         elif queryset.model is ParkBooking:
             if date_from and date_to:
                 queryset = queryset.filter(arrival__range=[date_from, date_to])
@@ -389,6 +411,15 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 queryset = queryset.filter(arrival__gte=date_from)
             elif date_to:
                 queryset = queryset.filter(arrival__lte=date_to)
+
+            ledger_lookup_fields = [
+                "booking__proposal__org_applicant",
+            ]
+            ledger_lookup_extras.update(
+                {
+                    "booking__proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
+                }
+            )
         elif queryset.model is DistrictProposal:
             if date_from:
                 queryset = queryset.filter(proposal__lodgement_date__gte=date_from)
@@ -401,13 +432,18 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 "proposal__org_applicant",
                 "proposal__proxy_applicant",
             ]
+            ledger_lookup_extras.update(
+                {
+                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
+                }
+            )
 
         # Those fields need to query ledger for an organisation not an emailuser object
-        ledger_lookup_extras = {
-            "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-            "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-            "approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-        }
+        # ledger_lookup_extras = {
+        # "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+        # "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+        #     "approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+        # }
 
         queryset = self.apply_request(
             request,

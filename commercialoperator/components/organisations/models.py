@@ -677,7 +677,7 @@ class Organisation(models.Model):
     def trading_name(self):
         organisation_response = get_organisation(self.organisation_id)
         if organisation_response.get("status", None) == status.HTTP_200_OK:
-            return organisation_response.get("data", {}).get("trading_name", "")
+            return organisation_response.get("data", {}).get("organisation_trading_name", "")
         return None
 
     @property
