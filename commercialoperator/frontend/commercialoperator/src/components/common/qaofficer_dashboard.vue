@@ -254,7 +254,7 @@ export default {
                         },
                         orderable: true,
                         searchable: false,
-                        name: 'submitter__email',
+                        name: 'submitter__first_name, submitter__last_name, submitter__email',
                     },
                     {
                         data: 'applicant',
