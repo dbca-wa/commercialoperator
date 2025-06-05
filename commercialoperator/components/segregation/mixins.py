@@ -1,20 +1,25 @@
 import functools
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.utils import (
-    retrieve_email_user,
-    retrieve_group_members,
-)
 
 
 class MembersPropertiesMixin:
     @property
     def all_members(self):
+        from commercialoperator.components.segregation.utils import (
+            retrieve_group_members,
+        )
+
         all_members = []
         all_members.extend(retrieve_group_members(group_object=self))
         return all_members
 
     @property
     def filtered_members(self):
+        from commercialoperator.components.segregation.utils import (
+            retrieve_group_members,
+            retrieve_email_user,
+        )
+
         all_members = []
         all_members.extend(retrieve_group_members(group_object=self))
         emailuser = [retrieve_email_user(m) for m in all_members]
@@ -22,6 +27,11 @@ class MembersPropertiesMixin:
 
     @property
     def members_list(self):
+        from commercialoperator.components.segregation.utils import (
+            retrieve_group_members,
+            retrieve_email_user,
+        )
+
         all_members = []
         all_members.extend(retrieve_group_members(group_object=self))
         emailuser = [retrieve_email_user(m) for m in all_members]
