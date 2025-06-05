@@ -2,6 +2,7 @@ import traceback
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -780,7 +781,12 @@ class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
 
         fields = self.get_fields(request)
         ordering = self.get_ordering(request, view, fields)
-        queryset = queryset.order_by(*ordering)
+
+        if ordering[0] is not None:
+            if ordering[0].startswith('-'):
+                queryset = queryset.order_by(Lower(ordering[1:])).reverse()
+            else:
+                queryset = queryset.order_by(Lower(ordering))
 
         queryset = super(
             OrganisationRequestDatatableFilterBackend, self
