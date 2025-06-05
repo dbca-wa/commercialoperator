@@ -33,6 +33,7 @@ from commercialoperator.components.approvals.email import (
     send_approval_surrender_email_notification,
 )
 from commercialoperator.components.segregation.utils import (
+    EmailUserQuerySet,
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )
@@ -99,6 +100,8 @@ class NotificationPeriod(RevisionedMixin):
 
 # class Approval(models.Model):
 class Approval(RevisionedMixin):
+    objects = EmailUserQuerySet.as_manager()
+
     APPROVAL_STATUS_CURRENT = "current"
     APPROVAL_STATUS_EXPIRED = "expired"
     APPROVAL_STATUS_CANCELLED = "cancelled"
