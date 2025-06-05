@@ -62,13 +62,7 @@ class LedgerDatatablesFilterBackend(
         # E.g. `ind_applicant` can also be `proposal.ind_applicant`
         self.LEDGER_LOOKUP_FIELDS = kwargs.get(
             "ledger_lookup_fields",
-            [
-                "ind_applicant",
-                "submitter",
-                "assigned_officer",
-                "assigned_approver",
-                "assigned_officer_id",
-            ],
+            [],
         )
         self.CACHE_PREFIX = kwargs.get(
             "cache_prefix", "ledger_api_accounts_filtered_emailuser_"
@@ -412,7 +406,11 @@ class LedgerDatatablesFilterBackend(
             queryset = queryset.filter(pk__in=pk_list).distinct()
             if len(orderings):
                 try:
-                    queryset = queryset.order_by(*orderings[0].split(","), **kwargs)
+                    if bool(ledger_lookup_fields):
+                        queryset = queryset.order_by(*orderings[0].split(","), **kwargs)
+                    else:
+                        # If no ledger lookup fields, just order regularly (model doesn't need to implement from EmailUserQueryset)
+                        queryset = queryset.order_by(*orderings[0].split(","))
                 except (KeyError, FieldError) as e:
                     logger.exception(
                         f"Could not order queryset by {orderings} due to exception: {e}"
