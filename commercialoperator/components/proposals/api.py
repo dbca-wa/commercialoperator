@@ -342,9 +342,7 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
             if date_to:
                 queryset = queryset.filter(lodgement_date__lte=date_to)
 
-            ledger_lookup_fields = [
-                "submitter", "org_applicant", "proxy_applicant"
-            ]
+            ledger_lookup_fields = ["submitter", "org_applicant", "proxy_applicant"]
             # Prevent the external user from searching for officers
             if is_internal(request):
                 ledger_lookup_fields += ["assigned_officer"]
@@ -391,14 +389,14 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
 
             ledger_lookup_fields = [
-                "submitter",
+                "proposal__submitter",
+                "proposal__org_applicant",
+                "proposal__proxy_applicant",
             ]
-            # Prevent the external user from searching for officers
-            if is_internal(request):
-                ledger_lookup_fields += ["assigned_officer"]
 
         ledger_lookup_extras = {
-            "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
+            "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+            "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
         }
 
         queryset = self.apply_request(
