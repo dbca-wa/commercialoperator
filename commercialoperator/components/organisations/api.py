@@ -2,7 +2,6 @@ import traceback
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q
-from django.db.models.functions import Lower
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -20,6 +19,7 @@ from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.permission.permission import organisation_permissions
 from commercialoperator.components.segregation.api import LedgerOrganisationFilterBackend
 from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.mixins import FilterHelperMixin
 from commercialoperator.components.segregation.utils import (
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
@@ -771,7 +771,7 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Response(serializer.data)
 
 
-class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
+class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend, FilterHelperMixin):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
@@ -782,15 +782,13 @@ class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
         fields = self.get_fields(request)
         ordering = self.get_ordering(request, view, fields)
 
-        if ordering[0] is not None:
-            if ordering[0].startswith('-'):
-                queryset = queryset.order_by(Lower(ordering[1:])).reverse()
-            else:
-                queryset = queryset.order_by(Lower(ordering))
+        ordering, reverse = self.to_case_insensitive_ordering(
+            ordering, queryset
+        )
+        queryset = queryset.order_by(*ordering)
+        if reverse:
+            queryset = queryset.reverse()
 
-        queryset = super(
-            OrganisationRequestDatatableFilterBackend, self
-        ).filter_queryset(request, queryset, view)
         setattr(view, "_datatables_total_count", total_count)
 
         return queryset
