@@ -1,4 +1,8 @@
 import functools
+
+from django.forms import CharField
+from django.db.models.functions import Lower
+
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 
 
@@ -72,3 +76,51 @@ class RecursiveGetAttributeMixin:
                 return getattr(obj, attr, *args) if has_attr else None
 
         return functools.reduce(_getattr, [obj] + attr.split("."))
+
+
+class FilterHelperMixin:
+    # List of field type names that should be treated as case-insensitive
+    case_insensitive_fields = []
+
+    def __init__(self, *args, **kwargs):
+        self.case_insensitive_fields = kwargs.pop(
+            "case_insensitive_fields", [CharField.__name__]
+        )
+
+        super().__init__(*args, **kwargs)
+
+    def to_case_insensitive_ordering(self, ordering, queryset):
+        """
+        Converts the ordering list to a case-insensitive ordering
+        by applying the Lower function to fields that are of any type
+        specified in `case_insensitive_fields`.
+        Args:
+            ordering (list): List of field names to order by.
+            queryset (QuerySet): The queryset to apply the ordering to.
+        Returns:
+            tuple: A tuple containing the modified ordering list and a boolean indicating
+                   whether the ordering is in reverse.
+                   In case of reverse ordering, the reverse class function needs to be called
+                     on the queryset.
+        """
+
+        reverse = (
+            ordering[0].startswith("-")
+            if bool(ordering) and ordering[0] is not None
+            else False
+        )
+        # Remove the leading '-' if present
+        if reverse:
+            ordering = [o.replace("-", "") for o in ordering]
+        # Apply Lower function to fields that need to be case-insensitive
+        ordering = [
+            (
+                Lower(o)
+                if type(queryset.model._meta.get_field(o)).__name__
+                in [CharField.__name__]
+                else o
+            )
+            for o in ordering
+        ]
+
+        return ordering, reverse
