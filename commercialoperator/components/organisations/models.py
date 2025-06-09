@@ -38,6 +38,7 @@ from commercialoperator.components.organisations.emails import (
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.mixins import MembersPropertiesMixin
 from commercialoperator.components.segregation.utils import (
+    EmailUserQuerySet,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
@@ -940,6 +941,8 @@ class OrganisationLogEntry(CommunicationsLogEntry):
 
 
 class OrganisationRequest(models.Model):
+    objects = EmailUserQuerySet.as_manager()
+
     STATUS_CHOICES = (
         ("with_assessor", "With Assessor"),
         ("approved", "Approved"),

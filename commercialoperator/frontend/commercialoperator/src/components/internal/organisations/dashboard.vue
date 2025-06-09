@@ -211,6 +211,9 @@ export default {
                     },
                     {
                         data: 'requester',
+                        name: 'requester__first_name, requester__last_name',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'role',
@@ -227,6 +230,9 @@ export default {
                     },
                     {
                         data: 'assigned_officer',
+                        name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'id',
