@@ -392,8 +392,9 @@ export default {
                     },
                     {
                         data: 'applicant',
-                        name: 'org_applicant__organisation__name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        name: 'org_applicant__organisation__organisation_name, proxy_applicant__first_name, proxy_applicant__last_name, proxy_applicant__email',
                         // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
+                        orderable: true,
                         searchable: false,
                     },
                     { data: 'status' },

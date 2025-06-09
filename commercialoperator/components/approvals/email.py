@@ -11,8 +11,8 @@ from commercialoperator.components.emails.emails import TemplateEmailBase
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import get_or_create
 
-from commercialoperator.components.stubs.models import EmailUserLogEntry
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.models import EmailUserLogEntry
+from commercialoperator.components.segregation.utils import retrieve_email_user
 
 logger = logging.getLogger(__name__)
 

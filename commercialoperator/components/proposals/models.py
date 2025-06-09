@@ -50,11 +50,10 @@ from commercialoperator.components.proposals.email import (
     send_amendment_email_notification,
 )
 from commercialoperator.components.proposals.mixins import MembersEmailMixin
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.mixins import MembersPropertiesMixin
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.mixins import MembersPropertiesMixin
+from commercialoperator.components.segregation.utils import (
     EmailUserQuerySet,
-    QuerySetChain,
     retrieve_email_user,
     retrieve_group_members,
     retrieve_user_groups,
@@ -1219,7 +1218,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def applicant(self):
         if self.org_applicant:
-            return self.org_applicant.organisation.name
+            return self.org_applicant.name
         elif self.proxy_applicant:
             return "{} {}".format(
                 self.proxy_applicant.first_name, self.proxy_applicant.last_name
@@ -4710,6 +4709,8 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
 
 
 class Referral(RevisionedMixin):
+    objects = EmailUserQuerySet.as_manager()
+
     SENT_CHOICES = ((1, "Sent From Assessor"), (2, "Sent From Referral"))
     PROCESSING_STATUS_CHOICES = (
         ("with_referral", "Awaiting"),
@@ -6067,6 +6068,7 @@ def duplicate_event(p):
 
     return p
 
+
 def search_reference(reference_number):
     from commercialoperator.components.approvals.models import Approval
     from commercialoperator.components.compliances.models import Compliance
@@ -6540,7 +6542,7 @@ class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
                 )
 
 
-class DistrictProposalQuerySet(models.QuerySet):
+class DistrictProposalQuerySet(EmailUserQuerySet):
     def with_approver_group_id(self):
         try:
             default_group = DistrictProposalApproverGroup.objects.get(default=True)

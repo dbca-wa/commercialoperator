@@ -74,8 +74,8 @@ from commercialoperator.components.bookings.models import (
     FilmingFeeInvoice,
 )
 
-from commercialoperator.components.stubs.utils import update_payments
-from commercialoperator.components.stubs.classes import CreateInvoiceBasket
+from commercialoperator.components.segregation.utils import update_payments
+from commercialoperator.components.segregation.classes import CreateInvoiceBasket
 
 from ledger_api_client.ledger_models import Basket, Invoice
 from ledger_api_client.utils import Order

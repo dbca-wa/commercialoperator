@@ -17,9 +17,15 @@ from ledger_api_client.utils import update_organisation_obj, get_all_organisatio
 from commercialoperator.components.approvals.serializers import EmailUserSerializer
 from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.permission.permission import organisation_permissions
-from commercialoperator.components.stubs.api import LedgerOrganisationFilterBackend
-from commercialoperator.components.stubs.decorators import basic_exception_handler
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.api import (
+    LedgerOrganisationFilterBackend,
+)
+from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.filters import (
+    LedgerDatatablesFilterBackend,
+)
+from commercialoperator.components.segregation.mixins import FilterHelperMixin
+from commercialoperator.components.segregation.utils import (
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
@@ -758,7 +764,7 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Organisation.objects.filter(id__in=org_list)
 
     def list(self, request, *args, **kwargs):
-        from commercialoperator.components.stubs.serializers import (
+        from commercialoperator.components.segregation.serializers import (
             OrganisationListSerializer,
         )
 
@@ -770,7 +776,9 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Response(serializer.data)
 
 
-class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
+class OrganisationRequestDatatableFilterBackend(
+    LedgerDatatablesFilterBackend, FilterHelperMixin
+):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
@@ -778,16 +786,37 @@ class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
         if applicant != "All":
             raise serializers.ValidationError("Filtering by applicant is not supported")
 
-        fields = self.get_fields(request)
-        ordering = self.get_ordering(request, view, fields)
-        queryset = queryset.order_by(*ordering)
+        ledger_lookup_fields = [
+            "requester",
+        ]
+        # Prevent the external user from searching for officers
+        if is_internal(request):
+            ledger_lookup_fields += ["assigned_officer"]
 
-        queryset = super(
-            OrganisationRequestDatatableFilterBackend, self
-        ).filter_queryset(request, queryset, view)
+        queryset = self.apply_request(
+            request,
+            queryset,
+            view,
+            ledger_lookup_fields=ledger_lookup_fields,
+        )
+
         setattr(view, "_datatables_total_count", total_count)
 
         return queryset
+
+    def get_ordering(self, request, view, fields):
+        """
+        Override to handle case-insensitive ordering for specific field types.
+        """
+        ordering = super().get_ordering(request, view, fields)
+
+        if not ordering:
+            return []
+
+        return ordering
+        # TODO: This doesn't work with get_ordering -> split, replace, etc in apply_request
+        # Convert to case-insensitive ordering if necessary
+        # return self.to_case_insensitive_ordering(ordering, view.get_queryset())[0]
 
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):

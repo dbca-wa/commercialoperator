@@ -14,6 +14,8 @@ from ledger_api_client.utils import calculate_excl_gst
 
 import logging
 
+from commercialoperator.components.segregation.utils import EmailUserQuerySet
+
 logger = logging.getLogger(__name__)
 
 
@@ -105,6 +107,8 @@ class Payment(RevisionedMixin):
 
 
 class Booking(Payment):
+    objects = EmailUserQuerySet.as_manager()
+
     BOOKING_TYPE_INTERNET = 0
     BOOKING_TYPE_RECEPTION = 1
     BOOKING_TYPE_BLACK = 2

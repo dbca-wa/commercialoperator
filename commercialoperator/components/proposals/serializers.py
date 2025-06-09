@@ -58,11 +58,11 @@ from commercialoperator.components.proposals.serializers_event import (
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
 )
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
 )
 from commercialoperator.components.users.serializers import UserAddressSerializer
-from commercialoperator.components.stubs.serializers import (
+from commercialoperator.components.segregation.serializers import (
     SegregationBaseSerializer,
     EmailUserRoSerializer,
 )
@@ -698,7 +698,11 @@ class ListProposalSerializer(BaseProposalSerializer):
             """if (obj.assigned_officer and obj.assigned_officer == user) or (user in obj.allowed_assessors):
             return True"""
             if obj.assigned_officer_id:
-                assigned_officer = retrieve_email_user(obj.assigned_approver_id)
+                assigned_officer = (
+                    retrieve_email_user(obj.assigned_approver_id)
+                    if obj.assigned_approver_id
+                    else None
+                )
                 if assigned_officer == user:
                     return True
             elif user.id in obj.allowed_assessors:

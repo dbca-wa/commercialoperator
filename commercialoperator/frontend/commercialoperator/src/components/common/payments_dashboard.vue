@@ -254,7 +254,7 @@ export default {
             proposal_submitters: [],
             proposal_parks: [],
             proposal_headers: [
-                ' Number',
+                'Number',
                 'Licence',
                 'Holder',
                 'Trading name',
@@ -328,12 +328,16 @@ export default {
                     },
                     {
                         data: 'applicant',
-                        name: 'proposal__approval__org_applicant__organisation__name, proposal__approval__proxy_applicant__email, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name',
+                        name: 'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email',
+                        orderable: true,
+                        searchable: false,
                         visible: this.level == 'internal' ? true : false,
                     },
                     {
                         data: 'trading_name',
-                        name: 'proposal__org_applicant__organisation__trading_name, proposal__org_applicant__organisation__name',
+                        name: 'proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'payment_status',
@@ -437,7 +441,7 @@ export default {
                                     full.payment_status.toLowerCase() ==
                                         'over_paid'
                                 ) {
-                                    links += `<a href='/cols/payments/invoice-payment-view/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
+                                    links += `<a href='/cols/payments/invoice-payment-view/${full.invoice_reference}' target='_blank'>View Payment</a><br/>`;
                                 } else if (full.invoice_reference !== null) {
                                     links += `<a href='/cols/payments/invoice-payment-view/${full.invoice_reference}' target='_blank'>Record Payment</a><br/>`;
                                 }

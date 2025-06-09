@@ -7,8 +7,8 @@ from commercialoperator.components.compliances.models import (
 )
 from rest_framework import serializers
 
-from commercialoperator.components.stubs.serializers import EmailUserRoSerializer
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.serializers import EmailUserRoSerializer
+from commercialoperator.components.segregation.utils import retrieve_email_user
 
 
 class EmailUserSerializer(EmailUserRoSerializer):
@@ -101,9 +101,7 @@ class ComplianceSerializer(serializers.ModelSerializer):
 
     def get_holder(self, obj):
         if obj.proposal and obj.proposal.applicant_id:
-            emailuser = retrieve_email_user(obj.proposal.applicant_id)
-            if emailuser:
-                return f"{emailuser.first_name} {emailuser.last_name}"
+            return obj.proposal.applicant
         return None
 
 

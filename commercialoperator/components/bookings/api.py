@@ -20,7 +20,7 @@ from commercialoperator.components.bookings.serializers import (
     OverdueBookingInvoiceSerializer,
 )
 from commercialoperator.components.organisations.models import Organisation
-from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
+from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend

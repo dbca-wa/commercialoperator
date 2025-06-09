@@ -8,7 +8,7 @@ from commercialoperator.components.main.models import CommunicationsLogEntry, Us
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.utils import retrieve_email_user
 
 import logging
 

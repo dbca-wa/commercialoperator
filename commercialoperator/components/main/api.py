@@ -55,7 +55,7 @@ from collections import namedtuple
 
 import logging
 
-from commercialoperator.components.stubs.decorators import basic_exception_handler
+from commercialoperator.components.segregation.decorators import basic_exception_handler
 
 logger = logging.getLogger("payment_checkout")
 

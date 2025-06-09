@@ -4,7 +4,7 @@ from django.conf import settings
 
 import logging
 
-from commercialoperator.components.stubs.utils import (
+from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )

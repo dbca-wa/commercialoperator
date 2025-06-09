@@ -247,9 +247,13 @@ export default {
                     },
                     {
                         data: 'holder',
-                        name: 'approval__org_applicant__organisation__name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name',
+                        name: 'approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name',
                         // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
+                        orderable: true,
                         searchable: false,
+                        mRender: function (data, type, full) {
+                            return vm.level == 'external' ? full.holder : data;
+                        },
                     },
                     {
                         data: 'processing_status',

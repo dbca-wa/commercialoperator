@@ -1,7 +1,7 @@
 import string
 import random
 
-from commercialoperator.components.stubs.utils import retrieve_group_members
+from commercialoperator.components.segregation.utils import retrieve_group_members
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 

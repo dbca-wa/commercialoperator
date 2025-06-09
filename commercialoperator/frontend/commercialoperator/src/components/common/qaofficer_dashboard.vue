@@ -252,11 +252,15 @@ export default {
                             }
                             return '';
                         },
-                        name: 'submitter__email',
+                        orderable: true,
+                        searchable: false,
+                        name: 'submitter__first_name, submitter__last_name, submitter__email',
                     },
                     {
                         data: 'applicant',
-                        name: 'proposal__org_applicant__organisation__name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
+                        name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'processing_status',
@@ -275,6 +279,8 @@ export default {
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'id',

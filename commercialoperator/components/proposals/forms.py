@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 import logging
 
-from commercialoperator.components.stubs.utils import retrieve_group_members
+from commercialoperator.components.segregation.utils import retrieve_group_members
 
 logger = logging.getLogger(__name__)
 

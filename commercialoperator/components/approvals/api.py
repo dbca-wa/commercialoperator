@@ -13,7 +13,12 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import datetime
-from commercialoperator.components.proposals.models import Proposal, ApplicationType
+from commercialoperator.components.compliances.models import Compliance
+from commercialoperator.components.proposals.models import (
+    Proposal,
+    ApplicationType,
+    Referral,
+)
 from commercialoperator.components.approvals.models import Approval, ApprovalDocument
 from commercialoperator.components.approvals.serializers import (
     ApprovalSerializer,
@@ -29,25 +34,24 @@ from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
 )
-from commercialoperator.components.stubs.utils import retrieve_delegate_organisation_ids
+from commercialoperator.components.segregation.filters import (
+    LedgerDatatablesFilterBackend,
+)
+from commercialoperator.components.segregation.utils import (
+    EmailUserQuerySet,
+    retrieve_delegate_organisation_ids,
+)
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from rest_framework_datatables.filters import DatatablesFilterBackend
 
 
-class ApprovalFilterBackend(DatatablesFilterBackend):
+class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
     """
     Custom filters
     """
 
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
-
-        def get_choice(status, choices=Proposal.PROCESSING_STATUS_CHOICES):
-            for i in choices:
-                if i[1] == status:
-                    return i[0]
-            return None
 
         # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
         regions = request.GET.get("regions")
@@ -63,6 +67,8 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
 
         start_date_from = request.GET.get("start_date_from")
         start_date_to = request.GET.get("start_date_to")
+        expiry_date_from = request.GET.get("expiry_date_from")
+        expiry_date_to = request.GET.get("expiry_date_to")
 
         if queryset.model is Approval:
             if start_date_from:
@@ -71,25 +77,27 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
             if start_date_to:
                 queryset = queryset.filter(start_date__lte=start_date_to)
 
-        expiry_date_from = request.GET.get("expiry_date_from")
-        expiry_date_to = request.GET.get("expiry_date_to")
-
-        if queryset.model is Approval:
             if expiry_date_from:
                 queryset = queryset.filter(expiry_date__gte=expiry_date_from)
 
             if expiry_date_to:
                 queryset = queryset.filter(expiry_date__lte=expiry_date_to)
 
-        fields = self.get_fields(request)
-        ordering = self.get_ordering(request, view, fields)
-        queryset = queryset.order_by(*ordering)
-        if len(ordering):
-            queryset = queryset.order_by(*ordering)
+            ledger_lookup_fields = ["org_applicant", "proxy_applicant"]
 
-        queryset = super(ApprovalFilterBackend, self).filter_queryset(
-            request, queryset, view
+        # Those fields need to query ledger for an organisation not an emailuser object
+        ledger_lookup_extras = {
+            "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+        }
+
+        queryset = self.apply_request(
+            request,
+            queryset,
+            view,
+            ledger_lookup_fields=ledger_lookup_fields,
+            ledger_lookup_extras=ledger_lookup_extras,
         )
+
         setattr(view, "_datatables_total_count", total_count)
         return queryset
 

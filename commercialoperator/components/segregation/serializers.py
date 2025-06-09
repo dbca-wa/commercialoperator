@@ -5,8 +5,8 @@ from rest_framework import serializers
 
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.organisations.utils import can_manage_org
-from commercialoperator.components.stubs.models import LedgerOrganisation
-from commercialoperator.components.stubs.utils import retrieve_email_user
+from commercialoperator.components.segregation.models import LedgerOrganisation
+from commercialoperator.components.segregation.utils import retrieve_email_user
 from commercialoperator.components.users.serializers import UserAddressSerializer
 
 
