@@ -10,7 +10,6 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from rest_framework_datatables.filters import DatatablesFilterBackend
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import update_organisation_obj, get_all_organisation
 
@@ -39,7 +38,6 @@ from commercialoperator.components.organisations.models import (
     OrganisationRequestUserAction,
     OrganisationContact,
     OrganisationAccessGroup,
-    # ledger_organisation,
 )
 
 from commercialoperator.components.organisations.serializers import (
@@ -803,20 +801,6 @@ class OrganisationRequestDatatableFilterBackend(
         setattr(view, "_datatables_total_count", total_count)
 
         return queryset
-
-    def get_ordering(self, request, view, fields):
-        """
-        Override to handle case-insensitive ordering for specific field types.
-        """
-        ordering = super().get_ordering(request, view, fields)
-
-        if not ordering:
-            return []
-
-        return ordering
-        # TODO: This doesn't work with get_ordering -> split, replace, etc in apply_request
-        # Convert to case-insensitive ordering if necessary
-        # return self.to_case_insensitive_ordering(ordering, view.get_queryset())[0]
 
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):
