@@ -276,7 +276,7 @@ export default {
                             }
                             return '';
                         },
-                        name: 'proposal__org_applicant__organisation__name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
+                        name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
                         // Note: disabled for now during segregation
                         searchable: false,
                     },

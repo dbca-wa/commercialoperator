@@ -383,6 +383,20 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
 
             if date_to:
                 queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
+
+            ledger_lookup_fields = [
+                "proposal__submitter",
+                "proposal__proxy_applicant",
+                "proposal__org_applicant",
+            ]
+            # Prevent the external user from searching for officers
+            if is_internal(request):
+                ledger_lookup_fields += ["assigned_officer"]
+            ledger_lookup_extras.update(
+                {
+                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+                }
+            )
         elif queryset.model is Booking:
             if date_from and date_to:
                 queryset = queryset.filter(
