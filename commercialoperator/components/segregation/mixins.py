@@ -122,6 +122,9 @@ class FilterHelperMixin:
             (Lower(o) if self._is_stringy_field(queryset, o) else o) for o in ordering
         ]
 
+        logger.debug(
+            f"Converted ordering: {ordering} with reverse={reverse} for queryset {queryset.model.__name__}"
+        )
         return ordering, reverse
 
     def _is_stringy_field(self, queryset, field_name):
