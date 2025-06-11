@@ -20,7 +20,10 @@ from typing import override
 
 import logging
 
-from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
+from commercialoperator.components.segregation.mixins import (
+    FilterHelperMixin,
+    RecursiveGetAttributeMixin,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +93,7 @@ def retrieve_organisation(organisation_id):
         return organisation
 
 
-class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
+class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelperMixin):
     LEDGER_EXPAND_TARGET_EMAILUSER = "emailuser"
     LEDGER_EXPAND_TARGET_ORGANISATION = "organisation"
     LEDGER_EXPAND_TARGETS = {
@@ -182,7 +185,9 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
             for property in emailuser_properties
         }
 
-        logger.debug(f"Annotating queryset with emailuser properties: {case_whens.keys()}")
+        logger.debug(
+            f"Annotating queryset with emailuser properties: {case_whens.keys()}"
+        )
         # Add the emailuser_fk_field_exists field, e.g. submitter_exists
         self = self.annotate(
             **{
@@ -337,6 +342,11 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
         ledger_lookup_fields = kwargs.get("ledger_lookup_fields", {})
         ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
 
+        if any(isinstance(f, models.Case) for f in field_names):
+            # If any of the field names are Case expressions, go with default ordering
+            logger.debug("Ordering by Case expressions, using default ordering.")
+            return super().order_by(*field_names)
+
         # Check if any of the field names start with a ledger lookup field (ignoring asc or desc ordering)
         fields_by_ledger_lookup = [
             {l: f}
@@ -348,7 +358,33 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
 
         if not is_ledger_lookup:
             # If no ledger lookup fields are provided, use the default ordering
-            return super().order_by(*field_names)
+
+            orderings, reverse = self.to_case_insensitive_ordering(field_names, self)
+
+            orderings_with_lower = []
+            # If the ordering contains Lower functions, annotate the queryset with them
+            from django.db.models.functions import Lower
+            from django.db.models import F, Func
+
+            for idx, ordering in enumerate(orderings):
+                ordering = orderings[idx]
+                if not isinstance(ordering, Lower):
+                    # If the ordering is not a Lower function, just append it
+                    orderings_with_lower.append(ordering)
+                    continue
+                field_name = field_names[idx]
+                to_lower_field_name = f"to_lower_{field_name}"
+                # If the ordering is a Lower function, annotate the queryset with it
+                orderings_with_lower.append(to_lower_field_name)
+
+                self = self.annotate(**{to_lower_field_name: ordering})
+                # qs = self.annotate(**{to_lower_field_name: Func(F(field_name), function=Lower, output_field=models.CharField())})
+
+            # Order the queryset by the annotated Lower fields
+            qs = super().order_by(*orderings_with_lower)
+            if reverse:
+                qs = qs.reverse()
+            return qs
 
         # A dictionary of each ledger lookup field and its subfields
         expand_fields = {}
@@ -399,7 +435,56 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
         expanded_field_names = [f.replace("__", "_") for f in field_names]
 
         logger.debug(f"Ordering queryset by expanded fields: {expanded_field_names}")
-        return super().order_by(*expanded_field_names)
+
+        # Convert the expanded field names to a case-insensitive ordering
+        ordering, reverse = self.to_case_insensitive_ordering(
+            expanded_field_names, self
+        )
+        qs = super().order_by(*ordering)
+        if reverse:
+            qs = qs.reverse()
+        return qs
+
+    def distinct(self, *args, **kwargs):
+        """
+        Returns a distinct queryset based on the fields provided.
+        If no fields are provided, it returns a distinct queryset based on all fields.
+        """
+
+        if not args and not kwargs:
+            return super().distinct()
+
+        distinct_fields = []
+        for arg in args:
+            if not self.query.annotations.get(f"to_lower_{arg}", None):
+                # If the field is not annotated with a Lower function, add it directly
+                distinct_fields.append(arg)
+                continue
+            # If the field is annotated with a Lower function, add the annotated field name
+            distinct_fields.append(f"to_lower_{arg}")
+
+        qs = super().distinct(*distinct_fields, **kwargs)
+
+        return qs
+
+    def values_list(self, *fields, **kwargs):
+        flat = kwargs.pop("flat", False)
+        # values_list = super().values_list(*fields, flat=flat, named=named)
+        _fields = list(fields) + list(self.query.annotations.keys())
+
+        # If annotated, for some strange reason we have to include the annotated fields in the values or values_list calls
+        values = self.values(*_fields)
+        field_length = 1 if flat else len(fields)
+        values_list = super(EmailUserQuerySet, values).values_list(*_fields, **kwargs)
+        values_list = [v[:field_length] for v in values_list]
+        if flat and len(fields) == 1:
+            # If flat is True and only one field is provided, return a flat list
+            values_list = [v[0] for v in values_list]
+        elif flat:
+            # If flat is True and multiple fields are provided, return a list of tuples
+            values_list = [tuple(v) for v in values_list]
+
+        return values_list
 
 
 def createCustomBasket(*args, **kwargs):
