@@ -8,6 +8,7 @@ from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import (
+    create_basket_session as ledger_create_basket_session,
     oracle_parser as ledger_oracle_parser,
     update_payments as ledger_update_payments,
     get_all_organisation,
@@ -487,22 +488,23 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
 
 
 def createCustomBasket(*args, **kwargs):
+    logger.error(ledger_create_basket_session)
     raise NotImplementedError(
-        "ledger.checkout.utils.createCustomBasket needs refactoring"
+        "ledger.checkout.utils.createCustomBasket needs to be implemented with ledger api client"
     )
 
 
 def oracle_parser(*args, **kwargs):
-    logger.error(ledger_oracle_parser())
+    logger.error(ledger_oracle_parser)
     raise NotImplementedError(
-        "ledger.payments.utils.oracle_parser needs implementation"
+        "ledger.payments.utils.oracle_parser needs to be implemented with ledger api client"
     )
 
 
 def update_payments(*args, **kwargs):
-    logger.error(ledger_update_payments())
+    logger.error(ledger_update_payments)
     raise NotImplementedError(
-        "ledger.payments.utils.update_payments needs implementation"
+        "ledger.payments.utils.update_payments needs to be implemented with ledger api client"
     )
 
 
