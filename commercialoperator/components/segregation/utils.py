@@ -469,20 +469,19 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
 
     def values_list(self, *fields, **kwargs):
         flat = kwargs.pop("flat", False)
-        # values_list = super().values_list(*fields, flat=flat, named=named)
         _fields = list(fields) + list(self.query.annotations.keys())
 
         # If annotated, for some strange reason we have to include the annotated fields in the values or values_list calls
         values = self.values(*_fields)
         field_length = 1 if flat else len(fields)
-        values_list = super(EmailUserQuerySet, values).values_list(*_fields, **kwargs)
-        values_list = [v[:field_length] for v in values_list]
-        if flat and len(fields) == 1:
+        values_list_with_annotations = super(EmailUserQuerySet, values).values_list(*_fields, **kwargs)
+        values_list = [v[:field_length] for v in values_list_with_annotations]
+        if field_length == 1:
             # If flat is True and only one field is provided, return a flat list
             values_list = [v[0] for v in values_list]
-        elif flat:
-            # If flat is True and multiple fields are provided, return a list of tuples
-            values_list = [tuple(v) for v in values_list]
+        else:
+            logger.warning("Not a flat list")
+            
 
         return values_list
 
