@@ -487,7 +487,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
             *_fields, **kwargs
         )
         values_list = [v[:field_length] for v in values_list_with_annotations]
-        if field_length == 1:
+        if field_length == 1 and flat:
             # If flat is True and only one field is provided, return a flat list
             values_list = [v[0] for v in values_list]
         else:
