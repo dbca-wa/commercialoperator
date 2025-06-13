@@ -1142,7 +1142,7 @@ class DTReferralSerializer(serializers.ModelSerializer):
         source="proposal.lodgement_number"
     )
     proposal_event_name = serializers.CharField(source="proposal.event_name")
-    applicant = EmailUserSerializer(source="proposal.applicant_id")
+    applicant = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
     region = serializers.CharField(source="region.name", read_only=True)
     referral = serializers.CharField(source="referral_group.name")
@@ -1176,6 +1176,15 @@ class DTReferralSerializer(serializers.ModelSerializer):
             "can_user_process",
             "proposal_event_name",
         )
+
+    def get_applicant(self, obj):
+        if obj.proposal.applicant_type == Proposal.APPLICANT_TYPE_ORGANISATION:
+            return obj.proposal.org_applicant.name
+
+        emailuser = retrieve_email_user(obj.proposal.proxy_applicant_id)
+        if emailuser:
+            return f"{emailuser.first_name} {emailuser.last_name}"
+        return None
 
     def get_submitter(self, obj):
         return EmailUserSerializer(obj.proposal.submitter_id).data
