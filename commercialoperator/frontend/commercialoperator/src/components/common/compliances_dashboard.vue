@@ -166,7 +166,7 @@ export default {
             dateFormat: 'DD/MM/YYYY',
             external_status: [
                 { value: 'due', name: 'Due' },
-                { value: 'future', name: 'Future' },
+                // { value: 'future', name: 'Future' },
                 { value: 'with_assessor', name: 'Under Review' },
                 { value: 'approved', name: 'Approved' },
             ],
@@ -221,6 +221,10 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+                        d.datatable_filter_processing_status =
+                            vm.filterComplianceStatus.toLowerCase();
+                        d.datatable_filter_proposal__application_type__name =
+                            vm.filterApplicationType;
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -286,6 +290,8 @@ export default {
                     },
                     {
                         data: 'id',
+                        searchable: false,
+                        orderable: false,
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.is_external) {

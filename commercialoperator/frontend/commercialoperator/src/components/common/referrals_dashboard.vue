@@ -233,6 +233,10 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+                        d.datatable_filter_processing_status =
+                            vm.filterProposalStatus;
+                        d.datatable_filter_proposal__submitter__email =
+                            vm.filterProposalSubmitter;
                     },
                 },
                 columns: [
@@ -242,10 +246,10 @@ export default {
                             let tick = '';
                             if (full.can_be_processed) {
                                 tick =
-                                    "<i class='fa fa-exclamation-circle' style='color:#FFBF00'></i>";
+                                    "&nbsp;<i class='fa fa-exclamation-circle' style='color:#FFBF00'></i>";
                             } else {
                                 tick =
-                                    "<i class='fa fa-check-circle' style='color:green'></i>";
+                                    "&nbsp;<i class='fa fa-check-circle' style='color:green'></i>";
                             }
                             return full.proposal_lodgement_number + tick;
                         },
@@ -269,13 +273,6 @@ export default {
                     },
                     {
                         data: 'applicant',
-                        // eslint-disable-next-line no-unused-vars
-                        mRender: function (data, type, full) {
-                            if (data) {
-                                return `${data.first_name || ''} ${data.last_name || ''}`;
-                            }
-                            return '';
-                        },
                         name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
                         // Note: disabled for now during segregation
                         searchable: false,
