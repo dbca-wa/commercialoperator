@@ -530,18 +530,27 @@ class LedgerDatatablesFilterBackend(
         reverse = list(ord_dict.keys())[0].startswith("-")
         # Ledger "foreign keys" in model
         model_fpks = [
-            self.rgetattr(model, attr.replace("-", ""))
+            (
+                self.rgetattr(model, attr.replace("-", "")).pk
+                # If the attribute is an EmailUser, get the pk from it
+                if isinstance(self.rgetattr(model, attr.replace("-", "")), EmailUser)
+                # else take the attribute as is
+                else self.rgetattr(model, attr.replace("-", ""))
+            )
             for model in query_model_list
             for attr in list(ord_dict.keys())
         ]
         # Get a distinct list of ledger keys on which to order
         ledger_pks = list(set(model_fpks))
+        # If the ledger foreign key is an EmailUser, get the pk from it
+        ledger_pks = [
+            l_pk.pk if isinstance(l_pk, EmailUser) else l_pk for l_pk in ledger_pks
+        ]
         # Get a list of ledger fields to order for
         ledger_orderings = [
             inner for outer in list(ord_dict.values()) for inner in outer
         ]
         # Filter and sort ledger
-        # ledger = EmailUser.objects.filter(pk__in=ledger_pks).order_by(*ledger_orderings)
         ledger = ledger.filter(pk__in=ledger_pks).order_by(
             *[f"-{l_l}" if reverse else l_l for l_l in ledger_orderings]
         )
