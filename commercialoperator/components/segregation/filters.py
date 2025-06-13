@@ -240,13 +240,14 @@ class LedgerDatatablesFilterBackend(
                 queryset = queryset.filter(**filters)
             except FieldError as e:
                 raise ValidationError(
-                    "Invalid filter field(s): {}".format(
+                    "Invalid filter field(s): {}. {}".format(
                         ", ".join(
                             [
                                 k.removeprefix(self.DATATABLE_FILTER_PREFIX)
                                 for k in filters.keys()
                             ]
-                        )
+                        ),
+                        e,
                     )
                 ) from e
 
