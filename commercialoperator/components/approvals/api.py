@@ -90,6 +90,14 @@ class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
             "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
         }
 
+        # Apply the search filters
+        queryset = self.filter_datatables_queryset(
+            request,
+            queryset,
+            ledger_lookup_fields=ledger_lookup_fields,
+            ledger_lookup_extras=ledger_lookup_extras,
+        )
+
         queryset = self.apply_request(
             request,
             queryset,
