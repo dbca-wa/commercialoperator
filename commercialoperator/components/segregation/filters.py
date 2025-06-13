@@ -1,10 +1,9 @@
-import functools
 import itertools
 import logging
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, ValidationError
 from django.db.models import Case, CharField, Q, Value, When
 from django.db.models.functions import Concat
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -29,6 +28,8 @@ class LedgerDatatablesFilterBackend(
     """
 
     LEDGER_LOOKUP_FIELDS = []
+    # String prefix to use to help extract datatable filters from request objects. See: method `filter_datatables_queryset`
+    DATATABLE_FILTER_PREFIX = "datatable_filter_"
 
     def __init__(self, **kwargs):
         """
@@ -175,6 +176,81 @@ class LedgerDatatablesFilterBackend(
         ledger = _ledger_cache.filter(pk__in=lfks)
 
         return ledger
+
+    @basic_exception_handler
+    def filter_datatables_queryset(
+        self,
+        request,
+        queryset,
+        ledger_lookup_fields=[],
+        ledger_lookup_extras={},
+        **kwargs,
+    ):
+        """
+        Filters a queryset based on the datatables query parameters.
+        The filters need to be prefixed with DATATABLE_FILTER_PREFIX in the frontend to be recognized,
+        followed by the field name, e.g. `datatable_filter_submitter__name=John`.
+
+        Args:
+            request (Request):
+                The Rest API request
+            queryset (QuerySet):
+                The database model's queryset
+            view (ModelViewSet):
+                The view to query for
+            ledger_lookup_fields (list, keyword argument):
+                The field in the model that functions as the foreign key to ledger
+            ledger_lookup_extras (dict, keyword argument):
+                Additional parameters for ledger lookups, e.g. which function to call for expansion
+
+        Returns:
+            A filtered queryset
+        """
+
+        filters = {}
+        for k, v in request.GET.items():
+            if not k.startswith(self.DATATABLE_FILTER_PREFIX) or v.lower() == "all":
+                continue
+            field = k.removeprefix(self.DATATABLE_FILTER_PREFIX)
+            if any(field.startswith(llf) for llf in ledger_lookup_fields):
+                # If the field starts with a ledger lookup field, we need to expand it
+                ledger_field = [
+                    llf for llf in ledger_lookup_fields if field.startswith(llf)
+                ][0]
+                # Get the ledger lookup extras for the field
+                expand_function = queryset.get_ledger_retrieve_function(
+                    ledger_field, ledger_lookup_extras
+                )
+                # Check if the field is valid for the ledger lookup
+                if (
+                    not f"{ledger_field}__" in field
+                ):  # check if the field starts with a ledger lookup field
+                    raise ValidationError("Invalid filter field: {}".format(field))
+                # Extract the field property from the field name
+                field_property = {field[len(f"{ledger_field}__") :]}
+                # Expand the field using the ledger lookup function
+                queryset = expand_function(ledger_field, field_property)
+                # Change the field name to the expanded ledger lookup field (i.e. replace "__" with "_")
+                field = field.replace("__", "_")
+
+            filters[field] = v
+
+        if bool(filters):
+            try:
+                queryset = queryset.filter(**filters)
+            except FieldError as e:
+                raise ValidationError(
+                    "Invalid filter field(s): {}".format(
+                        ", ".join(
+                            [
+                                k.removeprefix(self.DATATABLE_FILTER_PREFIX)
+                                for k in filters.keys()
+                            ]
+                        )
+                    )
+                ) from e
+
+        return queryset
 
     @basic_exception_handler
     def apply_request(self, request, queryset, view, **kwargs):
