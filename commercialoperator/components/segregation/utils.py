@@ -338,6 +338,22 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
 
         return self
 
+    def get_ledger_retrieve_function(self, field_name, ledger_lookup_extras):
+        """Retrieve the appropriate ledger lookup and expand function for a given field."""
+
+        retrieve_function_target = ledger_lookup_extras.get(
+            field_name, self.LEDGER_EXPAND_TARGET_EMAILUSER
+        )
+        retrieve_function_name = self.LEDGER_EXPAND_TARGETS.get(
+            retrieve_function_target
+        )
+        retrieve_function = getattr(self, retrieve_function_name, None)
+        if not retrieve_function:
+            raise ValueError(
+                f"Invalid ledger lookup target '{retrieve_function_target}' for field '{field_name}'."
+            )
+        return retrieve_function
+
     @override
     def order_by(self, *field_names, **kwargs):
         ledger_lookup_fields = kwargs.get("ledger_lookup_fields", {})
@@ -417,17 +433,9 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
         # Expand the queryset with annotations in the form of submitter__email translates to submitter_email
         for key, value in expand_fields.items():
             # Emailuser or organisation (default is emailuser if not provided in the kwargs)
-            retrieve_function_target = ledger_lookup_extras.get(
-                key, self.LEDGER_EXPAND_TARGET_EMAILUSER
+            retrieve_function = self.get_ledger_retrieve_function(
+                key, ledger_lookup_extras
             )
-            retrieve_function_name = self.LEDGER_EXPAND_TARGETS.get(
-                retrieve_function_target
-            )
-            retrieve_function = getattr(self, retrieve_function_name, None)
-            if not retrieve_function:
-                raise ValueError(
-                    f"Invalid ledger lookup target '{retrieve_function_target}' for field '{key}'."
-                )
 
             # Call the proper retrieve function with the key and value
             self = retrieve_function(key, value)
@@ -475,14 +483,15 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
         # If annotated, for some strange reason we have to include the annotated fields in the values or values_list calls
         values = self.values(*_fields)
         field_length = 1 if flat else len(fields)
-        values_list_with_annotations = super(EmailUserQuerySet, values).values_list(*_fields, **kwargs)
+        values_list_with_annotations = super(EmailUserQuerySet, values).values_list(
+            *_fields, **kwargs
+        )
         values_list = [v[:field_length] for v in values_list_with_annotations]
         if field_length == 1:
             # If flat is True and only one field is provided, return a flat list
             values_list = [v[0] for v in values_list]
         else:
             logger.warning("Not a flat list")
-            
 
         return values_list
 
