@@ -56,3 +56,4 @@ whitenoise==5.3.0
 git+https://github.com/dbca-wa/django-media-serv.git#egg=django_media_serv
 python-decouple==3.8
 git+https://github.com/dbca-wa/appmonitor_client.git#egg=appmonitor_client
+requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
