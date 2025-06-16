@@ -66,10 +66,10 @@
                                             <option value="All">All</option>
                                             <option
                                                 v-for="a in applicantChoices"
-                                                :key="a"
-                                                :value="a"
+                                                :key="a.search_term"
+                                                :value="a.search_term"
                                             >
-                                                {{ a }}
+                                                {{ a.search_term }}
                                             </option>
                                         </select>
                                     </div>
@@ -131,10 +131,10 @@
                                             <option value="All">All</option>
                                             <option
                                                 v-for="s in statusChoices"
-                                                :key="s"
-                                                :value="s"
+                                                :key="s.search_term"
+                                                :value="s.search_term"
                                             >
-                                                {{ s }}
+                                                {{ s.value }}
                                             </option>
                                         </select>
                                     </div>
@@ -194,10 +194,10 @@ export default {
                     url: api_endpoints.organisation_requests_datatable,
                     dataSrc: 'data',
                     data: function (d) {
-                        d.filter_organisation = vm.filterOrganisation;
-                        d.filter_applicant = vm.filterApplicant;
-                        d.filter_role = vm.filterRole;
-                        d.filter_status = vm.filterStatus;
+                        d.datatable_filter_name = vm.filterOrganisation;
+                        d.datatable_filter_full_name = vm.filterApplicant;
+                        d.datatable_filter_role = vm.filterRole.toLowerCase();
+                        d.datatable_filter_status = vm.filterStatus;
 
                         return d;
                     },
@@ -413,6 +413,7 @@ export default {
     },
     mounted: function () {
         this.isLoading = true;
+        this.fetchFilterLists();
         this.fetchAccessGroupMembers();
         this.fetchProfile();
         this.$nextTick(() => {
@@ -483,6 +484,28 @@ export default {
                 'Select Status',
                 false
             );
+        },
+        fetchFilterLists: function () {
+            let vm = this;
+            vm.isLoading = true;
+
+            vm.$http
+                .get(api_endpoints.filter_list_organisation_requests)
+                .then(
+                    (response) => {
+                        vm.organisationChoices =
+                            response.data.organisation_choices;
+                        vm.applicantChoices = response.data.applicant_choices;
+                        vm.roleChoices = response.data.role_choices;
+                        vm.statusChoices = response.data.status_choices;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
     },
 };
