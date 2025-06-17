@@ -3,7 +3,6 @@ import os
 import json
 from django.db.models import Q
 from django.db import transaction
-from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.conf import settings
@@ -12,7 +11,6 @@ from rest_framework import viewsets, serializers, status, views
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-from rest_framework.pagination import PageNumberPagination
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.utils import (
     get_chained_list,
@@ -383,6 +381,20 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
 
             if date_to:
                 queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
+
+            ledger_lookup_fields = [
+                "proposal__submitter",
+                "proposal__proxy_applicant",
+                "proposal__org_applicant",
+            ]
+            # Prevent the external user from searching for officers
+            if is_internal(request):
+                ledger_lookup_fields += ["assigned_officer"]
+            ledger_lookup_extras.update(
+                {
+                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
+                }
+            )
         elif queryset.model is Booking:
             if date_from and date_to:
                 queryset = queryset.filter(
@@ -438,12 +450,13 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 }
             )
 
-        # Those fields need to query ledger for an organisation not an emailuser object
-        # ledger_lookup_extras = {
-        # "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-        # "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-        #     "approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-        # }
+        # Apply the search filters
+        queryset = self.filter_datatables_queryset(
+            request,
+            queryset,
+            ledger_lookup_fields=ledger_lookup_fields,
+            ledger_lookup_extras=ledger_lookup_extras,
+        )
 
         queryset = self.apply_request(
             request,
@@ -2475,7 +2488,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = Proposal.objects.filter(
             id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id"
+                "proposal_id", flat=True
             )
         )
         submitters = get_cached_proposal_submitters(self, qs)
@@ -3554,7 +3567,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = Proposal.objects.filter(
             id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id"
+                "proposal_id", flat=True
             )
         )
         submitters = get_cached_proposal_submitters(self, qs)

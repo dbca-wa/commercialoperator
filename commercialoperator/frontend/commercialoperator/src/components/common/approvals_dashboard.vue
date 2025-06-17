@@ -318,6 +318,10 @@ export default {
                             vm.filterExpiryTo != '' && vm.filterExpiryTo != null
                                 ? moment(vm.filterExpiryTo).format('YYYY-MM-DD')
                                 : '';
+                        d.datatable_filter_status =
+                            vm.filterProposalStatus.toLowerCase();
+                        d.datatable_filter_current_proposal__application_type__name =
+                            vm.filterApplicationType;
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'

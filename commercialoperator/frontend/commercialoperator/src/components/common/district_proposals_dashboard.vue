@@ -198,6 +198,10 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+                        d.datatable_filter_processing_status =
+                            vm.filterProposalStatus;
+                        d.datatable_filter_proposal__submitter__email =
+                            vm.filterProposalSubmitter;
                     },
                 },
                 columns: [

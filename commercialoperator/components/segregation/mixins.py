@@ -1,9 +1,14 @@
 import functools
 
-from django.forms import CharField
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models.functions import Lower
+from django.forms import CharField
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MembersPropertiesMixin:
@@ -114,13 +119,41 @@ class FilterHelperMixin:
             ordering = [o.replace("-", "") for o in ordering]
         # Apply Lower function to fields that need to be case-insensitive
         ordering = [
-            (
-                Lower(o)
-                if type(queryset.model._meta.get_field(o)).__name__
-                in [CharField.__name__]
-                else o
-            )
-            for o in ordering
+            (Lower(o) if self._is_stringy_field(queryset, o) else o) for o in ordering
         ]
 
+        logger.debug(
+            f"Converted ordering: {ordering} with reverse={reverse} for queryset {queryset.model.__name__}"
+        )
         return ordering, reverse
+
+    def _is_stringy_field(self, queryset, field_name):
+        """
+        Checks if the queryset field is a string or can be treated as a string.
+        Args:
+            queryset: The queryset to check the field against.
+            field_name: The name of the field to check.
+        Returns:
+            bool: True if the field is a string or can be treated as a string, False otherwise.
+        """
+
+        _field_name = field_name.lstrip("-")  # Remove leading '-' if present
+        field = None
+
+        try:
+            field = queryset.model._meta.get_field(_field_name)
+        except FieldDoesNotExist:
+            # If the field does not exist, we check if it is an annotation
+            if _field_name in queryset.query.annotations:
+                # If the field is an annotation, we retrieve its type
+                field = queryset.query.annotations.get(_field_name, None).field.__class__
+        else:
+            # If the field exists, we have to check its type next
+            field = type(field)
+
+        if not field:
+            logger.warning(
+                f"Field or annotation '{_field_name}' does not exist in the model {queryset.model.__name__}."
+            )
+            return False
+        return field.__name__ in [CharField.__name__]

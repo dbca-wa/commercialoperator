@@ -8,6 +8,7 @@ from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import (
+    create_basket_session as ledger_create_basket_session,
     oracle_parser as ledger_oracle_parser,
     update_payments as ledger_update_payments,
     get_all_organisation,
@@ -20,7 +21,10 @@ from typing import override
 
 import logging
 
-from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
+from commercialoperator.components.segregation.mixins import (
+    FilterHelperMixin,
+    RecursiveGetAttributeMixin,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +94,7 @@ def retrieve_organisation(organisation_id):
         return organisation
 
 
-class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
+class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelperMixin):
     LEDGER_EXPAND_TARGET_EMAILUSER = "emailuser"
     LEDGER_EXPAND_TARGET_ORGANISATION = "organisation"
     LEDGER_EXPAND_TARGETS = {
@@ -182,7 +186,9 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
             for property in emailuser_properties
         }
 
-        logger.debug(f"Annotating queryset with emailuser properties: {case_whens.keys()}")
+        logger.debug(
+            f"Annotating queryset with emailuser properties: {case_whens.keys()}"
+        )
         # Add the emailuser_fk_field_exists field, e.g. submitter_exists
         self = self.annotate(
             **{
@@ -332,10 +338,31 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
 
         return self
 
+    def get_ledger_retrieve_function(self, field_name, ledger_lookup_extras):
+        """Retrieve the appropriate ledger lookup and expand function for a given field."""
+
+        retrieve_function_target = ledger_lookup_extras.get(
+            field_name, self.LEDGER_EXPAND_TARGET_EMAILUSER
+        )
+        retrieve_function_name = self.LEDGER_EXPAND_TARGETS.get(
+            retrieve_function_target
+        )
+        retrieve_function = getattr(self, retrieve_function_name, None)
+        if not retrieve_function:
+            raise ValueError(
+                f"Invalid ledger lookup target '{retrieve_function_target}' for field '{field_name}'."
+            )
+        return retrieve_function
+
     @override
     def order_by(self, *field_names, **kwargs):
         ledger_lookup_fields = kwargs.get("ledger_lookup_fields", {})
         ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
+
+        if any(isinstance(f, models.Case) for f in field_names):
+            # If any of the field names are Case expressions, go with default ordering
+            logger.debug("Ordering by Case expressions, using default ordering.")
+            return super().order_by(*field_names)
 
         # Check if any of the field names start with a ledger lookup field (ignoring asc or desc ordering)
         fields_by_ledger_lookup = [
@@ -348,7 +375,33 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
 
         if not is_ledger_lookup:
             # If no ledger lookup fields are provided, use the default ordering
-            return super().order_by(*field_names)
+
+            orderings, reverse = self.to_case_insensitive_ordering(field_names, self)
+
+            orderings_with_lower = []
+            # If the ordering contains Lower functions, annotate the queryset with them
+            from django.db.models.functions import Lower
+            from django.db.models import F, Func
+
+            for idx, ordering in enumerate(orderings):
+                ordering = orderings[idx]
+                if not isinstance(ordering, Lower):
+                    # If the ordering is not a Lower function, just append it
+                    orderings_with_lower.append(ordering)
+                    continue
+                field_name = field_names[idx]
+                to_lower_field_name = f"to_lower_{field_name}"
+                # If the ordering is a Lower function, annotate the queryset with it
+                orderings_with_lower.append(to_lower_field_name)
+
+                self = self.annotate(**{to_lower_field_name: ordering})
+                # qs = self.annotate(**{to_lower_field_name: Func(F(field_name), function=Lower, output_field=models.CharField())})
+
+            # Order the queryset by the annotated Lower fields
+            qs = super().order_by(*orderings_with_lower)
+            if reverse:
+                qs = qs.reverse()
+            return qs
 
         # A dictionary of each ledger lookup field and its subfields
         expand_fields = {}
@@ -380,17 +433,9 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
         # Expand the queryset with annotations in the form of submitter__email translates to submitter_email
         for key, value in expand_fields.items():
             # Emailuser or organisation (default is emailuser if not provided in the kwargs)
-            retrieve_function_target = ledger_lookup_extras.get(
-                key, self.LEDGER_EXPAND_TARGET_EMAILUSER
+            retrieve_function = self.get_ledger_retrieve_function(
+                key, ledger_lookup_extras
             )
-            retrieve_function_name = self.LEDGER_EXPAND_TARGETS.get(
-                retrieve_function_target
-            )
-            retrieve_function = getattr(self, retrieve_function_name, None)
-            if not retrieve_function:
-                raise ValueError(
-                    f"Invalid ledger lookup target '{retrieve_function_target}' for field '{key}'."
-                )
 
             # Call the proper retrieve function with the key and value
             self = retrieve_function(key, value)
@@ -399,26 +444,76 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin):
         expanded_field_names = [f.replace("__", "_") for f in field_names]
 
         logger.debug(f"Ordering queryset by expanded fields: {expanded_field_names}")
-        return super().order_by(*expanded_field_names)
+
+        # Convert the expanded field names to a case-insensitive ordering
+        ordering, reverse = self.to_case_insensitive_ordering(
+            expanded_field_names, self
+        )
+        qs = super().order_by(*ordering)
+        if reverse:
+            qs = qs.reverse()
+        return qs
+
+    def distinct(self, *args, **kwargs):
+        """
+        Returns a distinct queryset based on the fields provided.
+        If no fields are provided, it returns a distinct queryset based on all fields.
+        """
+
+        if not args and not kwargs:
+            return super().distinct()
+
+        distinct_fields = []
+        for arg in args:
+            if not self.query.annotations.get(f"to_lower_{arg}", None):
+                # If the field is not annotated with a Lower function, add it directly
+                distinct_fields.append(arg)
+                continue
+            # If the field is annotated with a Lower function, add the annotated field name
+            distinct_fields.append(f"to_lower_{arg}")
+
+        qs = super().distinct(*distinct_fields, **kwargs)
+
+        return qs
+
+    def values_list(self, *fields, **kwargs):
+        flat = kwargs.pop("flat", False)
+        _fields = list(fields) + list(self.query.annotations.keys())
+
+        # If annotated, for some strange reason we have to include the annotated fields in the values or values_list calls
+        values = self.values(*_fields)
+        field_length = 1 if flat else len(fields)
+        values_list_with_annotations = super(EmailUserQuerySet, values).values_list(
+            *_fields, **kwargs
+        )
+        values_list = [v[:field_length] for v in values_list_with_annotations]
+        if field_length == 1 and flat:
+            # If flat is True and only one field is provided, return a flat list
+            values_list = [v[0] for v in values_list]
+        else:
+            logger.warning("Not a flat list")
+
+        return values_list
 
 
 def createCustomBasket(*args, **kwargs):
+    logger.error(ledger_create_basket_session)
     raise NotImplementedError(
-        "ledger.checkout.utils.createCustomBasket needs refactoring"
+        "ledger.checkout.utils.createCustomBasket needs to be implemented with ledger api client"
     )
 
 
 def oracle_parser(*args, **kwargs):
-    logger.error(ledger_oracle_parser())
+    logger.error(ledger_oracle_parser)
     raise NotImplementedError(
-        "ledger.payments.utils.oracle_parser needs implementation"
+        "ledger.payments.utils.oracle_parser needs to be implemented with ledger api client"
     )
 
 
 def update_payments(*args, **kwargs):
-    logger.error(ledger_update_payments())
+    logger.error(ledger_update_payments)
     raise NotImplementedError(
-        "ledger.payments.utils.update_payments needs implementation"
+        "ledger.payments.utils.update_payments needs to be implemented with ledger api client"
     )
 
 

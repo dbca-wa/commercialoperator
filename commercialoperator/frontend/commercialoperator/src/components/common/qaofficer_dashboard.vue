@@ -232,6 +232,10 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+                        d.datatable_filter_processing_status =
+                            vm.filterProposalStatus;
+                        d.datatable_filter_submitter__email =
+                            vm.filterProposalSubmitter;
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'

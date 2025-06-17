@@ -9,7 +9,7 @@
                 >
                     <div class="panel panel-default">
                         <div class="row mb-1">
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-3">
                                 <div
                                     id="select_organisation_access_organisation_parent"
                                     class="form-group"
@@ -66,10 +66,10 @@
                                             <option value="All">All</option>
                                             <option
                                                 v-for="a in applicantChoices"
-                                                :key="a"
-                                                :value="a"
+                                                :key="a.search_term"
+                                                :value="a.search_term"
                                             >
-                                                {{ a }}
+                                                {{ a.search_term }}
                                             </option>
                                         </select>
                                     </div>
@@ -131,10 +131,10 @@
                                             <option value="All">All</option>
                                             <option
                                                 v-for="s in statusChoices"
-                                                :key="s"
-                                                :value="s"
+                                                :key="s.search_term"
+                                                :value="s.search_term"
                                             >
-                                                {{ s }}
+                                                {{ s.value }}
                                             </option>
                                         </select>
                                     </div>
@@ -142,12 +142,14 @@
                             </div>
                         </div>
                         <div class="row">
-                            <datatable
-                                id="org-access-table"
-                                ref="org_access_table"
-                                :dt-options="dtOptions"
-                                :dt-headers="dtHeaders"
-                            ></datatable>
+                            <div class="col-lg-12">
+                                <datatable
+                                    id="org-access-table"
+                                    ref="org_access_table"
+                                    :dt-options="dtOptions"
+                                    :dt-headers="dtHeaders"
+                                ></datatable>
+                            </div>
                         </div>
                     </div>
                 </FormSection>
@@ -157,7 +159,6 @@
 </template>
 <script>
 import Vue from 'vue';
-import $ from 'jquery';
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
@@ -194,10 +195,10 @@ export default {
                     url: api_endpoints.organisation_requests_datatable,
                     dataSrc: 'data',
                     data: function (d) {
-                        d.filter_organisation = vm.filterOrganisation;
-                        d.filter_applicant = vm.filterApplicant;
-                        d.filter_role = vm.filterRole;
-                        d.filter_status = vm.filterStatus;
+                        d.datatable_filter_name = vm.filterOrganisation;
+                        d.datatable_filter_full_name = vm.filterApplicant;
+                        d.datatable_filter_role = vm.filterRole.toLowerCase();
+                        d.datatable_filter_status = vm.filterStatus;
 
                         return d;
                     },
@@ -258,86 +259,7 @@ export default {
                     },
                 ],
                 initComplete: function () {
-                    // Grab Organisation from the data in the table
-                    var organisationColumn =
-                        vm.$refs.org_access_table.vmDataTable.columns(1);
-                    organisationColumn
-                        .data()
-                        .unique()
-                        // eslint-disable-next-line no-unused-vars
-                        .each(function (d, j) {
-                            let organisationChoices = [];
-                            $.each(d, (index, a) => {
-                                a != null && organisationChoices.indexOf(a) < 0
-                                    ? organisationChoices.push(a)
-                                    : '';
-                            });
-                            // Case insensitive sort in place
-                            vm.organisationChoices = organisationChoices.sort(
-                                (a, b) =>
-                                    a.localeCompare(b, 'en', {
-                                        sensitivity: 'base',
-                                    })
-                            );
-                        });
-                    // Grab Applicant from the data in the table
-                    var applicantColumn =
-                        vm.$refs.org_access_table.vmDataTable.columns(2);
-                    applicantColumn
-                        .data()
-                        .unique()
-                        // eslint-disable-next-line no-unused-vars
-                        .each(function (d, j) {
-                            let applicationChoices = [];
-                            $.each(d, (index, a) => {
-                                a = a.trim();
-                                [null, ''].includes(a) == false &&
-                                applicationChoices.indexOf(a) < 0
-                                    ? applicationChoices.push(a)
-                                    : '';
-                            });
-                            // Case insensitive sort in place
-                            vm.applicantChoices = applicationChoices.sort(
-                                (a, b) =>
-                                    a.localeCompare(b, 'en', {
-                                        sensitivity: 'base',
-                                    })
-                            );
-                        });
-                    // Grab Role from the data in the table
-                    var roleColumn =
-                        vm.$refs.org_access_table.vmDataTable.columns(3);
-                    roleColumn
-                        .data()
-                        .unique()
-                        // eslint-disable-next-line no-unused-vars
-                        .each(function (d, j) {
-                            let roleChoices = [];
-                            $.each(d, (index, a) => {
-                                a != null && roleChoices.indexOf(a) < 0
-                                    ? roleChoices.push(a)
-                                    : '';
-                            });
-                            vm.roleChoices = roleChoices.sort();
-                        });
-                    // Grab Status from the data in the table
-                    var statusColumn =
-                        vm.$refs.org_access_table.vmDataTable.columns(4);
-                    statusColumn
-                        .data()
-                        .unique()
-                        // eslint-disable-next-line no-unused-vars
-                        .each(function (d, j) {
-                            let statusChoices = [];
-                            $.each(d, (index, a) => {
-                                a != null && statusChoices.indexOf(a) < 0
-                                    ? statusChoices.push(a)
-                                    : '';
-                            });
-                            vm.statusChoices = statusChoices.sort();
-                        });
-
-                    vm.isLoading = false;
+                    // vm.isLoading = false;
                 },
             },
             dtHeaders: [
@@ -413,6 +335,7 @@ export default {
     },
     mounted: function () {
         this.isLoading = true;
+        this.fetchFilterLists();
         this.fetchAccessGroupMembers();
         this.fetchProfile();
         this.$nextTick(() => {
@@ -483,6 +406,28 @@ export default {
                 'Select Status',
                 false
             );
+        },
+        fetchFilterLists: function () {
+            let vm = this;
+            vm.isLoading = true;
+
+            vm.$http
+                .get(api_endpoints.filter_list_organisation_requests)
+                .then(
+                    (response) => {
+                        vm.organisationChoices =
+                            response.data.organisation_choices;
+                        vm.applicantChoices = response.data.applicant_choices;
+                        vm.roleChoices = response.data.role_choices;
+                        vm.statusChoices = response.data.status_choices;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                )
+                .finally(() => {
+                    vm.isLoading = false;
+                });
         },
     },
 };

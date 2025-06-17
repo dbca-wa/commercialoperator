@@ -1,7 +1,8 @@
 import traceback
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Concat
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -10,7 +11,6 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
-from rest_framework_datatables.filters import DatatablesFilterBackend
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import update_organisation_obj, get_all_organisation
 
@@ -39,7 +39,6 @@ from commercialoperator.components.organisations.models import (
     OrganisationRequestUserAction,
     OrganisationContact,
     OrganisationAccessGroup,
-    # ledger_organisation,
 )
 
 from commercialoperator.components.organisations.serializers import (
@@ -782,16 +781,37 @@ class OrganisationRequestDatatableFilterBackend(
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
-        applicant = request.GET.get("filter_applicant", "All")
-        if applicant != "All":
-            raise serializers.ValidationError("Filtering by applicant is not supported")
-
         ledger_lookup_fields = [
             "requester",
         ]
         # Prevent the external user from searching for officers
         if is_internal(request):
             ledger_lookup_fields += ["assigned_officer"]
+
+        if (
+            request.GET.get(f"{self.DATATABLE_FILTER_PREFIX}full_name", "").lower()
+            != "all"
+        ):
+            # Only annotate with full_name if the full_name filter is applied
+            queryset = queryset.expand_emailuser_fields(
+                "requester", {"first_name", "last_name", "email"}
+            )
+            queryset = queryset.annotate(
+                full_name=Concat(
+                    "requester_first_name",
+                    Value(" "),
+                    "requester_last_name",
+                    Value(" ("),
+                    "requester_email",
+                    Value(")"),
+                )
+            )
+        # Apply the search filters
+        queryset = self.filter_datatables_queryset(
+            request,
+            queryset,
+            ledger_lookup_fields=ledger_lookup_fields,
+        )
 
         queryset = self.apply_request(
             request,
@@ -803,20 +823,6 @@ class OrganisationRequestDatatableFilterBackend(
         setattr(view, "_datatables_total_count", total_count)
 
         return queryset
-
-    def get_ordering(self, request, view, fields):
-        """
-        Override to handle case-insensitive ordering for specific field types.
-        """
-        ordering = super().get_ordering(request, view, fields)
-
-        if not ordering:
-            return []
-
-        return ordering
-        # TODO: This doesn't work with get_ordering -> split, replace, etc in apply_request
-        # Convert to case-insensitive ordering if necessary
-        # return self.to_case_insensitive_ordering(ordering, view.get_queryset())[0]
 
 
 class OrganisationRequestsViewSet(viewsets.ModelViewSet):
@@ -846,6 +852,46 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
             )
 
         return OrganisationRequest.objects.none()
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=False,
+    )
+    def filter_list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        organisations = queryset.distinct("name").values_list("name", flat=True)
+        applicant_qs = (
+            queryset.filter(requester__isnull=False)
+            .expand_emailuser_fields("requester", {"email", "first_name", "last_name"})
+            .filter(requester_exists=True)
+            .order_by("requester_email")
+            .distinct("requester_email")
+            .values_list(
+                "requester_first_name", "requester_last_name", "requester_email"
+            )
+        )
+        applicants = [
+            # dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
+            dict(search_term="{} {} ({})".format(i[0], i[1], i[2]))
+            for i in applicant_qs
+        ]
+
+        statuses = [
+            dict(search_term=i[0], value=i[1])
+            for i in OrganisationRequest.STATUS_CHOICES
+        ]
+        roles = [i[1] for i in OrganisationRequest.ROLE_CHOICES]
+
+        data = dict(
+            status_choices=statuses,
+            role_choices=roles,
+            organisation_choices=list(organisations),
+            applicant_choices=applicants,
+        )
+        return Response(data)
 
     @action(
         methods=[

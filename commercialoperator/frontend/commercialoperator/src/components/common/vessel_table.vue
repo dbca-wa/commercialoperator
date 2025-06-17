@@ -105,6 +105,8 @@ export default {
                     },
                     {
                         data: 'id',
+                        orderable: false,
+                        searchable: false,
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.proposal.readonly) {

@@ -283,6 +283,12 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+                        d.datatable_filter_processing_status =
+                            vm.filterProposalStatus;
+                        d.datatable_filter_submitter__email =
+                            vm.filterProposalSubmitter;
+                        d.datatable_filter_application_type__name =
+                            vm.filterApplicationType;
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -429,6 +435,12 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+                        d.datatable_filter_processing_status =
+                            vm.filterProposalStatus;
+                        d.datatable_filter_submitter__email =
+                            vm.filterProposalSubmitter;
+                        d.datatable_filter_application_type__name =
+                            vm.filterApplicationType;
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
