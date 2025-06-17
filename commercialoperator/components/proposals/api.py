@@ -2488,7 +2488,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = Proposal.objects.filter(
             id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id"
+                "proposal_id", flat=True
             )
         )
         submitters = get_cached_proposal_submitters(self, qs)
@@ -3567,7 +3567,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = Proposal.objects.filter(
             id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id"
+                "proposal_id", flat=True
             )
         )
         submitters = get_cached_proposal_submitters(self, qs)
