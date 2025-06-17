@@ -9,7 +9,7 @@
                 >
                     <div class="panel panel-default">
                         <div class="row mb-1">
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-3">
                                 <div
                                     id="select_organisation_access_organisation_parent"
                                     class="form-group"
@@ -142,12 +142,14 @@
                             </div>
                         </div>
                         <div class="row">
-                            <datatable
-                                id="org-access-table"
-                                ref="org_access_table"
-                                :dt-options="dtOptions"
-                                :dt-headers="dtHeaders"
-                            ></datatable>
+                            <div class="col-lg-12">
+                                <datatable
+                                    id="org-access-table"
+                                    ref="org_access_table"
+                                    :dt-options="dtOptions"
+                                    :dt-headers="dtHeaders"
+                                ></datatable>
+                            </div>
                         </div>
                     </div>
                 </FormSection>
