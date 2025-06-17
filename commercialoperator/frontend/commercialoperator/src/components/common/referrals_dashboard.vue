@@ -235,6 +235,8 @@ export default {
                                 : '';
                         d.datatable_filter_processing_status =
                             vm.filterProposalStatus;
+                        d.datatable_filter_proposal__application_type__name =
+                            vm.filterApplicationType;
                         d.datatable_filter_proposal__submitter__email =
                             vm.filterProposalSubmitter;
                     },
