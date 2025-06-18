@@ -225,6 +225,8 @@ export default {
                             vm.filterComplianceStatus.toLowerCase();
                         d.datatable_filter_proposal__application_type__name =
                             vm.filterApplicationType;
+                        d.search_terms =
+                            'assigned_to__first_name, assigned_to__last_name, assigned_to__email';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -279,8 +281,7 @@ export default {
                     {
                         data: 'assigned_to',
                         name: 'assigned_to__first_name, assigned_to__last_name, assigned_to__email',
-                        // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'compliance_licence_name',
