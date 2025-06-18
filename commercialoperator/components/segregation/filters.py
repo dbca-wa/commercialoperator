@@ -13,6 +13,7 @@ from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
+from commercialoperator.components.segregation.utils import check_table_exists
 
 
 logger = logging.getLogger(__name__)
@@ -322,7 +323,7 @@ class LedgerDatatablesFilterBackend(
             }
             # Add a search term filter (e.g. concatenated first name last name and email) if applicable
             queryset, search_term_filter, alias_set = self.search_term_queryset(
-                queryset, request
+                queryset, request, **kwargs
             )
             if alias_set is True:
                 # Concatenate search term filter with model filter
@@ -360,7 +361,16 @@ class LedgerDatatablesFilterBackend(
                 # Ledger foreign keys
                 _fks = list(
                     {
-                        self.rgetattr(m, k.replace("__", "."))
+                        # self.rgetattr(m, k.replace("__", "."))
+                        (
+                            self.rgetattr(m, k.replace("__", ".")).pk
+                            # If the attribute is an EmailUser, get the pk from it
+                            if isinstance(
+                                self.rgetattr(m, k.replace("__", ".")), EmailUser
+                            )
+                            # else take the attribute as is
+                            else self.rgetattr(m, k.replace("__", "."))
+                        )
                         for m in list(queryset)
                         for k in _ledger_fields_undscr
                     }
@@ -670,7 +680,7 @@ class LedgerDatatablesFilterBackend(
                 f"as a search field instead of `{attribute}__a_field_name`."
             )
 
-    def search_term_queryset(self, queryset, request):
+    def search_term_queryset(self, queryset, request, **kwargs):
         """
         Uses an alias to concatenate search terms to filter the queryset.
         Search terms are provided as a comma-separated list of fields, e.g.
@@ -690,15 +700,47 @@ class LedgerDatatablesFilterBackend(
             if len(terms) > 1:
                 # Create a list of spaces the same length as the terms
                 spaces = [Value(" ")] * len(terms)
+
+                accounts_emailuser_exists = check_table_exists("accounts_emailuser")
+
+                if not accounts_emailuser_exists:
+                    expand_fields = {}
+                    ledger_lookup_fields = kwargs.get("ledger_lookup_fields")
+                    for ledger_field in ledger_lookup_fields:
+                        # If the ledger field is in the search terms, expand it
+                        if not ledger_field in expand_fields:
+                            expand_fields[ledger_field] = []
+                        expand_fields[ledger_field] += [
+                            f.split(f"{ledger_field}__")[1]
+                            for f in terms
+                            if f.startswith(ledger_field)
+                        ]
+
+                    for ledger_field, fields in expand_fields.items():
+                        if len(fields) > 0:
+                            # Expand the queryset with the ledger field and its fields
+                            queryset = queryset.expand_emailuser_fields(
+                                ledger_field, fields
+                            )
+
+                    terms = [t.replace("__", "_") for t in terms]
+
                 # Don't need the last space character
                 search_terms = [
                     inner for outer in zip(terms, spaces) for inner in outer
                 ][:-1]
-                # Get a queryset with an alias of the concatenated search terms
-                # See: https://docs.djangoproject.com/en/4.2/ref/models/querysets/#alias
-                queryset = queryset.alias(
-                    search_term=Concat(*search_terms, output_field=CharField())
-                )
+
+                if accounts_emailuser_exists:
+                    # Get a queryset with an alias of the concatenated search terms
+                    # See: https://docs.djangoproject.com/en/4.2/ref/models/querysets/#alias
+                    queryset = queryset.alias(
+                        search_term=Concat(*search_terms, output_field=CharField())
+                    )
+                else:
+                    queryset = queryset.annotate(
+                        search_term=Concat(*search_terms, output_field=CharField())
+                    )
+
                 model_filter_dict["search_term__icontains"] = request.GET.get(
                     "search[value]", ""
                 )
