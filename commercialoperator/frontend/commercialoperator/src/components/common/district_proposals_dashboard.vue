@@ -202,6 +202,8 @@ export default {
                             vm.filterProposalStatus;
                         d.datatable_filter_proposal__submitter__email =
                             vm.filterProposalSubmitter;
+                        d.search_terms =
+                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email';
                     },
                 },
                 columns: [
@@ -223,7 +225,7 @@ export default {
                         },
                         name: 'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email',
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'applicant',
@@ -265,8 +267,8 @@ export default {
                         orderable: false,
                         name: '',
                     },
-                    { data: 'proposal', visible: false },
-                    { data: 'id', visible: false },
+                    { data: 'proposal', visible: false, searchable: false },
+                    { data: 'id', visible: false, searchable: false },
                 ],
                 processing: true,
             },
