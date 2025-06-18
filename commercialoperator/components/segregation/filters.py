@@ -333,11 +333,11 @@ class LedgerDatatablesFilterBackend(
                 model_qs_filtered = queryset.filter(
                     Q(**model_filter_dict, _connector=Q.OR)
                 )
-            except FieldError:
+            except FieldError as e:
                 raise FieldError(
                     f"Error filtering queryset. Consider adding any of {model_attrs} "
                     f"to `ledger_lookup_fields`: {ledger_lookup_fields}"
-                )
+                ) from e
 
             # Add filtered model results to list
             query_model_list += [
