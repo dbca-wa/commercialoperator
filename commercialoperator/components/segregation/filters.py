@@ -361,7 +361,6 @@ class LedgerDatatablesFilterBackend(
                 # Ledger foreign keys
                 _fks = list(
                     {
-                        # self.rgetattr(m, k.replace("__", "."))
                         (
                             self.rgetattr(m, k.replace("__", ".")).pk
                             # If the attribute is an EmailUser, get the pk from it

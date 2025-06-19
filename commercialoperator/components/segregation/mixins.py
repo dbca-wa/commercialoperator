@@ -2,6 +2,7 @@ import functools
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models.functions import Lower
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import CharField
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
@@ -73,7 +74,19 @@ class RecursiveGetAttributeMixin:
             if isinstance(obj, dict):
                 return obj.get(attr, None)
             else:
-                has_attr = hasattr(obj, attr)
+                remote_field = obj._meta.get_field(attr).remote_field
+                DoesNotExist = ObjectDoesNotExist
+                if remote_field:
+                    remote_model = obj._meta.get_field(attr).remote_field.model
+                    DoesNotExist = remote_model.DoesNotExist
+                try:
+                    has_attr = hasattr(obj, attr)
+                except DoesNotExist as e:
+                    logger.warning(
+                        f"Error getting attribute '{attr}' from {obj.__class__.__name__} object {obj.id}: {e}"
+                    )
+                    has_attr = False
+
                 if raise_exception and not has_attr:
                     raise ValueError(
                         f"Attribute '{attr}' not found in {obj.__class__.__name__}"
@@ -146,7 +159,9 @@ class FilterHelperMixin:
             # If the field does not exist, we check if it is an annotation
             if _field_name in queryset.query.annotations:
                 # If the field is an annotation, we retrieve its type
-                field = queryset.query.annotations.get(_field_name, None).field.__class__
+                field = queryset.query.annotations.get(
+                    _field_name, None
+                ).field.__class__
         else:
             # If the field exists, we have to check its type next
             field = type(field)
