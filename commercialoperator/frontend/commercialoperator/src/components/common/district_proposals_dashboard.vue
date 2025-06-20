@@ -202,6 +202,8 @@ export default {
                             vm.filterProposalStatus;
                         d.datatable_filter_proposal__submitter__email =
                             vm.filterProposalSubmitter;
+                        d.search_terms =
+                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email, proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name';
                     },
                 },
                 columns: [
@@ -223,20 +225,13 @@ export default {
                         },
                         name: 'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email',
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'applicant',
-                        name: 'proposal__org_applicant__organisation__name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
+                        name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
                         orderable: true,
-                        searchable: false,
-                        // eslint-disable-next-line no-unused-vars
-                        mRender: function (data, type, full) {
-                            if (data && data.full_name) {
-                                return `${data.full_name}`;
-                            }
-                            return '';
-                        },
+                        searchable: true,
                     },
                     {
                         data: 'processing_status',
@@ -265,8 +260,8 @@ export default {
                         orderable: false,
                         name: '',
                     },
-                    { data: 'proposal', visible: false },
-                    { data: 'id', visible: false },
+                    { data: 'proposal', visible: false, searchable: false },
+                    { data: 'id', visible: false, searchable: false },
                 ],
                 processing: true,
             },

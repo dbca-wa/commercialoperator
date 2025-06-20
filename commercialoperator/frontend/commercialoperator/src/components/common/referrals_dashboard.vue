@@ -239,6 +239,8 @@ export default {
                             vm.filterApplicationType;
                         d.datatable_filter_proposal__submitter__email =
                             vm.filterProposalSubmitter;
+                        d.search_terms =
+                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email, assigned_officer__first_name, assigned_officer__last_name, proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name';
                     },
                 },
                 columns: [
@@ -271,13 +273,13 @@ export default {
                             return '';
                         },
                         name: 'proposal__submitter__email',
-                        searchable: false, // Note: disabled for now during segregation
+                        searchable: true, // Note: disabled for now during segregation
                     },
                     {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
                         // Note: disabled for now during segregation
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'processing_status',
@@ -301,7 +303,7 @@ export default {
                         data: 'proposal_event_name',
                         name: '',
                         searchable: false,
-                        orderable: false,
+                        orderable: true,
                     },
                     {
                         data: 'id',
@@ -316,10 +318,22 @@ export default {
                         orderable: false,
                         name: '',
                     },
-                    { data: 'can_be_processed', visible: false },
-                    { data: 'can_user_process', visible: false },
-                    { data: 'proposal_lodgement_number', visible: false },
-                    { data: 'id', visible: false },
+                    {
+                        data: 'can_be_processed',
+                        visible: false,
+                        searchable: false,
+                    },
+                    {
+                        data: 'can_user_process',
+                        visible: false,
+                        searchable: false,
+                    },
+                    {
+                        data: 'proposal_lodgement_number',
+                        visible: false,
+                        searchable: false,
+                    },
+                    { data: 'id', visible: false, searchable: false },
                 ],
                 processing: true,
             },

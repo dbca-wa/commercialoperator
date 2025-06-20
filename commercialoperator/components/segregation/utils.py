@@ -1,7 +1,7 @@
 from itertools import islice, chain
 
 from django.apps import apps
-from django.db import models
+from django.db import models, connection
 from django.conf import settings
 from django.core.cache import cache
 from rest_framework import status
@@ -92,6 +92,24 @@ def retrieve_organisation(organisation_id):
             return organisation
     else:
         return organisation
+
+
+def check_table_exists(table_name):
+    """
+    Checks if a table exists in the database.
+    Args:
+        table_name (str): The name of the table to check.
+    Returns:
+        bool: True if the table exists, False otherwise.
+    """
+
+    with connection.cursor() as cursor:
+        # Check if the table exists in the database
+        cursor.execute(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s)",
+            [table_name],
+        )
+        return cursor.fetchone()[0]
 
 
 class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelperMixin):

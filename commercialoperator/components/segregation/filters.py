@@ -13,6 +13,7 @@ from rest_framework_datatables.filters import DatatablesFilterBackend
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
+from commercialoperator.components.segregation.utils import check_table_exists
 
 
 logger = logging.getLogger(__name__)
@@ -287,6 +288,7 @@ class LedgerDatatablesFilterBackend(
         ledger_lookup_fields = kwargs.get(
             "ledger_lookup_fields", self.LEDGER_LOOKUP_FIELDS
         )
+        # ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
         cache_prefix = kwargs.get("cache_prefix", self.CACHE_PREFIX)
         search_threshold = kwargs.get("search_threshold", self.SEARCH_THRESHOLD)
 
@@ -311,6 +313,11 @@ class LedgerDatatablesFilterBackend(
             datatables_search_attributes, ledger_lookup_fields
         )
 
+        # Add a search term filter (e.g. concatenated first name last name and email) if applicable
+        queryset, search_term_filter, alias_set = self.search_term_queryset(
+            queryset, request, **kwargs
+        )
+
         # Require at least two characters before searching
         if len(search_value) >= search_threshold:
             # The resulting (searched for and ordered) queryset as a list
@@ -320,10 +327,7 @@ class LedgerDatatablesFilterBackend(
             model_filter_dict = {
                 f"{attr}__icontains": search_value for attr in model_attrs
             }
-            # Add a search term filter (e.g. concatenated first name last name and email) if applicable
-            queryset, search_term_filter, alias_set = self.search_term_queryset(
-                queryset, request
-            )
+
             if alias_set is True:
                 # Concatenate search term filter with model filter
                 model_filter_dict = {**model_filter_dict, **search_term_filter}
@@ -332,69 +336,84 @@ class LedgerDatatablesFilterBackend(
                 model_qs_filtered = queryset.filter(
                     Q(**model_filter_dict, _connector=Q.OR)
                 )
-            except FieldError:
+            except FieldError as e:
                 raise FieldError(
                     f"Error filtering queryset. Consider adding any of {model_attrs} "
                     f"to `ledger_lookup_fields`: {ledger_lookup_fields}"
-                )
+                ) from e
 
             # Add filtered model results to list
             query_model_list += [
                 m for m in list(model_qs_filtered) if m not in query_model_list
             ]
 
-            # Ledger lookup fields for this model in double underscore-notation
-            _ledger_fields_undscr = self._ledger_attrs_to_list(ledger_attrs)
-            # Get the cached ledger user
-            ledger_cache = None
-            if len(_ledger_fields_undscr) > 0:
-                ledger_cache = self.ledger_cache(
-                    queryset,
-                    filter_keys=_ledger_fields_undscr,
-                    model_keys=self._ledger_attrs_to_list(ledger_attrs),
-                    cache_prefix=cache_prefix,
-                    model=model,
-                )
-
-            for attribute in ledger_attrs:
-                # Ledger foreign keys
-                _fks = list(
-                    {
-                        self.rgetattr(m, k.replace("__", "."))
-                        for m in list(queryset)
-                        for k in _ledger_fields_undscr
-                    }
-                )
-
-                # A dictionary of search fields and values
-                ledger_filter_dict = {
-                    f"{field}__icontains": search_value
-                    for key in ledger_attrs[attribute]
-                    for field in ledger_attrs[attribute][key]
-                    if self._check_model_field(attribute, field)
-                }
-
-                # Filter the ledger cache
-                ledger_qs_filtered = ledger_cache.filter(Q(pk__in=_fks)).filter(
-                    Q(**ledger_filter_dict, _connector=Q.OR)
-                )
-                if ledger_qs_filtered.count() > 0:
-                    logger.info(
-                        f"Found `{search_value}` in LEDGER attribute {_ledger_fields_undscr}: {_fks}"
+            if not bool(search_term_filter):
+                # Ledger lookup fields for this model in double underscore-notation
+                _ledger_fields_undscr = self._ledger_attrs_to_list(ledger_attrs)
+                # Get the cached ledger user
+                ledger_cache = None
+                if len(_ledger_fields_undscr) > 0:
+                    ledger_cache = self.ledger_cache(
+                        queryset,
+                        filter_keys=_ledger_fields_undscr,
+                        model_keys=self._ledger_attrs_to_list(ledger_attrs),
+                        cache_prefix=cache_prefix,
+                        model=model,
                     )
 
-                # List of ledger pk dicts, e.g. `[{'pk': 2}, {'pk': 1}]`, and filter model
-                _pks = list(ledger_qs_filtered.values("pk"))
-                # Map ledger pks back to model attribute, e.g. `{'submitter__in': [2]}`
-                model_filter_dict = {
-                    f"{key}__in": [d["pk"] for d in _pks]
-                    for key in ledger_attrs[attribute]
-                }
-                model_qs_filtered = queryset.filter(Q(**model_filter_dict))
-                # Append to the resulting queryset list
+                for attribute in ledger_attrs:
+                    # Ledger foreign keys
+                    _fks = list(
+                        {
+                            (
+                                self.rgetattr(m, k.replace("__", ".")).pk
+                                # If the attribute is an EmailUser, get the pk from it
+                                if isinstance(
+                                    self.rgetattr(m, k.replace("__", ".")), EmailUser
+                                )
+                                # else take the attribute as is
+                                else self.rgetattr(m, k.replace("__", "."))
+                            )
+                            for m in list(queryset)
+                            for k in _ledger_fields_undscr
+                        }
+                    )
+
+                    # A dictionary of search fields and values
+                    ledger_filter_dict = {
+                        f"{field}__icontains": search_value
+                        for key in ledger_attrs[attribute]
+                        for field in ledger_attrs[attribute][key]
+                        if self._check_model_field(attribute, field)
+                    }
+
+                    # Filter the ledger cache
+                    ledger_qs_filtered = ledger_cache.filter(Q(pk__in=_fks)).filter(
+                        Q(**ledger_filter_dict, _connector=Q.OR)
+                    )
+                    if ledger_qs_filtered.count() > 0:
+                        logger.info(
+                            f"Found `{search_value}` in LEDGER attribute {_ledger_fields_undscr}: {_fks}"
+                        )
+
+                    # List of ledger pk dicts, e.g. `[{'pk': 2}, {'pk': 1}]`, and filter model
+                    _pks = list(ledger_qs_filtered.values("pk"))
+                    # Map ledger pks back to model attribute, e.g. `{'submitter__in': [2]}`
+                    model_filter_dict = {
+                        f"{key}__in": [d["pk"] for d in _pks]
+                        for key in ledger_attrs[attribute]
+                    }
+                    model_qs_filtered = queryset.filter(Q(**model_filter_dict))
+                    # Append to the resulting queryset list
+                    query_model_list += [
+                        m for m in list(model_qs_filtered) if m not in query_model_list
+                    ]
+            else:
                 query_model_list += [
-                    m for m in list(model_qs_filtered) if m not in query_model_list
+                    qs for qs in model_qs_filtered if qs not in query_model_list
                 ]
+
+            queryset = queryset.filter(id__in=[qs.id for qs in query_model_list])
 
         else:
             # Cast queryset to list
@@ -403,6 +422,29 @@ class LedgerDatatablesFilterBackend(
         # Ordering
         fields = self.get_fields(request)
         orderings = self.get_ordering(request, view, fields)
+        # Replace double underscores only in ledger lookup fields, so we can order by the expanded annotated fields (e.g. `submitter_name` instead of `submitter__name`)
+        orderings_with_respect_to_ledger = [
+            (
+                o.replace("__", "_")
+                if any(
+                    o.replace("-", "").startswith(llf) for llf in ledger_lookup_fields
+                )
+                else o
+            )
+            for o in orderings[0].split(",")
+        ]
+
+        try:
+            queryset = queryset.order_by(
+                *orderings_with_respect_to_ledger,
+            )
+        except FieldError as e:
+            logger.exception(
+                f"Could not order queryset by {orderings_with_respect_to_ledger} due to exception: {e}"
+            )
+        else:
+            return queryset
+
         orderings_dotnot = (
             [f.replace("__", ".") for f in orderings[0].split(",")]
             if len(orderings) > 0
@@ -670,7 +712,7 @@ class LedgerDatatablesFilterBackend(
                 f"as a search field instead of `{attribute}__a_field_name`."
             )
 
-    def search_term_queryset(self, queryset, request):
+    def search_term_queryset(self, queryset, request, **kwargs):
         """
         Uses an alias to concatenate search terms to filter the queryset.
         Search terms are provided as a comma-separated list of fields, e.g.
@@ -690,15 +732,50 @@ class LedgerDatatablesFilterBackend(
             if len(terms) > 1:
                 # Create a list of spaces the same length as the terms
                 spaces = [Value(" ")] * len(terms)
+
+                accounts_emailuser_exists = check_table_exists("accounts_emailuser")
+
+                if not accounts_emailuser_exists:
+                    expand_fields = {}
+                    ledger_lookup_fields = kwargs.get("ledger_lookup_fields")
+                    ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
+
+                    for ledger_field in ledger_lookup_fields:
+                        # If the ledger field is in the search terms, expand it
+                        if not ledger_field in expand_fields:
+                            expand_fields[ledger_field] = []
+                        expand_fields[ledger_field] += [
+                            f.split(f"{ledger_field}__")[1]
+                            for f in terms
+                            if f.startswith(ledger_field)
+                        ]
+
+                    for ledger_field, fields in expand_fields.items():
+                        if len(fields) > 0:
+                            expand_function = queryset.get_ledger_retrieve_function(
+                                ledger_field, ledger_lookup_extras
+                            )
+                            # Expand the queryset with the ledger field and its fields (either for emailuser or organisation)
+                            queryset = expand_function(ledger_field, fields)
+
+                    terms = [t.replace("__", "_") for t in terms]
+
                 # Don't need the last space character
                 search_terms = [
                     inner for outer in zip(terms, spaces) for inner in outer
                 ][:-1]
-                # Get a queryset with an alias of the concatenated search terms
-                # See: https://docs.djangoproject.com/en/4.2/ref/models/querysets/#alias
-                queryset = queryset.alias(
-                    search_term=Concat(*search_terms, output_field=CharField())
-                )
+
+                if accounts_emailuser_exists:
+                    # Get a queryset with an alias of the concatenated search terms
+                    # See: https://docs.djangoproject.com/en/4.2/ref/models/querysets/#alias
+                    queryset = queryset.alias(
+                        search_term=Concat(*search_terms, output_field=CharField())
+                    )
+                else:
+                    queryset = queryset.annotate(
+                        search_term=Concat(*search_terms, output_field=CharField())
+                    )
+
                 model_filter_dict["search_term__icontains"] = request.GET.get(
                     "search[value]", ""
                 )

@@ -322,6 +322,8 @@ export default {
                             vm.filterProposalStatus.toLowerCase();
                         d.datatable_filter_current_proposal__application_type__name =
                             vm.filterApplicationType;
+                        d.search_terms =
+                            'org_applicant__organisation__organisation_name, proxy_applicant__first_name, proxy_applicant__last_name, proxy_applicant__email';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -399,7 +401,7 @@ export default {
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__first_name, proxy_applicant__last_name, proxy_applicant__email',
                         // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                     },
                     { data: 'status' },
                     {
