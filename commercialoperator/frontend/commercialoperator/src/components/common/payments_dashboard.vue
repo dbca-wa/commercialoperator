@@ -314,6 +314,9 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
+
+                        d.search_terms =
+                            'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email, proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -331,14 +334,14 @@ export default {
                         data: 'applicant',
                         name: 'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email',
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                         visible: this.level == 'internal' ? true : false,
                     },
                     {
                         data: 'trading_name',
                         name: 'proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name',
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'payment_status',

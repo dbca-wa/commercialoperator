@@ -237,7 +237,7 @@ export default {
                         d.datatable_filter_submitter__email =
                             vm.filterProposalSubmitter;
                         d.search_terms =
-                            'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name';
+                            'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -266,7 +266,7 @@ export default {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'processing_status',

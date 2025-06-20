@@ -226,7 +226,7 @@ export default {
                         d.datatable_filter_proposal__application_type__name =
                             vm.filterApplicationType;
                         d.search_terms =
-                            'assigned_to__first_name, assigned_to__last_name, assigned_to__email';
+                            'assigned_to__first_name, assigned_to__last_name, assigned_to__email, approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -254,9 +254,8 @@ export default {
                     {
                         data: 'holder',
                         name: 'approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name',
-                        // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
                         orderable: true,
-                        searchable: false,
+                        searchable: true,
                         mRender: function (data, type, full) {
                             return vm.level == 'external' ? full.holder : data;
                         },

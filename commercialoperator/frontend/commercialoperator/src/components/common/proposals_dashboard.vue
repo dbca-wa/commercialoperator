@@ -291,7 +291,7 @@ export default {
                             vm.filterApplicationType;
                         // Add search terms to be concatenated on the queryset
                         d.search_terms =
-                            'submitter__first_name, submitter__last_name, submitter__email';
+                            'submitter__first_name, submitter__last_name, submitter__email, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -325,7 +325,7 @@ export default {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
                         orderable: true,
-                        searchable: false, // Note: disabled for now during segregation
+                        searchable: true,
                     },
                     {
                         data: 'customer_status',
@@ -446,8 +446,7 @@ export default {
                             vm.filterApplicationType;
                         // Add search terms to be concatenated on the queryset
                         d.search_terms =
-                            // 'submitter__first_name, submitter__last_name, submitter__email, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
-                            'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name';
+                            'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name, org_applicant__organisation__organisation_name';
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -458,6 +457,7 @@ export default {
                         mRender: function (data, type, full) {
                             return full.lodgement_number;
                         },
+                        name: 'lodgement_number',
                     },
                     {
                         data: 'application_type',
@@ -480,7 +480,7 @@ export default {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name',
                         orderable: true,
-                        searchable: false, // Note: disabled for now during segregation
+                        searchable: true, // Note: disabled for now during segregation
                     },
                     {
                         data: 'processing_status',

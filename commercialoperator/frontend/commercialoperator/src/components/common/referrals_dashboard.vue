@@ -240,7 +240,7 @@ export default {
                         d.datatable_filter_proposal__submitter__email =
                             vm.filterProposalSubmitter;
                         d.search_terms =
-                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email, assigned_officer__first_name, assigned_officer__last_name';
+                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email, assigned_officer__first_name, assigned_officer__last_name, proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name';
                     },
                 },
                 columns: [
@@ -279,7 +279,7 @@ export default {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
                         // Note: disabled for now during segregation
-                        searchable: false,
+                        searchable: true,
                     },
                     {
                         data: 'processing_status',
