@@ -347,10 +347,7 @@ class LedgerDatatablesFilterBackend(
                 m for m in list(model_qs_filtered) if m not in query_model_list
             ]
 
-            try:
-                # If the queryset has a search term from expanding either the emailuser or organisation field, we can directly filter it
-                queryset = queryset.filter(search_term__icontains=search_value)
-            except FieldError as e:
+            if not bool(search_term_filter):
                 # Ledger lookup fields for this model in double underscore-notation
                 _ledger_fields_undscr = self._ledger_attrs_to_list(ledger_attrs)
                 # Get the cached ledger user
@@ -413,8 +410,10 @@ class LedgerDatatablesFilterBackend(
                     ]
             else:
                 query_model_list += [
-                    qs for qs in queryset if qs not in query_model_list
+                    qs for qs in model_qs_filtered if qs not in query_model_list
                 ]
+
+            queryset = queryset.filter(id__in=[qs.id for qs in query_model_list])
 
         else:
             # Cast queryset to list
@@ -423,14 +422,25 @@ class LedgerDatatablesFilterBackend(
         # Ordering
         fields = self.get_fields(request)
         orderings = self.get_ordering(request, view, fields)
+        # Replace double underscores only in ledger lookup fields, so we can order by the expanded annotated fields (e.g. `submitter_name` instead of `submitter__name`)
+        orderings_with_respect_to_ledger = [
+            (
+                o.replace("__", "_")
+                if any(
+                    o.replace("-", "").startswith(llf) for llf in ledger_lookup_fields
+                )
+                else o
+            )
+            for o in orderings[0].split(",")
+        ]
 
         try:
             queryset = queryset.order_by(
-                *[o.replace("__", "_") for o in orderings[0].split(",")]
+                *orderings_with_respect_to_ledger,
             )
         except FieldError as e:
             logger.exception(
-                f"Could not order queryset by {orderings} due to exception: {e}"
+                f"Could not order queryset by {orderings_with_respect_to_ledger} due to exception: {e}"
             )
         else:
             return queryset
