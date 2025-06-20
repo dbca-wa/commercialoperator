@@ -2044,7 +2044,7 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
     proposal_lodgement_number = serializers.CharField(
         source="proposal.lodgement_number"
     )
-    applicant = EmailUserSerializer(source="proposal.applicant_id")
+    applicant = serializers.SerializerMethodField()
     submitter = EmailUserSerializer(source="proposal.submitter_id")
     assigned_officer = serializers.CharField(
         source="assigned_officer.get_full_name", allow_null=True
@@ -2078,16 +2078,21 @@ class ListDistrictProposalSerializer(serializers.ModelSerializer):
             "assigned_officer",
         )
 
-    # def __init__(self,*args,**kwargs):
-    #     super(ListDistrictProposalSerializer, self).__init__(*args, **kwargs)
-    #     self.fields['proposal'] = FilmingDistrictProposalSerializer(context={'request':self.context['request']})
-
     def get_district_assessor_can_assess(self, obj):
         request = self.context["request"]
         user = (
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
         )
         return obj.can_assess(user)
+
+    def get_applicant(self, obj):
+        if obj.proposal.applicant_type == Proposal.APPLICANT_TYPE_ORGANISATION:
+            return obj.proposal.org_applicant.name
+
+        emailuser = retrieve_email_user(obj.proposal.proxy_applicant_id)
+        if emailuser:
+            return f"{emailuser.first_name} {emailuser.last_name}"
+        return None
 
 
 class ReferralProposalSerializer(InternalProposalSerializer):
