@@ -142,12 +142,21 @@ TEMPLATES[0]["OPTIONS"]["context_processors"].append(
     "commercialoperator.context_processors.commercialoperator_url"
 )
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": os.path.join(BASE_DIR, "commercialoperator", "cache"),
+USE_DUMMY_CACHE = env("USE_DUMMY_CACHE", False)
+if USE_DUMMY_CACHE:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        },
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": os.path.join(BASE_DIR, "commercialoperator", "cache"),
+            "OPTIONS": {"MAX_ENTRIES": 10000},
+        }
+    }
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
