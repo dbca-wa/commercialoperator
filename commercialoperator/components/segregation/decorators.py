@@ -1,6 +1,6 @@
-from ast import Not
 import functools
 import logging
+import time
 import traceback
 
 from django.conf import settings
@@ -35,3 +35,21 @@ def basic_exception_handler(func):
             raise APIException(settings.API_EXCEPTION_MESSAGE)
 
     return wrapper
+
+
+def log_execution_time(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        logger.info(
+            f"Function '{func.__name__}' executed in {execution_time:.4f} seconds"
+        )
+        return result
+
+    if settings.DEBUG:
+        return wrapper
+    else:
+        return func
