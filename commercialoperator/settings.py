@@ -154,6 +154,7 @@ else:
         "default": {
             "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
             "LOCATION": os.path.join(BASE_DIR, "commercialoperator", "cache"),
+            "OPTIONS": {"MAX_ENTRIES": 10000},
         }
     }
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
