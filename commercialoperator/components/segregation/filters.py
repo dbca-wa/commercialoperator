@@ -11,7 +11,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
-from commercialoperator.components.segregation.decorators import basic_exception_handler
+from commercialoperator.components.segregation.decorators import (
+    basic_exception_handler,
+    log_execution_time,
+)
 from commercialoperator.components.segregation.mixins import RecursiveGetAttributeMixin
 from commercialoperator.components.segregation.utils import check_table_exists
 
@@ -179,6 +182,7 @@ class LedgerDatatablesFilterBackend(
         return ledger
 
     @basic_exception_handler
+    @log_execution_time
     def filter_datatables_queryset(
         self,
         request,
@@ -255,6 +259,7 @@ class LedgerDatatablesFilterBackend(
         return queryset
 
     @basic_exception_handler
+    @log_execution_time
     def apply_request(self, request, queryset, view, **kwargs):
         """
         Applies a query request to a queryset, searching for the request's
@@ -740,23 +745,35 @@ class LedgerDatatablesFilterBackend(
                     ledger_lookup_fields = kwargs.get("ledger_lookup_fields")
                     ledger_lookup_extras = kwargs.get("ledger_lookup_extras", {})
 
-                    for ledger_field in ledger_lookup_fields:
-                        # If the ledger field is in the search terms, expand it
-                        if not ledger_field in expand_fields:
-                            expand_fields[ledger_field] = []
-                        expand_fields[ledger_field] += [
-                            f.split(f"{ledger_field}__")[1]
-                            for f in terms
-                            if f.startswith(ledger_field)
-                        ]
+                    @log_execution_time
+                    def build_expand_ledger_fields(terms):
+                        for ledger_field in ledger_lookup_fields:
+                            # If the ledger field is in the search terms, expand it
+                            if not ledger_field in expand_fields:
+                                expand_fields[ledger_field] = []
+                            expand_fields[ledger_field] += [
+                                f.split(f"{ledger_field}__")[1]
+                                for f in terms
+                                if f.startswith(ledger_field)
+                            ]
 
-                    for ledger_field, fields in expand_fields.items():
-                        if len(fields) > 0:
-                            expand_function = queryset.get_ledger_retrieve_function(
-                                ledger_field, ledger_lookup_extras
-                            )
-                            # Expand the queryset with the ledger field and its fields (either for emailuser or organisation)
-                            queryset = expand_function(ledger_field, fields)
+                    build_expand_ledger_fields(terms)
+
+                    @log_execution_time
+                    def execute_expand_fields(queryset):
+                        for ledger_field, fields in expand_fields.items():
+                            if len(fields) > 0:
+                                expand_function = queryset.get_ledger_retrieve_function(
+                                    ledger_field, ledger_lookup_extras
+                                )
+                                # Expand the queryset with the ledger field and its fields (either for emailuser or organisation)
+                                queryset = expand_function(ledger_field, fields)
+                        return queryset
+
+                    logger.debug(
+                        f"Executing expanded fields on queryset: {expand_fields}"
+                    )
+                    queryset = execute_expand_fields(queryset)
 
                     terms = [t.replace("__", "_") for t in terms]
 

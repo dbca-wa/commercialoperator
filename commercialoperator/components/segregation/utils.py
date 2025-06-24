@@ -21,6 +21,7 @@ from typing import override
 
 import logging
 
+from commercialoperator.components.segregation.decorators import log_execution_time
 from commercialoperator.components.segregation.mixins import (
     FilterHelperMixin,
     RecursiveGetAttributeMixin,
@@ -76,15 +77,12 @@ def retrieve_organisation(organisation_id):
         return None
 
     cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(organisation_id)
-    cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
+    cache_timeout = settings.CACHE_TIMEOUT_5_MINUTES
     organisation = cache.get(cache_key)
 
     if organisation is None:
         organisation_response = get_organisation(organisation_id)
         if organisation_response.get("status", None) != status.HTTP_200_OK:
-            logger.error(
-                f"Error retrieving organisation {organisation_id}: {organisation_response.get('message', '')}"
-            )
             return None
         else:
             organisation = organisation_response.get("data", {})
@@ -120,6 +118,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
         LEDGER_EXPAND_TARGET_ORGANISATION: "expand_organisation_fields",
     }
 
+    @log_execution_time
     def expand_emailuser_fields(self, emailuser_fk_field, emailuser_properties={}):
         """
         Adds the emailuser object to the QuerySet and expands it with additional fields that are properties
@@ -223,6 +222,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
 
         return self
 
+    @log_execution_time
     def expand_organisation_fields(
         self, organisation_foreign_key_field, organisation_properties={}
     ):
@@ -253,51 +253,65 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
                 )
 
             ledger_organisations = {}
-            for organisation_property in organisation_properties:
-                props = organisation_property.split("__")
-                ledger_object_name = props[0]
-                ledger_object_value = props[1]
 
-                ledger_organisation_id_name = f"{ledger_object_name}_id"
+            # @log_execution_time
+            def build_ledger_organisations_dict(organisation_properties):
+                for organisation_property in organisation_properties:
+                    props = organisation_property.split("__")
+                    ledger_object_name = props[0]
+                    ledger_object_value = props[1]
 
-                if ledger_organisation_id_name not in ledger_organisations:
-                    ledger_organisations[ledger_organisation_id_name] = []
+                    ledger_organisation_id_name = f"{ledger_object_name}_id"
 
-                ledger_organisations[ledger_organisation_id_name] += [
-                    ledger_object_value
-                ]
+                    if ledger_organisation_id_name not in ledger_organisations:
+                        ledger_organisations[ledger_organisation_id_name] = []
 
-            for (
-                ledger_organisation_id_name,
-                ledger_organisation_id_properties,
-            ) in ledger_organisations.items():
-                if not ledger_organisation_id_properties:
-                    continue
+                    ledger_organisations[ledger_organisation_id_name] += [
+                        ledger_object_value
+                    ]
 
-                cols_organisation_id = getattr(cols_organisation, "pk", None)
-                ledger_organisation_id = getattr(
-                    cols_organisation, ledger_organisation_id_name, None
-                )
-                ledger_organisation = retrieve_organisation(ledger_organisation_id)
-                if not ledger_organisation:
-                    logger.error(
-                        f"Organisation with id {ledger_organisation_id} does not exist in the ledger"
+            build_ledger_organisations_dict(organisation_properties)
+
+            # @log_execution_time
+            def execute_ledger_retrieve_organisations():
+                for (
+                    ledger_organisation_id_name,
+                    ledger_organisation_id_properties,
+                ) in ledger_organisations.items():
+                    if not ledger_organisation_id_properties:
+                        continue
+
+                    cols_organisation_id = getattr(cols_organisation, "pk", None)
+                    ledger_organisation_id = getattr(
+                        cols_organisation, ledger_organisation_id_name, None
                     )
-                    continue
+                    ledger_organisation = retrieve_organisation(ledger_organisation_id)
+                    if not ledger_organisation:
+                        logger.error(
+                            f"Organisation with id {ledger_organisation_id} does not exist in the ledger"
+                        )
+                        continue
 
-            if ledger_organisation:
-                if ledger_organisation_id not in ledger_organisation_ids:
-                    # Collect unique organisation ids
-                    ledger_organisation_ids.append(ledger_organisation_id)
-                    cols_organisation_ids.append(cols_organisation_id)
-                if cols_organisation_id not in ledger_organisation_property_values:
-                    # Collect organisation properties
-                    ledger_organisation_property_values[cols_organisation_id] = {}
-                for property in ledger_organisation_id_properties:
-                    # Collect organisation property values, associate a cols org id with ledger org values (e.g. name, email, etc.)
-                    ledger_organisation_property_values[cols_organisation_id][
-                        property
-                    ] = ledger_organisation.get(property, "")
+                    if ledger_organisation:
+                        if ledger_organisation_id not in ledger_organisation_ids:
+                            # Collect unique organisation ids
+                            ledger_organisation_ids.append(ledger_organisation_id)
+                            cols_organisation_ids.append(cols_organisation_id)
+                        if (
+                            cols_organisation_id
+                            not in ledger_organisation_property_values
+                        ):
+                            # Collect organisation properties
+                            ledger_organisation_property_values[
+                                cols_organisation_id
+                            ] = {}
+                        for property in ledger_organisation_id_properties:
+                            # Collect organisation property values, associate a cols org id with ledger org values (e.g. name, email, etc.)
+                            ledger_organisation_property_values[cols_organisation_id][
+                                property
+                            ] = ledger_organisation.get(property, "")
+
+            execute_ledger_retrieve_organisations()
 
         # Create a dictionary of Case expressions for each organisation property
         # E.g. {
@@ -645,7 +659,7 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
     for org_id in user_ledger_org_ids:
 
         cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(org_id)
-        cache_timeout = settings.CACHE_TIMEOUT_5_SECONDS
+        cache_timeout = settings.CACHE_TIMEOUT_5_MINUTES
 
         ledger_organisation = cache.get(cache_key)
 
