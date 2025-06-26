@@ -55,7 +55,7 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
                 retrieve_cols_organisations_from_ledger_org_ids(user)
             )
 
-            user_orgs = [o["id"] for o in commercialoperator_organisations]
+            user_orgs = [o["organisation_id"] for o in commercialoperator_organisations]
 
             queryset = Compliance.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
