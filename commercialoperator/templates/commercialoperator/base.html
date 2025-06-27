@@ -1,7 +1,5 @@
 {% extends "webtemplate_dbca/base_b5_auth_session.html" %}
-
 {% load static %}
-
 {% load users %}
 {% load utils %}
 {% is_internal as is_internal_login %}
@@ -15,49 +13,54 @@
 {% support_email as support_email %}
 {% is_payment_officer as is_payment_officer %}
 {% build_tag as build_tag %}
-
-{% block header_top_menu %}{% endblock %}
-
+{% block header_top_menu %}
+{% endblock header_top_menu %}
 {% block extra_css %}
-    <link rel="icon" type="image/png" href="/static/commercialoperator/favicon.ico">
-
-    <link rel="stylesheet" href="{% static 'commercialoperator/css/base.css' %}?v={{build_tag}}">
-    <link rel="stylesheet" href="{% static 'commercialoperator_vue/css/app.css' %}?v={{build_tag}}">
-    <link rel="stylesheet" href="{% static 'commercialoperator_vue/css/chunk-vendors.css' %}?v={{build_tag}}">
-{% endblock %}
-
+    <link rel="icon"
+          type="image/png"
+          href="{% static 'commercialoperator/favicon.ico' %}">
+    <link rel="stylesheet"
+          href="{% static 'commercialoperator/css/base.css' %}?v={{ build_tag }}">
+    <link rel="stylesheet"
+          href="{% static 'commercialoperator_vue/css/app.css' %}?v={{ build_tag }}">
+    <link rel="stylesheet"
+          href="{% static 'commercialoperator_vue/css/chunk-vendors.css' %}?v={{ build_tag }}">
+{% endblock extra_css %}
 {% block custom_js %}
     <script language="javascript">
             var env = {
                 "user_is_authenticated": {% if request.user.is_authenticated %}true{% else %}false{% endif %},
             }
     </script>
-    <script type="text/javascript" src="{% static 'commercialoperator_vue/js/chunk-vendors.js' %}?v={{build_tag}}"></script>
-    <script type="text/javascript" src="{% static 'commercialoperator_vue/js/app.js' %}?v={{build_tag}}"></script>
-{% endblock %}
-
+    <script type="text/javascript"
+            src="{% static 'commercialoperator_vue/js/chunk-vendors.js' %}?v={{ build_tag }}"></script>
+    <script type="text/javascript"
+            src="{% static 'commercialoperator_vue/js/app.js' %}?v={{ build_tag }}"></script>
+{% endblock custom_js %}
 {% block menu_items_left_brand %}
-<div class="navbar-nav">
-    <div class="nav-item">
-        <a class="nav-link{% if request.path == '/' %} active{% endif %} navbar-brand" href="{% url 'home'%}"><img src="/static/img/pwl_icon.png">Home</a>
+    <div class="navbar-nav">
+        <div class="nav-item">
+            <a class="nav-link{% if request.path == '/' %} active{% endif %} navbar-brand"
+               href="{% url 'home' %}">
+                <img height="20"
+                     width="20"
+                     alt="Home"
+                     src="{% static 'img/pwl_icon.png' %}">
+            Home</a>
+        </div>
     </div>
-</div>
-{% endblock %}
-
+{% endblock menu_items_left_brand %}
 {% block menu_items2_right %}
     {% if request.user.is_authenticated %}
-
     {% else %}
-    <a href="/ssologin" class="btn btn-primary btn-sm">Login</a>
+        <a href="{% url 'ssologin' %}" class="btn btn-primary btn-sm">Login</a>
     {% endif %}
-{% endblock %}
-
+{% endblock menu_items2_right %}
 {% block menu_spacer %}
     <br>
-{% endblock %}
-
+{% endblock menu_spacer %}
 {% block footer %}
-{% application_version as application_version %}
-{% support_email as support_email %}
-{% dept_support_phone as dept_support_phone %}
+    {% application_version as application_version %}
+    {% support_email as support_email %}
+    {% dept_support_phone as dept_support_phone %}
 {% endblock footer %}

@@ -1,19 +1,13 @@
-{% extends 'commercialoperator/base.html' %}
+{% extends "commercialoperator/base.html" %}
 {% load static %}
 {% load users %}
-
 {% block extra_css %}
-{% endblock %}
-
+{% endblock extra_css %}
 {% block extra_js %}
-    {{super}}
-{% endblock %}
-
+    {{ super }}
+{% endblock extra_js %}
 {% block requirements %}
-{% endblock %}
-
+{% endblock requirements %}
 {% block content %}
-    <div class="container">
-            {{help.content|safe}}
-    </div>
-{% endblock %}
+    <div class="container">{{ help.content|safe }}</div>
+{% endblock content %}
