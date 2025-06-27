@@ -1375,10 +1375,13 @@ class InvoicePaymentView(View):
 
 
 class SessionAbortRedirectView(TemplateView):
-    template_name = "ps/booking/abort_session.html"
+    template_name = "commercialoperator/booking/abort_session.html"
 
     def get(self, request, *args, **kwargs):
         booking = None
+        context = None
+        action = request.GET.get("action", None)
+
         try:
             booking = get_session_booking(request.session)
 
@@ -1388,6 +1391,13 @@ class SessionAbortRedirectView(TemplateView):
             delete_session_booking(request.session)
 
         except Exception as e:
+            logger.warning("Error deleting session booking: {}".format(e))
+        else:
             pass
 
-        return HttpResponseRedirect("/")
+        if action == "quit":
+            # if the user wants to quit, we redirect to the home page
+            return HttpResponseRedirect(reverse("home"))
+
+        context = template_context(self.request)
+        return render(request, self.template_name, context)
