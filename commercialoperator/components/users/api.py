@@ -1,4 +1,3 @@
-import email
 import json
 import traceback
 from django.conf import settings
@@ -177,7 +176,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserAddressSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if instance.residential_address_id:
-            # address = Address.objects.filter(id=instance.residential_address.id)
             account_details_response = get_account_details(request, str(instance.id))
             if account_details_response.status_code != status.HTTP_200_OK:
                 raise serializers.ValidationError(
@@ -192,7 +190,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
             total_addresses = address.count()
             if total_addresses > 0:
-                # residential_address = Address.objects.get(id=address[0].id)
                 residential_address.locality = serializer.validated_data["locality"]
                 residential_address.state = serializer.validated_data["state"]
                 residential_address.country = serializer.validated_data["country"]

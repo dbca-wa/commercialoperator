@@ -1,8 +1,10 @@
 {% extends "payments/payment-details_base_b5.html" %}
-
+{% load static %}
 {% block page_content_inner_top %}
-
-<script>
+    {% load users %}
+    {% is_internal as is_internal_login %}
+    <link rel="stylesheet" href="{% static 'commercialoperator/css/extra.css' %}">
+    <script>
     var payment_processing = 
     {
        var: { checkouthash: "{{ checkouthash }}"}
@@ -36,25 +38,25 @@
 
     if (window.location.href.indexOf("payment-details") != -1) {
         setInterval(function() {
+            createCookie(document.getElementById('payment-csrfmiddlewaretoken').value, "{{ checkouthash }}");
             var checkouthash_cookie = readCookie("checkouthash");
             if (payment_processing.var.checkouthash != checkouthash_cookie) {
                 if ("{{is_internal_login}}" == "True") {
-                    window.location = "/internal"
+                    window.location = "/booking-session/abort-redirect"
                 } else {
                     window.location = "/external"
                 }
-            }
+            }		
         },"500");
     }
-</script>
-
-<div class="container">
-	<div class="row">
-		<div class='col-12' style='padding: 30px'>
-			<a class='btn btn-warning' href="/">BACK</a>
-			<a class='btn btn-danger' href="/booking-session/abort-redirect">QUIT</a>
-		</div>
-	</div>
-</div>
-
-{% endblock %}
+    </script>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 p-4">
+                <a class="btn btn-warning" href="{% url 'home' %}">BACK</a>
+                <a class="btn btn-danger"
+                   href="{% url 'booking-session-abort-redirect' %}?action=quit">QUIT</a>
+            </div>
+        </div>
+    </div>
+{% endblock page_content_inner_top %}

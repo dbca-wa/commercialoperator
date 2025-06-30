@@ -72,6 +72,7 @@ optional = true
 django-debug-toolbar = ">=3.8"
 ipdb = ">=0.13"
 pylint = ">=2.13"
+djlint = ">=1.0.0"
 flake8 = ">=6.1"
 autopep8 = ">=2.0"
 black = ">=23.0"

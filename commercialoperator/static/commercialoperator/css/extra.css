@@ -1,14 +1,18 @@
 /* The close button of a datatable popover */
 .popover-close {
-    position: absolute;
-    top: -0.55rem;
-    right: 0.25rem;
-    font-size: 2.5em;
-    cursor: pointer;
-    scale: 0.7;
+  position: absolute;
+  top: -0.55rem;
+  right: 0.25rem;
+  font-size: 2.5em;
+  cursor: pointer;
+  scale: 0.7;
 }
 /* The background of the close button (greyish) */
 .close-button-background {
-    background-color: #f0f0f0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: #f0f0f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+.abort-session-heading {
+  color: #003e52;
+  font-size: 48px;
 }

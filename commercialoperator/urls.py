@@ -484,7 +484,7 @@ urlpatterns = (
         url(
             r"^booking-session/abort-redirect$",
             booking_views.SessionAbortRedirectView.as_view(),
-            name="public-booking-aborted-redirect",
+            name="booking-session-abort-redirect",
         ),
     ]
     + ledger_patterns

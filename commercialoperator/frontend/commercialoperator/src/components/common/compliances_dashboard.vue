@@ -226,7 +226,11 @@ export default {
                         d.datatable_filter_proposal__application_type__name =
                             vm.filterApplicationType;
                         d.search_terms =
-                            'assigned_to__first_name, assigned_to__last_name, assigned_to__email, approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name';
+                            'approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name';
+                        if (vm.is_internal) {
+                            d.search_terms +=
+                                ', assigned_to__first_name, assigned_to__last_name, assigned_to__email';
+                        }
                     },
                 },
                 dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
@@ -334,7 +338,10 @@ export default {
     },
     computed: {
         is_external: function () {
-            return this.level == 'external';
+            return this.level === 'external';
+        },
+        is_internal: function () {
+            return this.level === 'internal';
         },
     },
     watch: {
