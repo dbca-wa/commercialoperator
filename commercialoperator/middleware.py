@@ -115,7 +115,7 @@ class PaymentSessionMiddleware(object):
                     checkouthash_cookie = request.COOKIES.get("checkouthash")
                     validation_cookie = request.COOKIES.get(
                         request.POST["payment-csrfmiddlewaretoken"]
-                    )  # Commented out
+                    )
 
                     if request.session["payment_model"] == "proposal":
                         proposal_count = Proposal.objects.filter(
@@ -140,8 +140,6 @@ class PaymentSessionMiddleware(object):
                             + "</a><div></div></center>"
                         )
                         return response
-                    else:
-                        return self.get_response(request)
             else:
                 if request.path.startswith("/ledger-api/process-payment"):
                     url_redirect = reverse(redirect_path)

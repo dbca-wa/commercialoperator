@@ -91,7 +91,7 @@ logger = logging.getLogger("payment_checkout")
 
 
 class ApplicationFeeView(TemplateView):
-    template_name = ""  #'commercialoperator/booking/preview_deferred.html'
+    template_name = "commercialoperator/booking/success.html"
 
     def get_object(self):
         return get_object_or_404(Proposal, id=self.kwargs["proposal_pk"])

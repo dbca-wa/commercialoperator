@@ -38,7 +38,10 @@ from ledger_api_client.utils import (
 )
 from commercialoperator.components.segregation.classes import DecimalEncoder
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.utils import createCustomBasket, oracle_parser
+from commercialoperator.components.segregation.utils import (
+    createCustomBasket,
+    oracle_parser,
+)
 from ledger_api_client.ledger_models import Invoice
 
 import json
@@ -1029,6 +1032,10 @@ def checkout(
         checkout_params["basket_owner"] = proposal.submitter_id
 
     create_checkout_session(request, checkout_params)
+
+    # Set session variables
+    request.session["payment_pk"] = proposal.pk
+    request.session["payment_model"] = "proposal"
 
     logger.info("Redirecting user to ledgergw payment details page.")
     return redirect(reverse("ledgergw-payment-details"))
