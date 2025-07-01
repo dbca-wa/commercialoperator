@@ -618,10 +618,15 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
         )
     )
 
-    if (
-        approval.current_proposal.org_applicant
-        and approval.current_proposal.org_applicant.organisation.trading_name
-    ):
+    organisation = approval.current_proposal.org_applicant
+    organisation_response = get_organisation(organisation.organisation_id)
+    organisation_trading_name = (
+        organisation
+        and organisation_response.get("status", None) == status.HTTP_200_OK
+        and organisation_response.get("data", {}).get("organisation_trading_name")
+    )
+
+    if organisation_trading_name:
         delegation.append(Spacer(1, SECTION_BUFFER_HEIGHT))
         delegation.append(
             Table(
@@ -631,7 +636,7 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
                         [
                             Paragraph(
                                 _format_name(
-                                    approval.current_proposal.org_applicant.organisation.trading_name
+                                    organisation_trading_name
                                 ),
                                 styles["Left"],
                             )
