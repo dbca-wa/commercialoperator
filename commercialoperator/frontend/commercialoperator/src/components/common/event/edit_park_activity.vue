@@ -76,7 +76,10 @@
                                             >Activity Types (assessor)</label
                                         >
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="activities_select_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
                                             ref="activities_select"
                                             v-model="selected_activities"
@@ -451,6 +454,7 @@ export default {
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Activities',
+                    dropdownParent: $('#activities_select_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);
