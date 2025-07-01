@@ -428,16 +428,18 @@ class LedgerDatatablesFilterBackend(
         fields = self.get_fields(request)
         orderings = self.get_ordering(request, view, fields)
         # Replace double underscores only in ledger lookup fields, so we can order by the expanded annotated fields (e.g. `submitter_name` instead of `submitter__name`)
-        orderings_with_respect_to_ledger = [
-            (
-                o.replace("__", "_")
-                if any(
-                    o.replace("-", "").startswith(llf) for llf in ledger_lookup_fields
+        orderings_with_respect_to_ledger = []
+        if len(orderings) > 0 and orderings[0] is not None:
+            orderings_with_respect_to_ledger = [
+                (
+                    o.replace("__", "_")
+                    if any(
+                        o.replace("-", "").startswith(llf) for llf in ledger_lookup_fields
+                    )
+                    else o
                 )
-                else o
-            )
-            for o in orderings[0].split(",")
-        ]
+                for o in orderings[0].split(",")
+            ]
 
         try:
             queryset = queryset.order_by(
