@@ -501,16 +501,23 @@ class ActivityFilterSerializer(serializers.ModelSerializer):
         )
 
 
-class EventsParkSerializer(serializers.ModelSerializer):
-    allowed_activities = serializers.SerializerMethodField()
+class ParkSerializerBase(serializers.ModelSerializer):
 
     class Meta:
         model = Park
         fields = (
             "id",
             "name",
-            "allowed_activities",
+            "visible_to_external",
         )
+
+
+class EventsParkSerializer(ParkSerializerBase):
+    allowed_activities = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Park
+        fields = ParkSerializerBase.Meta.fields + ("allowed_activities",)
 
     def get_allowed_activities(self, obj):
         """The way ro push parent date to child level nested childen (ZoneSerializer --> ActivitySerializer)"""
@@ -531,15 +538,11 @@ class EventsParkSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-class FilmingParkSerializer(serializers.ModelSerializer):
+class FilmingParkSerializer(ParkSerializerBase):
 
     class Meta:
         model = Park
-        fields = (
-            "id",
-            "name",
-            "visible_to_external",
-        )
+        fields = ParkSerializerBase.Meta.fields + ("allowed_activities",)
 
 
 class TrailTabSerializer(serializers.Serializer):
@@ -550,5 +553,6 @@ class TrailTabSerializer(serializers.Serializer):
 
 class EventsTabSerializer(serializers.Serializer):
     event_activity_types = ActivitySerializer(many=True, read_only=True)
-    parks = FilmingParkSerializer(many=True, read_only=True)
-    parks_external = FilmingParkSerializer(many=True, read_only=True)
+
+    parks = ParkSerializerBase(many=True, read_only=True)
+    parks_external = ParkSerializerBase(many=True, read_only=True)
