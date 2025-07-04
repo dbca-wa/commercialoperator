@@ -1659,12 +1659,25 @@ export default {
                 JSON.stringify(vm.proposal.marine_parks_activities)
             );
             vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    swal.fire({
-                        title: 'Saved',
-                        text: 'Your application has been saved',
-                        icon: 'success',
-                    });
+                (response) => {
+                    if (!response.ok) {
+                        swal.fire({
+                            title: 'Error',
+                            text: helpers.apiVueResourceError(response),
+                            icon: 'error',
+                        });
+                    } else {
+                        console.log(response.data);
+                        vm.refreshFromResponse(response);
+                        vm.refreshApplicationTypeKey(
+                            vm.proposal.application_type
+                        );
+                        swal.fire({
+                            title: 'Saved',
+                            text: 'Your application has been saved',
+                            icon: 'success',
+                        });
+                    }
                     vm.savingProposal = false;
                 },
                 (e) => {
