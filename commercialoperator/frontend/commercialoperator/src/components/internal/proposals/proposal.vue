@@ -1,5 +1,5 @@
 <template lang="html">
-    <div v-if="proposal" id="internalProposal" class="container">
+    <div v-if="proposal.id" id="internalProposal" class="container">
         <div class="row" style="padding-bottom: 50px">
             <h3>Application: {{ proposal.lodgement_number }}</h3>
             <h4>
@@ -57,7 +57,7 @@
                                 </tr>
                                 <tr
                                     v-for="p in proposal.reversion_ids"
-                                    :key="p.cur_version_id"
+                                    :key="`reversion-${p.cur_version_id}`"
                                 >
                                     <td>{{ p.created | formatDate }}</td>
                                     <td>
@@ -111,7 +111,7 @@
                                                 <option value="null"></option>
                                                 <option
                                                     v-for="group in referral_recipient_groups"
-                                                    :key="group"
+                                                    :key="`referral-group-${group}`"
                                                     :value="group"
                                                 >
                                                     {{ group }}
@@ -165,7 +165,7 @@
                                             </tr>
                                             <tr
                                                 v-for="r in proposal.latest_referrals"
-                                                :key="r.id"
+                                                :key="`referral-${r.id}`"
                                             >
                                                 <td>
                                                     <small
@@ -1061,7 +1061,7 @@ export default {
             .then(
                 (res) => {
                     next((vm) => {
-                        vm.proposal = res.body;
+                        vm.proposal = Object.assign({}, res.body);
                         vm.fetchProposalParks(to.params.proposal_id);
                         vm.original_proposal = helpers.copyObject(res.body);
                         vm.proposal.org_applicant.address =
@@ -1082,7 +1082,7 @@ export default {
         Vue.http.get(`/api/proposal/${to.params.proposal_id}.json`).then(
             (res) => {
                 next((vm) => {
-                    vm.proposal = res.body;
+                    vm.proposal = Object.assign({}, res.body);
                     vm.fetchProposalParks(to.params.proposal_id);
                     vm.original_proposal = helpers.copyObject(res.body);
                     vm.proposal.selected_trails_activities = [];
@@ -1101,7 +1101,11 @@ export default {
             detailsBody: 'detailsBody' + vm._uid,
             addressBody: 'addressBody' + vm._uid,
             contactsBody: 'contactsBody' + vm._uid,
-            proposal: null,
+            proposal: {
+                selected_trails_activities: [],
+                selected_parks_activities: [],
+                marine_parks_activities: [],
+            },
             original_proposal: null,
             loading: [],
             selected_referral: '',
@@ -1109,7 +1113,7 @@ export default {
             approver_comment: '',
             form: null,
             members: [],
-            proposal_parks: null,
+            proposal_parks: {},
             referral_recipient_groups: [],
             contacts_table_initialised: false,
             initialisedSelects: false,
@@ -1230,12 +1234,14 @@ export default {
         },
         canAssess: function () {
             return this.proposal &&
+                this.proposal.assessor_mode &&
                 this.proposal.assessor_mode.assessor_can_assess
                 ? true
                 : false;
         },
         hasAssessorMode: function () {
             return this.proposal &&
+                this.proposal.assessor_mode &&
                 this.proposal.assessor_mode.has_assessor_mode
                 ? true
                 : false;
@@ -1373,21 +1379,7 @@ export default {
         let vm = this;
         this.$nextTick(() => {
             vm.initialiseSelects();
-            if (typeof vm.$refs.tclass !== 'undefined') {
-                //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
-                vm.proposal.selected_parks_activities =
-                    vm.$refs.tclass.$refs.activities_land.selected_parks_activities;
-                vm.proposal.selected_trails_activities =
-                    vm.$refs.tclass.$refs.activities_land.selected_trails_activities;
-                vm.proposal.marine_parks_activities =
-                    vm.$refs.tclass.$refs.activities_marine.marine_parks_activities;
-            }
-            if (typeof vm.$refs.event !== 'undefined') {
-                //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
-                vm.proposal.selected_trails_activities =
-                    vm.$refs.event.$refs.event_activities.selected_trails_activities;
-            }
-
+            vm.proposalAddSelectedParkActivities();
             vm.form = document.forms.new_proposal;
         });
     },
@@ -1536,7 +1528,7 @@ export default {
                                 vm.original_proposal = helpers.copyObject(
                                     response.body
                                 );
-                                vm.proposal = response.body;
+                                vm.proposal = Object.assign({}, response.body);
                                 swal.fire({
                                     title: 'Sent',
                                     text: 'The proposal has been sent to Districts',
@@ -1590,7 +1582,7 @@ export default {
                                 vm.original_proposal = helpers.copyObject(
                                     response.body
                                 );
-                                vm.proposal = response.body;
+                                vm.proposal = Object.assign({}, response.body);
                                 swal.fire({
                                     title: 'Sent',
                                     text: 'The proposal has been sent to Kensington',
@@ -1667,7 +1659,6 @@ export default {
                             icon: 'error',
                         });
                     } else {
-                        console.log(response.data);
                         vm.refreshFromResponse(response);
                         vm.refreshApplicationTypeKey(
                             vm.proposal.application_type
@@ -1747,7 +1738,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.proposal = response.body;
+                        vm.proposal = Object.assign({}, response.body);
                         vm.fetchProposalParks(vm.proposal.id);
                         vm.original_proposal = helpers.copyObject(
                             response.body
@@ -1766,6 +1757,7 @@ export default {
                 );
         },
         refreshFromResponse: function (response) {
+            console.log('Tree selection: refreshFromResponse');
             let vm = this;
             vm.original_proposal = helpers.copyObject(response.body);
             vm.proposal = helpers.copyObject(response.body);
@@ -1812,7 +1804,7 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.proposal = response.body;
+                            vm.proposal = Object.assign({}, response.body);
                             vm.original_proposal = helpers.copyObject(
                                 response.body
                             );
@@ -1848,7 +1840,7 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.proposal = response.body;
+                            vm.proposal = Object.assign({}, response.body);
                             vm.original_proposal = helpers.copyObject(
                                 response.body
                             );
@@ -1916,7 +1908,10 @@ export default {
                             )
                             .then(
                                 (response) => {
-                                    vm.proposal = response.body;
+                                    vm.proposal = Object.assign(
+                                        {},
+                                        response.body
+                                    );
                                     vm.original_proposal = helpers.copyObject(
                                         response.body
                                     );
@@ -1978,7 +1973,7 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.proposal = response.body;
+                            vm.proposal = Object.assign({}, response.body);
                             vm.original_proposal = helpers.copyObject(
                                 response.body
                             );
@@ -2020,7 +2015,7 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.proposal = response.body;
+                            vm.proposal = Object.assign({}, response.body);
                             vm.original_proposal = helpers.copyObject(
                                 response.body
                             );
@@ -2176,7 +2171,7 @@ export default {
                                 vm.original_proposal = helpers.copyObject(
                                     response.body
                                 );
-                                vm.proposal = response.body;
+                                vm.proposal = Object.assign({}, response.body);
                                 vm.fetchProposalParks(vm.proposal.id);
                                 swal.fire({
                                     title: 'Referral Sent',
@@ -2220,7 +2215,7 @@ export default {
                         vm.original_proposal = helpers.copyObject(
                             response.body
                         );
-                        vm.proposal = response.body;
+                        vm.proposal = Object.assign({}, response.body);
                         vm.fetchProposalParks(vm.proposal.id);
                         swal.fire({
                             title: 'Referral Reminder',
@@ -2255,7 +2250,7 @@ export default {
                         vm.original_proposal = helpers.copyObject(
                             response.body
                         );
-                        vm.proposal = response.body;
+                        vm.proposal = Object.assign({}, response.body);
                         vm.fetchProposalParks(vm.proposal.id);
                         swal.fire({
                             title: 'Referral Resent',
@@ -2291,7 +2286,7 @@ export default {
                         vm.original_proposal = helpers.copyObject(
                             response.body
                         );
-                        vm.proposal = response.body;
+                        vm.proposal = Object.assign({}, response.body);
                         vm.fetchProposalParks(vm.proposal.id);
                         swal.fire({
                             title: 'Referral Recall',
@@ -2329,6 +2324,34 @@ export default {
                 vm.keyProposalFilming = uuid();
                 vm.keyProposalEvent = uuid();
                 vm.keyProposalTClass = uuid();
+            }
+        },
+        proposalAddSelectedParkActivities: function () {
+            console.log(
+                'Tree selection: ADDING selected park activities from tree-select tables to proposal'
+            );
+            let vm = this;
+
+            if (typeof vm.$refs.tclass !== 'undefined') {
+                //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
+                if (vm.$refs.tclass.$refs.activities_land) {
+                    vm.proposal.selected_parks_activities =
+                        vm.$refs.tclass.$refs.activities_land.selected_parks_activities;
+                    vm.proposal.selected_trails_activities =
+                        vm.$refs.tclass.$refs.activities_land.selected_trails_activities;
+                }
+                if (vm.$refs.tclass.$refs.activities_marine) {
+                    //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
+                    vm.proposal.marine_parks_activities =
+                        vm.$refs.tclass.$refs.activities_marine.marine_parks_activities;
+                }
+            }
+            if (typeof vm.$refs.event !== 'undefined') {
+                //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
+                if (vm.$refs.event.$refs.event_activities) {
+                    vm.proposal.selected_trails_activities =
+                        vm.$refs.event.$refs.event_activities.selected_trails_activities;
+                }
             }
         },
     },
