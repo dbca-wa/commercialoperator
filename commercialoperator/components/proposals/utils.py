@@ -474,8 +474,14 @@ def save_park_activity_data(
                 if item["activities"]:
                     for a in item["activities"]:
                         if a in current_activities_id:
-                            # if activity already exists then pass otherwise create the record.
-                            pass
+                            # If the activity already exists but is not permitted in is park (e.g. removed from admin) then remove it otherwise create the record.
+                            if a not in park.park.allowed_activities_ids:
+                                ppa = ProposalParkActivity.objects.filter(
+                                    proposal_park=park, activity_id=a
+                                )
+                                if ppa.exists():
+                                    logger.info(f"Found activity {ppa.first()} not allowed for this park: {park}. Deleting it from proposal {instance}.")
+                                    ppa.delete()
                         else:
                             try:
                                 if a not in park.park.allowed_activities_ids:
