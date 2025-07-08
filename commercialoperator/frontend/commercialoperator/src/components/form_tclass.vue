@@ -201,12 +201,17 @@
                     aria-labelledby="pills-activities-land-tab"
                 >
                     <ActivitiesLand
+                        v-if="
+                            proposal_parks &&
+                            Object.keys(proposal_parks).length > 0
+                        "
                         id="proposalStartActivitiesLand"
                         ref="activities_land"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
+                        v-on="$listeners"
                     ></ActivitiesLand>
                 </div>
                 <div
@@ -222,12 +227,17 @@
                     aria-labelledby="pills-activities-marine-tab"
                 >
                     <ActivitiesMarine
+                        v-if="
+                            proposal_parks &&
+                            Object.keys(proposal_parks).length > 0
+                        "
                         id="proposalStartActivitiesMarine"
                         ref="activities_marine"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
+                        v-on="$listeners"
                     ></ActivitiesMarine>
                 </div>
                 <div
