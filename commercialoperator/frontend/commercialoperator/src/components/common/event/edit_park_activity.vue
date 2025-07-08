@@ -28,6 +28,7 @@
                                         class="col-sm-9"
                                     >
                                         <select
+                                            id="events_park"
                                             ref="events_park"
                                             v-model="events_park_id"
                                             class="form-control"
@@ -87,6 +88,7 @@
                                             class="form-control input-sm"
                                             multiple
                                         >
+                                            <!-- NOTE: We want to show all event activities (including internal event activities) here not just the allowed activities (allowed_activities) -->
                                             <option
                                                 v-for="a in park_activities"
                                                 :key="a.id"
@@ -168,6 +170,7 @@ export default {
             issuingPark: false,
             parks_list: [],
             park_activities: [],
+            allowed_activities: [],
             selected_activities: [],
             validation_form: null,
             hasErrors: false,
@@ -211,6 +214,8 @@ export default {
         vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListeners();
+            // Note: fetching allowed activities here for the initially selected park
+            vm.fetchAllowedActivities();
         });
     },
     methods: {
@@ -318,6 +323,7 @@ export default {
                                 .val(vm.park.activities_assessor)
                                 .trigger('change');
                         }
+                        vm.fetchAllowedActivities();
                     },
                     (err) => {
                         console.log(err);
@@ -326,8 +332,10 @@ export default {
         },
         fetchAllowedActivities: function () {
             /* Searches for dictionary in list */
-            console.log('here');
             let vm = this;
+            console.log(
+                `Fetching allowed activities for park ID: ${vm.events_park_id}`
+            );
             for (var i = 0; i < vm.parks_list.length; i++) {
                 if (vm.parks_list[i].id == vm.events_park_id) {
                     vm.allowed_activities = vm.parks_list[i].allowed_activities;
@@ -433,21 +441,20 @@ export default {
         },
         eventListeners: function () {
             let vm = this;
-            $(vm.$refs.events_park)
-                .select2({
-                    theme: 'bootstrap-5',
-                    allowClear: true,
-                    placeholder: 'Select Park',
-                    dropdownParent: $('#events_park_modal'),
-                })
-                .on('select2:select', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.events_park_id = selected.val();
-                })
-                .on('select2:unselect', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.events_park_id = selected.val();
+
+            helpers.initialiseSelect2
+                .bind(this)(
+                    'events_park',
+                    'events_park_modal',
+                    'events_park_id',
+                    'Select Park',
+                    true
+                )
+                .on('select2:select', function () {
+                    console.log('Park selected');
+                    vm.fetchAllowedActivities();
                 });
+
             // Initialise select2 for Activity types
             $(vm.$refs.activities_select)
                 .select2({
