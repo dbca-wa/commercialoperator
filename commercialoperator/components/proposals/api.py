@@ -25,6 +25,7 @@ from commercialoperator.components.proposals.utils import (
     searchKeyWords,
 )
 from commercialoperator.components.proposals.models import (
+    ProposalParkActivity,
     search_reference,
     ProposalUserAction,
 )
@@ -2284,7 +2285,9 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             save_assessor_data(instance, request, self)
-            return redirect(reverse("external"))
+            serializer_class = self.internal_serializer_class()
+            serializer = serializer_class(instance, context={"request": request})
+            return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
