@@ -1660,9 +1660,10 @@ export default {
                         });
                     } else {
                         vm.refreshFromResponse(response);
-                        vm.refreshApplicationTypeKey(
-                            vm.proposal.application_type
-                        );
+                        // Note: commented this out for now, as it doesn't play well with existing logic of the component
+                        // vm.refreshApplicationTypeKey(
+                        //     vm.proposal.application_type
+                        // );
                         swal.fire({
                             title: 'Saved',
                             text: 'Your application has been saved',
@@ -2314,6 +2315,9 @@ export default {
          */
         refreshApplicationTypeKey: function (application_type) {
             let vm = this;
+            console.log(
+                'Refreshing keys for application type: ' + application_type
+            );
             if (application_type == vm.application_type_filming) {
                 vm.keyProposalFilming = uuid();
             } else if (application_type == vm.application_type_event) {
@@ -2327,21 +2331,24 @@ export default {
             }
         },
         proposalAddSelectedParkActivities: function () {
-            console.log(
-                'Tree selection: ADDING selected park activities from tree-select tables to proposal'
-            );
             let vm = this;
 
             if (typeof vm.$refs.tclass !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.tclass.$refs.activities_land) {
+                    console.log(
+                        'Tree selection: ADDING selected park activities from tclass activities_land to proposal'
+                    );
                     vm.proposal.selected_parks_activities =
                         vm.$refs.tclass.$refs.activities_land.selected_parks_activities;
                     vm.proposal.selected_trails_activities =
                         vm.$refs.tclass.$refs.activities_land.selected_trails_activities;
                 }
+                //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.tclass.$refs.activities_marine) {
-                    //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
+                    console.log(
+                        'Tree selection: ADDING marine parks activities from tclass activities_marine to proposal'
+                    );
                     vm.proposal.marine_parks_activities =
                         vm.$refs.tclass.$refs.activities_marine.marine_parks_activities;
                 }
@@ -2349,6 +2356,9 @@ export default {
             if (typeof vm.$refs.event !== 'undefined') {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.event.$refs.event_activities) {
+                    console.log(
+                        'Tree selection: ADDING selected park activities from event activities to proposal'
+                    );
                     vm.proposal.selected_trails_activities =
                         vm.$refs.event.$refs.event_activities.selected_trails_activities;
                 }
