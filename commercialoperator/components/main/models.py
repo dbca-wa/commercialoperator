@@ -197,7 +197,7 @@ class Activity(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.activity_category.name})"
 
 
 class Park(models.Model):
