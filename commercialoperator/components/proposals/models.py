@@ -7665,8 +7665,13 @@ class ProposalEventsParks(models.Model):
     #     return [a.name for a in self.activities.all()]
     @property
     def activities_assessor_names(self):
+        """Return the names of activities that are allowed in the park."""
         return (
-            [a.name for a in self.activities_assessor.all()]
+            [
+                a.name
+                for a in self.activities_assessor.all()
+                if a.id in self.park.allowed_activities_ids
+            ]
             if self.activities_assessor
             else None
         )
@@ -7831,8 +7836,13 @@ class ProposalEventsTrails(models.Model):
 
     @property
     def activities_assessor_names(self):
+        """Return the names of activities that are allowed in the park."""
         return (
-            [a.name for a in self.activities_assessor.all()]
+            [
+                a.name
+                for a in self.activities_assessor.all()
+                if a.id in self.park.allowed_activities_ids
+            ]
             if self.activities_assessor
             else None
         )
