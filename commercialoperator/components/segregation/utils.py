@@ -69,6 +69,37 @@ def retrieve_email_user(email_user_id):
         return email_user
 
 
+def retrieve_email_user_by_email(email):
+    """
+    Retrieves an EmailUser object by email address.
+    Args:
+        email (str): The email address of the user.
+    Returns:
+        EmailUser: The EmailUser object if found, None otherwise.
+    """
+    if not email:
+        logger.error("Needs an email to retrieve an EmailUser object")
+        return None
+
+    cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER_BY_EMAIL.format(email)
+    cache_timeout = settings.CACHE_TIMEOUT_10_SECONDS
+    email_user = cache.get(cache_key)
+
+    if email_user is None:
+        try:
+            email_user = EmailUser.objects.get(email=email)
+        except EmailUser.DoesNotExist:
+            logger.error(f"EmailUser with email {email} does not exist")
+            # Cache an empty EmailUser object to prevent repeated queries
+            cache.set(cache_key, EmailUser(), cache_timeout)
+            return None
+        else:
+            cache.set(cache_key, email_user, cache_timeout)
+            return email_user
+    else:
+        return email_user
+
+
 def retrieve_organisation(organisation_id):
     if not organisation_id:
         logger.error(
