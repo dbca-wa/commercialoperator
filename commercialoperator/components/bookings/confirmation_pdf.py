@@ -386,7 +386,7 @@ def _create_header(canvas, doc, draw_page_number=True):
     canvas.drawString(
         current_x + invoice_details_offset,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 3,
-        licence_number,
+        licence_number if licence_number else "",
     )
     canvas.drawRightString(
         current_x + 20,

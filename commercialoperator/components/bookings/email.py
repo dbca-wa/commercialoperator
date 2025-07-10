@@ -12,6 +12,7 @@ from commercialoperator.components.bookings.monthly_confirmation_pdf import (
     create_monthly_confirmation_pdf_bytes,
 )
 from commercialoperator.components.bookings.models import Booking
+from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class ApplicationInvoiceFilmingSendNotificationEmail(TemplateEmailBase):
         "commercialoperator/emails/bookings/filming/send_filming_fee_notification.html"
     )
     txt_template = (
-        "commercialoperator/emails/bookings/filmig/send_filming_fee_notification.txt"
+        "commercialoperator/emails/bookings/filming/send_filming_fee_notification.txt"
     )
 
 
@@ -152,7 +153,11 @@ def send_application_invoice_filming_email_notification(
     if is_test:
         return
 
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -180,7 +185,11 @@ def send_compliance_fee_invoice_events_email_notification(
     if is_test:
         return
 
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(
@@ -211,7 +220,11 @@ def send_application_fee_invoice_tclass_email_notification(
     if is_test:
         return
 
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -239,7 +252,11 @@ def send_application_fee_confirmation_tclass_email_notification(
     if is_test:
         return
 
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -336,7 +353,11 @@ def send_proposal_approval_email_notification(proposal, request):
         attachments=attachment,
         context=context,
     )
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     # _log_org_email(msg, proposal.applicant, proposal.submitter, sender=sender)
     if proposal.org_applicant:
@@ -414,12 +435,16 @@ def send_monthly_invoices_failed_tclass(booking_ids):
     """Internal failed notification email for Monthly Invoicing script"""
     email = MonthlyInvoicesFailedTClassEmail()
 
+    bookings = Booking.objects.filter(id__in=booking_ids)
+    bookings = bookings.expand_organisation_fields(
+        "proposal__org_applicant", ["organisation__organisation_name"]
+    )
     context = {
-        "bookings": Booking.objects.filter(id__in=booking_ids).values_list(
+        "bookings": bookings.values_list(
             "id",
             "admission_number",
             "proposal__lodgement_number",
-            "proposal__org_applicant__organisation__name",
+            "proposal_org_applicant_organisation_organisation_name",
         ),
     }
     msg = email.send(settings.NOTIFICATION_EMAIL, context=context)
@@ -517,7 +542,7 @@ def _log_proposal_email(email_message, proposal, sender=None):
         "subject": subject,
         "text": text,
         "proposal": proposal,
-        "customer": customer,
+        "customer_id": customer.id if customer else None,
         "staff": staff,
         "to": to,
         "fromm": fromm,
@@ -570,8 +595,8 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         "subject": subject,
         "text": text,
         "organisation": organisation,
-        "customer": customer,
-        "staff": staff,
+        "customer_id": customer.id if customer else None,
+        "staff_id": staff.id if staff else None,
         "to": to,
         "fromm": fromm,
         "cc": all_ccs,
