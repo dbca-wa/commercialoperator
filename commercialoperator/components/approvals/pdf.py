@@ -1709,14 +1709,14 @@ def _create_renewal(renewal_buffer, approval, proposal):
     address_paragraphs = []
     if address is not None:
         address_paragraphs = [
-            Paragraph(address.line1, styles["Left"]),
-            Paragraph(address.line2, styles["Left"]),
-            Paragraph(address.line3, styles["Left"]),
+            Paragraph(address.get("line1", ""), styles["Left"]),
+            Paragraph(address.get("line2", ""), styles["Left"]),
+            Paragraph(address.get("line3", ""), styles["Left"]),
             Paragraph(
-                "%s %s %s" % (address.locality, address.state, address.postcode),
+                "%s %s %s" % (address.get("locality", ""), address.get("state", ""), address.get("postcode", "")),
                 styles["Left"],
             ),
-            Paragraph(address.country.name, styles["Left"]),
+            Paragraph(address.get("country", ""), styles["Left"]),
         ]
     applicant_name = approval.applicant or ""
     delegation.append(
