@@ -1095,6 +1095,13 @@ export default {
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
                 },
+                columnDefs: [
+                    { responsivePriority: 1, targets: 0 },
+                    {
+                        responsivePriority: 2,
+                        targets: -1,
+                    },
+                ],
                 responsive: true,
                 ajax: {
                     url: helpers.add_endpoint_json(
@@ -1145,6 +1152,13 @@ export default {
                 language: {
                     processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
                 },
+                columnDefs: [
+                    { responsivePriority: 1, targets: 0 },
+                    {
+                        responsivePriority: 2,
+                        targets: -1,
+                    },
+                ],
                 responsive: true,
                 ajax: {
                     url: helpers.add_endpoint_json(

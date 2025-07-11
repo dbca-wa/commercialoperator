@@ -619,6 +619,11 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
 
+        # NOTE: Throwing an error here, but the code below is working
+        raise NotImplementedError(
+            "Updating organisation details is currently supported through the manage organisation option"
+        )
+
         response_ledger = update_organisation_obj(request.data)
         response_ledger_status = response_ledger.get("status", None)
         if not response_ledger_status == status.HTTP_200_OK:
@@ -673,7 +678,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
     @basic_exception_handler
     def update_address(self, request, *args, **kwargs):
         raise NotImplementedError(
-            "Updating addresses needs to be implemented in ledger api client"
+            "Updating addresses is currently supported through the manage organisation option"
         )
         instance = self.get_object()
         request.data["organisation_id"] = instance.organisation_id

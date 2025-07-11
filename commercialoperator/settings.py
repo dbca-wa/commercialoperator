@@ -449,6 +449,7 @@ CACHE_TIMEOUT_NEVER = None
 # Cache keys
 CACHE_KEY_LEDGER_ORGANISATION = "ledger-organisation-{}"
 CACHE_KEY_LEDGER_EMAIL_USER = "ledger-emailuser-{}"
+CACHE_KEY_LEDGER_EMAIL_USER_BY_EMAIL = "ledger-emailuser-by-email-{}"
 CACHE_KEY_LEDGER_USER_INFO = "ledger-user-info-{}"
 CACHE_KEY_COUNTRY_LIST = "country-list"
 CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES = "amendment-request-reason-choices"

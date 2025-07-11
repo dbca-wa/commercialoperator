@@ -5,12 +5,18 @@
                 <li class="nav-item">
                     <a
                         id="pills-applicant-tab"
-                        class="nav-link active"
+                        class="nav-link"
+                        :class="{
+                            active: isSelectedTabById('pills-applicant-tab'),
+                        }"
                         data-bs-toggle="pill"
                         href="#pills-applicant"
                         role="tab"
                         aria-controls="pills-applicant"
-                        aria-selected="true"
+                        :aria-selected="
+                            isSelectedTabById('pills-applicant-tab')
+                        "
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         1. Applicant
                     </a>
@@ -19,11 +25,19 @@
                     <a
                         id="pills-activities-land-tab"
                         class="nav-link"
+                        :class="{
+                            active: isSelectedTabById(
+                                'pills-activities-land-tab'
+                            ),
+                        }"
                         data-bs-toggle="pill"
                         href="#pills-activities-land"
                         role="tab"
                         aria-controls="pills-activities-land"
-                        aria-selected="false"
+                        :aria-selected="
+                            isSelectedTabById('pills-activities-land-tab')
+                        "
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         2. Activities (land)
                     </a>
@@ -32,11 +46,19 @@
                     <a
                         id="pills-activities-marine-tab"
                         class="nav-link"
+                        :class="{
+                            active: isSelectedTabById(
+                                'pills-activities-marine-tab'
+                            ),
+                        }"
                         data-bs-toggle="pill"
                         href="#pills-activities-marine"
                         role="tab"
                         aria-controls="pills-activities-marine"
-                        aria-selected="false"
+                        :aria-selected="
+                            isSelectedTabById('pills-activities-marine-tab')
+                        "
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         3. Activities (marine)
                     </a>
@@ -45,11 +67,19 @@
                     <a
                         id="pills-other-details-tab"
                         class="nav-link"
+                        :class="{
+                            active: isSelectedTabById(
+                                'pills-other-details-tab'
+                            ),
+                        }"
                         data-bs-toggle="pill"
                         href="#pills-other-details"
                         role="tab"
                         aria-controls="pills-other-details"
-                        aria-selected="false"
+                        :aria-selected="
+                            isSelectedTabById('pills-other-details-tab')
+                        "
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         4. Other Details
                     </a>
@@ -58,11 +88,19 @@
                     <a
                         id="pills-online-training-tab"
                         class="nav-link"
+                        :class="{
+                            active: isSelectedTabById(
+                                'pills-online-training-tab'
+                            ),
+                        }"
                         data-bs-toggle="pill"
                         href="#pills-online-training"
                         role="tab"
                         aria-controls="pills-online-training"
-                        aria-selected="false"
+                        :aria-selected="
+                            isSelectedTabById('pills-online-training-tab')
+                        "
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         5. Questionnaire
                     </a>
@@ -71,11 +109,15 @@
                     <a
                         id="pills-payment-tab"
                         class="nav-link disabled"
+                        :class="{
+                            active: isSelectedTabById('pills-payment-tab'),
+                        }"
                         data-bs-toggle="pill"
                         href=""
                         role="tab"
                         aria-controls="pills-payment"
-                        aria-selected="false"
+                        :aria-selected="isSelectedTabById('pills-payment-tab')"
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         6. Payment
                     </a>
@@ -84,11 +126,15 @@
                     <a
                         id="pills-confirm-tab"
                         class="nav-link disabled"
+                        :class="{
+                            active: isSelectedTabById('pills-confirm-tab'),
+                        }"
                         data-bs-toggle="pill"
                         href=""
                         role="tab"
                         aria-controls="pills-confirm"
-                        aria-selected="false"
+                        :aria-selected="isSelectedTabById('pills-confirm-tab')"
+                        @click.prevent="tabClicked($event.target.id)"
                     >
                         7. Confirmation
                     </a>
@@ -97,7 +143,11 @@
             <div id="pills-tabContent" class="tab-content">
                 <div
                     id="pills-applicant"
-                    class="tab-pane fade active show"
+                    class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-applicant-tab'),
+                        active: isSelectedTabById('pills-applicant-tab'),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-applicant-tab"
                 >
@@ -143,36 +193,60 @@
                 <div
                     id="pills-activities-land"
                     class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-activities-land-tab'),
+                        active: isSelectedTabById('pills-activities-land-tab'),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-activities-land-tab"
                 >
                     <ActivitiesLand
+                        v-if="
+                            proposal_parks &&
+                            Object.keys(proposal_parks).length > 0
+                        "
                         id="proposalStartActivitiesLand"
                         ref="activities_land"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
+                        v-on="$listeners"
                     ></ActivitiesLand>
                 </div>
                 <div
                     id="pills-activities-marine"
                     class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-activities-marine-tab'),
+                        active: isSelectedTabById(
+                            'pills-activities-marine-tab'
+                        ),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-activities-marine-tab"
                 >
                     <ActivitiesMarine
+                        v-if="
+                            proposal_parks &&
+                            Object.keys(proposal_parks).length > 0
+                        "
                         id="proposalStartActivitiesMarine"
                         ref="activities_marine"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
+                        v-on="$listeners"
                     ></ActivitiesMarine>
                 </div>
                 <div
                     id="pills-other-details"
                     class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-other-details-tab'),
+                        active: isSelectedTabById('pills-other-details-tab'),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-other-details-tab"
                 >
@@ -186,6 +260,10 @@
                 <div
                     id="pills-online-training"
                     class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-online-training-tab'),
+                        active: isSelectedTabById('pills-online-training-tab'),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-online-training-tab"
                 >
@@ -197,6 +275,10 @@
                 <div
                     id="pills-payment"
                     class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-payment-tab'),
+                        active: isSelectedTabById('pills-payment-tab'),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-payment-tab"
                 >
@@ -205,6 +287,10 @@
                 <div
                     id="pills-confirm"
                     class="tab-pane fade"
+                    :class="{
+                        show: isSelectedTabById('pills-confirm-tab'),
+                        active: isSelectedTabById('pills-confirm-tab'),
+                    }"
                     role="tabpanel"
                     aria-labelledby="pills-confirm-tab"
                 >
@@ -282,10 +368,24 @@ export default {
             type: Object,
             default: null,
         },
+        // Session storage values
+        sessionStorageActiveTabCache: {
+            type: String,
+            required: false,
+            default: function () {
+                return (
+                    sessionStorage.getItem('sessionStorageActiveTabCache') ||
+                    'pills-applicant-tab'
+                );
+            },
+        },
     },
     data: function () {
         return {
             values: null,
+            sessionStorageActiveTab:
+                sessionStorage.getItem('sessionStorageActiveTabCache') ||
+                'pills-applicant-tab',
         };
     },
     computed: {
@@ -347,6 +447,24 @@ export default {
                         .responsive.recalc();
                 }
             );
+        },
+        /**
+         * This function is called when a tab is clicked.
+         * It updates the sessionStorageActiveTab and stores it in sessionStorage.
+         * @param {string} tab - The ID of the clicked tab.
+         */
+        tabClicked: function (tab) {
+            console.log('Tab clicked:', tab);
+            this.sessionStorageActiveTab = tab;
+            sessionStorage.setItem('sessionStorageActiveTabCache', tab);
+        },
+        /**
+         * This function checks if the given tabId is the currently selected tab.
+         * @param {string} tabId - The ID of the tab to check.
+         * @returns {boolean} - Returns true if the tabId matches the sessionStorageActiveTab, otherwise false.
+         */
+        isSelectedTabById: function (tabId) {
+            return this.sessionStorageActiveTab === tabId;
         },
     },
 };

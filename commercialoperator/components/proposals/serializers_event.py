@@ -110,11 +110,7 @@ class ProposalEventsParksSerializer(serializers.ModelSerializer):
         )
 
     def get_activities_assessor_names(self, obj):
-        return (
-            [a.name for a in obj.activities_assessor.all()]
-            if obj.activities_assessor
-            else None
-        )
+        return obj.activities_assessor_names
 
 
 class SaveProposalEventsParksSerializer(serializers.ModelSerializer):
@@ -175,11 +171,7 @@ class ProposalEventsTrailsSerializer(serializers.ModelSerializer):
         )
 
     def get_activities_assessor_names(self, obj):
-        return (
-            [a.name for a in obj.activities_assessor.all()]
-            if obj.activities_assessor
-            else None
-        )
+        return obj.activities_assessor_names
 
 
 class SaveProposalEventsTrailsSerializer(serializers.ModelSerializer):

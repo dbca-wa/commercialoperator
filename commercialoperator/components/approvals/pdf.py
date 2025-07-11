@@ -618,10 +618,15 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
         )
     )
 
-    if (
-        approval.current_proposal.org_applicant
-        and approval.current_proposal.org_applicant.organisation.trading_name
-    ):
+    organisation = approval.current_proposal.org_applicant
+    organisation_response = get_organisation(organisation.organisation_id)
+    organisation_trading_name = (
+        organisation
+        and organisation_response.get("status", None) == status.HTTP_200_OK
+        and organisation_response.get("data", {}).get("organisation_trading_name")
+    )
+
+    if organisation_trading_name:
         delegation.append(Spacer(1, SECTION_BUFFER_HEIGHT))
         delegation.append(
             Table(
@@ -631,7 +636,7 @@ def _create_approval_event(approval_buffer, approval, proposal, copied_to_permit
                         [
                             Paragraph(
                                 _format_name(
-                                    approval.current_proposal.org_applicant.organisation.trading_name
+                                    organisation_trading_name
                                 ),
                                 styles["Left"],
                             )
@@ -1704,14 +1709,14 @@ def _create_renewal(renewal_buffer, approval, proposal):
     address_paragraphs = []
     if address is not None:
         address_paragraphs = [
-            Paragraph(address.line1, styles["Left"]),
-            Paragraph(address.line2, styles["Left"]),
-            Paragraph(address.line3, styles["Left"]),
+            Paragraph(address.get("line1", ""), styles["Left"]),
+            Paragraph(address.get("line2", ""), styles["Left"]),
+            Paragraph(address.get("line3", ""), styles["Left"]),
             Paragraph(
-                "%s %s %s" % (address.locality, address.state, address.postcode),
+                "%s %s %s" % (address.get("locality", ""), address.get("state", ""), address.get("postcode", "")),
                 styles["Left"],
             ),
-            Paragraph(address.country.name, styles["Left"]),
+            Paragraph(address.get("country", ""), styles["Left"]),
         ]
     applicant_name = approval.applicant or ""
     delegation.append(

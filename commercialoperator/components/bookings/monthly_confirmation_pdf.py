@@ -22,16 +22,26 @@ from django.conf import settings
 from commercialoperator.components.main.utils import to_local_tz
 
 DPAW_HEADER_LOGO = os.path.join(
-    settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
+    settings.BASE_DIR,
+    "commercialoperator",
+    "static",
+    "commercialoperator",
+    "img",
+    "dbca_logo.jpg",
 )
 DPAW_HEADER_LOGO_SM = os.path.join(
-    settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo_small.png"
+    settings.BASE_DIR,
+    "commercialoperator",
+    "static",
+    "commercialoperator",
+    "img",
+    "dbca_logo_small.png",
 )
 BPAY_LOGO = os.path.join(
-    settings.PROJECT_DIR,
-    "payments",
+    settings.BASE_DIR,
+    "commercialoperator",
     "static",
-    "payments",
+    "commercialoperator",
     "img",
     "BPAY_2012_PORT_BLUE.png",
 )
@@ -385,9 +395,9 @@ def _create_confirmation(confirmation_buffer, booking):
     #        DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'mooring', 'static', 'mooring', 'img','logo-rottnest-island-sm.png')
     #    else:
     #        DPAW_HEADER_LOGO = os.path.join(settings.BASE_DIR, 'ledger', 'payments','static', 'payments', 'img','dbca_logo.jpg')
-    DPAW_HEADER_LOGO = os.path.join(
-        settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
-    )
+    # DPAW_HEADER_LOGO = os.path.join(
+    #     settings.PROJECT_DIR, "payments", "static", "payments", "img", "dbca_logo.jpg"
+    # )
 
     every_page_frame = Frame(
         PAGE_MARGIN,

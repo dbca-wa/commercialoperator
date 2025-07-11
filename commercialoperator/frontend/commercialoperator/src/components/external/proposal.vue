@@ -400,9 +400,9 @@ export default {
             }
         },
 
-        set_formData: function () {
+        set_formData: function (validate_form = false) {
             let vm = this;
-            if (!helpers.validateForm(vm.form)) {
+            if (validate_form && !helpers.validateForm(vm.form)) {
                 throw new Error('Please fix the form errors before saving');
             }
             let formData = new FormData(vm.form);
@@ -422,7 +422,7 @@ export default {
 
             return formData;
         },
-        save: function () {
+        save: async function () {
             let vm = this;
             vm.savingProposal = true;
             vm.save_applicant_data();
@@ -440,36 +440,51 @@ export default {
                 return;
             }
 
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    swal.fire({
-                        title: 'Saved',
-                        text: 'Your application has been saved',
-                        icon: 'success',
-                    });
-                    vm.savingProposal = false;
-                },
-                (err) => {
-                    var errorText = helpers.apiVueResourceError(err);
-                    swal.fire({
-                        title: 'Save Error',
-                        text: errorText,
-                        icon: 'error',
-                    });
-                    vm.savingProposal = false;
-                }
-            );
+            const result = await vm.$http
+                .post(vm.proposal_form_url, formData)
+                .then(
+                    () => {
+                        vm.savingProposal = false;
+                        return swal.fire({
+                            title: 'Saved',
+                            text: 'Your application has been saved',
+                            icon: 'success',
+                        });
+                    },
+                    (err) => {
+                        var errorText = helpers.apiVueResourceError(err);
+                        vm.savingProposal = false;
+                        return swal.fire({
+                            title: 'Save Error',
+                            text: errorText,
+                            icon: 'error',
+                        });
+                    }
+                );
+            return result;
         },
-        save_exit: function (e) {
+        save_exit: async function (e) {
             let vm = this;
             this.submitting = true;
             this.saveExitProposal = true;
-            this.save(e);
-            this.saveExitProposal = false;
-            // redirect back to dashboard
-            vm.$router.push({
-                name: 'external-proposals-dash',
-            });
+            await this.save(e)
+                .then(
+                    () => {
+                        // After saving, redirect to the dashboard
+                        vm.$router.push({
+                            name: 'external-proposals-dash',
+                        });
+                    },
+                    (err) => {
+                        console.log(err);
+                        vm.submitting = false;
+                        vm.saveExitProposal = false;
+                    }
+                )
+                .finally(() => {
+                    // Reset the saveExitProposal flag
+                    vm.saveExitProposal = false;
+                });
         },
 
         save_wo_confirm: function () {
@@ -495,7 +510,8 @@ export default {
             vm.save_applicant_data();
             let formData;
             try {
-                formData = vm.set_formData();
+                // Validate the form before saving
+                formData = vm.set_formData(true);
             } catch (e) {
                 vm.savingProposal = false;
                 swal.fire({
@@ -1192,7 +1208,7 @@ export default {
             let vm = this;
             let formData;
             try {
-                formData = vm.set_formData();
+                formData = vm.set_formData(true);
             } catch (e) {
                 vm.savingProposal = false;
                 swal.fire({
