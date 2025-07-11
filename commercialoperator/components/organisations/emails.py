@@ -5,6 +5,7 @@ from django.utils.encoding import smart_str as smart_text
 from django.conf import settings
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
+from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +136,7 @@ class OrganisationRequestLinkNotificationEmail(TemplateEmailBase):
     )
 
 
+# NOTE: Not used in the codebase
 def send_organisation_id_upload_email_notification(
     emails, organisation, org_contact, request
 ):
@@ -181,7 +183,11 @@ def send_organisation_reinstate_email_notification(
             all_ccs = [cc_list]
 
     msg = email.send(linked_user.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, linked_user, sender=sender)
 
 
@@ -201,7 +207,11 @@ def send_organisation_contact_suspend_email_notification(
         if cc_list:
             all_ccs = [cc_list]
     msg = email.send(linked_user.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, linked_user, sender=sender)
 
 
@@ -221,7 +231,11 @@ def send_organisation_contact_decline_email_notification(
         if cc_list:
             all_ccs = [cc_list]
     msg = email.send(user_contact.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, user_contact, sender=sender)
 
 
@@ -241,7 +255,11 @@ def send_organisation_contact_user_email_notification(
         if cc_list:
             all_ccs = [cc_list]
     msg = email.send(linked_user.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, linked_user, sender=sender)
 
 
@@ -261,7 +279,11 @@ def send_organisation_contact_adminuser_email_notification(
         if cc_list:
             all_ccs = [cc_list]
     msg = email.send(linked_user.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, linked_user, sender=sender)
 
 
@@ -282,7 +304,11 @@ def send_organisation_link_email_notification(
             all_ccs = [cc_list]
 
     msg = email.send(linked_user.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, linked_user, sender=sender)
 
 
@@ -306,7 +332,12 @@ def send_organisation_request_email_notification(org_request, request, contact):
         "url": url,
     }
     msg = email.send(contact, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
+    # NOTE: The request object should be an OrganisationRequest instance, hence why it is called org_request
     _log_org_request_email(msg, org_request, sender=sender)
 
 
@@ -327,7 +358,11 @@ def send_organisation_unlink_email_notification(
             all_ccs = [cc_list]
 
     msg = email.send(unlinked_user.email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_email(msg, organisation, unlinked_user, sender=sender)
 
 
@@ -339,7 +374,11 @@ def send_organisation_request_accept_email_notification(
     context = {"request": org_request}
 
     msg = email.send(org_request.requester.email, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_request_email(msg, org_request, sender=sender)
     _log_org_email(msg, organisation, org_request.requester, sender=sender)
 
@@ -364,7 +403,11 @@ def send_org_access_group_request_accept_email_notification(
     }
 
     msg = email.send(recipient_list, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_request_email(msg, org_request, sender=sender)
 
     # commenting out because Organisation does not yet exist - only OrganisationRequest exists
@@ -377,7 +420,11 @@ def send_organisation_request_decline_email_notification(org_request, request):
     context = {"request": org_request}
 
     msg = email.send(org_request.requester.email, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_org_request_email(msg, org_request, sender=sender)
     # _log_org_email(msg, organisation, org_request.requester, sender=sender)
 
@@ -398,7 +445,11 @@ def send_organisation_address_updated_email_notification(
         user_role="organisation_admin", organisation=wc_organisation
     ):
         msg = email.send(org_contact.email, context=context)
-        sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+        sender = (
+            request.user
+            if request
+            else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+        )
 
 
 def _log_org_request_email(email_message, request, sender=None):
@@ -418,7 +469,9 @@ def _log_org_request_email(email_message, request, sender=None):
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
         # the to email is normally a list
         if isinstance(email_message.to, list):
-            to = ",".join(email_message.to)
+            to = ",".join(
+                [u.email if hasattr(u, "email") else u for u in email_message.to]
+            )
         else:
             to = smart_text(email_message.to)
         # we log the cc and bcc in the same cc field of the log entry as a ',' comma separated string
@@ -427,7 +480,7 @@ def _log_org_request_email(email_message, request, sender=None):
             all_ccs += list(email_message.cc)
         if email_message.bcc:
             all_ccs += list(email_message.bcc)
-        all_ccs = ",".join(all_ccs)
+        all_ccs = ",".join([u.email if hasattr(u, "email") else u for u in all_ccs])
 
     else:
         text = smart_text(email_message)
@@ -471,16 +524,18 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
         # the to email is normally a list
         if isinstance(email_message.to, list):
-            to = ",".join(email_message.to)
+            to = ",".join(
+                [u.email if hasattr(u, "email") else u for u in email_message.to]
+            )
         else:
-            to = smart_text(email_message.to)
+            to = smart_text(email_message.to.email)
         # we log the cc and bcc in the same cc field of the log entry as a ',' comma separated string
         all_ccs = []
         if email_message.cc:
             all_ccs += list(email_message.cc)
         if email_message.bcc:
             all_ccs += list(email_message.bcc)
-        all_ccs = ",".join(all_ccs)
+        all_ccs = ",".join([u.email if hasattr(u, "email") else u for u in all_ccs])
 
     else:
         text = smart_text(email_message)
