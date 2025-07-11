@@ -1,7 +1,6 @@
 import logging
 
 from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.forms import ValidationError
 from django.utils.encoding import smart_str as smart_text
 from django.urls import reverse
 from django.conf import settings
@@ -13,6 +12,8 @@ from commercialoperator.components.bookings.awaiting_payment_invoice_pdf import 
     create_awaiting_payment_invoice_pdf_bytes,
 )
 from datetime import datetime
+
+from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
 
 logger = logging.getLogger(__name__)
@@ -243,7 +244,11 @@ def send_qaofficer_email_notification(proposal, recipients, request, reminder=Fa
     }
 
     msg = email.send(recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -274,7 +279,11 @@ def send_qaofficer_complete_email_notification(
     }
 
     msg = email.send(recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -307,7 +316,11 @@ def send_referral_email_notification(referral, recipients, request, reminder=Fal
     }
 
     msg = email.send(recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_referral_email(msg, referral, sender=sender)
     if referral.proposal.org_applicant:
         _log_org_email(
@@ -342,7 +355,11 @@ def send_referral_complete_email_notification(referral, request):
         attachments.append(attachment)
 
     msg = email.send(referral.sent_by.email, attachments=attachments, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_referral_email(msg, referral, sender=sender)
     if referral.proposal.org_applicant:
         _log_org_email(
@@ -382,7 +399,11 @@ def send_amendment_email_notification(amendment_request, request, proposal):
             all_ccs = [cc_list]
 
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -404,7 +425,11 @@ def send_submit_email_notification(request, proposal):
     context = {"proposal": proposal, "url": url}
 
     msg = email.send(proposal.assessor_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -435,7 +460,11 @@ def send_external_submit_email_notification(request, proposal):
             all_ccs = [cc_list]
 
     msg = email.send(proposal.proposal_submitter_email, cc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -453,7 +482,11 @@ def send_approver_decline_email_notification(reason, request, proposal):
     context = {"proposal": proposal, "reason": reason, "url": url}
 
     msg = email.send(proposal.approver_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -475,7 +508,11 @@ def send_approver_approve_email_notification(request, proposal):
     }
 
     msg = email.send(proposal.approver_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -497,7 +534,11 @@ def send_proposal_decline_email_notification(proposal, request, proposal_decline
         all_ccs.append(proposal.org_applicant.email)
 
     msg = email.send(proposal.proposal_submitter_email, bcc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -519,7 +560,11 @@ def send_proposal_approver_sendback_email_notification(request, proposal):
     context = {"proposal": proposal, "url": url, "approver_comment": approver_comment}
 
     msg = email.send(proposal.assessor_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -577,7 +622,11 @@ def send_proposal_approval_email_notification(proposal, request):
         attachments=attachments,
         context=context,
     )
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
 
     email_entry = _log_proposal_email(msg, proposal, sender=sender)
     path_to_file = "{}/proposals/{}/approvals/{}".format(
@@ -621,7 +670,11 @@ def send_proposal_awaiting_payment_approval_email_notification(proposal, request
         attachments=[attachment],
         context=context,
     )
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
 
     filename_appended = "{}_{}.{}".format(
         "confirmation", datetime.now().strftime("%d%b%Y"), "pdf"
@@ -663,7 +716,11 @@ def send_district_proposal_submit_email_notification(district_proposal, request)
     }
 
     msg = email.send(district_proposal.assessor_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -700,7 +757,11 @@ def send_district_proposal_approver_sendback_email_notification(
     }
 
     msg = email.send(district_proposal.assessor_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -731,7 +792,11 @@ def send_district_approver_decline_email_notification(
     }
 
     msg = email.send(district_proposal.approver_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -760,7 +825,11 @@ def send_district_approver_approve_email_notification(request, district_proposal
         "url": url,
     }
     msg = email.send(district_proposal.approver_recipients, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -783,7 +852,11 @@ def send_district_proposal_decline_email_notification(
         all_ccs.append(proposal.org_applicant.email)
 
     msg = email.send(proposal.proposal_submitter_email, bcc=all_ccs, context=context)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -845,7 +918,11 @@ def send_district_proposal_approval_email_notification(
         context=context,
         attachments=attachments,
     )
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
 
     if proposal.org_applicant:
@@ -902,7 +979,11 @@ def send_district_proposal_approval_email_notification_orig(
         context=context,
     )
     # print(msg)
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_proposal_email(msg, proposal, sender=sender)
     if proposal.org_applicant:
         _log_org_email(msg, proposal.org_applicant, proposal.submitter, sender=sender)
@@ -925,7 +1006,9 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
         # the to email is normally a list
         if isinstance(email_message.to, list):
-            to = ",".join(email_message.to)
+            to = ",".join(
+                [u.email if hasattr(u, "email") else u for u in email_message.to]
+            )
         else:
             to = smart_text(email_message.to)
         # we log the cc and bcc in the same cc field of the log entry as a ',' comma separated string
@@ -934,7 +1017,7 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
             all_ccs += list(email_message.cc)
         if email_message.bcc:
             all_ccs += list(email_message.bcc)
-        all_ccs = ",".join(all_ccs)
+        all_ccs = ",".join([u.email if hasattr(u, "email") else u for u in all_ccs])
 
     else:
         text = smart_text(email_message)
@@ -981,7 +1064,9 @@ def _log_proposal_email(
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
         # the to email is normally a list
         if isinstance(email_message.to, list):
-            to = ",".join(email_message.to)
+            to = ",".join(
+                [u.email if hasattr(u, "email") else u for u in email_message.to]
+            )
         else:
             to = smart_text(email_message.to)
         # we log the cc and bcc in the same cc field of the log entry as a ',' comma separated string
@@ -990,7 +1075,7 @@ def _log_proposal_email(
             all_ccs += list(email_message.cc)
         if email_message.bcc:
             all_ccs += list(email_message.bcc)
-        all_ccs = ",".join(all_ccs)
+        all_ccs = ",".join([u.email if hasattr(u, "email") else u for u in all_ccs])
 
     else:
         text = smart_text(email_message)
@@ -1042,7 +1127,9 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         fromm = smart_text(sender) if sender else smart_text(email_message.from_email)
         # the to email is normally a list
         if isinstance(email_message.to, list):
-            to = ",".join(email_message.to)
+            to = ",".join(
+                [u.email if hasattr(u, "email") else u for u in email_message.to]
+            )
         else:
             to = smart_text(email_message.to)
         # we log the cc and bcc in the same cc field of the log entry as a ',' comma separated string
@@ -1051,7 +1138,7 @@ def _log_org_email(email_message, organisation, customer, sender=None):
             all_ccs += list(email_message.cc)
         if email_message.bcc:
             all_ccs += list(email_message.bcc)
-        all_ccs = ",".join(all_ccs)
+        all_ccs = ",".join([u.email if hasattr(u, "email") else u for u in all_ccs])
 
     else:
         text = smart_text(email_message)
