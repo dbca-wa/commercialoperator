@@ -1034,6 +1034,7 @@ export default {
 
             vm.proposal.selected_trails_activities=[];
             vm.proposal.selected_parks_activities=[];
+            vm.selected_parks_activities=[];
             //vm.proposal.marine_parks_activities=[];
             //vm.fetchRequiredDocumentList();
 
@@ -1087,14 +1088,14 @@ export default {
               activity_list.push({'key' : vm.selected_parks_activities[i].activities});
               access_list.push({'key' : vm.selected_parks_activities[i].access});
             }
-
+            vm.selected_parks=park_list
             //vm.selected_activities = vm.proposal.land_activities
             //vm.selected_access=vm.proposal.land_access
-            //vm.selected_activities = vm.find_recurring(activity_list)
-            //vm.selected_access=vm.find_recurring(access_list)
-            vm.selected_activities = vm.find_repeated(activity_list)
-            vm.selected_access=vm.find_repeated(access_list)
-            vm.selected_parks=park_list
+            vm.selected_activities = vm.find_recurring(activity_list)
+            vm.selected_access=vm.find_recurring(access_list)
+            // vm.selected_activities = vm.find_repeated(activity_list)
+            // vm.selected_access=vm.find_repeated(access_list)
+            // vm.selected_parks=park_list
           }
             this.$nextTick(() => {
               let vm=this;
