@@ -745,8 +745,8 @@ from '@/utils/hooks'
             }
 
           vm.selected_zone_ids=zone_ids
-          //vm.selected_activities = vm.find_recurring(all_activities)
-          vm.selected_activities = vm.find_repeated(all_activities)
+          vm.selected_activities = vm.find_recurring(all_activities)
+          //vm.selected_activities = vm.find_repeated(all_activities)
         },
 
         eventListeners: function(){
