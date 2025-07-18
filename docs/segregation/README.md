@@ -1,84 +1,84 @@
 # Database setup steps for COLS segregation work
 
-## Download ledger prod dump without reversion tables from https://ledger-daily-db-oim01.dbca.wa.gov.au/
+1. Download ledger prod dump without reversion tables from https://ledger-daily-db-oim01.dbca.wa.gov.au/
 
-E.g.: ledger_prod_no_reversion.sql
+         E.g.: ledger_prod_no_reversion.sql
 
-## Import dump into "helper" database "ledger_prod"
+2. Import dump into "helper" database "ledger_prod"
 
-`psql ledger_prod < ledger_prod_no_reversion.sql`
+         `psql ledger_prod < ledger_prod_no_reversion.sql`
 
-## Export only tables relevant to the cols app into a file, e.g. ledger_prod.sql
+3. Export only tables relevant to the cols app into a file, e.g. ledger_prod.sql
 
-`pg_dump -U your_username -h your_hostname -W -t "auth_*" -t "commercialoperator_*" -t "django_*" ledger_prod > ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql`
-or (chose one)
-`pg_dump --column-inserts -t "auth_*" -t "commercialoperator_*" -t "django_*" -f ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql ledger_prod`
+         `pg_dump -U your_username -h your_hostname -W -t "auth_*" -t "commercialoperator_*" -t "django_*" ledger_prod > ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql`
+         or (chose one)
+         `pg_dump --column-inserts -t "auth_*" -t "commercialoperator_*" -t "django_*" -f ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql ledger_prod`
 
-`auth_`, `django_`, and `commercialoperator_` are the tables I went with. `auth_` might not be needed, but I wasn't sure at that time.
+         `auth_`, `django_`, and `commercialoperator_` are the tables I went with. `auth_` might not be needed, but I wasn't sure at that time.
 
-## Postgres commands
+4. Postgres commands
 
-### Connect to pg (psql) and create a segregation database, e.g. commercialoperator_segregation
+         1. Connect to pg (psql) and create a segregation database, e.g. commercialoperator_segregation
 
-`CREATE DATABASE commercialoperator_segregation;`
+                  `CREATE DATABASE commercialoperator_segregation;`
 
-### Connect to the newly created database and activate the Postgis extension
+         2 Connect to the newly created database and activate the Postgis extension
 
-`CREATE EXTENSION postgis;`
+                  `CREATE EXTENSION postgis;`
 
-## Import the exported tables into the new ledger-less cols database from command line
+5. Import the exported tables into the new ledger-less cols database from command line
 
-`psql commercialoperator_segregation < ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql`
+         `psql commercialoperator_segregation < ../webdav/data/sql/ledger_prod_reduced/ledger_prod.sql`
 
-That is the database to work with from now on.
+         That is the database to work with from now on.
 
-## Change what DATABASE_URL points to in env file
+6. Change what DATABASE_URL points to in env file
 
-`DATABASE_URL=postgis://commercialoperator_dev:commercialoperator_dev@172.17.0.1:15432/commercialoperator_segregation`
+         `DATABASE_URL=postgis://commercialoperator_dev:commercialoperator_dev@172.17.0.1:15432/commercialoperator_segregation`
 
-## Possibly have to change tables ownership from e.g. postgres to database user, e.g. commercialoperator_dev, from command line
+7. Possibly have to change tables ownership from e.g. postgres to database user, e.g. commercialoperator_dev, from command line
 
-`for table in ``psql -tc "select tablename from pg_tables where schemaname = 'public';" commercialoperator_segregation`` ; do  psql -c "alter table public.${table} owner to commercialoperator_dev" commercialoperator_segregation ; done`
+         ```for table in `psql -tc "select tablename from pg_tables where schemaname = 'public';" commercialoperator_segregation` ; do  psql -c "alter table public.${table} owner to commercialoperator_dev" commercialoperator_segregation ; done```
 
 
-## Patch commercialoperator, admin and reversion migration files
+8. Patch commercialoperator, admin and reversion migration files
 
-### patch_admin_0001_initial.patch
+         1. patch_admin_0001_initial.patch
 
-`patch .venv/lib/python3.12/site-packages/django/contrib/admin/migrations/0001_initial.py patch_admin_0001_initial.patch`
+                  `patch .venv/lib/python3.12/site-packages/django/contrib/admin/migrations/0001_initial.py patch_admin_0001_initial.patch`
 
-### patch_reversion_0001.patch
+         2. patch_reversion_0001.patch
 
-`patch .venv/lib/python3.12/site-packages/reversion/migrations/0001_squashed_0004_auto_20160611_1202.py patch_reversion_0001.patch`
+                  `patch .venv/lib/python3.12/site-packages/reversion/migrations/0001_squashed_0004_auto_20160611_1202.py patch_reversion_0001.patch`
 
-### Patch commercialoperator migration files
+         3. Patch commercialoperator migration files
 
-`git apply patch_migrations.patch`
+                  `git apply patch_migrations.patch`
 
-## Run migrations in order
+9. Run migrations in order
 
-Some of these migrations might need to be faked
+         Some of these migrations might need to be faked
 
-```
-./manage.py migrate auth
-./manage.py migrate [--fake] taggit
-./manage.py migrate ledger_api_client
-./manage.py migrate admin
-./manage.py migrate [--fake] django_cron
-./manage.py migrate [--fake] reversion
-[./manage.py migrate sites]
-[./manage.py migrate sessions]
-```
+         ```
+         ./manage.py migrate auth
+         ./manage.py migrate [--fake] taggit
+         ./manage.py migrate ledger_api_client
+         ./manage.py migrate admin
+         ./manage.py migrate [--fake] django_cron
+         ./manage.py migrate [--fake] reversion
+         [./manage.py migrate sites]
+         [./manage.py migrate sessions]
+         ```
 
-## Reverse the patches
+10. Reverse the patches
 
-`git apply --reverse patch_migrations.patch`
-`patch -R .venv/lib/python3.12/site-packages/reversion/migrations/0001_squashed_0004_auto_20160611_1202.py patch_reversion_0001.patch`
-`patch -R .venv/lib/python3.12/site-packages/django/contrib/admin/migrations/0001_initial.py patch_admin_0001_initial.patch`
+         `git apply --reverse patch_migrations.patch`
+         `patch -R .venv/lib/python3.12/site-packages/reversion/migrations/0001_squashed_0004_auto_20160611_1202.py patch_reversion_0001.patch`
+         `patch -R .venv/lib/python3.12/site-packages/django/contrib/admin/migrations/0001_initial.py patch_admin_0001_initial.patch`
 
-## Run cols patches starting with 131
+11. Run cols patches starting with 131
 
-`./manage.py migrate commercialoperator 0131_ledger_segregation_principal_changes`
+         `./manage.py migrate commercialoperator 0131_ledger_segregation_principal_changes`
 
 ## Done
 
