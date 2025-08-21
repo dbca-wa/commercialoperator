@@ -14,6 +14,17 @@
                             index="license_applicant"
                             subtitle="The applicant will be the licensee"
                         >
+                            <template #header-extra>
+                                <span
+                                    >&nbsp;<i
+                                        class="fa fa-question-circle"
+                                        data-toggle="tooltip"
+                                        data-placement="bottom"
+                                        style="color: blue"
+                                        title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate."
+                                    ></i
+                                ></span>
+                            </template>
                             <div class="col-sm-12">
                                 <div v-if="!isLoading" class="form-group">
                                     <div
@@ -23,14 +34,6 @@
                                                 .length > 0
                                         "
                                     >
-                                        <i
-                                            class="fa fa-question-circle"
-                                            data-toggle="tooltip"
-                                            data-placement="bottom"
-                                            style="color: blue"
-                                            title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate."
-                                            >&nbsp;</i
-                                        >
                                         <label>Do you apply </label>
                                         <br />
                                         <div
