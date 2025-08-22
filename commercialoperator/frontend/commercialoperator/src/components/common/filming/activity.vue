@@ -37,8 +37,8 @@
                                                     proposal.filming_activity
                                                         .commencement_date
                                                 "
-                                                type="date"
                                                 class="form-control"
+                                                type="date"
                                                 name="commencement_date"
                                                 placeholder="Commencement date"
                                                 required
@@ -54,8 +54,15 @@
                                                 ></span>
                                             </span>
                                         </div>
+                                        <label
+                                            class="control-label small-label"
+                                            for="commencement_date"
+                                            >Commencement date</label
+                                        >
                                     </div>
                                     <div class="col-sm-3">
+                                        <!-- <div class="col-sm-3"> -->
+                                        <!-- </div> -->
                                         <div
                                             ref="completion_date"
                                             class="input-group date"
@@ -84,6 +91,11 @@
                                                 ></span>
                                             </span>
                                         </div>
+                                        <label
+                                            class="control-label small-label"
+                                            for="completion_date"
+                                            >Completion date
+                                        </label>
                                     </div>
                                 </div>
                                 <div class="row">&nbsp;</div>
@@ -607,4 +619,10 @@ export default {
 };
 </script>
 
-<!-- <style lang="css" scoped></style> -->
+<style lang="css" scoped>
+.small-label {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 4px;
+}
+</style>
