@@ -6,7 +6,7 @@
                 <div class="row">
                     <div
                         v-if="compliance && compliance.id"
-                        class="col-sm-offset-3 col-sm-6 borderDecoration"
+                        class="col-sm-6 offset-3 borderDecoration"
                     >
                         <strong
                             >Your document to complete a requirement of your
@@ -52,10 +52,7 @@
                             >Back to home</router-link
                         >
                     </div>
-                    <div
-                        v-else
-                        class="col-sm-offset-3 col-sm-6 borderDecoration"
-                    >
+                    <div v-else class="col-sm-6 offset-3 borderDecoration">
                         <strong
                             >Sorry it looks like there isn't any compliance
                             currently in your session.</strong
