@@ -33,6 +33,7 @@
                                             v-model="vehicle_access_id"
                                             class="form-control"
                                             name="access_type"
+                                            required
                                         >
                                             <option
                                                 v-for="a in access_types"
@@ -61,7 +62,8 @@
                                             v-model="vehicle.capacity"
                                             class="form-control"
                                             name="capacity"
-                                            type="text"
+                                            type="number"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -83,6 +85,7 @@
                                             class="form-control"
                                             name="rego"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -100,7 +103,7 @@
                                         <div
                                             ref="rego_expiry"
                                             class="input-group date"
-                                            style="width: 70%"
+                                            style="width: 40%"
                                         >
                                             <input
                                                 v-model="vehicle.rego_expiry"
@@ -108,6 +111,7 @@
                                                 class="form-control"
                                                 name="rego_expiry"
                                                 placeholder="DD/MM/YYYY"
+                                                required
                                             />
                                             <span class="input-group-addon">
                                                 <span
@@ -135,6 +139,7 @@
                                             class="form-control"
                                             name="license"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -234,7 +239,6 @@ export default {
         let vm = this;
 
         vm.form = document.forms.vehicleForm;
-        vm.addFormValidations();
         this.$nextTick(() => {
             vm.addEventListeners();
         });
@@ -242,8 +246,12 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            // Check form validity
+            if (helpers.validateForm(vm.form)) {
+                console.log('Form is valid');
                 vm.sendData();
+            } else {
+                console.warn('Form is not valid');
             }
         },
         cancel: function () {
@@ -253,12 +261,10 @@ export default {
             this.isModalOpen = false;
             this.vehicle = {};
             this.hasErrors = false;
-            $('.has-error').removeClass('has-error');
             $(this.$refs.rego_expiry).val('');
             this.$refs.capacity = '';
             this.$refs.license = '';
             this.$refs.rego = '';
-            this.validation_form.resetForm();
         },
         fetchContact: function (id) {
             let vm = this;
@@ -352,44 +358,6 @@ export default {
                     );
             }
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    access_type: 'required',
-                    capacity: { required: true, number: true },
-                    rego: 'required',
-                    rego_expiry: {
-                        required: true,
-                        date: true,
-                    },
-                    license: 'required',
-                },
-                messages: {},
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    // $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
-        },
         addEventListeners: function () {
             helpers.initialiseSelect2.bind(this)(
                 'access_type',
@@ -402,4 +370,12 @@ export default {
 };
 </script>
 
-<style lang="css"></style>
+<style lang="css">
+input[type='date'],
+input[type='text'],
+input[type='number'] {
+    width: 40%;
+    box-sizing: border-box;
+    margin-bottom: 0.25rem;
+}
+</style>

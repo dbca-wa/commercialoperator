@@ -34,6 +34,7 @@
                                             class="form-control"
                                             name="capacity"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -55,6 +56,7 @@
                                             class="form-control"
                                             name="spv_no"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -75,6 +77,7 @@
                                             class="form-control"
                                             name="hire_rego"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -94,7 +97,8 @@
                                             v-model="vessel.craft_no"
                                             class="form-control"
                                             name="craft_no"
-                                            type="text"
+                                            type="number"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -114,7 +118,8 @@
                                             v-model="vessel.size"
                                             class="form-control"
                                             name="size"
-                                            type="text"
+                                            type="number"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -210,7 +215,6 @@ export default {
         let vm = this;
 
         vm.form = document.forms.vesselForm;
-        vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListeners();
         });
@@ -218,8 +222,12 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            // Check form validity
+            if (helpers.validateForm(vm.form)) {
+                console.log('Form is valid');
                 vm.sendData();
+            } else {
+                console.warn('Form is not valid');
             }
         },
         cancel: function () {
@@ -229,8 +237,6 @@ export default {
             this.isModalOpen = false;
             this.vessel = {};
             this.hasErrors = false;
-            $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
         },
         fetchContact: function (id) {
             let vm = this;
@@ -330,45 +336,16 @@ export default {
                     );
             }
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                // Note: Made all fields required and added number validation for craft_no and size
-                rules: {
-                    hire_rego: 'required',
-                    spv_no: 'required',
-                    capacity: 'required',
-                    craft_no: { required: true, number: true },
-                    size: { required: true, number: true },
-                },
-                messages: {},
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    // $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
-        },
         eventListeners: function () {},
     },
 };
 </script>
 
-<style lang="css"></style>
+<style lang="css">
+input[type='text'],
+input[type='number'] {
+    width: 40%;
+    box-sizing: border-box;
+    margin-bottom: 0.25rem;
+}
+</style>
