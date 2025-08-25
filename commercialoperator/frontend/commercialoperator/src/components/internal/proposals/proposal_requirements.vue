@@ -461,7 +461,7 @@ export default {
                             response.body.due_date != null &&
                             response.body.due_date != undefined
                                 ? moment(response.body.due_date).format(
-                                      'DD/MM/YYYY'
+                                      'YYYY-MM-DD'
                                   )
                                 : '';
                         this.$refs.requirement_detail.requirement.referral_group =
