@@ -410,7 +410,10 @@ export default {
                 confirmButtonText: 'Remove Requirement',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
