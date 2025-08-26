@@ -1609,7 +1609,14 @@ class InternalFilmingProposalSerializer(
         contact_users = EmailUser.objects.filter(email__in=contact_emails)
         if len(contact_users) > 0:
             applicant = contact_users[0]
-            return EmailUserSerializer(applicant.id).data
+            applicant_data = EmailUserSerializer(applicant.id).data
+            # Note: I replaced the CharField applicant on the serializer with the applicant object,
+            # because (IIRC) the object rather than the literal name is used down the line in the frontend.
+            # Some components still need the applicant name (individual or organisation), though, so I'm
+            # adding the applicant name (individual or organisation) as a separate field back in the serialized data.
+            # See e.g. proposal_approval.vue
+            applicant_data["applicant_name"] = obj.applicant
+            return applicant_data
 
         return []
 
