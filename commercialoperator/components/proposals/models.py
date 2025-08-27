@@ -2558,7 +2558,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             elif self.approval and self.approval.can_reissue:
                 if (
                     self.__approver_group()
-                    in request.user.proposalapprovergroup_set.all()
+                    in retrieve_user_groups(
+                    "proposalapprovergroup", request.user.id
+                )
                 ):
                     self.processing_status = status
                     # self.save()
