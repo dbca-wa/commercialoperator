@@ -7843,7 +7843,7 @@ class ProposalEventsTrails(models.Model):
             [
                 a.name
                 for a in self.activities_assessor.all()
-                if a.id in self.park.allowed_activities_ids
+                if a.id in self.trail.allowed_activities_ids
             ]
             if self.activities_assessor
             else None
