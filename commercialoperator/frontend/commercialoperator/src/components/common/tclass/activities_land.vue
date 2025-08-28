@@ -718,6 +718,7 @@ export default {
 
         vm.proposal.selected_trails_activities = [];
         vm.proposal.selected_parks_activities = [];
+        vm.selected_parks_activities = [];
 
         if (vm.proposal_parks && Object.keys(vm.proposal_parks).length > 0) {
             for (var i = 0; i < vm.proposal_parks.land_parks.length; i++) {
@@ -773,9 +774,9 @@ export default {
                 });
             }
 
+            vm.selected_parks = park_list;
             vm.selected_activities = vm.find_repeated(activity_list);
             vm.selected_access = vm.find_repeated(access_list);
-            vm.selected_parks = park_list;
         }
         this.$nextTick(() => {});
 
