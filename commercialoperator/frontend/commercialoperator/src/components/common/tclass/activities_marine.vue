@@ -867,7 +867,7 @@ export default {
                 activities.length > 0 ? activities : vm.selected_activities;
             this.$refs.edit_activities.access_point = access_point;
             this.$refs.edit_activities.allowed_activities = allowed_activities;
-            this.$refs.edit_activities.zone_label = label;
+            this.$refs.edit_activities.localZoneLabel = label;
             this.$refs.edit_activities.isModalOpen = true;
         },
 
