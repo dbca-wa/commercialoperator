@@ -75,6 +75,7 @@ class LicencePeriod(models.Model):
     LICENCE_PERIOD_5_YEAR = "5_year"
     LICENCE_PERIOD_7_YEAR = "7_year"
     LICENCE_PERIOD_10_YEAR = "10_year"
+    LICENCE_PERIOD_20_YEAR = "20_year"
     LICENCE_PERIOD_CHOICES = (
         (LICENCE_PERIOD_2_MONTHS, "2 months"),
         (LICENCE_PERIOD_1_YEAR, "1 Year"),
@@ -82,6 +83,7 @@ class LicencePeriod(models.Model):
         (LICENCE_PERIOD_5_YEAR, "5 Years"),
         (LICENCE_PERIOD_7_YEAR, "7 Years"),
         (LICENCE_PERIOD_10_YEAR, "10 Years"),
+        (LICENCE_PERIOD_20_YEAR, '20 Years'),
     )
 
     licence_period = models.CharField(
