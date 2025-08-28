@@ -1,0 +1,1 @@
+10 9 * * *     cd /app && python manage.py appmonitor_check >> logs/appmonitor_check.log 2>&1
