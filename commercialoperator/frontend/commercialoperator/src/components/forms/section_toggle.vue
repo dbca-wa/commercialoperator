@@ -13,6 +13,7 @@
                     <span v-if="subtitle" class="h6" :class="subtitleClass">{{
                         subtitle
                     }}</span>
+                    <slot name="header-extra"></slot>
                     <!-- to display the assessor and referral comments textboxes -->
                     <template v-if="displayCommentSection">
                         <template v-if="!isShowComment">

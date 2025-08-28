@@ -410,7 +410,10 @@ export default {
                 confirmButtonText: 'Remove Requirement',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
+                (result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
                     vm.$http
                         .get(
                             helpers.add_endpoint_json(
@@ -461,7 +464,7 @@ export default {
                             response.body.due_date != null &&
                             response.body.due_date != undefined
                                 ? moment(response.body.due_date).format(
-                                      'DD/MM/YYYY'
+                                      'YYYY-MM-DD'
                                   )
                                 : '';
                         this.$refs.requirement_detail.requirement.referral_group =

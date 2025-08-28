@@ -78,11 +78,11 @@
                                         >
                                     </div>
                                     <div
-                                        id="activities_select_modal"
+                                        id="park_activities_select_modal"
                                         class="col-sm-9"
                                     >
                                         <select
-                                            ref="activities_select"
+                                            ref="park_activities_select"
                                             v-model="selected_activities"
                                             style="width: 100%"
                                             class="form-control input-sm"
@@ -236,7 +236,7 @@ export default {
             this.park = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.activities_select).val(null).trigger('change');
+            $(this.$refs.park_activities_select).val(null).trigger('change');
             $(this.$refs.events_park).val(null).trigger('change');
             this.selected_activities = [];
             this.events_park_id = null;
@@ -319,7 +319,7 @@ export default {
                         if (vm.park.activities_assessor) {
                             vm.selected_activities =
                                 vm.park.activities_assessor;
-                            $(vm.$refs.activities_select)
+                            $(vm.$refs.park_activities_select)
                                 .val(vm.park.activities_assessor)
                                 .trigger('change');
                         }
@@ -341,7 +341,7 @@ export default {
                     vm.allowed_activities = vm.parks_list[i].allowed_activities;
                 }
             }
-            $(vm.$refs.activities_select).trigger('change');
+            $(vm.$refs.park_activities_select).trigger('change');
         },
         sendData: function () {
             let vm = this;
@@ -456,12 +456,12 @@ export default {
                 });
 
             // Initialise select2 for Activity types
-            $(vm.$refs.activities_select)
+            $(vm.$refs.park_activities_select)
                 .select2({
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Activities',
-                    dropdownParent: $('#activities_select_modal'),
+                    dropdownParent: $('#park_activities_select_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);

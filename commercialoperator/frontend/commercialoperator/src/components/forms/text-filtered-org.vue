@@ -72,11 +72,11 @@
                         >Search for name, trading name or ABN</template
                     >
                     <template slot="option" slot-scope="option">
-                        <div v-if="option.trading_name == ''" class="d-center">
+                        <div class="d-center">
                             {{ option.name }}
-                        </div>
-                        <div v-else class="d-center">
-                            {{ option.name }} ({{ option.trading_name }})
+                            <span v-if="option.trading_name">
+                                ({{ option.trading_name }})
+                            </span>
                         </div>
                     </template>
 
@@ -88,11 +88,11 @@
                                 :name="name + '-selected'"
                                 :value="option.org_id"
                             />
-                            <span v-if="option.trading_name == ''">
+                            <span>
                                 {{ option.name }}
-                            </span>
-                            <span v-else>
-                                {{ option.name }} ({{ option.trading_name }})
+                                <span v-if="option.trading_name">
+                                    ({{ option.trading_name }})
+                                </span>
                             </span>
                         </div>
                     </template>

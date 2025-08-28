@@ -927,4 +927,7 @@ legend.scheduler-border {
     padding: 0 10px; /* To give a bit of padding on the left and right */
     border-bottom: none;
 }
+.hidden {
+    display: none;
+}
 </style>

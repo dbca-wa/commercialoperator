@@ -2558,7 +2558,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             elif self.approval and self.approval.can_reissue:
                 if (
                     self.__approver_group()
-                    in request.user.proposalapprovergroup_set.all()
+                    in retrieve_user_groups(
+                    "proposalapprovergroup", request.user.id
+                )
                 ):
                     self.processing_status = status
                     # self.save()
@@ -4032,6 +4034,12 @@ class ProposalOtherDetails(models.Model):
                 end_date = (
                     self.nominated_start_date
                     + relativedelta(months=+120)
+                    - relativedelta(days=1)
+                )
+            if self.preferred_licence_period == LicencePeriod.LICENCE_PERIOD_20_YEAR:
+                end_date = (
+                    self.nominated_start_date
+                    + relativedelta(months=+240)
                     - relativedelta(days=1)
                 )
         return end_date
@@ -7841,7 +7849,7 @@ class ProposalEventsTrails(models.Model):
             [
                 a.name
                 for a in self.activities_assessor.all()
-                if a.id in self.park.allowed_activities_ids
+                if a.id in self.trail.allowed_activities_ids
             ]
             if self.activities_assessor
             else None

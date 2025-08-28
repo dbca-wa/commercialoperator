@@ -108,9 +108,12 @@
                                             >Activity Types (internal)
                                         </label>
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div
+                                        id="trail_activities_select_modal"
+                                        class="col-sm-9"
+                                    >
                                         <select
-                                            ref="activities_select"
+                                            ref="trail_activities_select"
                                             v-model="selected_activities"
                                             style="width: 100%"
                                             class="form-control input-sm"
@@ -271,7 +274,7 @@ export default {
             this.trail = {};
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
-            $(this.$refs.activities_select).val(null).trigger('change');
+            $(this.$refs.trail_activities_select).val(null).trigger('change');
             $(this.$refs.events_trail).val(null).trigger('change');
             $(this.$refs.events_section).val(null).trigger('change');
             this.selected_activities = [];
@@ -348,7 +351,7 @@ export default {
                         if (vm.trail.activities_assessor) {
                             vm.selected_activities =
                                 vm.trail.activities_assessor;
-                            $(vm.$refs.activities_select)
+                            $(vm.$refs.trail_activities_select)
                                 .val(vm.trail.activities_assessor)
                                 .trigger('change');
                         }
@@ -474,42 +477,43 @@ export default {
         },
         eventListeners: function () {
             let vm = this;
-            $(vm.$refs.events_trail)
-                .select2({
-                    theme: 'bootstrap-5',
-                    allowClear: true,
-                    placeholder: 'Select Park',
-                    dropdownParent: $('#events_trail_modal'),
-                })
-                .on('select2:select', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.events_trail_id = selected.val();
-                })
-                .on('select2:unselect', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.events_trail_id = selected.val();
-                });
-            $(vm.$refs.events_section)
-                .select2({
-                    theme: 'bootstrap-5',
-                    allowClear: true,
-                    placeholder: 'Select section',
-                    dropdownParent: $('#events_section_modal'),
-                })
-                .on('select2:select', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.section_id = selected.val();
-                })
-                .on('select2:unselect', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.section_id = selected.val();
-                });
+            // $(vm.$refs.events_trail)
+            //     .select2({
+            //         theme: 'bootstrap-5',
+            //         allowClear: true,
+            //         placeholder: 'Select Park',
+            //         dropdownParent: $('#events_trail_modal'),
+            //     })
+            //     .on('select2:select', function (e) {
+            //         var selected = $(e.currentTarget);
+            //         vm.events_trail_id = selected.val();
+            //     })
+            //     .on('select2:unselect', function (e) {
+            //         var selected = $(e.currentTarget);
+            //         vm.events_trail_id = selected.val();
+            //     });
+            // $(vm.$refs.events_section)
+            //     .select2({
+            //         theme: 'bootstrap-5',
+            //         allowClear: true,
+            //         placeholder: 'Select section',
+            //         dropdownParent: $('#events_section_modal'),
+            //     })
+            //     .on('select2:select', function (e) {
+            //         var selected = $(e.currentTarget);
+            //         vm.section_id = selected.val();
+            //     })
+            //     .on('select2:unselect', function (e) {
+            //         var selected = $(e.currentTarget);
+            //         vm.section_id = selected.val();
+            //     });
             //Initialise select2 for Activity types
-            $(vm.$refs.activities_select)
+            $(vm.$refs.trail_activities_select)
                 .select2({
                     theme: 'bootstrap-5',
                     allowClear: true,
                     placeholder: 'Select Activities',
+                    dropdownParent: $('#trail_activities_select_modal'),
                 })
                 .on('select2:select', function (e) {
                     var selected = $(e.currentTarget);

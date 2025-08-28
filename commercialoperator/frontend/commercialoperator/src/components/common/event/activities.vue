@@ -75,6 +75,11 @@
                                                 ></span>
                                             </span>
                                         </div>
+                                        <label
+                                            class="control-label small-label"
+                                            for="event_activity_commencement_date"
+                                            >Commencement date
+                                        </label>
                                     </div>
                                     <div class="col-sm-4">
                                         <div
@@ -104,6 +109,11 @@
                                                 ></span>
                                             </span>
                                         </div>
+                                        <label
+                                            class="control-label small-label"
+                                            for="event_activity_completion_date"
+                                            >Completion date
+                                        </label>
                                     </div>
                                 </div>
                                 <div class="row">&nbsp;</div>
@@ -808,5 +818,10 @@ export default {
     border-radius: 5px;
     padding: 5px;
     margin-top: 5px;
+}
+.small-label {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 4px;
 }
 </style>

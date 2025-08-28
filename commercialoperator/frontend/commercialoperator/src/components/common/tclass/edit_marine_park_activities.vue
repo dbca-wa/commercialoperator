@@ -2,7 +2,7 @@
     <div id="editMarinePark">
         <modal
             transition="modal fade"
-            :title="title(zone_label)"
+            :title="title(localZoneLabel)"
             large
             @ok="ok()"
             @cancel="cancel()"
@@ -135,12 +135,25 @@ export default {
             dateFormat: 'YYYY-MM-DD',
             // Adding this prop here because it was missing in the original code
             access_point: '',
+            localZoneLabel: this.zone_label, // Local copy to avoid mutating zone_label
         };
     },
     computed: {
         showError: function () {
             var vm = this;
             return vm.hasErrors;
+        },
+        isClickable: function () {
+            var vm = this;
+            return vm.canEditActivities;
+        },
+    },
+    watch: {
+        zone_label: {
+            handler: function (value) {
+                this.localZoneLabel = value;
+            },
+            deep: true,
         },
     },
     mounted: function () {
