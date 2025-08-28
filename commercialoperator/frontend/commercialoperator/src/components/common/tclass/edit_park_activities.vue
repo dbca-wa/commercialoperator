@@ -156,6 +156,10 @@ export default {
                 ? 'Edit Access and Activities for ' + this.park_name
                 : 'Edit Access and Activities';
         },
+        isClickable: function () {
+            var vm = this;
+            return vm.canEditActivities;
+        },
     },
     mounted: function () {
         let vm = this;

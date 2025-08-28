@@ -142,6 +142,10 @@ export default {
             var vm = this;
             return vm.hasErrors;
         },
+        isClickable: function () {
+            var vm = this;
+            return vm.canEditActivities;
+        },
     },
     mounted: function () {
         let vm = this;
