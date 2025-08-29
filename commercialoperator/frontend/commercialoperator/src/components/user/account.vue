@@ -364,54 +364,53 @@
                             method="post"
                         >
                             <div class="form-group row mb-3">
-                                <label
-                                    for="input_system_settings_one_row_per_park"
-                                    class="col-sm-3"
+                                <label class="col-sm-3"
                                     >Park Entry Fees dashboard view</label
                                 >
                                 <div class="col-sm-3">
-                                    <label>
-                                        <input
-                                            id="input_system_settings_one_row_per_park"
-                                            v-model="
-                                                email_user.system_settings
-                                                    .one_row_per_park
-                                            "
-                                            type="radio"
-                                            value="true"
-                                        />One row per Park
+                                    <input
+                                        id="input_system_settings_one_row_per_park"
+                                        v-model="
+                                            email_user.system_settings
+                                                .one_row_per_park
+                                        "
+                                        type="radio"
+                                        :value="true"
+                                        :checked="
+                                            email_user.system_settings
+                                                .one_row_per_park === true
+                                        "
+                                        :disabled="updatingSystemSettings"
+                                        @change="updateSystemSettings()"
+                                    />
+                                    <label
+                                        for="input_system_settings_one_row_per_park"
+                                    >
+                                        &nbsp;<span>One row per Park</span>
                                     </label>
                                 </div>
                                 <div class="col-sm-3">
-                                    <label>
-                                        <input
-                                            v-model="
-                                                email_user.system_settings
-                                                    .one_row_per_park
-                                            "
-                                            type="radio"
-                                            value="false"
-                                        />One row per Booking
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <div class="col-sm-12">
-                                    <button
-                                        v-if="!updatingSystemSettings"
-                                        class="btn btn-primary float-end"
-                                        @click.prevent="updateSystemSettings()"
+                                    <input
+                                        id="input_system_settings_one_row_per_booking"
+                                        v-model="
+                                            email_user.system_settings
+                                                .one_row_per_park
+                                        "
+                                        type="radio"
+                                        :value="false"
+                                        :checked="
+                                            email_user.system_settings
+                                                .one_row_per_park === false
+                                        "
+                                        :disabled="updatingSystemSettings"
+                                        @change="updateSystemSettings()"
+                                    />
+                                    <label
+                                        for="input_system_settings_one_row_per_booking"
+                                        >&nbsp;<span
+                                            >One row per Booking</span
+                                        ></label
                                     >
-                                        Update
-                                    </button>
-                                    <button
-                                        v-else
-                                        disabled
-                                        class="btn btn-primary float-end"
-                                    >
-                                        <i class="fa fa-spin fa-spinner"></i
-                                        >&nbsp;Updating
-                                    </button>
                                 </div>
                             </div>
                         </form>
