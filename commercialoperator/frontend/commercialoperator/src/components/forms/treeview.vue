@@ -69,15 +69,16 @@
 </template>
 
 <script>
+// NOTE: Commenting out the import of the Treeselect component and its styles. This needs to be solved in vue3
 // import the component
-import Treeselect from '@riophae/vue-treeselect';
+// import Treeselect from '@riophae/vue-treeselect';
 // import the styles
-import '@riophae/vue-treeselect/dist/vue-treeselect.css';
+// import '@riophae/vue-treeselect/dist/vue-treeselect.css';
 
 export default {
     name: 'TreeSelect',
     components: {
-        Treeselect,
+        // Treeselect,
     },
     props: {
         proposal: {
