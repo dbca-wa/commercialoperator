@@ -60,7 +60,7 @@
                 />
             </template>
             <template v-else>
-                <VueSelect
+                <v-select
                     v-validate="'required'"
                     label="name"
                     name="fullname"
@@ -97,7 +97,7 @@
                             </span>
                         </div>
                     </template>
-                </VueSelect>
+                </v-select>
                 <small v-show="errors.has('fullname')" style="color: red">{{
                     errors.first('fullname')
                 }}</small>
@@ -118,10 +118,11 @@ import Comment from './comment.vue';
 import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
 
-import { VueSelect } from 'vue-select';
+// import { VueSelect } from 'vue-select';
 
 export default {
-    components: { Comment, HelpText, HelpTextUrl, VueSelect },
+    // components: { Comment, HelpText, HelpTextUrl, VueSelect },
+    components: { Comment, HelpText, HelpTextUrl },
     props: [
         // eslint-disable-next-line vue/require-prop-types
         'url',
