@@ -1,3 +1,5 @@
+import { RouterView } from 'vue-router';
+
 import InternalDashboard from '../dashboard.vue';
 import Search from '../search.vue';
 import OrgAccessTable from '../organisations/dashboard.vue';
@@ -17,14 +19,10 @@ import DistrictProposal from '../district_proposals/district_proposal.vue';
 
 export default {
     path: '/internal',
-    component: {
-        render(c) {
-            return c('router-view');
-        },
-    },
+    compontent: RouterView,
     children: [
         {
-            path: '/',
+            path: '',
             component: InternalDashboard,
         },
         {
@@ -62,11 +60,7 @@ export default {
 
         {
             path: 'organisations',
-            component: {
-                render(c) {
-                    return c('router-view');
-                },
-            },
+            component: RouterView,
             children: [
                 {
                     path: 'access',
@@ -87,11 +81,7 @@ export default {
         },
         {
             path: 'users',
-            component: {
-                render(c) {
-                    return c('router-view');
-                },
-            },
+            component: RouterView,
             children: [
                 {
                     path: ':user_id',
@@ -102,22 +92,14 @@ export default {
         },
         {
             path: 'proposal',
-            component: {
-                render(c) {
-                    return c('router-view');
-                },
-            },
+            component: RouterView,
             children: [
                 {
                     path: ':proposal_id',
-                    component: {
-                        render(c) {
-                            return c('router-view');
-                        },
-                    },
+                    component: RouterView,
                     children: [
                         {
-                            path: '/',
+                            path: '',
                             component: Proposal,
                             name: 'internal-proposal',
                         },
@@ -137,22 +119,14 @@ export default {
         },
         {
             path: 'proposal_compare',
-            component: {
-                render(c) {
-                    return c('router-view');
-                },
-            },
+            component: RouterView,
             children: [
                 {
                     path: ':proposal_id',
-                    component: {
-                        render(c) {
-                            return c('router-view');
-                        },
-                    },
+                    component: RouterView,
                     children: [
                         {
-                            path: '/',
+                            path: '',
                             component: ProposalCompare,
                             name: 'proposal-compare',
                         },
