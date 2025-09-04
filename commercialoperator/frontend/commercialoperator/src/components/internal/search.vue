@@ -553,9 +553,10 @@ export default {
             let vm = this;
             console.log('Calling search_reference');
             if (vm.referenceWord) {
-                vm.$http
-                    .post('/api/search_reference.json', {
+                helpers
+                    .fetchUrl('/api/search_reference.json', {
                         reference_number: vm.referenceWord,
+                        method: 'POST',
                     })
                     .then(
                         (res) => {
