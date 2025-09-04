@@ -31,8 +31,8 @@
                                             activities</label
                                         >
                                         <TreeSelect
+                                            v-model="selected_activities"
                                             :proposal="proposal"
-                                            :value.sync="selected_activities"
                                             :options="marine_activity_options"
                                             :default_expand_level="1"
                                             :disabled="!canEditActivities"
@@ -60,8 +60,8 @@
                                             activities are required</label
                                         >
                                         <TreeSelect
+                                            v-model="selected_zone_ids"
                                             :proposal="proposal"
-                                            :value.sync="selected_zone_ids"
                                             :options="marine_park_options"
                                             :default_expand_level="0"
                                             :allow_edit="true"

@@ -181,10 +181,6 @@ export default {
     computed: {},
     watch: {
         localValue: function (newValue) {
-            /* allows two-way update of array value ( 'selected_access' )
-               Requires parent Prop: ' :value.sync="selected_access" ', eg.
-               <TreeSelect ref="selected_access" :proposal="proposal" :value.sync="selected_access" :options="land_access_options" :default_expand_level="1"></TreeSelect>
-            */
             console.info('new localValue:', newValue);
 
             this.$emit('update:value', newValue);

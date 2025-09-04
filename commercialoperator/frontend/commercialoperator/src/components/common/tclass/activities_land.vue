@@ -28,8 +28,8 @@
                                     >
                                     <TreeSelect
                                         ref="selected_access"
+                                        v-model="selected_access"
                                         :proposal="proposal"
-                                        :value.sync="selected_access"
                                         :options="land_access_options"
                                         :default_expand_level="1"
                                         :disabled="!canEditActivities"
@@ -56,8 +56,8 @@
                                         >Select the required activities</label
                                     >
                                     <TreeSelect
+                                        v-model="selected_activities"
                                         :proposal="proposal"
-                                        :value.sync="selected_activities"
                                         :options="land_activity_options"
                                         :default_expand_level="1"
                                         :disabled="!canEditActivities"
@@ -82,7 +82,7 @@
                                     >
                                     <TreeSelect
                                         :proposal="proposal"
-                                        :value.sync="selected_parks"
+                                        :v-model="selected_parks"
                                         :options="park_options"
                                         :default_expand_level="1"
                                         :allow_edit="true"
@@ -166,8 +166,8 @@
                                             trails</label
                                         >
                                         <TreeSelect
+                                            v-model="trail_activities"
                                             :proposal="proposal"
-                                            :value.sync="trail_activities"
                                             :options="trail_activity_options"
                                             :default_expand_level="1"
                                             :disabled="!canEditActivities"
@@ -195,8 +195,8 @@
                                             trails</label
                                         >
                                         <TreeSelect
+                                            v-model="selected_trail_ids"
                                             :proposal="proposal"
-                                            :value.sync="selected_trail_ids"
                                             :options="trail_options"
                                             :default_expand_level="1"
                                             open_direction="top"
