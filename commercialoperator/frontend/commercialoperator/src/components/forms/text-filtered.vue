@@ -60,8 +60,9 @@
                 />
             </template>
             <template v-else>
+                <!-- NOTE: I started adding vee-validate form validation here (again), but didn't follow through in this current branch that is about upgrading the app to vue3 -->
+                <!-- <Form :validation-schema="schema"> -->
                 <v-select
-                    v-validate="'required'"
                     label="name"
                     name="fullname"
                     :filterable="false"
@@ -69,10 +70,10 @@
                     placeholder="Start typing to search for a user"
                     @search="onSearch"
                 >
-                    <template slot="no-options"
+                    <template #no-options
                         >Search for user name or email</template
                     >
-                    <template slot="option" slot-scope="option">
+                    <template #option="option = { option }">
                         <div v-if="option.email == ''" class="d-center">
                             {{ option.name }}
                         </div>
@@ -81,7 +82,7 @@
                         </div>
                     </template>
 
-                    <template slot="selected-option" slot-scope="option">
+                    <template #selected-option="option = { option }">
                         <div class="selected d-center" :user_id="option.id">
                             <input
                                 type="hidden"
@@ -98,9 +99,8 @@
                         </div>
                     </template>
                 </v-select>
-                <small v-show="errors.has('fullname')" style="color: red">{{
-                    errors.first('fullname')
-                }}</small>
+                <!-- <ErrorMessage name="fullname" /> -->
+                <!-- </Form> -->
             </template>
         </div>
         <Comment
@@ -118,7 +118,9 @@ import Comment from './comment.vue';
 import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
 
-// import { VueSelect } from 'vue-select';
+import { helpers } from '@/utils/hooks';
+
+// import { Field, Form, ErrorMessage } from 'vee-validate';
 
 export default {
     // components: { Comment, HelpText, HelpTextUrl, VueSelect },
@@ -160,6 +162,14 @@ export default {
             showingComment: false,
             options: [],
             fullname: null,
+            // schema: {
+            //     fullname: (value) => {
+            //         if (value) {
+            //             return true;
+            //         }
+            //         return 'You must select a user';
+            //     },
+            // },
         };
     },
     methods: {
@@ -171,12 +181,12 @@ export default {
             this.search(loading, search, this);
         },
         search: _.debounce((loading, search, vm) => {
-            vm.$http
-                .get(vm.url + escape(search), {
+            helpers
+                .fetchUrl(vm.url + escape(search), {
                     emulateJSON: true,
                 })
                 .then((res) => {
-                    vm.options = res.body;
+                    vm.options = res;
                     loading(false);
                 });
         }, 350),
