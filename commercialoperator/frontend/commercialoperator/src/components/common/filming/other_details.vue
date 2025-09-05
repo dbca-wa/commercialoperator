@@ -193,9 +193,9 @@
                         <div class="form-group">
                            <div class="row">
                                 <div class="col-sm-12">
-                                    <label>It is a requirement of all filming authority holders to sign a deed poll to release and indemnify the State of Western Australia. Please note: electronic or digital signatures cannot be accepted.</label>
-                                    <label v-if="deed_poll_url">Please click <a :href="deed_poll_url" target="_blank">here</a> to download the deed poll. The deed poll must be signed and have a witness signature and be dated. Once signed and dated, please scan and attach the deed poll below.</label>
-                                    <label v-else>Please click here to download the deed poll. The deed poll must be signed and have a witness signature and be dated. Once signed and dated, please scan and attach the deed poll below.</label>
+                                    <label>It is a requirement of all filming authority holders to sign a deed poll to release and indemnify the State of Western Australia. Please note: electronic or digital signatures cannot be accepted where witnessing is required.</label>
+                                    <label v-if="deed_poll_url">Please click <a :href="deed_poll_url" target="_blank">here</a> to download the deed poll. The deed poll must be signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the deed poll document below.</label>
+                                    <label v-else>Please click here to download the deed poll. The deed poll must be signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the deed poll document below.</label>
                                 </div>   
                             </div>
                             <div class="row">
