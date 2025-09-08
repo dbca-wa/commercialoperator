@@ -373,7 +373,6 @@
 </template>
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
-import Vue from 'vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 
@@ -390,8 +389,8 @@ export default {
         CommsLogs,
     },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 helpers.add_endpoint_json(
                     api_endpoints.approvals,
                     to.params.approval_id
@@ -400,10 +399,9 @@ export default {
             .then(
                 (response) => {
                     next((vm) => {
-                        vm.approval = response.body;
-                        vm.approval.applicant_id = response.body.applicant_id;
-                        vm.approval.applicant_type =
-                            response.body.applicant_type;
+                        vm.approval = response;
+                        vm.approval.applicant_id = response.applicant_id;
+                        vm.approval.applicant_type = response.applicant_type;
                         //vm.fetchOrganisation(vm.approval.applicant_id)
                         vm.fetchApplicant(
                             vm.approval.applicant_id,
@@ -474,8 +472,8 @@ export default {
         },
         fetchOrgApplicant(applicant_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         applicant_id
@@ -483,14 +481,14 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.applicant = response.body;
-                        vm.applicant.name = response.body.organisation_name;
-                        vm.applicant.abn = response.body.organisation_abn;
-                        if (response.body.organisation_address == null) {
+                        vm.applicant = response;
+                        vm.applicant.name = response.organisation_name;
+                        vm.applicant.abn = response.organisation_abn;
+                        if (response.organisation_address == null) {
                             vm.applicant.address = vm.address_default;
                         } else {
                             vm.applicant.address =
-                                response.body.organisation_address;
+                                response.organisation_address;
                         }
                     },
                     (error) => {
@@ -500,19 +498,18 @@ export default {
         },
         fetchProxyApplicant(applicant_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(api_endpoints.users, applicant_id)
                 )
                 .then(
                     (response) => {
-                        vm.applicant = response.body;
-                        vm.applicant.name = response.body.full_name;
-                        if (response.body.residential_address == null) {
+                        vm.applicant = response;
+                        vm.applicant.name = response.full_name;
+                        if (response.residential_address == null) {
                             vm.applicant.address = vm.address_default;
                         } else {
-                            vm.applicant.address =
-                                response.body.residential_address;
+                            vm.applicant.address = response.residential_address;
                         }
                     },
                     (error) => {
