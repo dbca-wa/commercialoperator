@@ -20,7 +20,7 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ compliance.lodgement_date | formatDate }}
+                                    {{ formatDate(compliance.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
@@ -200,11 +200,6 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'complianceAccess',
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY') : '';
-        },
-    },
     components: {
         CommsLogs,
         ComplianceAmendmentRequest,
@@ -409,6 +404,9 @@ export default {
             });
             if (assessor.length > 0) return true;
             else return false;
+        },
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY') : '';
         },
     },
 };

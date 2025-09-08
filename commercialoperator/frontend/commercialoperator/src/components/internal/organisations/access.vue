@@ -20,7 +20,7 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ access.lodgement_date | formatDate }}
+                                    {{ formatDate(access.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
@@ -263,11 +263,6 @@ import CommsLogs from '@common-utils/comms_logs.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'OrganisationAccess',
-    filters: {
-        formatDate: function (data) {
-            return moment(data).format('DD/MM/YYYY HH:mm:ss');
-        },
-    },
     components: {
         CommsLogs,
     },
@@ -698,6 +693,9 @@ export default {
                 .on('select2:select', function () {
                     callback();
                 });
+        },
+        formatDate: function (data) {
+            return moment(data).format('DD/MM/YYYY HH:mm:ss');
         },
     },
 };

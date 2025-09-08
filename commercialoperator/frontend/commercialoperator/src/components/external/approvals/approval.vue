@@ -197,7 +197,7 @@
                                     <div class="col-sm-6">
                                         <input
                                             :value="
-                                                approval.issue_date | formatDate
+                                                formatDate(approval.issue_date)
                                             "
                                             type="text"
                                             class="form-control control-label pull-left"
@@ -215,7 +215,7 @@
                                     <div class="col-sm-6">
                                         <input
                                             :value="
-                                                approval.start_date | formatDate
+                                                formatDate(approval.start_date)
                                             "
                                             type="text"
                                             class="form-control control-label pull-left"
@@ -233,8 +233,7 @@
                                     <div class="col-sm-3">
                                         <input
                                             :value="
-                                                approval.expiry_date
-                                                    | formatDate
+                                                formatDate(approval.expiry_date)
                                             "
                                             type="text"
                                             class="form-control control-label pull-left"
@@ -304,11 +303,6 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Approval',
-    filters: {
-        formatDate: function (data) {
-            return moment(data).format('DD/MM/YYYY');
-        },
-    },
     components: {
         FormSection,
     },
@@ -444,6 +438,9 @@ export default {
             } else {
                 vm.fetchProxyApplicant(applicant_id);
             }
+        },
+        formatDate: function (data) {
+            return moment(data).format('DD/MM/YYYY');
         },
     },
 };

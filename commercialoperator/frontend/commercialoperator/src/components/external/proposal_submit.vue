@@ -42,7 +42,7 @@
                                 <td>
                                     <strong>
                                         {{
-                                            proposal.lodgement_date | formatDate
+                                            formatDate(proposal.lodgement_date)
                                         }}</strong
                                     >
                                 </td>
@@ -82,11 +82,6 @@
 import { api_endpoints } from '@/utils/hooks';
 export default {
     components: {},
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
-    },
     beforeRouteEnter: function (to, from, next) {
         next((vm) => {
             vm.proposal = to.params.proposal;
@@ -115,7 +110,11 @@ export default {
         let vm = this;
         vm.form = document.forms.new_proposal;
     },
-    methods: {},
+    methods: {
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
+        },
+    },
 };
 </script>
 

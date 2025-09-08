@@ -23,7 +23,7 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ proposal.lodgement_date | formatDate }}
+                                    {{ formatDate(proposal.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
@@ -603,11 +603,6 @@ export default {
         ProposedDecline,
         ApprovalScreen,
         ProposedApproval,
-    },
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
     },
     beforeRouteEnter: function (to, from, next) {
         Vue.http
@@ -1568,6 +1563,9 @@ export default {
                 },
                 () => {}
             );
+        },
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
         },
     },
 };

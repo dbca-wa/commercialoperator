@@ -30,7 +30,7 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ proposal.lodgement_date | formatDate }}
+                                    {{ formatDate(proposal.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
@@ -59,7 +59,7 @@
                                     v-for="p in proposal.reversion_ids"
                                     :key="`reversion-${p.cur_version_id}`"
                                 >
-                                    <td>{{ p.created | formatDate }}</td>
+                                    <td>{{ formatDate(p.created) }}</td>
                                     <td>
                                         <a
                                             id="history_id"
@@ -175,8 +175,9 @@
                                                     ><br />
                                                     <small
                                                         ><strong>{{
-                                                            r.lodged_on
-                                                                | formatDate
+                                                            formatDate(
+                                                                r.lodged_on
+                                                            )
                                                         }}</strong></small
                                                     >
                                                 </td>
@@ -565,8 +566,9 @@
                                                         <td>
                                                             <small
                                                                 ><strong>{{
-                                                                    r.lodged_on
-                                                                        | formatDate
+                                                                    formatDate(
+                                                                        r.lodged_on
+                                                                    )
                                                                 }}</strong></small
                                                             >
                                                         </td>
@@ -1047,11 +1049,6 @@ export default {
         OnHold,
         WithQAOfficer,
         FilmingDistrictProposalsTable,
-    },
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
     },
     beforeRouteEnter: function (to, from, next) {
         Vue.http
@@ -2380,6 +2377,9 @@ export default {
                         vm.$refs.event.$refs.event_activities.selected_trails_activities;
                 }
             }
+        },
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
         },
     },
 };

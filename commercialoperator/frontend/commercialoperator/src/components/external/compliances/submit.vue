@@ -25,8 +25,9 @@
                                 <td>
                                     <strong>
                                         {{
-                                            compliance.lodgement_date
-                                                | formatDate
+                                            formatDate(
+                                                compliance.lodgement_date
+                                            )
                                         }}</strong
                                     >
                                 </td>
@@ -72,11 +73,6 @@
 <script>
 export default {
     components: {},
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
-    },
     beforeRouteEnter: function (to, from, next) {
         next((vm) => {
             vm.compliance = to.params.compliance;
@@ -92,7 +88,11 @@ export default {
         let vm = this;
         vm.form = document.forms.new_compliance;
     },
-    methods: {},
+    methods: {
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
+        },
+    },
 };
 </script>
 
