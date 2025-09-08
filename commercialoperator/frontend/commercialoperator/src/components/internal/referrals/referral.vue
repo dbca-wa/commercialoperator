@@ -55,41 +55,33 @@
                                 >
                                     <strong>Currently assigned to</strong><br />
                                     <div class="form-group">
-                                        <!-- eslint-disable-next-line vue/no-lone-template -->
-                                        <template>
-                                            <select
-                                                ref="assigned_officer"
-                                                v-model="
-                                                    referral.assigned_officer
-                                                "
-                                                :disabled="
-                                                    !referral.can_process
-                                                "
-                                                class="form-control"
+                                        <!-- <template> -->
+                                        <select
+                                            ref="assigned_officer"
+                                            v-model="referral.assigned_officer"
+                                            :disabled="!referral.can_process"
+                                            class="form-control"
+                                        >
+                                            <option
+                                                v-for="member in referral.allowed_assessors"
+                                                :key="member.id"
+                                                :value="member.id"
                                             >
-                                                <option
-                                                    v-for="member in referral.allowed_assessors"
-                                                    :key="member.id"
-                                                    :value="member.id"
-                                                >
-                                                    {{ member.first_name }}
-                                                    {{ member.last_name }}
-                                                </option>
-                                            </select>
-                                            <a
-                                                v-if="
-                                                    referral.can_process &&
-                                                    referral.assigned_officer !=
-                                                        referral
-                                                            .current_assessor.id
-                                                "
-                                                class="actionBtn pull-right"
-                                                @click.prevent="
-                                                    assignRequestUser()
-                                                "
-                                                >Assign to me</a
-                                            >
-                                        </template>
+                                                {{ member.first_name }}
+                                                {{ member.last_name }}
+                                            </option>
+                                        </select>
+                                        <a
+                                            v-if="
+                                                referral.can_process &&
+                                                referral.assigned_officer !=
+                                                    referral.current_assessor.id
+                                            "
+                                            class="actionBtn pull-right"
+                                            @click.prevent="assignRequestUser()"
+                                            >Assign to me</a
+                                        >
+                                        <!-- </template> -->
                                     </div>
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
