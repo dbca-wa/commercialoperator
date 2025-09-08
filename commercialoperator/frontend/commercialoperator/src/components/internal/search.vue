@@ -236,7 +236,7 @@
                         </div>
                         <div class="row">
                             <div class="col-lg-12">
-                                <alert :show.sync="showMessage" type="danger"
+                                <alert v-if="showMessage" type="danger"
                                     ><strong>
                                         <!-- eslint-disable-next-line vue/no-v-html -->
                                         <p v-html="messageString"></p></strong
@@ -291,7 +291,7 @@
                                     @click.prevent="search_reference"
                                 />
                             </div>
-                            <alert :show.sync="showError" type="danger"
+                            <alert v-if="showError" type="danger"
                                 ><strong>{{ errorString }}</strong></alert
                             >
                         </div>

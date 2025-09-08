@@ -13,7 +13,7 @@
                         class="needs-validation form-horizontal"
                         name="suspendApprovalForm"
                     >
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">

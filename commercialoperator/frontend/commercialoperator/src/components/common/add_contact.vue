@@ -3,7 +3,7 @@
         <modal :title="title()" large @ok="ok()" @cancel="cancel()">
             <form class="form-horizontal" name="addContactForm">
                 <div class="row">
-                    <alert :show.sync="showError" type="danger"
+                    <alert v-if="showError" type="danger"
                         ><strong>{{ errorString }}</strong></alert
                     >
                     <div class="col-lg-12">

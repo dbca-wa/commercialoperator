@@ -53,9 +53,7 @@
                                         name="complianceForm"
                                         method="post"
                                     >
-                                        <alert
-                                            :show.sync="showError"
-                                            type="danger"
+                                        <alert v-if="showError" type="danger"
                                             ><strong>{{
                                                 errorString
                                             }}</strong></alert
