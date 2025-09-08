@@ -27,10 +27,12 @@
             >
                 <div class="row">
                     <div class="col-sm-8 text-nowrap">
-                        {{ node.raw.name }}
+                        <!-- NOTE: NOTE: Added ? to to all instances of node.raw deal with undefined error -->
+                        {{ node?.raw?.name }}
                     </div>
+                    <!-- NOTE: NOTE: Added ? to to all instances of node.raw deal with undefined error -->
                     <div
-                        v-if="node.raw.can_edit"
+                        v-if="node?.raw?.can_edit"
                         class="col-sm-4 option-label-container"
                     >
                         <!-- Note: I changed the listener from click to mousedown, because when opening the multiselect list, click would deselect/select a list option item before opening the modal -->
@@ -57,11 +59,13 @@
                         :title="edit_display_text(node)"
                         @mousedown.stop="edit_activities($event, node)"
                     >
-                        {{ node.label }}
+                        <!-- NOTE: Added ? to deal with undefined error -->
+                        {{ node?.label }}
                     </a>
                 </div>
                 <div v-else>
-                    <a> {{ node.label }} </a>
+                    <!-- NOTE: Added ? to deal with undefined error -->
+                    <a> {{ node?.label }} </a>
                 </div>
             </div>
         </Treeselect>
@@ -208,8 +212,9 @@ export default {
             }
         },
         edit_display_text: function (node) {
+            // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
             // eslint-disable-next-line no-prototype-builtins
-            if (node.raw.hasOwnProperty('sections')) {
+            if (node?.raw?.hasOwnProperty('sections')) {
                 return 'Edit sections and activities';
             } else {
                 return 'Edit access and activities';
@@ -217,18 +222,21 @@ export default {
         },
         edit_activities: function (event, node) {
             event.stopPropagation();
+            // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
             // eslint-disable-next-line no-prototype-builtins
-            if (node.raw.hasOwnProperty('sections')) {
+            if (node?.raw?.hasOwnProperty('sections')) {
                 this.$parent.$parent.edit_sections(node);
+                // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
                 // eslint-disable-next-line no-prototype-builtins
-            } else if (node.raw.hasOwnProperty('allowed_zone_activities')) {
+            } else if (node?.raw?.hasOwnProperty('allowed_zone_activities')) {
                 this.$parent.$parent.edit_activities(node);
             } else {
                 this.$parent.$parent.edit_activities(node);
             }
         },
         is_checked: function (node) {
-            return this.value.includes(node.id);
+            // NOTE: Added ? to deal with undefined error
+            return this.value?.includes(node?.id);
         },
     },
 };
