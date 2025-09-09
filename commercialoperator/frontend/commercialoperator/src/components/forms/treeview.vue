@@ -203,10 +203,11 @@ export default {
         },
     },
     watch: {
-        localValue: function (newValue) {
-            console.info('new localValue:', newValue);
-
-            this.$emit('update:value', newValue);
+        localValue: {
+            handler: function (newValue) {
+                this.$emit('update:value', newValue);
+            },
+            deep: true,
         },
     },
 
