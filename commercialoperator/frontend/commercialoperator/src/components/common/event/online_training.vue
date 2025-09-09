@@ -233,10 +233,12 @@
 <script>
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
+import alert from '@vue-utils/alert.vue';
 
 export default {
     components: {
         FormSection,
+        alert,
     },
     props: {
         proposal: {
@@ -292,9 +294,9 @@ export default {
     methods: {
         fetchQuestions: function () {
             let vm = this;
-            vm.$http.get('/api/questions/events_questions_list.json').then(
+            helpers.fetchUrl('/api/questions/events_questions_list.json').then(
                 (response) => {
-                    vm.questions = response.body;
+                    vm.questions = response;
                     for (var i = 0; i < vm.questions.length; i++) {
                         vm.questions[i].is_correct = false;
                         vm.questions[i].selected = null;
@@ -352,20 +354,23 @@ export default {
         },
         updateTrainingFlag: function () {
             let vm = this;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         vm.proposal.id + '/update_training_flag'
                     ),
-                    JSON.stringify({ training_completed: true })
+                    {
+                        method: 'POST',
+                        body: JSON.stringify({ training_completed: true }),
+                    }
                 )
                 .then(
                     (response) => {
                         vm.proposal.training_completed =
-                            response.body['training_completed'];
+                            response['training_completed'];
                         vm.proposal.applicant_training_completed =
-                            response.body['training_completed'];
+                            response['training_completed'];
                     },
                     (error) => {
                         swal(
@@ -378,9 +383,9 @@ export default {
         },
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);

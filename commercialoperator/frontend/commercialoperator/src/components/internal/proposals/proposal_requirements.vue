@@ -383,9 +383,9 @@ export default {
     methods: {
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);
@@ -414,8 +414,8 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposal_requirements,
                                 _id + '/discard'
@@ -438,9 +438,9 @@ export default {
         fetchRequirements() {
             let vm = this;
 
-            vm.$http.get(api_endpoints.proposal_standard_requirements).then(
+            helpers.fetchUrl(api_endpoints.proposal_standard_requirements).then(
                 (response) => {
-                    vm.requirements = response.body;
+                    vm.requirements = response;
                 },
                 (error) => {
                     console.log(error);
@@ -448,9 +448,8 @@ export default {
             );
         },
         editRequirement(_id) {
-            let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_requirements,
                         _id
@@ -458,29 +457,26 @@ export default {
                 )
                 .then(
                     (response) => {
-                        this.$refs.requirement_detail.requirement =
-                            response.body;
+                        this.$refs.requirement_detail.requirement = response;
                         this.$refs.requirement_detail.requirement.due_date =
-                            response.body.due_date != null &&
-                            response.body.due_date != undefined
-                                ? moment(response.body.due_date).format(
-                                      'YYYY-MM-DD'
-                                  )
+                            response.due_date != null &&
+                            response.due_date != undefined
+                                ? moment(response.due_date).format('YYYY-MM-DD')
                                 : '';
                         this.$refs.requirement_detail.requirement.referral_group =
-                            response.body.referral_group;
+                            response.referral_group;
                         this.$refs.requirement_detail.requirement.district_proposal =
-                            response.body.district_proposal;
+                            response.district_proposal;
                         this.$refs.requirement_detail.requirement.district =
-                            response.body.district;
+                            response.district;
                         this.$refs.requirement_detail.requirement.requirement_documents =
-                            response.body.requirement_documents;
-                        response.body.standard
+                            response.requirement_documents;
+                        response.standard
                             ? $(
                                   this.$refs.requirement_detail.$refs
                                       .standard_req
                               )
-                                  .val(response.body.standard_requirement)
+                                  .val(response.standard_requirement)
                                   .trigger('change')
                             : '';
                         this.addRequirement();
@@ -516,8 +512,8 @@ export default {
         },
         sendDirection(req, direction) {
             let movement = direction == 'down' ? 'move_down' : 'move_up';
-            this.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_requirements,
                         req + '/' + movement

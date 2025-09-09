@@ -79,7 +79,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 
@@ -151,9 +150,9 @@ export default {
         },
         fetchAmendmentChoices: function () {
             let vm = this;
-            vm.$http.get('/api/amendment_request_reason_choices.json').then(
+            helpers.fetchUrl('/api/amendment_request_reason_choices.json').then(
                 (response) => {
-                    vm.reason_choices = response.body;
+                    vm.reason_choices = response;
                 },
                 (error) => {
                     console.log(error);
@@ -164,14 +163,14 @@ export default {
             let vm = this;
             vm.hasErrors = false;
             let amendment = JSON.parse(JSON.stringify(vm.amendment));
-            vm.$http
-                .post(
-                    '/api/amendment_request.json',
-                    JSON.stringify(amendment),
-                    {
-                        emulateJSON: true,
-                    }
-                )
+            helpers
+                .fetchUrl('/api/amendment_request.json', {
+                    method: 'POST',
+                    body: JSON.stringify(amendment),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
                 .then(
                     () => {
                         swal.fire({
@@ -181,8 +180,8 @@ export default {
                         });
                         vm.amendingProposal = true;
                         vm.close();
-                        Vue.http
-                            .get(
+                        helpers
+                            .fetchUrl(
                                 `/api/proposal/${vm.proposal_id}/internal_proposal.json`
                             )
                             .then(

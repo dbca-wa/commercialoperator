@@ -192,20 +192,23 @@ export default {
         update: function () {
             let vm = this;
             let assessment = JSON.parse(JSON.stringify(vm.localAssessment));
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.assessments,
                         vm.assessment.id + '/update_assessment'
                     ),
-                    JSON.stringify(assessment),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(assessment),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
-                        vm.localAssessment = helpers.copyObject(response.body);
+                        vm.localAssessment = helpers.copyObject(response);
                         swal.fire({
                             title: 'Checklist update',
                             text: 'Checklist has been updated',

@@ -390,12 +390,15 @@ export default {
         },
     },
     watch: {
-        options: function () {
-            this.add_previous_visitors_same_group_tour();
-            this.regions = this.get_regions();
-            this.arrival_dates = this.get_arrival_dates();
-            console.log('regions: ' + this.regions);
-            console.log('arrivals: ' + this.arrival_dates);
+        options: {
+            handler: function () {
+                this.add_previous_visitors_same_group_tour();
+                this.regions = this.get_regions();
+                this.arrival_dates = this.get_arrival_dates();
+                console.log('regions: ' + this.regions);
+                console.log('arrivals: ' + this.arrival_dates);
+            },
+            deep: true,
         },
         'table.tbody': {
             handler: function () {

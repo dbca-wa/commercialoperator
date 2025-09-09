@@ -515,10 +515,13 @@ export default {
         },
     },
     watch: {
-        accreditation_type: function () {
-            // eslint-disable-next-line vue/no-mutating-props
-            this.proposal.event_other_details.accreditation_type =
-                this.accreditation_type.key;
+        accreditation_type: {
+            handler: function () {
+                // eslint-disable-next-line vue/no-mutating-props
+                this.proposal.event_other_details.accreditation_type =
+                    this.accreditation_type.key;
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -604,9 +607,9 @@ export default {
         },
         fetchAccreditationChoices: function () {
             let vm = this;
-            vm.$http.get('/api/accreditation_choices.json').then(
+            helpers.fetchUrl('/api/accreditation_choices.json').then(
                 (response) => {
-                    vm.accreditation_choices = response.body;
+                    vm.accreditation_choices = response;
                     if (vm.proposal.event_other_details.accreditation_type) {
                         for (
                             var i = 0;
@@ -631,9 +634,9 @@ export default {
         },
         fetchLicencePeriodChoices: function () {
             let vm = this;
-            vm.$http.get('/api/licence_period_choices.json').then(
+            helpers.fetchUrl('/api/licence_period_choices.json').then(
                 (response) => {
-                    vm.licence_period_choices = response.body;
+                    vm.licence_period_choices = response;
                 },
                 (error) => {
                     console.log(error);
@@ -642,9 +645,9 @@ export default {
         },
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);
