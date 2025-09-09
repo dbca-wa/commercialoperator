@@ -326,8 +326,25 @@ export default {
                             'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email, proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name';
                     },
                 },
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                buttons: ['excel', 'csv'],
+                dom: '<"container-fluid mb-2 align-items-center text-nowrap"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: 'CSV',
+                        className: 'btn btn-primary rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                ],
                 columns: [
                     {
                         data: 'admission_number',
