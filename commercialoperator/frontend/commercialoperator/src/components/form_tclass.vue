@@ -14,7 +14,7 @@
                         role="tab"
                         aria-controls="pills-applicant"
                         :aria-selected="
-                            isSelectedTabById('pills-applicant-tab')
+                            isSelectedTabById('pills-applicant-tab') || null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
