@@ -218,7 +218,7 @@
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
-                        v-on="$listeners"
+                        v-bind="$attrs"
                     ></ActivitiesLand>
                 </div>
                 <div
@@ -244,7 +244,7 @@
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
-                        v-on="$listeners"
+                        v-bind="$attrs"
                     ></ActivitiesMarine>
                 </div>
                 <div
