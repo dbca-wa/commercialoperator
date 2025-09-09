@@ -1,23 +1,25 @@
 <template lang="html">
     <div>
-        <Treeselect
+        <!-- <Treeselect -->
+        <component
+            :is="'TreeselectDummy'"
             ref="treeselect"
             v-model="localValue"
             :options="options"
             :open-on-click="true"
-            :multiple="multiple"
+            :multiple="multiple || null"
             :max-height="max_height"
             :value-consists-of="value_consists_of"
-            :clearable="clearable"
-            :flat="flat"
+            :clearable="clearable || null"
+            :flat="flat || null"
             :default-expand-level="default_expand_level"
             :normalizer="normalizer"
             :open-direction="open_direction"
-            :disabled="disabled"
+            :disabled="disabled || null"
             :open-on-focus="true"
             :limit="localLimit"
-            :close-on-select="closeOnSelect"
-            :disable-branch-nodes="disableBranchNodes"
+            :close-on-select="closeOnSelect || null"
+            :disable-branch-nodes="disableBranchNodes || null"
             :z-index="zIndex"
         >
             <label
@@ -68,7 +70,8 @@
                     <a> {{ node?.label }} </a>
                 </div>
             </div>
-        </Treeselect>
+            <!-- </Treeselect> -->
+        </component>
     </div>
 </template>
 
@@ -78,6 +81,8 @@
 // import Treeselect from '@riophae/vue-treeselect';
 // import the styles
 // import '@riophae/vue-treeselect/dist/vue-treeselect.css';
+
+import { defineAsyncComponent } from 'vue';
 
 export default {
     name: 'TreeSelect',
@@ -179,10 +184,24 @@ export default {
             localValue: this.value,
             // Note: I changed from using the prop `limit` (props should not be mutated) to using a `localLimit` data property
             localLimit: this.limit,
+            // NOTE: I added data properties below to be able to access the them during rendering
+            node: null,
+            labelClassName: '',
         };
     },
 
-    computed: {},
+    computed: {
+        TreeSelectDummy() {
+            return defineAsyncComponent({
+                data() {
+                    return {
+                        dummyText: 'Select a node',
+                    };
+                },
+                template: `<div>{{dummyText}}</div>`,
+            });
+        },
+    },
     watch: {
         localValue: function (newValue) {
             console.info('new localValue:', newValue);
