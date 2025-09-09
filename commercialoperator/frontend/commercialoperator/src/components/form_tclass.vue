@@ -35,7 +35,8 @@
                         role="tab"
                         aria-controls="pills-activities-land"
                         :aria-selected="
-                            isSelectedTabById('pills-activities-land-tab')
+                            isSelectedTabById('pills-activities-land-tab') ||
+                            null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -56,7 +57,8 @@
                         role="tab"
                         aria-controls="pills-activities-marine"
                         :aria-selected="
-                            isSelectedTabById('pills-activities-marine-tab')
+                            isSelectedTabById('pills-activities-marine-tab') ||
+                            null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -77,7 +79,7 @@
                         role="tab"
                         aria-controls="pills-other-details"
                         :aria-selected="
-                            isSelectedTabById('pills-other-details-tab')
+                            isSelectedTabById('pills-other-details-tab') || null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -98,7 +100,8 @@
                         role="tab"
                         aria-controls="pills-online-training"
                         :aria-selected="
-                            isSelectedTabById('pills-online-training-tab')
+                            isSelectedTabById('pills-online-training-tab') ||
+                            null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -116,7 +119,9 @@
                         href=""
                         role="tab"
                         aria-controls="pills-payment"
-                        :aria-selected="isSelectedTabById('pills-payment-tab')"
+                        :aria-selected="
+                            isSelectedTabById('pills-payment-tab') || null
+                        "
                         @click.prevent="tabClicked($event.target.id)"
                     >
                         6. Payment
@@ -133,7 +138,9 @@
                         href=""
                         role="tab"
                         aria-controls="pills-confirm"
-                        :aria-selected="isSelectedTabById('pills-confirm-tab')"
+                        :aria-selected="
+                            isSelectedTabById('pills-confirm-tab') || null
+                        "
                         @click.prevent="tabClicked($event.target.id)"
                     >
                         7. Confirmation
