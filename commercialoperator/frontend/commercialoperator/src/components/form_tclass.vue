@@ -207,18 +207,19 @@
                     role="tabpanel"
                     aria-labelledby="pills-activities-land-tab"
                 >
+                    <!-- NOTE: Does the v-bind (it used to be v-on="$listeners" in vue2) do anything for the functionality of this component or can we axe it? -->
                     <ActivitiesLand
                         v-if="
                             proposal_parks &&
                             Object.keys(proposal_parks).length > 0
                         "
+                        v-bind="$attrs"
                         id="proposalStartActivitiesLand"
                         ref="activities_land"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
-                        v-bind="$attrs"
                     ></ActivitiesLand>
                 </div>
                 <div
@@ -233,18 +234,19 @@
                     role="tabpanel"
                     aria-labelledby="pills-activities-marine-tab"
                 >
+                    <!-- NOTE: Does the v-bind (it used to be v-on="$listeners" in vue2) do anything for the functionality of this component or can we axe it? -->
                     <ActivitiesMarine
                         v-if="
                             proposal_parks &&
                             Object.keys(proposal_parks).length > 0
                         "
+                        v-bind="$attrs"
                         id="proposalStartActivitiesMarine"
                         ref="activities_marine"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
-                        v-bind="$attrs"
                     ></ActivitiesMarine>
                 </div>
                 <div
