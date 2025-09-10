@@ -204,7 +204,6 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
 
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
@@ -561,18 +560,18 @@ export default {
         fetchFilterLists: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.filter_list_approvals).then(
+            helpers.fetchUrl(api_endpoints.filter_list_approvals).then(
                 (response) => {
-                    vm.proposal_submitters = response.body.submitters;
+                    vm.proposal_submitters = response.submitters;
                 },
                 (error) => {
                     console.log(error);
                 }
             );
 
-            vm.$http.get(api_endpoints.filter_list_parks).then(
+            helpers.fetchUrl(api_endpoints.filter_list_parks).then(
                 (response) => {
-                    vm.proposal_parks = response.body;
+                    vm.proposal_parks = response;
                 },
                 (error) => {
                     console.log(error);
@@ -582,9 +581,9 @@ export default {
         fetchOverdueInvoices: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.overdue_invoices).then(
+            helpers.fetchUrl(api_endpoints.overdue_invoices).then(
                 (response) => {
-                    vm.overdue_invoices = response.body;
+                    vm.overdue_invoices = response;
                 },
                 (error) => {
                     console.log(error);
@@ -690,10 +689,10 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
-                    vm.is_payment_admin = response.body.is_payment_admin;
+                    vm.profile = response;
+                    vm.is_payment_admin = response.is_payment_admin;
                 },
                 (error) => {
                     console.log(error);

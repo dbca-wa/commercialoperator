@@ -197,17 +197,17 @@
                             </td>
                         </tr>
                     </tbody>
-                    <span
-                        ><button
-                            class="btn btn-primary"
-                            type="button"
-                            :disabled="disabled"
-                            @click="addRow()"
-                        >
-                            +</button
-                        >Add another park and/or date</span
-                    >
                 </table>
+                <span
+                    ><button
+                        class="btn btn-primary"
+                        type="button"
+                        :disabled="disabled"
+                        @click="addRow()"
+                    >
+                        +</button
+                    >Add another park and/or date</span
+                >
             </div>
         </div>
         <!-- Hidden input field for form submission (by name and value) -->

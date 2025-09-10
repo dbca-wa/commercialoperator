@@ -13,7 +13,7 @@
 <script>
 import ParkBookingDash from '@common-utils/parkbookings_dashboard.vue';
 import PaymentDash from '@common-utils/payments_dashboard.vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, helpers } from '@/utils/hooks';
 import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 export default {
     name: 'ParkEntryFeesDashboard',
@@ -36,9 +36,9 @@ export default {
     methods: {
         fetchProfile: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
+                    vm.profile = response;
                     if (vm.profile.system_settings == null) {
                         vm.one_row_per_park = false;
                     } else {
