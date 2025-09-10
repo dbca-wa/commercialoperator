@@ -34,11 +34,13 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
-                                        <tr>
-                                            <th>Lodgement</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
-                                        </tr>
+                                        <thead>
+                                            <tr>
+                                                <th>Lodgement</th>
+                                                <th>Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
                                     </table>
                                 </div>
                             </div>
@@ -51,30 +53,53 @@
                         <div class="card-header">History</div>
                         <div class="card-body">
                             <table class="table small-table">
-                                <tr>
-                                    <th>Last Modified</th>
-                                    <th></th>
-                                </tr>
-                                <tr
-                                    v-for="p in proposal.reversion_ids"
-                                    :key="`reversion-${p.cur_version_id}`"
-                                >
-                                    <td>{{ formatDate(p.created) }}</td>
-                                    <td>
-                                        <a
-                                            id="history_id"
-                                            :href="
-                                                history_url +
-                                                'version_id2=' +
-                                                p.cur_version_id +
-                                                '&version_id1=' +
-                                                p.prev_version_id
-                                            "
-                                            target="_blank"
-                                            >compare</a
-                                        >
-                                    </td>
-                                </tr>
+                                <thead>
+                                    <tr>
+                                        <th>Last Modified</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="h in proposal.history"
+                                        :key="`history-${h.id}`"
+                                    >
+                                        <td>{{ formatDate(h.modified) }}</td>
+                                        <td>
+                                            <a
+                                                :href="
+                                                    history_url +
+                                                    'version_id2=' +
+                                                    h.version_id +
+                                                    '&version_id1=' +
+                                                    h.prev_version_id
+                                                "
+                                                target="_blank"
+                                                >compare</a
+                                            >
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        v-for="p in proposal.reversion_ids"
+                                        :key="`reversion-${p.cur_version_id}`"
+                                    >
+                                        <td>{{ formatDate(p.created) }}</td>
+                                        <td>
+                                            <a
+                                                id="history_id"
+                                                :href="
+                                                    history_url +
+                                                    'version_id2=' +
+                                                    p.cur_version_id +
+                                                    '&version_id1=' +
+                                                    p.prev_version_id
+                                                "
+                                                target="_blank"
+                                                >compare</a
+                                            >
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -159,83 +184,87 @@
                                             </template>
                                         </div>
                                         <table class="table small-table">
-                                            <tr>
-                                                <th>Referral</th>
-                                                <th>Status/Action</th>
-                                            </tr>
-                                            <tr
-                                                v-for="r in proposal.latest_referrals"
-                                                :key="`referral-${r.id}`"
-                                            >
-                                                <td>
-                                                    <small
-                                                        ><strong>{{
-                                                            r.referral
-                                                        }}</strong></small
-                                                    ><br />
-                                                    <small
-                                                        ><strong>{{
-                                                            formatDate(
-                                                                r.lodged_on
-                                                            )
-                                                        }}</strong></small
-                                                    >
-                                                </td>
-                                                <td>
-                                                    <small
-                                                        ><strong>{{
-                                                            r.processing_status
-                                                        }}</strong></small
-                                                    ><br />
-                                                    <template
-                                                        v-if="
-                                                            r.processing_status ==
-                                                            'Awaiting'
-                                                        "
-                                                    >
+                                            <thead>
+                                                <tr>
+                                                    <th>Referral</th>
+                                                    <th>Status/Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr
+                                                    v-for="r in proposal.latest_referrals"
+                                                    :key="`referral-${r.id}`"
+                                                >
+                                                    <td>
                                                         <small
+                                                            ><strong>{{
+                                                                r.referral
+                                                            }}</strong></small
+                                                        ><br />
+                                                        <small
+                                                            ><strong>{{
+                                                                formatDate(
+                                                                    r.lodged_on
+                                                                )
+                                                            }}</strong></small
+                                                        >
+                                                    </td>
+                                                    <td>
+                                                        <small
+                                                            ><strong>{{
+                                                                r.processing_status
+                                                            }}</strong></small
+                                                        ><br />
+                                                        <template
                                                             v-if="
-                                                                canLimitedAction
+                                                                r.processing_status ==
+                                                                'Awaiting'
                                                             "
-                                                            ><a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    remindReferral(
-                                                                        r
-                                                                    )
+                                                        >
+                                                            <small
+                                                                v-if="
+                                                                    canLimitedAction
                                                                 "
-                                                                >Remind</a
+                                                                ><a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        remindReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Remind</a
+                                                                >
+                                                                /
+                                                                <a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        recallReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Recall</a
+                                                                ></small
                                                             >
-                                                            /
-                                                            <a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    recallReferral(
-                                                                        r
-                                                                    )
+                                                        </template>
+                                                        <template v-else>
+                                                            <small
+                                                                v-if="
+                                                                    canLimitedAction
                                                                 "
-                                                                >Recall</a
-                                                            ></small
-                                                        >
-                                                    </template>
-                                                    <template v-else>
-                                                        <small
-                                                            v-if="
-                                                                canLimitedAction
-                                                            "
-                                                            ><a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    resendReferral(
-                                                                        r
-                                                                    )
-                                                                "
-                                                                >Resend</a
-                                                            ></small
-                                                        >
-                                                    </template>
-                                                </td>
-                                            </tr>
+                                                                ><a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        resendReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Resend</a
+                                                                ></small
+                                                            >
+                                                        </template>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                         <MoreReferrals
                                             :proposal="proposal"
@@ -553,38 +582,51 @@
                                                 <table
                                                     class="table small-table"
                                                 >
-                                                    <tr>
-                                                        <th>
-                                                            QA Officer Referral
-                                                        </th>
-                                                        <th>Status/Action</th>
-                                                    </tr>
-                                                    <tr
-                                                        v-for="r in proposal.qaofficer_referrals"
-                                                        :key="r.id"
-                                                    >
-                                                        <td>
-                                                            <small
-                                                                ><strong>{{
-                                                                    formatDate(
-                                                                        r.lodged_on
-                                                                    )
-                                                                }}</strong></small
-                                                            >
-                                                        </td>
-                                                        <td>
-                                                            <small
-                                                                ><strong>{{
-                                                                    r.processing_status
-                                                                }}</strong></small
-                                                            ><br />
-                                                            <small
-                                                                ><strong>{{
-                                                                    r.qaofficer
-                                                                }}</strong></small
-                                                            ><br />
-                                                        </td>
-                                                    </tr>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>QA Officer</th>
+                                                            <th>
+                                                                Status/Action
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <th>
+                                                                QA Officer
+                                                                Referral
+                                                            </th>
+                                                            <th>
+                                                                Status/Action
+                                                            </th>
+                                                        </tr>
+                                                        <tr
+                                                            v-for="r in proposal.qaofficer_referrals"
+                                                            :key="r.id"
+                                                        >
+                                                            <td>
+                                                                <small
+                                                                    ><strong>{{
+                                                                        formatDate(
+                                                                            r.lodged_on
+                                                                        )
+                                                                    }}</strong></small
+                                                                >
+                                                            </td>
+                                                            <td>
+                                                                <small
+                                                                    ><strong>{{
+                                                                        r.processing_status
+                                                                    }}</strong></small
+                                                                ><br />
+                                                                <small
+                                                                    ><strong>{{
+                                                                        r.qaofficer
+                                                                    }}</strong></small
+                                                                ><br />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
                                                 </table>
                                             </div>
 

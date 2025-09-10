@@ -29,24 +29,30 @@
                         <!-- <strong>Your application for a commercial operations licence has been successfully submitted.</strong>
                         <br/> -->
                         <table>
-                            <tr>
-                                <td><strong>Application:</strong></td>
-                                <td>
-                                    <strong>{{
-                                        proposal.lodgement_number
-                                    }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Date/Time:</strong></td>
-                                <td>
-                                    <strong>
-                                        {{
-                                            formatDate(proposal.lodgement_date)
-                                        }}</strong
-                                    >
-                                </td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <td><strong>Application:</strong></td>
+                                    <td>
+                                        <strong>{{
+                                            proposal.lodgement_number
+                                        }}</strong>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Date/Time:</strong></td>
+                                    <td>
+                                        <strong>
+                                            {{
+                                                formatDate(
+                                                    proposal.lodgement_date
+                                                )
+                                            }}</strong
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                         <br />
                         <label

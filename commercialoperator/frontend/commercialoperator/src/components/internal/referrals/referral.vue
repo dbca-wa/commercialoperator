@@ -26,11 +26,13 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
-                                        <tr>
-                                            <th>Lodgement</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
-                                        </tr>
+                                        <thead>
+                                            <tr>
+                                                <th>Lodgement</th>
+                                                <th>Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
                                     </table>
                                 </div>
                             </div>
@@ -86,85 +88,91 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
-                                        <tr>
-                                            <th>Referral</th>
-                                            <th>Status/Action</th>
-                                        </tr>
-                                        <tr
-                                            v-for="r in referral.latest_referrals"
-                                            :key="r.id"
-                                        >
-                                            <td>
-                                                <small
-                                                    ><strong>{{
-                                                        r.referral
-                                                    }}</strong></small
-                                                ><br />
-                                                <small
-                                                    ><strong>{{
-                                                        formatDate(r.lodged_on)
-                                                    }}</strong></small
-                                                >
-                                            </td>
-                                            <td>
-                                                <small
-                                                    ><strong>{{
-                                                        r.processing_status
-                                                    }}</strong></small
-                                                ><br />
-                                                <template
-                                                    v-if="
-                                                        !isFinalised &&
-                                                        referral.referral ==
-                                                            proposal
-                                                                .current_assessor
-                                                                .id
-                                                    "
-                                                >
+                                        <thead>
+                                            <tr>
+                                                <th>Referral</th>
+                                                <th>Status/Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr
+                                                v-for="r in referral.latest_referrals"
+                                                :key="r.id"
+                                            >
+                                                <td>
+                                                    <small
+                                                        ><strong>{{
+                                                            r.referral
+                                                        }}</strong></small
+                                                    ><br />
+                                                    <small
+                                                        ><strong>{{
+                                                            formatDate(
+                                                                r.lodged_on
+                                                            )
+                                                        }}</strong></small
+                                                    >
+                                                </td>
+                                                <td>
+                                                    <small
+                                                        ><strong>{{
+                                                            r.processing_status
+                                                        }}</strong></small
+                                                    ><br />
                                                     <template
                                                         v-if="
-                                                            r.processing_status ==
-                                                            'Awaiting'
+                                                            !isFinalised &&
+                                                            referral.referral ==
+                                                                proposal
+                                                                    .current_assessor
+                                                                    .id
                                                         "
                                                     >
-                                                        <small
-                                                            ><a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    remindReferral(
-                                                                        r
-                                                                    )
-                                                                "
-                                                                >Remind</a
+                                                        <template
+                                                            v-if="
+                                                                r.processing_status ==
+                                                                'Awaiting'
+                                                            "
+                                                        >
+                                                            <small
+                                                                ><a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        remindReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Remind</a
+                                                                >
+                                                                /
+                                                                <a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        recallReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Recall</a
+                                                                ></small
                                                             >
-                                                            /
-                                                            <a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    recallReferral(
-                                                                        r
-                                                                    )
-                                                                "
-                                                                >Recall</a
-                                                            ></small
-                                                        >
+                                                        </template>
+                                                        <template v-else>
+                                                            <small
+                                                                ><a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        resendReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Resend</a
+                                                                ></small
+                                                            >
+                                                        </template>
                                                     </template>
-                                                    <template v-else>
-                                                        <small
-                                                            ><a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    resendReferral(
-                                                                        r
-                                                                    )
-                                                                "
-                                                                >Resend</a
-                                                            ></small
-                                                        >
-                                                    </template>
-                                                </template>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                            </tr>
+                                        </tbody>
                                     </table>
                                     <MoreReferrals
                                         :proposal="proposal"
