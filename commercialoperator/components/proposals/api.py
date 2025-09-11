@@ -2553,15 +2553,18 @@ class ReferralViewSet(viewsets.ModelViewSet):
     )
     def referral_list(self, request, *args, **kwargs):
         instance = self.get_object()
-        # qs = self.get_queryset().all()
-        # qs=qs.filter(sent_by=instance.referral, proposal=instance.proposal)
+
+        request_user_id = request.user.id
+        # Query the through-table on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
+        request_user_referralrecipientgroup_set = retrieve_user_groups(
+            "ReferralRecipientGroup", request_user_id
+        )
 
         qs = Referral.objects.filter(
-            referral_group__in=request.user.referralrecipientgroup_set.all(),
+            referral_group__in=request_user_referralrecipientgroup_set,
             proposal=instance.proposal,
         )
-        serializer = DTReferralSerializer(qs, many=True)
-        # serializer = ProposalReferralSerializer(qs, many=True)
+        serializer = DTReferralSerializer(qs, context={"request": request}, many=True)
 
         return Response(serializer.data)
 
