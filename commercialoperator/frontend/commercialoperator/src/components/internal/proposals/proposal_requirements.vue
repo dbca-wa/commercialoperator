@@ -74,7 +74,7 @@
     </div>
 </template>
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import RequirementDetail from './proposal_add_requirement.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
@@ -133,7 +133,7 @@ export default {
             requirement_options: {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

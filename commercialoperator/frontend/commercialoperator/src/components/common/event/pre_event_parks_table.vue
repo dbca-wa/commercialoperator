@@ -33,7 +33,8 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_pre_event_park.vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, constants } from '@/utils/hooks';
+
 export default {
     name: 'EventParkTableDash',
     components: {
@@ -69,7 +70,7 @@ export default {
             ],
             park_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

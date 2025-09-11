@@ -262,7 +262,8 @@
 import $ from 'jquery';
 import Vue from 'vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+
 export default {
     name: 'OrganisationAccess',
     components: {
@@ -312,7 +313,7 @@ export default {
             ),
             actionDtOptions: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 deferRender: true,
@@ -350,7 +351,7 @@ export default {
             actionsTable: null,
             commsDtOptions: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 deferRender: true,

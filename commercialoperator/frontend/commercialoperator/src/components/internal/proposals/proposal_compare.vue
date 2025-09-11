@@ -125,7 +125,8 @@ import ProposedApproval from './proposed_issuance.vue';
 import ProposalTClass from '@/components/form_tclass.vue';
 import OnHold from './proposal_onhold.vue';
 import WithQAOfficer from './proposal_qaofficer.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+
 export default {
     name: 'InternalProposal',
     components: {
@@ -204,7 +205,7 @@ export default {
             contacts_table_id: vm._uid + 'contacts-table',
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {

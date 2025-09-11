@@ -954,7 +954,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import AddContact from '@common-utils/add_contact.vue';
@@ -964,6 +964,7 @@ import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import utils from '../utils';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Organisation',
@@ -1093,7 +1094,7 @@ export default {
 
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -1150,7 +1151,7 @@ export default {
             contacts_headers_ref: ['Name', 'Role', 'Email', 'Status', 'Action'],
             contacts_options_ref: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

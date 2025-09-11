@@ -202,8 +202,8 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@/utils/vue/datatable.vue';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
-import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -267,7 +267,7 @@ export default {
             ],
             proposal_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

@@ -401,12 +401,13 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import utils from '../utils';
 import api from '../api';
 import FormSection from '@/components/forms/section_toggle.vue';
 import AddContact from '@common-utils/add_contact.vue';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Organisation',
@@ -489,7 +490,7 @@ export default {
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
             logsDtOptions: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 deferRender: true,
@@ -525,7 +526,7 @@ export default {
             },
             commsDtOptions: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 deferRender: true,
@@ -656,7 +657,7 @@ export default {
             ],
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -711,7 +712,7 @@ export default {
             contacts_headers_ref: ['Name', 'Role', 'Email', 'Status', 'Action'],
             contacts_options_ref: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

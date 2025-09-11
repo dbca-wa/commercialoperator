@@ -11,7 +11,8 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+
 export default {
     name: 'MoreReferrals',
     props: {
@@ -41,7 +42,7 @@ export default {
             datatable_url: '',
             datatable_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 deferRender: true,

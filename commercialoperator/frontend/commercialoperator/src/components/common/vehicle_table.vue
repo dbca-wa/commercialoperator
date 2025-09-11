@@ -34,7 +34,8 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editVehicle from './edit_vehicle.vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, constants } from '@/utils/hooks';
+
 export default {
     name: 'VehicleTableDash',
     components: {
@@ -82,7 +83,7 @@ export default {
             ],
             vehicle_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

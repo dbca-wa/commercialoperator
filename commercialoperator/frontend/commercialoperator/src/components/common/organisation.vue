@@ -189,7 +189,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers, utils } from '@/utils/hooks';
+import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
@@ -252,7 +252,7 @@ export default {
             contacts_headers_ref: ['Name', 'Role', 'Email', 'Status', 'Action'],
             contacts_options_ref: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {

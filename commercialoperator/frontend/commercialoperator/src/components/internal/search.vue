@@ -308,7 +308,7 @@ import alert from '@vue-utils/alert.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import TextFilteredField from '@/components/forms/text-filtered.vue';
 import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
 export default {
     name: 'ExternalDashboard',
@@ -359,7 +359,7 @@ export default {
             ],
             proposal_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },

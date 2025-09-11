@@ -591,8 +591,8 @@ import ProposalEvent from '@/components/form_event.vue';
 import ProposedDecline from './district_proposal_proposed_decline.vue';
 import ApprovalScreen from './district_proposal_approval.vue';
 import ProposedApproval from './district_proposed_issuance.vue';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
-import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'DistrictProposal',
     components: {
@@ -673,7 +673,7 @@ export default {
             contacts_table_id: vm._uid + 'contacts-table',
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {

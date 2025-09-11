@@ -374,7 +374,8 @@ import MoreReferrals from '@common-utils/more_referrals.vue';
 import CompleteReferral from './complete_referral.vue';
 import Requirements from '@/components/internal/proposals/proposal_requirements.vue';
 import Assessment from '@/components/common/tclass/assessment.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Referral',
@@ -457,7 +458,7 @@ export default {
             contacts_table_id: vm._uid + 'contacts-table',
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {

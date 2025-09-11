@@ -1072,8 +1072,9 @@ import ProposalEvent from '@/components/form_event.vue';
 import OnHold from './proposal_onhold.vue';
 import WithQAOfficer from './proposal_qaofficer.vue';
 import FilmingDistrictProposalsTable from '@common-utils/filming_district_proposals_table.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'InternalProposal',
     components: {
@@ -1164,7 +1165,7 @@ export default {
             contacts_table_id: vm._uid + 'contacts-table',
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {

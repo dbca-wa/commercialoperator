@@ -26,6 +26,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
+import { constants } from '@/utils/hooks';
 
 export default {
     name: 'FilmingDistrictProposalTableDash',
@@ -57,7 +58,7 @@ export default {
             ],
             district_proposal_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
