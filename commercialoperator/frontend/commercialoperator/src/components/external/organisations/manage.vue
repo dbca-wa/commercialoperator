@@ -404,7 +404,6 @@
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import utils from '../utils';
-import api from '../api';
 import FormSection from '@/components/forms/section_toggle.vue';
 import AddContact from '@common-utils/add_contact.vue';
 
@@ -829,16 +828,15 @@ export default {
             this.$refs.add_contact.isModalOpen = true;
         },
         editContact: function (_id) {
-            let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisation_contacts,
                         _id
                     )
                 )
                 .then((response) => {
-                    this.$refs.add_contact.contact = response.body;
+                    this.$refs.add_contact.contact = response;
                     this.addContact();
                 })
                 .then(
@@ -889,15 +887,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/accept_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -963,15 +967,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result.value) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/accept_declined_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1037,15 +1047,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/decline_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1111,15 +1127,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/unlink_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1192,15 +1214,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/make_admin_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1267,15 +1295,21 @@ export default {
                         (result) => {
                             console.log(result);
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/make_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1347,15 +1381,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/suspend_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1421,15 +1461,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/reinstate_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1495,15 +1541,21 @@ export default {
                     }).then(
                         (result) => {
                             if (result) {
-                                vm.$http
-                                    .post(
+                                helpers
+                                    .fetchUrl(
                                         helpers.add_endpoint_json(
                                             api_endpoints.organisations,
                                             vm.org.id + '/relink_user'
                                         ),
-                                        JSON.stringify(vm.contact_user),
                                         {
-                                            emulateJSON: true,
+                                            method: 'POST',
+                                            body: JSON.stringify(
+                                                vm.contact_user
+                                            ),
+                                            headers: {
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
                                         }
                                     )
                                     .then(
@@ -1544,21 +1596,24 @@ export default {
         updateDetails_noconfirm: function () {
             let vm = this;
             vm.updatingDetails = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         vm.org.id + '/update_details'
                     ),
-                    JSON.stringify(vm.org),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(vm.org),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingDetails = false;
-                        vm.org = response.body;
+                        vm.org = response;
                         if (vm.org.organisation_address == null) {
                             vm.org.organisation_address = {};
                         }
@@ -1579,21 +1634,24 @@ export default {
         updateAddress_noconfirm: function () {
             let vm = this;
             vm.updatingAddress = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         vm.org.id + '/update_address'
                     ),
-                    JSON.stringify(vm.org.organisation_address),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(vm.org.organisation_address),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingAddress = false;
-                        vm.org = response.body;
+                        vm.org = response;
                         if (vm.org.organisation_address == null) {
                             vm.org.organisation_address = {};
                         }
@@ -1608,21 +1666,24 @@ export default {
         updateDetails: function () {
             let vm = this;
             vm.updatingDetails = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         vm.org.id + '/update_details'
                     ),
-                    JSON.stringify(vm.org),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(vm.org),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingDetails = false;
-                        vm.org = response.body;
+                        vm.org = response;
                         if (vm.org.organisation_address == null) {
                             vm.org.organisation_address = {};
                         }
@@ -1668,11 +1729,17 @@ export default {
         deleteContact: function (id) {
             let vm = this;
 
-            vm.$http
-                .delete(
-                    helpers.add_endpoint_json(api.organisation_contacts, id),
+            helpers
+                .fetchUrl(
+                    helpers.add_endpoint_json(
+                        api_endpoints.organisation_contacts,
+                        id
+                    ),
                     {
-                        emulateJSON: true,
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
@@ -1690,7 +1757,7 @@ export default {
                             title: 'Contact Deleted',
                             text:
                                 'The contact could not be deleted because of the following error : [' +
-                                error.body +
+                                error +
                                 ']',
                             icon: 'error',
                         });
@@ -1700,21 +1767,24 @@ export default {
         updateAddress: function () {
             let vm = this;
             vm.updatingAddress = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         vm.org.id + '/update_address'
                     ),
-                    JSON.stringify(vm.org.organisation_address),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(vm.org.organisation_address),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingAddress = false;
-                        vm.org = response.body;
+                        vm.org = response;
                         if (!vm.isApplication) {
                             swal.fire({
                                 title: 'Saved',
@@ -1760,20 +1830,23 @@ export default {
                 confirmButtonText: 'Accept',
             }).then(
                 () => {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 org.id + '/unlink_user'
                             ),
-                            { user: person.id },
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify({ user: person.id }),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
                             (response) => {
-                                vm.org = response.body;
+                                vm.org = response;
                                 if (vm.org.organisation_address == null) {
                                     vm.org.organisation_address = {};
                                 }
@@ -1798,7 +1871,7 @@ export default {
                                         ' from ' +
                                         org_name +
                                         '. ' +
-                                        error.body,
+                                        error,
                                     icon: 'error',
                                 });
                             }

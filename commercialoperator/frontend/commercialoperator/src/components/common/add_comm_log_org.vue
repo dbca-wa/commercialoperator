@@ -384,18 +384,23 @@ export default {
             let comms = new FormData(vm.form);
             comms.append('is_ledger_org_query', vm.isLedgerOrgQuery);
             vm.addingComms = true;
-            vm.$http.post(vm.url, comms).then(
-                () => {
-                    vm.addingComms = false;
-                    vm.$emit('refreshActionFromResponse', this.localAction);
-                    vm.close();
-                },
-                (error) => {
-                    vm.hasErrors = true;
-                    vm.addingComms = false;
-                    vm.errorString = helpers.apiVueResourceError(error);
-                }
-            );
+            helpers
+                .fetchUrl(vm.url, {
+                    method: 'POST',
+                    body: comms,
+                })
+                .then(
+                    () => {
+                        vm.addingComms = false;
+                        vm.$emit('refreshActionFromResponse', this.localAction);
+                        vm.close();
+                    },
+                    (error) => {
+                        vm.hasErrors = true;
+                        vm.addingComms = false;
+                        vm.errorString = helpers.apiVueResourceError(error);
+                    }
+                );
         },
         addFormValidations: function () {
             let vm = this;

@@ -260,7 +260,6 @@
 </template>
 <script>
 import $ from 'jquery';
-import Vue from 'vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
@@ -270,8 +269,8 @@ export default {
         CommsLogs,
     },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 helpers.add_endpoint_json(
                     api_endpoints.organisation_requests,
                     to.params.access_id
@@ -280,7 +279,7 @@ export default {
             .then(
                 (response) => {
                     next((vm) => {
-                        vm.access = response.body;
+                        vm.access = response;
                     });
                 },
                 (error) => {
@@ -501,21 +500,23 @@ export default {
         fetchAccessGroupMembers: function () {
             let vm = this;
             vm.loading.push('Loading Access Group Members');
-            vm.$http.get(api_endpoints.organisation_access_group_members).then(
-                (response) => {
-                    vm.members = response.body;
-                    vm.loading.splice('Loading Access Group Members', 1);
-                },
-                (error) => {
-                    console.log(error);
-                    vm.loading.splice('Loading Access Group Members', 1);
-                }
-            );
+            helpers
+                .fetchUrl(api_endpoints.organisation_access_group_members)
+                .then(
+                    (response) => {
+                        vm.members = response;
+                        vm.loading.splice('Loading Access Group Members', 1);
+                    },
+                    (error) => {
+                        console.log(error);
+                        vm.loading.splice('Loading Access Group Members', 1);
+                    }
+                );
         },
         assignMyself: function () {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisation_requests,
                         vm.access.id + '/assign_request_user'
@@ -524,7 +525,7 @@ export default {
                 .then(
                     (response) => {
                         console.log(response);
-                        vm.access = Object.assign({}, response.body);
+                        vm.access = Object.assign({}, response);
                         vm.$nextTick(() => {
                             vm.initialiseAssessorSelect(vm.assignTo);
                         });
@@ -538,29 +539,32 @@ export default {
             let vm = this;
             if (vm.access.assigned_officer != 'null') {
                 let data = { user_id: vm.access.assigned_officer };
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.organisation_requests,
                             vm.access.id + '/assign_to'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
                             console.log(response);
-                            vm.access = response.body;
+                            vm.access = response;
                         },
                         (error) => {
                             console.log(error);
                         }
                     );
             } else {
-                vm.$http
-                    .get(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.organisation_requests,
                             vm.access.id + '/unassign'
@@ -569,7 +573,7 @@ export default {
                     .then(
                         (response) => {
                             console.log(response);
-                            vm.access = response.body;
+                            vm.access = response;
                         },
                         (error) => {
                             console.log(error);
@@ -587,8 +591,8 @@ export default {
                 confirmButtonText: 'Accept',
             }).then(
                 () => {
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisation_requests,
                                 vm.access.id + '/accept'
@@ -597,7 +601,7 @@ export default {
                         .then(
                             (response) => {
                                 console.log(response);
-                                vm.access = response.body;
+                                vm.access = response;
                                 swal.fire({
                                     title: 'Success',
                                     text: 'Organisation request has been accepted',
@@ -637,8 +641,8 @@ export default {
                 confirmButtonText: 'Decline',
             }).then(
                 () => {
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisation_requests,
                                 vm.access.id + '/decline'
@@ -647,7 +651,7 @@ export default {
                         .then(
                             (response) => {
                                 console.log(response);
-                                vm.access = response.body;
+                                vm.access = response;
                             },
                             (error) => {
                                 console.log(error);
@@ -660,9 +664,9 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
+                    vm.profile = response;
                 },
                 (error) => {
                     console.log(error);
