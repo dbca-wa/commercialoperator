@@ -177,7 +177,6 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
 
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
@@ -701,12 +700,12 @@ export default {
         fetchFilterLists: function () {
             let vm = this;
             vm.isLoading = true;
-            vm.$http
-                .get(api_endpoints.filter_list)
+            helpers
+                .fetchUrl(api_endpoints.filter_list)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
-                        vm.application_types = response.body.application_types;
+                        vm.proposal_submitters = response.submitters;
+                        vm.application_types = response.application_types;
                         vm.proposal_status =
                             vm.level == 'internal'
                                 ? vm.internal_status
@@ -735,8 +734,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_proposal(proposal_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_proposal(proposal_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({
@@ -854,10 +855,10 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
-                    vm.is_payment_admin = response.body.is_payment_admin;
+                    vm.profile = response;
+                    vm.is_payment_admin = response.is_payment_admin;
                 },
                 (error) => {
                     console.log(error);

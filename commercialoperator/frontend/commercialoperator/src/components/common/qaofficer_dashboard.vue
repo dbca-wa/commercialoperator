@@ -138,7 +138,6 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
@@ -417,11 +416,11 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list)
+            helpers
+                .fetchUrl(api_endpoints.filter_list)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
+                        vm.proposal_submitters = response.submitters;
                         vm.proposal_status =
                             vm.level == 'internal'
                                 ? vm.internal_status
@@ -447,15 +446,17 @@ export default {
                 confirmButtonColor: '#d9534f',
             }).then(
                 () => {
-                    vm.$http
-                        .delete(api_endpoints.discard_proposal(proposal_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_proposal(proposal_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your application has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your application has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.proposal_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
@@ -558,9 +559,9 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
+                    vm.profile = response;
                 },
                 (error) => {
                     console.log(error);

@@ -343,13 +343,12 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list_district_proposals)
+            helpers
+                .fetchUrl(api_endpoints.filter_list_district_proposals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
-                        vm.proposal_status =
-                            response.body.processing_status_choices;
+                        vm.proposal_submitters = response.submitters;
+                        vm.proposal_status = response.processing_status_choices;
                     },
                     (error) => {
                         console.log(error);

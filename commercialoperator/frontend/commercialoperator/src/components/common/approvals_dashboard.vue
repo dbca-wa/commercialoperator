@@ -212,7 +212,6 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
 import ApprovalExtend from '../internal/approvals/approval_extend.vue';
 import ApprovalCancellation from '../internal/approvals/approval_cancellation.vue';
 import ApprovalSuspension from '../internal/approvals/approval_suspension.vue';
@@ -711,14 +710,13 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list_approvals)
+            helpers
+                .fetchUrl(api_endpoints.filter_list_approvals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
-                        vm.approval_status =
-                            response.body.approval_status_choices;
-                        vm.application_types = response.body.application_types;
+                        vm.proposal_submitters = response.submitters;
+                        vm.approval_status = response.approval_status_choices;
+                        vm.application_types = response.application_types;
                     },
                     (error) => {
                         console.log(error);
@@ -930,9 +928,9 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
+                    vm.profile = response;
                 },
                 (error) => {
                     console.log(error);
@@ -961,15 +959,18 @@ export default {
                 confirmButtonText: 'Reissue licence',
             }).then(
                 () => {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposals,
                                 proposal_id + '/reissue_approval'
                             ),
-                            JSON.stringify(data),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(data),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -983,7 +984,7 @@ export default {
                                 console.log(error);
                                 swal.fire({
                                     title: 'Reissue Licence',
-                                    text: error.body,
+                                    text: error,
                                     icon: 'error',
                                 });
                             }
@@ -1005,15 +1006,18 @@ export default {
                 confirmButtonText: 'Extend licence',
             }).then(
                 () => {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.approvals,
                                 approval_id + '/approval_extend'
                             ),
-                            JSON.stringify(data),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(data),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -1027,7 +1031,7 @@ export default {
                                 console.log(error);
                                 swal.fire({
                                     title: 'Extend Licence',
-                                    text: error.body,
+                                    text: error,
                                     icon: 'error',
                                 });
                             }
@@ -1052,13 +1056,19 @@ export default {
                 confirmButtonText: 'Reinstate licence',
             }).then(
                 () => {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.approvals,
                                 approval_id + '/approval_reinstate'
                             ),
-                            {}
+                            {
+                                method: 'POST',
+                                body: JSON.stringify({}),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }
                         )
                         .then(
                             () => {
@@ -1073,7 +1083,7 @@ export default {
                                 console.log(error);
                                 swal.fire({
                                     title: 'Reinstate Licence',
-                                    text: error.body,
+                                    text: error,
                                     icon: 'error',
                                 });
                             }
@@ -1101,20 +1111,19 @@ export default {
                             swal.showLoading();
                         },
                     });
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposals,
                                 proposal_id + '/renew_approval'
-                            ),
-                            {}
+                            )
                         )
                         .then(
                             (response) => {
                                 swal.hideLoading();
                                 swal.close();
                                 let proposal = {};
-                                proposal = response.body;
+                                proposal = response;
                                 vm.$router.push({
                                     name: 'draft_proposal',
                                     params: { proposal_id: proposal.id },
@@ -1124,7 +1133,7 @@ export default {
                                 console.log(error);
                                 swal.fire({
                                     title: 'Renew Licence',
-                                    text: error.body,
+                                    text: error,
                                     icon: 'error',
                                 });
                             }
@@ -1160,20 +1169,19 @@ export default {
                             container: 'swal2-popover',
                         },
                     });
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposals,
                                 proposal_id + '/amend_approval'
-                            ),
-                            {}
+                            )
                         )
                         .then(
                             (response) => {
                                 swal.hideLoading();
                                 swal.close();
                                 let proposal = {};
-                                proposal = response.body;
+                                proposal = response;
                                 vm.$router.push({
                                     name: 'draft_proposal',
                                     params: { proposal_id: proposal.id },
@@ -1183,7 +1191,7 @@ export default {
                                 console.log(error);
                                 swal.fire({
                                     title: 'Amend Licence',
-                                    text: error.body,
+                                    text: error,
                                     icon: 'error',
                                 });
                             }

@@ -429,14 +429,13 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list_referrals)
+            helpers
+                .fetchUrl(api_endpoints.filter_list_referrals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
-                        vm.proposal_status =
-                            response.body.processing_status_choices;
-                        vm.application_types = response.body.application_types;
+                        vm.proposal_submitters = response.submitters;
+                        vm.proposal_status = response.processing_status_choices;
+                        vm.application_types = response.application_types;
                     },
                     (error) => {
                         console.log(error);
