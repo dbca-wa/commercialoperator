@@ -378,9 +378,11 @@ export default {
                     .draw();
             }
         },
-
-        filterProposalRegion: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+        filterProposalRegion: {
+            handler: function () {
+                this.$refs.proposal_datatable.vmDataTable.draw();
+            },
+            deep: true,
         },
         filterProposalSubmitter: function () {
             let vm = this;
