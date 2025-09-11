@@ -325,7 +325,7 @@ export default {
                             'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email, proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name';
                     },
                 },
-                dom: '<"container-fluid mb-2 align-items-center text-nowrap"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
+                dom: constants.DATATABLE_DOM_HTML,
                 buttons: [
                     {
                         extend: 'excelHtml5',

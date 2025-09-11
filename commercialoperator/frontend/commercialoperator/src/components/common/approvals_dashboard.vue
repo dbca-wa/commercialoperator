@@ -332,7 +332,7 @@ export default {
                             'org_applicant__organisation__organisation_name, proxy_applicant__first_name, proxy_applicant__last_name, proxy_applicant__email';
                     },
                 },
-                dom: '<"container-fluid mb-2 align-items-center text-nowrap"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
+                dom: constants.DATATABLE_DOM_HTML,
                 buttons: [
                     {
                         extend: 'excelHtml5',

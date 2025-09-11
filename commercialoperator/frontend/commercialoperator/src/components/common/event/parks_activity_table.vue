@@ -128,7 +128,7 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: '<"container-fluid mb-2 align-items-center text-nowrap"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
+                dom: constants.DATATABLE_DOM_HTML,
                 buttons: [
                     {
                         extend: 'excelHtml5',

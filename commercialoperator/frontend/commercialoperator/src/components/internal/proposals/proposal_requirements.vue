@@ -155,7 +155,7 @@ export default {
                     dataSrc: '',
                 },
                 order: [6, 'asc'],
-                dom: '<"container-fluid mb-2 align-items-center text-nowrap"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
+                dom: constants.DATATABLE_DOM_HTML,
                 buttons: [
                     {
                         extend: 'excelHtml5',
