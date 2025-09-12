@@ -298,7 +298,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <template v-if="requirement.id">
                     <button
                         v-if="updatingRequirement"
@@ -340,7 +340,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
