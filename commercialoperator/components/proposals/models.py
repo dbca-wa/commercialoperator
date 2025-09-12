@@ -4953,48 +4953,47 @@ class Referral(RevisionedMixin):
         recipients = self.referral_group.members_list
         send_referral_email_notification(self, recipients, request)
 
+    @transaction.atomic
     def complete(self, request):
-        with transaction.atomic():
-            try:
-                # if request.user != self.referral:
-                group = ReferralRecipientGroup.objects.filter(id=self.referral_group.id)
-                # print u.referralrecipientgroup_set.all()
-                user = request.user
-                if group and group[0] not in user.referralrecipientgroup_set.all():
-                    raise exceptions.ReferralNotAuthorized()
-                self.processing_status = "completed"
-                self.referral = request.user
-                self.referral_text = (
-                    request.user.get_full_name()
-                    + ": "
-                    + request.data.get("referral_comment")
-                )
-                self.add_referral_document(request)
-                self.save()
-                # self.proposal.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
-                self.proposal.log_user_action(
-                    ProposalUserAction.CONCLUDE_REFERRAL.format(
-                        request.user.get_full_name(),
-                        self.id,
-                        self.proposal.id,
-                        "{}".format(self.referral_group.name),
-                    ),
-                    request,
-                )
-                # self.proposal.applicant.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
-                applicant_field = getattr(self.proposal, self.proposal.applicant_field)
-                applicant_field.log_user_action(
-                    ProposalUserAction.CONCLUDE_REFERRAL.format(
-                        request.user.get_full_name(),
-                        self.id,
-                        self.proposal.id,
-                        "{}".format(self.referral_group.name),
-                    ),
-                    request,
-                )
-                send_referral_complete_email_notification(self, request)
-            except:
-                raise
+        group = ReferralRecipientGroup.objects.filter(id=self.referral_group.id)
+        user = request.user
+        user_referralrecipientgroup_set = retrieve_user_groups(
+            "ReferralRecipientGroup", user.id
+        )
+        if group and group[0] not in user_referralrecipientgroup_set:
+            raise exceptions.ReferralNotAuthorized()
+        self.processing_status = "completed"
+        self.referral = request.user
+        self.referral_text = (
+            request.user.get_full_name()
+            + ": "
+            + request.data.get("referral_comment")
+        )
+        self.add_referral_document(request)
+        self.save()
+        # self.proposal.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
+        self.proposal.log_user_action(
+            ProposalUserAction.CONCLUDE_REFERRAL.format(
+                request.user.get_full_name(),
+                self.id,
+                self.proposal.id,
+                "{}".format(self.referral_group.name),
+            ),
+            request,
+        )
+        # self.proposal.applicant.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
+        applicant_field = getattr(self.proposal, self.proposal.applicant_field)
+        applicant_field.log_user_action(
+            ProposalUserAction.CONCLUDE_REFERRAL.format(
+                request.user.get_full_name(),
+                self.id,
+                self.proposal.id,
+                "{}".format(self.referral_group.name),
+            ),
+            request,
+        )
+        send_referral_complete_email_notification(self, request)
+
 
     def add_referral_document(self, request):
         with transaction.atomic():
@@ -5228,8 +5227,13 @@ class ProposalRequirement(OrderedModel):
         if self.proposal.processing_status == "with_referral":
             if self.referral_group:
                 group = ReferralRecipientGroup.objects.filter(id=self.referral_group.id)
+
+                
+                user_referralrecipientgroup_set = retrieve_user_groups(
+                    "ReferralRecipientGroup", user.id
+                )
                 # user=request.user
-                if group and group[0] in user.referralrecipientgroup_set.all():
+                if group and group[0] in user_referralrecipientgroup_set:
                     return True
                 else:
                     return False
