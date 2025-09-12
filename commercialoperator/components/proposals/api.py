@@ -2569,38 +2569,30 @@ class ReferralViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=["GET", "POST"], detail=True)
+    @basic_exception_handler
     def complete(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.complete(request)
-            data = {}
-            data["type"] = "referral_complete"
-            data["fromm"] = "{}".format(instance.referral_group.name)
-            data["proposal"] = "{}".format(instance.proposal.id)
-            data["staff"] = "{}".format(request.user.id)
-            data["text"] = "{}".format(instance.referral_text)
-            data["subject"] = "{}".format(instance.referral_text)
-            serializer = ProposalLogEntrySerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            comms = serializer.save()
-            if instance.document:
-                document = comms.documents.create(
-                    _file=instance.document._file, name=instance.document.name
-                )
-                document.input_name = instance.document.input_name
-                document.can_delete = True
-                document.save()
+        instance = self.get_object()
+        instance.complete(request)
+        data = {}
+        data["type"] = "referral_complete"
+        data["fromm"] = "{}".format(instance.referral_group.name)
+        data["proposal"] = "{}".format(instance.proposal.id)
+        data["staff"] = "{}".format(request.user.id)
+        data["text"] = "{}".format(instance.referral_text)
+        data["subject"] = "{}".format(instance.referral_text)
+        serializer = ProposalLogEntrySerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        comms = serializer.save()
+        if instance.document:
+            document = comms.documents.create(
+                _file=instance.document._file, name=instance.document.name
+            )
+            document.input_name = instance.document.input_name
+            document.can_delete = True
+            document.save()
 
-            serializer = self.get_serializer(instance, context={"request": request})
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        serializer = self.get_serializer(instance, context={"request": request})
+        return Response(serializer.data)
 
     @action(
         methods=[
@@ -2776,6 +2768,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def move_up(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2799,6 +2792,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def move_down(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2822,6 +2816,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
         ],
         detail=True,
     )
+    @basic_exception_handler
     def discard(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2846,6 +2841,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
         detail=True,
     )
     @renderer_classes((JSONRenderer,))
+    @basic_exception_handler
     def delete_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2866,6 +2862,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
+    @basic_exception_handler
     def update(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -2880,6 +2877,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
+    @basic_exception_handler
     def create(self, request, *args, **kwargs):
         try:
             #            data = {
