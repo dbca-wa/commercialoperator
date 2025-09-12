@@ -364,17 +364,22 @@ export default {
             vm.hasErrors = false;
             let comms = new FormData(vm.form);
             vm.addingComms = true;
-            vm.$http.post(vm.url, comms, {}).then(
-                () => {
-                    vm.addingComms = false;
-                    vm.close();
-                },
-                (error) => {
-                    vm.hasErrors = true;
-                    vm.addingComms = false;
-                    vm.errorString = helpers.apiVueResourceError(error);
-                }
-            );
+            helpers
+                .fetchUrl(vm.url, {
+                    method: 'POST',
+                    body: comms,
+                })
+                .then(
+                    () => {
+                        vm.addingComms = false;
+                        vm.close();
+                    },
+                    (error) => {
+                        vm.hasErrors = true;
+                        vm.addingComms = false;
+                        vm.errorString = helpers.apiVueResourceError(error);
+                    }
+                );
         },
         addFormValidations: function () {
             let vm = this;

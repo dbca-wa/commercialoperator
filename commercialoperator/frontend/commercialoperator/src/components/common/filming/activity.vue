@@ -553,12 +553,12 @@ export default {
     methods: {
         fetchActivityTabData: function () {
             let vm = this;
-            vm.$http.get('/api/filming_activity_tab').then(
+            helpers.fetchUrl('/api/filming_activity_tab').then(
                 (response) => {
-                    vm.film_type_choices = response.body.film_type_choices;
-                    vm.sponsorship_choices = response.body.sponsorship_choices;
-                    vm.film_usage_choices = response.body.film_usage_choices;
-                    vm.purpose_choices = response.body.purpose_choices;
+                    vm.film_type_choices = response.film_type_choices;
+                    vm.sponsorship_choices = response.sponsorship_choices;
+                    vm.film_usage_choices = response.film_usage_choices;
+                    vm.purpose_choices = response.purpose_choices;
                 },
                 (error) => {
                     console.log(error);

@@ -193,9 +193,9 @@ export default {
     methods: {
         fetchLicenceChargeChoices: function () {
             let vm = this;
-            vm.$http.get('/api/filming_licence_charge_choices').then(
+            helpers.fetchUrl('/api/filming_licence_charge_choices').then(
                 (response) => {
-                    vm.filming_licence_charge_choices = response.body;
+                    vm.filming_licence_charge_choices = response;
                 },
                 (error) => {
                     console.log(error);

@@ -198,7 +198,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -319,9 +318,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -331,13 +330,13 @@ export default {
         },
         fetchLandParks: function () {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(api_endpoints.parks, 'land_parks')
                 )
                 .then(
                     (response) => {
-                        vm.land_parks = response.body;
+                        vm.land_parks = response;
                     },
                     (error) => {
                         console.log(error);
@@ -346,8 +345,8 @@ export default {
         },
         fetchDistrictLandParks: function (id) {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.districts,
                         id + '/land_parks'
@@ -355,7 +354,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.land_parks = response.body;
+                        vm.land_parks = response;
                     },
                     (error) => {
                         console.log(error);
@@ -365,8 +364,8 @@ export default {
         fetchAllParks: function () {
             let vm = this;
             if (vm.is_external) {
-                vm.$http
-                    .get(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.parks,
                             'filming_parks_external_list'
@@ -374,15 +373,15 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.all_parks = response.body;
+                            vm.all_parks = response;
                         },
                         (error) => {
                             console.log(error);
                         }
                     );
             } else {
-                vm.$http
-                    .get(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.parks,
                             'filming_parks_list'
@@ -390,7 +389,7 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.all_parks = response.body;
+                            vm.all_parks = response;
                         },
                         (error) => {
                             console.log(error);
@@ -401,8 +400,8 @@ export default {
 
         fetchDistrictParks: function (id) {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.districts,
                         id + '/parks'
@@ -410,7 +409,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.all_parks = response.body;
+                        vm.all_parks = response;
                     },
                     (error) => {
                         console.log(error);
@@ -420,8 +419,8 @@ export default {
 
         fetchPark: function (vid) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_filming_parks,
                         vid
@@ -429,7 +428,7 @@ export default {
                 )
                 .then(
                     (res) => {
-                        vm.park = res.body;
+                        vm.park = res;
                         if (vm.park.park) {
                             vm.selected_park_id = vm.park.park.id;
                             $(vm.$refs.filming_park)
@@ -464,9 +463,10 @@ export default {
             formData.append('data', JSON.stringify(park));
             vm.issuingPark = true;
             if (vm.localParkAction == 'add' && vm.park_id == null) {
-                vm.$http
-                    .post(api_endpoints.proposal_filming_parks, formData, {
-                        emulateJSON: true,
+                helpers
+                    .fetchUrl(api_endpoints.proposal_filming_parks, {
+                        method: 'POST',
+                        body: formData,
                     })
                     .then(
                         (response) => {
@@ -487,15 +487,15 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposal_filming_parks,
                             vm.park_id + '/edit_park'
                         ),
-                        formData,
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: formData,
                         }
                     )
                     .then(

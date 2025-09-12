@@ -561,7 +561,7 @@ export default {
             table.row(index).data(data2);
             table.row(index + order).data(data1);
 
-            table.page(0).draw(false);
+            table.draw('page');
         },
         setApplicationWorkflowState(bool) {
             let vm = this;
