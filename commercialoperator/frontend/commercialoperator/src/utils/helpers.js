@@ -13,6 +13,7 @@ module.exports = {
                         let error =
                             (data.constructor.name === 'Array' && data) ||
                             (data && data.message) ||
+                            (data && data.detail) ||
                             response.statusText;
                         console.error(error);
                         reject(error);
