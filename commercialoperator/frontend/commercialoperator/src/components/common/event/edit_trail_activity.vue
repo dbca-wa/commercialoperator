@@ -161,7 +161,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -285,9 +284,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -298,9 +297,9 @@ export default {
 
         fetchAllTrails_orig: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.trails).then(
+            helpers.fetchUrl(api_endpoints.trails).then(
                 (response) => {
-                    vm.trails_list = response.body;
+                    vm.trails_list = response;
                 },
                 (error) => {
                     console.log(error);
@@ -309,10 +308,10 @@ export default {
         },
         fetchAllTrails: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.event_trail_container).then(
+            helpers.fetchUrl(api_endpoints.event_trail_container).then(
                 (response) => {
-                    vm.trails_list = response.body['trails'];
-                    vm.trail_activities = response.body['event_activity_types'];
+                    vm.trails_list = response['trails'];
+                    vm.trail_activities = response['event_activity_types'];
                 },
                 (error) => {
                     console.log(error);
@@ -322,8 +321,8 @@ export default {
 
         fetchTrail: function (vid) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_events_trails,
                         vid
@@ -331,7 +330,7 @@ export default {
                 )
                 .then(
                     (res) => {
-                        vm.trail = res.body;
+                        vm.trail = res;
                         if (vm.trail.trail) {
                             vm.events_trail_id = vm.trail.trail.id;
                             if (vm.trail.section) {
@@ -392,9 +391,10 @@ export default {
             formData.append('data', JSON.stringify(trail));
             vm.issuingPark = true;
             if (vm.localTrailAction == 'add' && vm.trail_id == null) {
-                vm.$http
-                    .post(api_endpoints.proposal_events_trails, formData, {
-                        emulateJSON: true,
+                helpers
+                    .fetchUrl(api_endpoints.proposal_events_trails, {
+                        method: 'POST',
+                        body: formData,
                     })
                     .then(
                         (response) => {
@@ -415,15 +415,15 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposal_events_trails,
                             vm.trail_id + '/edit_trail'
                         ),
-                        formData,
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: formData,
                         }
                     )
                     .then(

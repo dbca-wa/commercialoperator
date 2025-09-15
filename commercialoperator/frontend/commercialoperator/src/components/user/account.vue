@@ -781,7 +781,7 @@ export default {
                                     'There was an error unlinking you from ' +
                                     org_name +
                                     '. ' +
-                                    error.body,
+                                    error,
                                 icon: 'error',
                             });
                         }
@@ -866,22 +866,26 @@ export default {
         updateSystemSettings: function () {
             let vm = this;
             vm.updatingSystemSettings = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.users,
                         vm.email_user.id + '/update_system_settings'
                     ),
-                    JSON.stringify(vm.email_user.system_settings),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json',
+                            'Content-Type': 'application/json; charset=UTF-8',
+                        },
+                        body: JSON.stringify(vm.email_user.system_settings),
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingSystemSettings = false;
                         vm.email_user.system_settings =
-                            response.body.system_settings;
+                            response.system_settings;
                         if (vm.email_user.residential_address == null) {
                             vm.email_user.residential_address = {};
                         }

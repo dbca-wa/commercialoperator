@@ -10,7 +10,7 @@ export default {
                 })
                 .then(
                     (response) => {
-                        resolve(response.body);
+                        resolve(response);
                     },
                     (error) => {
                         reject(error);
@@ -22,7 +22,7 @@ export default {
         return new Promise((resolve, reject) => {
             helpers.fetchUrl(api.organisations, { emulateJSON: true }).then(
                 (response) => {
-                    resolve(response.body);
+                    resolve(response);
                 },
                 (error) => {
                     reject(error);
@@ -34,7 +34,7 @@ export default {
         return new Promise((resolve, reject) => {
             helpers.fetchUrl(api.countries, { emulateJSON: true }).then(
                 (response) => {
-                    resolve(response.body);
+                    resolve(response);
                 },
                 (error) => {
                     reject(error);
@@ -50,7 +50,7 @@ export default {
                 })
                 .then(
                     (response) => {
-                        resolve(response.body);
+                        resolve(response);
                     },
                     (error) => {
                         reject(error);
@@ -66,7 +66,7 @@ export default {
                 })
                 .then(
                     (response) => {
-                        resolve(response.body);
+                        resolve(response);
                     },
                     (error) => {
                         reject(error);
@@ -86,7 +86,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        resolve(response.body);
+                        resolve(response);
                     },
                     (error) => {
                         reject(error);
@@ -98,7 +98,7 @@ export default {
         return new Promise((resolve, reject) => {
             helpers.fetchUrl(api.profile, { emulateJSON: true }).then(
                 (response) => {
-                    resolve(response.body);
+                    resolve(response);
                 },
                 (error) => {
                     reject(error);

@@ -820,6 +820,8 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import FileField from '@/components/forms/filefield.vue';
+import { helpers } from '@/utils/hooks.js';
+
 export default {
     components: {
         FormSection,
@@ -868,9 +870,9 @@ export default {
     methods: {
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);

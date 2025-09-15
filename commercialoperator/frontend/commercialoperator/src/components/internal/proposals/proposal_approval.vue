@@ -210,20 +210,23 @@ export default {
                     vm.proposal.approval_level_document[0]
                 );
             }
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         vm.proposal.id + '/approval_level_document'
                     ),
-                    data,
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: data,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (res) => {
-                        vm.proposal = res.body;
+                        vm.proposal = res;
                         vm.$emit('refreshFromResponse', res);
                     },
                     (err) => {
@@ -252,12 +255,18 @@ export default {
                 confirmButtonColor: '#d9534f',
             }).then(
                 () => {
-                    vm.$http
-                        .delete(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposal_requirements,
                                 _id
-                            )
+                            ),
+                            {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }
                         )
                         .then(
                             () => {

@@ -89,9 +89,9 @@ export default {
     methods: {
         fetchAccessTypes: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.access_types).then(
+            helpers.fetchUrl(api_endpoints.access_types).then(
                 (response) => {
-                    vm.access_types = response.body;
+                    vm.access_types = response;
                 },
                 (error) => {
                     console.log(error);

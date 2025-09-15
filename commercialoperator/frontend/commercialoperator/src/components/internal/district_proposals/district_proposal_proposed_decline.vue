@@ -175,15 +175,18 @@ export default {
             let decline = JSON.parse(JSON.stringify(vm.decline));
             vm.decliningProposal = true;
             if (vm.processing_status != 'With Approver') {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal_id + '/proposed_decline'
                         ),
-                        JSON.stringify(decline),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(decline),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
@@ -200,15 +203,18 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal_id + '/final_decline'
                         ),
-                        JSON.stringify(decline),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(decline),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(

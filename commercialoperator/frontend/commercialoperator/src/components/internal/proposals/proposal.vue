@@ -1525,23 +1525,30 @@ export default {
             this.$refs.proposed_approval.state = 'final_approval';
             this.$refs.proposed_approval.isApprovalLevelDocument =
                 this.isApprovalLevelDocument;
-            this.$refs.proposed_approval.approval.start_date =
-                this.proposal.proposed_issuance_approval.start_date != null &&
-                this.proposal.proposed_issuance_approval.start_date != undefined
-                    ? moment(
-                          this.proposal.proposed_issuance_approval.start_date,
-                          'DD/MM/YYYY'
-                      ).format('YYYY-MM-DD')
-                    : '';
-            this.$refs.proposed_approval.approval.expiry_date =
-                this.proposal.proposed_issuance_approval.expiry_date != null &&
-                this.proposal.proposed_issuance_approval.expiry_date !=
-                    undefined
-                    ? moment(
-                          this.proposal.proposed_issuance_approval.expiry_date,
-                          'DD/MM/YYYY'
-                      ).format('YYYY-MM-DD')
-                    : '';
+            if (this.proposal.proposed_issuance_approval) {
+                this.$refs.proposed_approval.approval.start_date =
+                    this.proposal.proposed_issuance_approval.start_date !=
+                        null &&
+                    this.proposal.proposed_issuance_approval.start_date !=
+                        undefined
+                        ? moment(
+                              this.proposal.proposed_issuance_approval
+                                  .start_date,
+                              'DD/MM/YYYY'
+                          ).format('YYYY-MM-DD')
+                        : '';
+                this.$refs.proposed_approval.approval.expiry_date =
+                    this.proposal.proposed_issuance_approval.expiry_date !=
+                        null &&
+                    this.proposal.proposed_issuance_approval.expiry_date !=
+                        undefined
+                        ? moment(
+                              this.proposal.proposed_issuance_approval
+                                  .expiry_date,
+                              'DD/MM/YYYY'
+                          ).format('YYYY-MM-DD')
+                        : '';
+            }
             this.$refs.proposed_approval.isModalOpen = true;
         },
         declineProposal: function () {
@@ -2419,7 +2426,10 @@ export default {
         proposalAddSelectedParkActivities: function () {
             let vm = this;
 
-            if (typeof vm.$refs.tclass !== 'undefined') {
+            if (
+                typeof vm.$refs.tclass !== 'undefined' &&
+                vm.$refs.tclass !== null
+            ) {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.tclass.$refs.activities_land) {
                     console.log(
@@ -2439,7 +2449,10 @@ export default {
                         vm.$refs.tclass.$refs.activities_marine.marine_parks_activities;
                 }
             }
-            if (typeof vm.$refs.event !== 'undefined') {
+            if (
+                typeof vm.$refs.event !== 'undefined' &&
+                vm.$refs.event !== null
+            ) {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.event.$refs.event_activities) {
                     console.log(
