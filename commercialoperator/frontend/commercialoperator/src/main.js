@@ -79,10 +79,7 @@ window.fetch = ((orig) => {
 
         const response = await orig(...args);
 
-        if (
-            (response.status === 401 && isApi) ||
-            (response.status === 403 && isApi)
-        ) {
+        if (response.status === 401 && isApi) {
             window.location.href =
                 '/login/?next=' +
                 encodeURIComponent(
