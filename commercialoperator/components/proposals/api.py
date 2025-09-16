@@ -2198,7 +2198,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def draft(self, request, *args, **kwargs):
         instance = self.get_object()
         save_proponent_data(instance, request, self)
-        return redirect(reverse("external"))
+
+        serializer = get_proposal_serializer_by_application_type(
+            instance, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
     def update_training_flag(self, request, *args, **kwargs):
@@ -3202,28 +3206,16 @@ class VehicleViewSet(viewsets.ModelViewSet):
         return Vehicle.objects.none()
 
     @action(methods=["post"], detail=True)
+    @basic_exception_handler
     def edit_vehicle(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = SaveVehicleSerializer(instance, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request
-            )
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+        instance = self.get_object()
+        serializer = SaveVehicleSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        instance.proposal.log_user_action(
+            ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request
+        )
+        return Response(serializer.data)
 
     @basic_exception_handler
     def create(self, request, *args, **kwargs):
