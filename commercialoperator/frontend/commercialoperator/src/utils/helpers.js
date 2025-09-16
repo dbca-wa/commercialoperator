@@ -8,6 +8,11 @@ module.exports = {
             let f = options === undefined ? fetch(url) : fetch(url, options);
             f.then(
                 async (response) => {
+                    if (response.status === 204) {
+                        // No content response, resolve with an empty object
+                        resolve({});
+                        return;
+                    }
                     const data = await response.json();
                     if (!response.ok) {
                         let error =
