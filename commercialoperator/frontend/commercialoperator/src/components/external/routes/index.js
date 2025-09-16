@@ -29,7 +29,7 @@ export default {
             component: Compliance,
         },
         {
-            path: 'compliance/submit',
+            path: 'compliance/submit/:compliance_id',
             component: ComplianceSubmit,
             name: 'submit_compliance',
         },
@@ -57,7 +57,7 @@ export default {
                     name: 'apply_proposal',
                 },
                 {
-                    path: 'submit',
+                    path: 'submit/:proposal_id',
                     component: ProposalSubmit,
                     name: 'submit_proposal',
                 },

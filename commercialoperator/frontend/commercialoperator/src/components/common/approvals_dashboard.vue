@@ -1107,8 +1107,11 @@ export default {
                         title: 'Loading...',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
-                        onOpen: () => {
+                        didOpen: () => {
                             swal.showLoading();
+                        },
+                        customClass: {
+                            container: 'swal2-popover',
                         },
                     });
                     helpers
@@ -1162,7 +1165,7 @@ export default {
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         showConfirmButton: false,
-                        onOpen: () => {
+                        didOpen: () => {
                             swal.showLoading();
                         },
                         customClass: {

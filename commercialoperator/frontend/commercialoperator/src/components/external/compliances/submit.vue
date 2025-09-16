@@ -77,11 +77,13 @@
     </div>
 </template>
 <script>
+import { api_endpoints, helpers } from '@/utils/hooks';
+
 export default {
     components: {},
     beforeRouteEnter: function (to, from, next) {
         next((vm) => {
-            vm.compliance = to.params.compliance;
+            vm.fetchCompliance(to.params.compliance_id);
         });
     },
     data: function () {
@@ -97,6 +99,17 @@ export default {
     methods: {
         formatDate: function (data) {
             return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
+        },
+        fetchCompliance: async function (compliance_id) {
+            let vm = this;
+            const response = await fetch(
+                helpers.add_endpoint_json(
+                    api_endpoints.compliances,
+                    compliance_id
+                )
+            );
+            const resData = await response.json();
+            vm.compliance = Object.assign({}, resData);
         },
     },
 };

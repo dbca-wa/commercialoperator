@@ -2527,9 +2527,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "You cannot change the current status at this time"
                 )
             elif self.approval and self.approval.can_reissue:
+                user_proposalassessorgroup_set = retrieve_user_groups(
+                    "ProposalAssessorGroup", request.user.id
+                )
                 if (
                     self.__assessor_group()
-                    in request.user.proposalassessorgroup_set.all()
+                    in user_proposalassessorgroup_set
                 ):
                     self.processing_status = status
                     self.save(

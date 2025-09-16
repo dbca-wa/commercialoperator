@@ -89,9 +89,19 @@ import { api_endpoints } from '@/utils/hooks';
 export default {
     components: {},
     beforeRouteEnter: function (to, from, next) {
-        next((vm) => {
-            vm.proposal = to.params.proposal;
-        });
+        if (to.params.proposal_id) {
+            fetch(`/api/proposal/${to.params.proposal_id}.json`).then(
+                (res) => {
+                    next(async (vm) => {
+                        const proposalData = await res.json();
+                        vm.proposal = proposalData;
+                    });
+                },
+                (err) => {
+                    console.error(err);
+                }
+            );
+        }
     },
     data: function () {
         return {

@@ -240,10 +240,10 @@ export default {
             vm.show_spinner = true;
             var data = { id: file.id, name: file.name };
 
-            swal({
+            swal.fire({
                 title: 'Delete Document',
                 text: 'Are you sure you want to delete this document?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Delete Document',
                 confirmButtonColor: '#d9534f',

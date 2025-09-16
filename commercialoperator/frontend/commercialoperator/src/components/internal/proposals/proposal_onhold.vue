@@ -117,7 +117,7 @@ export default {
         },
         _refreshFromResponse: function (response) {
             let vm = this;
-            vm.document_list = helpers.copyObject(response.body);
+            vm.document_list = helpers.copyObject(response);
         },
 
         save: function () {
@@ -129,15 +129,18 @@ export default {
                 proposal: vm.proposal_id,
                 text: vm.$refs.on_hold_comments.localValue, // getting the value from the text-area.vue field
             };
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         vm.proposal_id + '/on_hold'
                     ),
-                    data,
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
@@ -156,7 +159,7 @@ export default {
                             });
                         }
 
-                        vm.proposal = res.body;
+                        vm.proposal = res;
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {

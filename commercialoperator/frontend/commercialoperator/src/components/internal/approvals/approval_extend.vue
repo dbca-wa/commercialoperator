@@ -135,15 +135,18 @@ export default {
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.approvals,
                         vm.approval_id + '/approval_extend'
                     ),
-                    JSON.stringify(approval),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(approval),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
@@ -153,7 +156,7 @@ export default {
                         swal.fire({
                             title: 'Extended',
                             text: 'Licence has been extended',
-                            type: 'success',
+                            icon: 'success',
                         });
                         vm.$emit('refreshFromResponse', response);
                     },

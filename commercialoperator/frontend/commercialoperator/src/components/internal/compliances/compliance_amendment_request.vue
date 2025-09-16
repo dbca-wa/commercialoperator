@@ -150,33 +150,35 @@ export default {
         },
         fetchAmendmentChoices: function () {
             let vm = this;
-            vm.$http.get('/api/compliance_amendment_reason_choices.json').then(
-                (response) => {
-                    vm.reason_choices = response.body;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            helpers
+                .fetchUrl('/api/compliance_amendment_reason_choices.json')
+                .then(
+                    (response) => {
+                        vm.reason_choices = response;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                );
         },
         sendData: function () {
             let vm = this;
             vm.hasErrors = false;
             let amendment = JSON.parse(JSON.stringify(vm.amendment));
-            vm.$http
-                .post(
-                    '/api/compliance_amendment_request.json',
-                    JSON.stringify(amendment),
-                    {
-                        emulateJSON: true,
-                    }
-                )
+            helpers
+                .fetchUrl('/api/compliance_amendment_request.json', {
+                    method: 'POST',
+                    body: JSON.stringify(amendment),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
                 .then(
                     (response) => {
                         swal.fire({
                             title: 'Sent',
                             text: 'An email has been sent to applicant with the request to amend this compliance',
-                            type: 'success',
+                            icon: 'success',
                         });
                         vm.amendingcompliance = true;
                         console.log(response);

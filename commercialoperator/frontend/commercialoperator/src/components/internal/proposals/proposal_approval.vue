@@ -246,10 +246,10 @@ export default {
         },
         removeRequirement(_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Remove Requirement',
                 text: 'Are you sure you want to remove this requirement?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Remove Requirement',
                 confirmButtonColor: '#d9534f',
