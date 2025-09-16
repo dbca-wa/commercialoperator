@@ -155,7 +155,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -240,9 +239,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -252,9 +251,9 @@ export default {
         },
         fetchAccessTypes: function () {
             let vm = this;
-            Vue.http.get('/api/access_types.json').then(
+            helpers.fetchUrl('/api/access_types.json').then(
                 (res) => {
-                    vm.access_types = res.body;
+                    vm.access_types = res;
                 },
                 (err) => {
                     console.log(err);
@@ -263,11 +262,11 @@ export default {
         },
         fetchVessel: function (vid) {
             let vm = this;
-            Vue.http
-                .get(helpers.add_endpoint_json(api_endpoints.vessels, vid))
+            helpers
+                .fetchUrl(helpers.add_endpoint_json(api_endpoints.vessels, vid))
                 .then(
                     (res) => {
-                        vm.vessel = res.body;
+                        vm.vessel = res;
                         if (vm.vessel.access_type) {
                             vm.vessel_access_id = vm.vessel.access_type.id;
                         }
@@ -284,9 +283,13 @@ export default {
             let vessel = JSON.parse(JSON.stringify(vm.vessel));
             vm.issuingVessel = true;
             if (vm.localVesselAction == 'add' && vm.vessel_id == null) {
-                vm.$http
-                    .post(api_endpoints.vessels, JSON.stringify(vessel), {
-                        emulateJSON: true,
+                helpers
+                    .fetchUrl(api_endpoints.vessels, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(vessel),
                     })
                     .then(
                         (response) => {
@@ -306,15 +309,18 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.vessels,
                             vm.vessel_id + '/edit_vessel'
                         ),
-                        JSON.stringify(vessel),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(vessel),
                         }
                     )
                     .then(

@@ -61,7 +61,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_park_activity.vue';
 import FileField from '@/components/forms/filefield.vue';
-import { api_endpoints, constants } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
 export default {
     name: 'EventParkTableDash',
@@ -258,8 +258,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_event_park(park_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_event_park(park_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({

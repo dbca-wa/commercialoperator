@@ -1634,7 +1634,7 @@ export default {
         updateAddress_noconfirm: function () {
             let vm = this;
             vm.updatingAddress = true;
-            helpers
+            return helpers
                 .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
@@ -1655,10 +1655,12 @@ export default {
                         if (vm.org.organisation_address == null) {
                             vm.org.organisation_address = {};
                         }
+                        return response;
                     },
                     (error) => {
                         console.log(error);
                         vm.updatingAddress = false;
+                        return error;
                     }
                 );
         },
@@ -1698,18 +1700,11 @@ export default {
                     },
                     (error) => {
                         console.log('EXTERNAL: ' + JSON.stringify(error));
-                        var text = helpers.apiVueResourceError(error);
-                        if (typeof text == 'object') {
-                            // eslint-disable-next-line no-prototype-builtins
-                            if (text.hasOwnProperty('email')) {
-                                text = text.email[0];
-                            }
-                        }
                         swal.fire({
                             title: 'Error',
                             text:
                                 'Organisation details cannot be saved because of the following error: ' +
-                                text,
+                                error,
                             icon: 'error',
                         });
                         vm.updatingDetails = false;
@@ -1804,7 +1799,7 @@ export default {
                             title: 'Error',
                             text:
                                 'Address details cannot be saved because of the following error: ' +
-                                helpers.apiVueResourceError(error),
+                                error,
                             icon: 'error',
                         });
                     }

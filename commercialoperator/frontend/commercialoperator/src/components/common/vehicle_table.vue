@@ -34,7 +34,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editVehicle from './edit_vehicle.vue';
-import { api_endpoints, constants } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
 export default {
     name: 'VehicleTableDash',
@@ -208,8 +208,13 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_vehicle(vehicle_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_vehicle(vehicle_id), {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        })
                         .then(
                             () => {
                                 swal.fire({

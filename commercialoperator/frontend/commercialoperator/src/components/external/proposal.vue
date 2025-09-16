@@ -401,8 +401,18 @@ export default {
                 vm.proposal_refs().$refs.profile.updateContact();
             }
             if (vm.proposal.applicant_type == 'ORG') {
-                vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
-                vm.proposal_refs().$refs.organisation.updateAddress_noconfirm();
+                // NOTE: I commented out the next line because that function is forbidden for external users
+                // vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
+                vm.proposal_refs()
+                    .$refs.organisation.updateAddress_noconfirm()
+                    .then(
+                        (response) => {
+                            console.log(response);
+                        },
+                        (err) => {
+                            console.log(err);
+                        }
+                    );
             }
         },
 
@@ -460,12 +470,11 @@ export default {
                             icon: 'success',
                         });
                     },
-                    (err) => {
-                        var errorText = helpers.apiVueResourceError(err);
+                    (error) => {
                         vm.savingProposal = false;
                         return swal.fire({
                             title: 'Save Error',
-                            text: errorText,
+                            text: error,
                             icon: 'error',
                         });
                     }

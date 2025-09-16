@@ -35,7 +35,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editTrail from './edit_trail_activity.vue';
-import { api_endpoints, constants } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
 export default {
     name: 'EventTrailTableDash',
@@ -235,8 +235,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_event_trail(trail_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_event_trail(trail_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({

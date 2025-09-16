@@ -36,7 +36,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_park.vue';
-import { api_endpoints, constants } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
 export default {
     name: 'ParkTableDash',
@@ -228,8 +228,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_filming_park(park_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_filming_park(park_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({

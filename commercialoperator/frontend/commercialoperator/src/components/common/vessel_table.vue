@@ -33,7 +33,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editVessel from './edit_vessel.vue';
-import { api_endpoints, constants } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 
 export default {
     name: 'VesselTableDash',
@@ -200,8 +200,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_vessel(vessel_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_vessel(vessel_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({
