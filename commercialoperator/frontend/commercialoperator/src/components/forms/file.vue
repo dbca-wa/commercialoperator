@@ -55,7 +55,7 @@
                         &nbsp;
                         <span v-if="!readonly && v.can_delete">
                             <a
-                                class="fa fa-trash-o"
+                                class="fa fa-trash"
                                 title="Remove file"
                                 :filename="v.name"
                                 style="cursor: pointer; color: red"

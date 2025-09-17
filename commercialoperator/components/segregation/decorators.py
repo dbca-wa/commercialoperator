@@ -19,6 +19,8 @@ def basic_exception_handler(func):
         except ValidationError as e:
             raise serializers.ValidationError(e.message)
         except serializers.ValidationError as e:
+            if hasattr(e, 'detail'):
+                raise APIException(code=e.status_code, detail=e.detail)
             raise e
         except NotImplementedError as e:
             raise APIException(code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e))

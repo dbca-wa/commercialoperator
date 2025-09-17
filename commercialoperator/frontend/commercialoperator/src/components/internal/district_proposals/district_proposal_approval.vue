@@ -194,20 +194,23 @@ export default {
                     vm.district_proposal.approval_level_document[0]
                 );
             }
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.district_proposals,
                         vm.district_proposal.id + '/approval_level_document'
                     ),
-                    data,
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: data,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (res) => {
-                        vm.district_proposal = res.body;
+                        vm.district_proposal = res;
                         vm.$emit('refreshFromResponse', res);
                     },
                     (err) => {
@@ -236,12 +239,18 @@ export default {
                 confirmButtonColor: '#d9534f',
             }).then(
                 () => {
-                    vm.$http
-                        .delete(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.district_proposal_requirements,
                                 _id
-                            )
+                            ),
+                            {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }
                         )
                         .then(
                             () => {

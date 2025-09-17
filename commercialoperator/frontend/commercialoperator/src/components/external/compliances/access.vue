@@ -138,7 +138,7 @@
                                                             "
                                                         >
                                                             <a
-                                                                class="fa fa-trash-o control-label"
+                                                                class="fa fa-trash control-label"
                                                                 title="Remove file"
                                                                 style="
                                                                     cursor: pointer;

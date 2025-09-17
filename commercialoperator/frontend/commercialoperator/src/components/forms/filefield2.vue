@@ -25,7 +25,7 @@
                                     }}</a>
                                     &nbsp;
                                     <a
-                                        class="fa fa-trash-o"
+                                        class="fa fa-trash"
                                         title="Remove file"
                                         :filename="v.name"
                                         style="cursor: pointer; color: red"
@@ -74,7 +74,7 @@
                                 <p>
                                     File:{{ v.name }} &nbsp;
                                     <a
-                                        class="fa fa-trash-o"
+                                        class="fa fa-trash"
                                         title="Remove file"
                                         :filename="v.name"
                                         style="cursor: pointer; color: red"
@@ -249,14 +249,18 @@ export default {
                 confirmButtonColor: '#d9534f',
             }).then(
                 () => {
-                    vm.$http
-                        .post(vm.delete_url, data, {
-                            emulateJSON: true,
+                    helpers
+                        .fetchUrl(vm.delete_url, {
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         })
                         .then(
                             (response) => {
-                                vm.uploaded_documents = response.body;
-                                vm.$emit('refreshFromResponse', response.body);
+                                vm.uploaded_documents = response;
+                                vm.$emit('refreshFromResponse', response);
                                 vm.show_spinner = false;
                             },
                             (err) => {

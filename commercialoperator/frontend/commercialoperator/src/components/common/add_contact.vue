@@ -20,6 +20,7 @@
                                         type="text"
                                         class="form-control"
                                         name="name"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -37,6 +38,7 @@
                                         type="text"
                                         class="form-control"
                                         name="name"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -105,6 +107,7 @@
                                         type="text"
                                         class="form-control"
                                         name="email"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -153,12 +156,13 @@ export default {
     mounted: function () {
         let vm = this;
         vm.form = document.forms.addContactForm;
-        vm.addFormValidations();
+        // vm.addFormValidations();
     },
     methods: {
         ok: function () {
             let vm = this;
-            if ($(vm.form).valid()) {
+            // if ($(vm.form).valid()) {
+            if (helpers.validateForm(vm.form)) {
                 vm.sendData();
             }
         },
@@ -178,9 +182,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -193,15 +197,18 @@ export default {
             vm.hasErrors = false;
             if (vm.contact.id) {
                 let contact = vm.contact;
-                vm.$http
-                    .put(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.organisation_contacts,
                             contact.id
                         ),
-                        JSON.stringify(contact),
                         {
-                            emulateJSON: true,
+                            method: 'PUT',
+                            body: JSON.stringify(contact),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
@@ -212,78 +219,34 @@ export default {
                         (error) => {
                             console.log(error);
                             vm.hasErrors = true;
-                            vm.errorString = helpers.apiVueResourceError(error);
+                            vm.errorString = error;
                         }
                     );
             } else {
                 let contact = JSON.parse(JSON.stringify(vm.contact));
                 contact.organisation = vm.org_id;
                 contact.user_status = 'contact_form';
-                vm.$http
-                    .post(
-                        api_endpoints.organisation_contacts,
-                        JSON.stringify(contact),
-                        {
-                            emulateJSON: true,
-                        }
-                    )
+                helpers
+                    .fetchUrl(api_endpoints.organisation_contacts, {
+                        method: 'POST',
+                        body: JSON.stringify(contact),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    })
                     .then(
                         () => {
                             vm.close();
                             vm.$parent.addedContact();
+                            vm.$parent.refreshDatatable();
                         },
                         (error) => {
                             console.log(error);
                             vm.hasErrors = true;
-                            vm.errorString = helpers.apiVueResourceError(error);
+                            vm.errorString = error;
                         }
                     );
             }
-        },
-        addFormValidations: function () {
-            let vm = this;
-            $(vm.form).validate({
-                rules: {
-                    arrival: 'required',
-                    departure: 'required',
-                    campground: 'required',
-                    campsite: {
-                        required: {
-                            depends: function () {
-                                return vm.campsites.length > 0;
-                            },
-                        },
-                    },
-                },
-                messages: {
-                    arrival: 'field is required',
-                    departure: 'field is required',
-                    campground: 'field is required',
-                    campsite: 'field is required',
-                },
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    // $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
         },
         eventListerners: function () {},
     },
