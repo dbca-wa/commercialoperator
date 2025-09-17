@@ -62,6 +62,7 @@ import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_park_activity.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'EventParkTableDash',
@@ -102,8 +103,8 @@ export default {
                 activities: [],
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'park-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'park-datatable-' + uuid(),
             uuid: 0,
             // Filters for Parks
             park_headers: [

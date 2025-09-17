@@ -149,6 +149,7 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import { helpers } from '@/utils/hooks.js';
+import { v4 as uuid } from 'uuid';
 
 export default {
     components: { FormSection },
@@ -163,9 +164,8 @@ export default {
         },
     },
     data: function () {
-        let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
             values: null,
             selected_approval_type: '',
             filming_licence_charge_choices: '',

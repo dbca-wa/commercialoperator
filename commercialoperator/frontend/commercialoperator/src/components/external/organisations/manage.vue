@@ -406,6 +406,7 @@ import datatable from '@vue-utils/datatable.vue';
 import utils from '../utils';
 import FormSection from '@/components/forms/section_toggle.vue';
 import AddContact from '@common-utils/add_contact.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
@@ -465,10 +466,10 @@ export default {
     data() {
         let vm = this;
         return {
-            adBody: 'adBody' + vm._uid,
-            pBody: 'pBody' + vm._uid,
-            cBody: 'cBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
+            adBody: 'adBody' + uuid(),
+            pBody: 'pBody' + uuid(),
+            cBody: 'cBody' + uuid(),
+            oBody: 'oBody' + uuid(),
             org: {
                 organisation_address: {},
             },

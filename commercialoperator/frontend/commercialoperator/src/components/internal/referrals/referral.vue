@@ -374,6 +374,7 @@ import CompleteReferral from './complete_referral.vue';
 import Requirements from '@/components/internal/proposals/proposal_requirements.vue';
 import Assessment from '@/components/common/tclass/assessment.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
@@ -448,9 +449,9 @@ export default {
     data: function () {
         let vm = this;
         return {
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             //"proposal": null,
             // referral: null,
             referral_sent_list: null,
@@ -466,7 +467,7 @@ export default {
             referral_recipient_groups: [],
             contacts_table_initialised: false,
             initialisedSelects: false,
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_options: {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,

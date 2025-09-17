@@ -34,6 +34,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import editVessel from './edit_vessel.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'VesselTableDash',
@@ -62,8 +63,8 @@ export default {
                 size: '',
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'vessel-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'vessel-datatable-' + uuid(),
             // Filters for Vessels
 
             vessel_headers: [

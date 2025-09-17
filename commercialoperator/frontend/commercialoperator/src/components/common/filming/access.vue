@@ -819,6 +819,8 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import ParkTable from './parks_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'FilmingAccess',
     components: {
@@ -857,7 +859,7 @@ export default {
     data: function () {
         let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
             values: null,
             parks_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,

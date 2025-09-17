@@ -221,6 +221,7 @@
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import alert from '@vue-utils/alert.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     components: {
@@ -234,11 +235,10 @@ export default {
         },
     },
     data: function () {
-        let vm = this;
         return {
             values: null,
             questions: null,
-            pBody: 'pBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
             showResult: false,
             showAnswer: false,
             attempt: 1,

@@ -298,6 +298,7 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
@@ -330,7 +331,6 @@ export default {
             );
     },
     data() {
-        let vm = this;
         return {
             loading: [],
             approval: {
@@ -341,10 +341,10 @@ export default {
                 address: {},
             },
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
-            adBody: 'adBody' + vm._uid,
-            pBody: 'pBody' + vm._uid,
-            cBody: 'cBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
+            adBody: 'adBody' + uuid(),
+            pBody: 'pBody' + uuid(),
+            cBody: 'cBody' + uuid(),
+            oBody: 'oBody' + uuid(),
             org: {
                 address: {},
             },

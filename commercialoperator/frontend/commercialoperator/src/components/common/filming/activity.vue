@@ -439,6 +439,7 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import { helpers } from '@/utils/hooks.js';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'FilmingActivity',
@@ -474,9 +475,8 @@ export default {
         },
     },
     data: function () {
-        let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
             values: null,
             film_type_choices: [],
             sponsorship_choices: [],

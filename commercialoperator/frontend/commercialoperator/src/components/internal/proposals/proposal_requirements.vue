@@ -52,7 +52,7 @@
                             </div>
                         </div>
                         <datatable
-                            :id="'requirements-datatable-' + _uid"
+                            :id="datatableId"
                             ref="requirements_datatable"
                             :dt-options="requirement_options"
                             :dt-headers="requirement_headers"
@@ -79,6 +79,7 @@ import datatable from '@vue-utils/datatable.vue';
 import RequirementDetail from './proposal_add_requirement.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import '@/../../../static/commercialoperator/css/extra.css';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'InternalProposalRequirements',
@@ -119,7 +120,7 @@ export default {
         let vm = this;
         return {
             global_settings: [],
-            panelBody: 'proposal-requirements-' + vm._uid,
+            panelBody: 'proposal-requirements-' + uuid(),
             requirements: [],
             requirement_headers: [
                 '',
@@ -362,6 +363,9 @@ export default {
         },
         application_type_event: function () {
             return api_endpoints.event;
+        },
+        datatableId: function () {
+            return 'requirements-datatable-' + uuid();
         },
     },
     watch: {

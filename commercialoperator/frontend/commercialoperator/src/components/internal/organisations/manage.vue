@@ -964,6 +964,7 @@ import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import utils from '../utils';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
@@ -1023,15 +1024,15 @@ export default {
     data() {
         let vm = this;
         return {
-            adBody: 'adBody' + vm._uid,
-            aBody: 'aBody' + vm._uid,
-            pdBody: 'pdBody' + vm._uid,
-            pBody: 'pBody' + vm._uid,
-            cdBody: 'cdBody' + vm._uid,
-            cBody: 'cBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
-            dTab: 'dTab' + vm._uid,
-            oTab: 'oTab' + vm._uid,
+            adBody: 'adBody' + uuid(),
+            aBody: 'aBody' + uuid(),
+            pdBody: 'pdBody' + uuid(),
+            pBody: 'pBody' + uuid(),
+            cdBody: 'cdBody' + uuid(),
+            cBody: 'cBody' + uuid(),
+            oBody: 'oBody' + uuid(),
+            dTab: 'dTab' + uuid(),
+            oTab: 'oTab' + uuid(),
             org: {
                 organisation_address: {},
             },

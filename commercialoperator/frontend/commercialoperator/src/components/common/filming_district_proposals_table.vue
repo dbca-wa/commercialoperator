@@ -27,6 +27,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import { constants } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'FilmingDistrictProposalTableDash',
@@ -47,8 +48,8 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'district-proposal-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'district-proposal-datatable-' + uuid(),
 
             district_proposal_headers: [
                 'District',

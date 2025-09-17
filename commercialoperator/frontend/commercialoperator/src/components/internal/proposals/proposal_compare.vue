@@ -126,6 +126,7 @@ import ProposalTClass from '@/components/form_tclass.vue';
 import OnHold from './proposal_onhold.vue';
 import WithQAOfficer from './proposal_qaofficer.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'InternalProposal',
@@ -185,9 +186,9 @@ export default {
     data: function () {
         let vm = this;
         return {
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             proposal: null,
             original_proposal: null,
             loading: [],
@@ -202,7 +203,7 @@ export default {
             showingProposal: false,
             showingRequirements: false,
             state_options: ['requirements', 'processing'],
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_options: {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,

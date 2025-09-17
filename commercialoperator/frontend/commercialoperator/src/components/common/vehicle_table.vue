@@ -35,6 +35,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import editVehicle from './edit_vehicle.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'VehicleTableDash',
@@ -68,8 +69,8 @@ export default {
                 license: '',
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'vehicle-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'vehicle-datatable-' + uuid(),
             // Filters for Vehicles
             external_status: ['Due', 'Future', 'Under Review', 'Approved'],
             internal_status: ['Due', 'Future', 'With Assessor', 'Approved'],

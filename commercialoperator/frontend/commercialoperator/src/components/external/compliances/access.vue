@@ -391,6 +391,7 @@ import $ from 'jquery';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
@@ -450,7 +451,6 @@ export default {
             );
     },
     data() {
-        let vm = this;
         return {
             form: null,
             loading: [],
@@ -461,8 +461,8 @@ export default {
             isFinalised: false,
             hasErrors: false,
             errorString: '',
-            pdBody: 'pdBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
+            pdBody: 'pdBody' + uuid(),
+            oBody: 'oBody' + uuid(),
             hasDocuments: false,
             validation_form: null,
             files: [

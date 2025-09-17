@@ -145,6 +145,7 @@
 <script>
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'InternalProposalRequirements',
@@ -156,10 +157,9 @@ export default {
         proposal: Object,
     },
     data: function () {
-        let vm = this;
         return {
-            proposedDecision: 'proposal-decision-' + vm._uid,
-            proposedLevel: 'proposal-level-' + vm._uid,
+            proposedDecision: 'proposal-decision-' + uuid(),
+            proposedLevel: 'proposal-level-' + uuid(),
             uploadedFile: null,
         };
     },

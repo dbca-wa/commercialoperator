@@ -160,6 +160,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'ProposalTableDash',
@@ -176,8 +177,8 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'proposal-datatable-' + uuid(),
             // Filters for Proposals
             filterApplicationType: 'All',
             filterProposalRegion: [],
@@ -203,7 +204,7 @@ export default {
             ],
             proposal_options: {
                 customProposalSearch: true,
-                tableID: 'proposal-datatable-' + vm._uid,
+                tableID: 'proposal-datatable-' + uuid(),
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,
                 },

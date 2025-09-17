@@ -439,6 +439,7 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import PreEventParksTable from './pre_event_parks_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     components: {
@@ -459,13 +460,13 @@ export default {
     data: function () {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            lBody: 'lBody' + vm._uid,
-            iBody: 'iBody' + vm._uid,
-            mBody: 'mBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
-            cBody: 'cBody' + vm._uid,
-            dBody: 'dBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            lBody: 'lBody' + uuid(),
+            iBody: 'iBody' + uuid(),
+            mBody: 'mBody' + uuid(),
+            oBody: 'oBody' + uuid(),
+            cBody: 'cBody' + uuid(),
+            dBody: 'dBody' + uuid(),
             values: null,
             accreditation_choices: [],
             accreditation_type: [],

@@ -145,6 +145,8 @@ import editMarineParkActivities from './edit_marine_park_activities.vue';
 import FileField from './required_docs.vue';
 import TreeSelect from '@/components/forms/treeview.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     components: {
         FormSection,
@@ -181,7 +183,7 @@ export default {
             park_map: {},
             zone_map: {},
             park_activities: [],
-            pBody: 'pBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
             values: null,
             vessels_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,

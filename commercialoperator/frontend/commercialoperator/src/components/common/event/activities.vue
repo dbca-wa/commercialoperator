@@ -326,6 +326,8 @@ import ParksActivityTable from './parks_activity_table.vue';
 import TrailsActivityTable from './trails_activity_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'EventActivities',
     components: {
@@ -378,8 +380,8 @@ export default {
     data: function () {
         let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
-            tBody: 'tBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
+            tBody: 'tBody' + uuid(),
             values: null,
             parks_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,

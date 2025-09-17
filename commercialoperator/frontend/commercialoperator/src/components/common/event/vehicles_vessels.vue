@@ -54,6 +54,8 @@ import { helpers, api_endpoints } from '@/utils/hooks.js';
 import FormSection from '@/components/forms/section_toggle.vue';
 import VehicleTable from '@/components/common/vehicle_table.vue';
 import VesselTable from '@/components/common/vessel_table.vue';
+import { v4 as uuid } from 'uuid';
+
 export default {
     components: {
         FormSection,
@@ -69,7 +71,7 @@ export default {
     data: function () {
         let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
             values: null,
             access_types: [],
             vehicles_url: helpers.add_endpoint_json(

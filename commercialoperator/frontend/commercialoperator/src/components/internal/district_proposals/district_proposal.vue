@@ -592,6 +592,7 @@ import ProposedDecline from './district_proposal_proposed_decline.vue';
 import ApprovalScreen from './district_proposal_approval.vue';
 import ProposedApproval from './district_proposed_issuance.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'DistrictProposal',
@@ -650,9 +651,9 @@ export default {
     data: function () {
         let vm = this;
         return {
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             // district_proposal: null,
             referral_sent_list: null,
             loading: [],
@@ -670,7 +671,7 @@ export default {
             referral_recipient_groups: [],
             contacts_table_initialised: false,
             initialisedSelects: false,
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_options: {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,

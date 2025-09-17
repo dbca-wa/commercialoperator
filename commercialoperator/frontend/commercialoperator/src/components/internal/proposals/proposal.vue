@@ -1137,9 +1137,9 @@ export default {
     data: function () {
         let vm = this;
         return {
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             proposal: {
                 selected_trails_activities: [],
                 selected_parks_activities: [],
@@ -1162,7 +1162,7 @@ export default {
             changingStatus: false,
             requirementsComplete: true,
             state_options: ['requirements', 'processing'],
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_options: {
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,

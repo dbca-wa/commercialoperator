@@ -110,6 +110,8 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'AssessmentComponent',
     components: {
@@ -145,12 +147,11 @@ export default {
         },
     },
     data: function () {
-        let vm = this;
         return {
             values: null,
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             panelClickersInitialised: false,
             // Note: added localAssesment to prevent mutating the original assessment object
             localAssessment: JSON.parse(JSON.stringify(this.assessment)),

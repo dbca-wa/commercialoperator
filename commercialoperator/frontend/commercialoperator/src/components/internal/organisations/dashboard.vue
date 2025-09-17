@@ -161,6 +161,7 @@
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'OrganisationAccessDashboard',
@@ -172,7 +173,7 @@ export default {
         let vm = this;
         return {
             // Filters
-            pBody: 'pBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
             filterOrganisation: 'All',
             filterApplicant: 'All',
             filterRole: 'All',

@@ -245,6 +245,8 @@ import editTrailActivities from './edit_trail_activities.vue';
 import FileField from './required_docs.vue';
 import TreeSelect from '@/components/forms/treeview.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     components: {
         FormSection,
@@ -286,8 +288,8 @@ export default {
             added_trail_id: [],
             removed_trail_id: [],
 
-            pBody: 'pBody' + vm._uid,
-            tBody: 'lBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            tBody: 'lBody' + uuid(),
             values: null,
             accessTypes: null,
             api_regions: null,

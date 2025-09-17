@@ -36,6 +36,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import editTrail from './edit_trail_activity.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'EventTrailTableDash',
@@ -75,8 +76,8 @@ export default {
                 activities: [],
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'trail-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'trail-datatable-' + uuid(),
             uuid: 0,
             // Filters for Parks
             park_headers: [

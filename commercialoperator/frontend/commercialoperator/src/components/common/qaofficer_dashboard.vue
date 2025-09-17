@@ -139,6 +139,7 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'ProposalTableDash',
@@ -162,8 +163,8 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'proposal-datatable-' + uuid(),
             //Profile to check if user has access to process Proposal
             profile: {},
             // Filters for Proposals

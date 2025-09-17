@@ -309,6 +309,7 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import TextFilteredField from '@/components/forms/text-filtered.vue';
 import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'ExternalDashboard',
@@ -328,10 +329,10 @@ export default {
     data() {
         let vm = this;
         return {
-            rBody: 'rBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
-            uBody: 'uBody' + vm._uid,
-            kBody: 'kBody' + vm._uid,
+            rBody: 'rBody' + uuid(),
+            oBody: 'oBody' + uuid(),
+            uBody: 'uBody' + uuid(),
+            kBody: 'kBody' + uuid(),
             loading: [],
             filtered_url: api_endpoints.filtered_users + '?search=',
             filtered_org_url: api_endpoints.filtered_organisations + '?search=',
@@ -349,7 +350,7 @@ export default {
             errorString: '',
             messages: false,
             messageString: '',
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            datatable_id: 'proposal-datatable-' + uuid(),
             proposal_headers: [
                 'Number',
                 'Type',

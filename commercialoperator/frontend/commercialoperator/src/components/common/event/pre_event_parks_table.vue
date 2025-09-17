@@ -34,6 +34,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_pre_event_park.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'EventParkTableDash',
@@ -59,8 +60,8 @@ export default {
                 activities: '',
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'park-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'park-datatable-' + uuid(),
             // Filters for Parks
             park_headers: [
                 'Park or Reserve',
