@@ -30,15 +30,17 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ proposal.lodgement_date | formatDate }}
+                                    {{ formatDate(proposal.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
-                                        <tr>
-                                            <th>Lodgement</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
-                                        </tr>
+                                        <thead>
+                                            <tr>
+                                                <th>Lodgement</th>
+                                                <th>Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
                                     </table>
                                 </div>
                             </div>
@@ -51,30 +53,53 @@
                         <div class="card-header">History</div>
                         <div class="card-body">
                             <table class="table small-table">
-                                <tr>
-                                    <th>Last Modified</th>
-                                    <th></th>
-                                </tr>
-                                <tr
-                                    v-for="p in proposal.reversion_ids"
-                                    :key="`reversion-${p.cur_version_id}`"
-                                >
-                                    <td>{{ p.created | formatDate }}</td>
-                                    <td>
-                                        <a
-                                            id="history_id"
-                                            :href="
-                                                history_url +
-                                                'version_id2=' +
-                                                p.cur_version_id +
-                                                '&version_id1=' +
-                                                p.prev_version_id
-                                            "
-                                            target="_blank"
-                                            >compare</a
-                                        >
-                                    </td>
-                                </tr>
+                                <thead>
+                                    <tr>
+                                        <th>Last Modified</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="h in proposal.history"
+                                        :key="`history-${h.id}`"
+                                    >
+                                        <td>{{ formatDate(h.modified) }}</td>
+                                        <td>
+                                            <a
+                                                :href="
+                                                    history_url +
+                                                    'version_id2=' +
+                                                    h.version_id +
+                                                    '&version_id1=' +
+                                                    h.prev_version_id
+                                                "
+                                                target="_blank"
+                                                >compare</a
+                                            >
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        v-for="p in proposal.reversion_ids"
+                                        :key="`reversion-${p.cur_version_id}`"
+                                    >
+                                        <td>{{ formatDate(p.created) }}</td>
+                                        <td>
+                                            <a
+                                                id="history_id"
+                                                :href="
+                                                    history_url +
+                                                    'version_id2=' +
+                                                    p.cur_version_id +
+                                                    '&version_id1=' +
+                                                    p.prev_version_id
+                                                "
+                                                target="_blank"
+                                                >compare</a
+                                            >
+                                        </td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -159,82 +184,87 @@
                                             </template>
                                         </div>
                                         <table class="table small-table">
-                                            <tr>
-                                                <th>Referral</th>
-                                                <th>Status/Action</th>
-                                            </tr>
-                                            <tr
-                                                v-for="r in proposal.latest_referrals"
-                                                :key="`referral-${r.id}`"
-                                            >
-                                                <td>
-                                                    <small
-                                                        ><strong>{{
-                                                            r.referral
-                                                        }}</strong></small
-                                                    ><br />
-                                                    <small
-                                                        ><strong>{{
-                                                            r.lodged_on
-                                                                | formatDate
-                                                        }}</strong></small
-                                                    >
-                                                </td>
-                                                <td>
-                                                    <small
-                                                        ><strong>{{
-                                                            r.processing_status
-                                                        }}</strong></small
-                                                    ><br />
-                                                    <template
-                                                        v-if="
-                                                            r.processing_status ==
-                                                            'Awaiting'
-                                                        "
-                                                    >
+                                            <thead>
+                                                <tr>
+                                                    <th>Referral</th>
+                                                    <th>Status/Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr
+                                                    v-for="r in proposal.latest_referrals"
+                                                    :key="`referral-${r.id}`"
+                                                >
+                                                    <td>
                                                         <small
+                                                            ><strong>{{
+                                                                r.referral
+                                                            }}</strong></small
+                                                        ><br />
+                                                        <small
+                                                            ><strong>{{
+                                                                formatDate(
+                                                                    r.lodged_on
+                                                                )
+                                                            }}</strong></small
+                                                        >
+                                                    </td>
+                                                    <td>
+                                                        <small
+                                                            ><strong>{{
+                                                                r.processing_status
+                                                            }}</strong></small
+                                                        ><br />
+                                                        <template
                                                             v-if="
-                                                                canLimitedAction
+                                                                r.processing_status ==
+                                                                'Awaiting'
                                                             "
-                                                            ><a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    remindReferral(
-                                                                        r
-                                                                    )
+                                                        >
+                                                            <small
+                                                                v-if="
+                                                                    canLimitedAction
                                                                 "
-                                                                >Remind</a
+                                                                ><a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        remindReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Remind</a
+                                                                >
+                                                                /
+                                                                <a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        recallReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Recall</a
+                                                                ></small
                                                             >
-                                                            /
-                                                            <a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    recallReferral(
-                                                                        r
-                                                                    )
+                                                        </template>
+                                                        <template v-else>
+                                                            <small
+                                                                v-if="
+                                                                    canLimitedAction
                                                                 "
-                                                                >Recall</a
-                                                            ></small
-                                                        >
-                                                    </template>
-                                                    <template v-else>
-                                                        <small
-                                                            v-if="
-                                                                canLimitedAction
-                                                            "
-                                                            ><a
-                                                                href="#"
-                                                                @click.prevent="
-                                                                    resendReferral(
-                                                                        r
-                                                                    )
-                                                                "
-                                                                >Resend</a
-                                                            ></small
-                                                        >
-                                                    </template>
-                                                </td>
-                                            </tr>
+                                                                ><a
+                                                                    href="#"
+                                                                    @click.prevent="
+                                                                        resendReferral(
+                                                                            r
+                                                                        )
+                                                                    "
+                                                                    >Resend</a
+                                                                ></small
+                                                            >
+                                                        </template>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                         <MoreReferrals
                                             :proposal="proposal"
@@ -552,37 +582,51 @@
                                                 <table
                                                     class="table small-table"
                                                 >
-                                                    <tr>
-                                                        <th>
-                                                            QA Officer Referral
-                                                        </th>
-                                                        <th>Status/Action</th>
-                                                    </tr>
-                                                    <tr
-                                                        v-for="r in proposal.qaofficer_referrals"
-                                                        :key="r.id"
-                                                    >
-                                                        <td>
-                                                            <small
-                                                                ><strong>{{
-                                                                    r.lodged_on
-                                                                        | formatDate
-                                                                }}</strong></small
-                                                            >
-                                                        </td>
-                                                        <td>
-                                                            <small
-                                                                ><strong>{{
-                                                                    r.processing_status
-                                                                }}</strong></small
-                                                            ><br />
-                                                            <small
-                                                                ><strong>{{
-                                                                    r.qaofficer
-                                                                }}</strong></small
-                                                            ><br />
-                                                        </td>
-                                                    </tr>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>QA Officer</th>
+                                                            <th>
+                                                                Status/Action
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <th>
+                                                                QA Officer
+                                                                Referral
+                                                            </th>
+                                                            <th>
+                                                                Status/Action
+                                                            </th>
+                                                        </tr>
+                                                        <tr
+                                                            v-for="r in proposal.qaofficer_referrals"
+                                                            :key="r.id"
+                                                        >
+                                                            <td>
+                                                                <small
+                                                                    ><strong>{{
+                                                                        formatDate(
+                                                                            r.lodged_on
+                                                                        )
+                                                                    }}</strong></small
+                                                                >
+                                                            </td>
+                                                            <td>
+                                                                <small
+                                                                    ><strong>{{
+                                                                        r.processing_status
+                                                                    }}</strong></small
+                                                                ><br />
+                                                                <small
+                                                                    ><strong>{{
+                                                                        r.qaofficer
+                                                                    }}</strong></small
+                                                                ><br />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
                                                 </table>
                                             </div>
 
@@ -998,7 +1042,7 @@
             :processing_status="proposal.processing_status"
             :proposal_id="proposal.id"
             :proposal_type="proposal.proposal_type"
-            :is-approval-level-document="isApprovalLevelDocument"
+            :is-approval-level-document="isApprovalLevelDocument || null"
             @refreshFromResponse="refreshFromResponse"
         />
         <OnHold
@@ -1015,7 +1059,6 @@
     </div>
 </template>
 <script>
-import Vue from 'vue';
 import ProposedDecline from './proposal_proposed_decline.vue';
 import AmendmentRequest from './amendment_request.vue';
 import Requirements from './proposal_requirements.vue';
@@ -1029,8 +1072,9 @@ import ProposalEvent from '@/components/form_event.vue';
 import OnHold from './proposal_onhold.vue';
 import WithQAOfficer from './proposal_qaofficer.vue';
 import FilmingDistrictProposalsTable from '@common-utils/filming_district_proposals_table.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'InternalProposal',
     components: {
@@ -1048,22 +1092,17 @@ export default {
         WithQAOfficer,
         FilmingDistrictProposalsTable,
     },
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
-    },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 `/api/proposal/${to.params.proposal_id}/internal_proposal.json`
             )
             .then(
                 (res) => {
                     next((vm) => {
-                        vm.proposal = Object.assign({}, res.body);
+                        vm.proposal = Object.assign({}, res);
                         vm.fetchProposalParks(to.params.proposal_id);
-                        vm.original_proposal = helpers.copyObject(res.body);
+                        vm.original_proposal = helpers.copyObject(res);
                         vm.proposal.org_applicant.address =
                             vm.proposal.org_applicant.address != null
                                 ? vm.proposal.org_applicant.address
@@ -1079,12 +1118,12 @@ export default {
             );
     },
     beforeRouteUpdate: function (to, from, next) {
-        Vue.http.get(`/api/proposal/${to.params.proposal_id}.json`).then(
+        helpers.fetchUrl(`/api/proposal/${to.params.proposal_id}.json`).then(
             (res) => {
                 next((vm) => {
-                    vm.proposal = Object.assign({}, res.body);
+                    vm.proposal = Object.assign({}, res);
                     vm.fetchProposalParks(to.params.proposal_id);
-                    vm.original_proposal = helpers.copyObject(res.body);
+                    vm.original_proposal = helpers.copyObject(res);
                     vm.proposal.selected_trails_activities = [];
                     vm.proposal.selected_parks_activities = [];
                     vm.proposal.marine_parks_activities = [];
@@ -1098,9 +1137,9 @@ export default {
     data: function () {
         let vm = this;
         return {
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             proposal: {
                 selected_trails_activities: [],
                 selected_parks_activities: [],
@@ -1123,10 +1162,10 @@ export default {
             changingStatus: false,
             requirementsComplete: true,
             state_options: ['requirements', 'processing'],
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {
@@ -1486,23 +1525,30 @@ export default {
             this.$refs.proposed_approval.state = 'final_approval';
             this.$refs.proposed_approval.isApprovalLevelDocument =
                 this.isApprovalLevelDocument;
-            this.$refs.proposed_approval.approval.start_date =
-                this.proposal.proposed_issuance_approval.start_date != null &&
-                this.proposal.proposed_issuance_approval.start_date != undefined
-                    ? moment(
-                          this.proposal.proposed_issuance_approval.start_date,
-                          'DD/MM/YYYY'
-                      ).format('YYYY-MM-DD')
-                    : '';
-            this.$refs.proposed_approval.approval.expiry_date =
-                this.proposal.proposed_issuance_approval.expiry_date != null &&
-                this.proposal.proposed_issuance_approval.expiry_date !=
-                    undefined
-                    ? moment(
-                          this.proposal.proposed_issuance_approval.expiry_date,
-                          'DD/MM/YYYY'
-                      ).format('YYYY-MM-DD')
-                    : '';
+            if (this.proposal.proposed_issuance_approval) {
+                this.$refs.proposed_approval.approval.start_date =
+                    this.proposal.proposed_issuance_approval.start_date !=
+                        null &&
+                    this.proposal.proposed_issuance_approval.start_date !=
+                        undefined
+                        ? moment(
+                              this.proposal.proposed_issuance_approval
+                                  .start_date,
+                              'DD/MM/YYYY'
+                          ).format('YYYY-MM-DD')
+                        : '';
+                this.$refs.proposed_approval.approval.expiry_date =
+                    this.proposal.proposed_issuance_approval.expiry_date !=
+                        null &&
+                    this.proposal.proposed_issuance_approval.expiry_date !=
+                        undefined
+                        ? moment(
+                              this.proposal.proposed_issuance_approval
+                                  .expiry_date,
+                              'DD/MM/YYYY'
+                          ).format('YYYY-MM-DD')
+                        : '';
+            }
             this.$refs.proposed_approval.isModalOpen = true;
         },
         declineProposal: function () {
@@ -1530,41 +1576,50 @@ export default {
             );
 
             vm.sendingToDistrict = true;
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    vm.$http
-                        .post(
-                            helpers.add_endpoint_json(
-                                api_endpoints.proposals,
-                                vm.proposal.id + '/send_to_districts'
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.proposals,
+                                    vm.proposal.id + '/send_to_districts'
+                                ),
+                                {
+                                    method: 'POST',
+                                }
                             )
-                        )
-                        .then(
-                            (response) => {
-                                vm.sendingToDistrict = false;
-                                vm.original_proposal = helpers.copyObject(
-                                    response.body
-                                );
-                                vm.proposal = Object.assign({}, response.body);
-                                swal.fire({
-                                    title: 'Sent',
-                                    text: 'The proposal has been sent to Districts',
-                                    icon: 'success',
-                                });
-                            },
-                            (error) => {
-                                console.log(error);
-                                swal.fire({
-                                    title: 'Error',
-                                    text: helpers.apiVueResourceError(error),
-                                    icon: 'error',
-                                });
-                                vm.sendingToDistrict = false;
-                            }
-                        );
-                },
-                () => {}
-            );
+                            .then(
+                                (response) => {
+                                    vm.sendingToDistrict = false;
+                                    vm.original_proposal =
+                                        helpers.copyObject(response);
+                                    vm.proposal = Object.assign({}, response);
+                                    swal.fire({
+                                        title: 'Sent',
+                                        text: 'The proposal has been sent to Districts',
+                                        icon: 'success',
+                                    });
+                                },
+                                (error) => {
+                                    console.log(error);
+                                    swal.fire({
+                                        title: 'Error',
+                                        text: helpers.apiVueResourceError(
+                                            error
+                                        ),
+                                        icon: 'error',
+                                    });
+                                    vm.sendingToDistrict = false;
+                                }
+                            );
+                    },
+                    () => {}
+                );
         },
         sendToKensington: function () {
             console.log('hello');
@@ -1584,41 +1639,50 @@ export default {
             );
 
             vm.sendingToKensington = true;
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    vm.$http
-                        .post(
-                            helpers.add_endpoint_json(
-                                api_endpoints.proposals,
-                                vm.proposal.id + '/send_to_kensington'
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.proposals,
+                                    vm.proposal.id + '/send_to_kensington'
+                                ),
+                                {
+                                    method: 'POST',
+                                }
                             )
-                        )
-                        .then(
-                            (response) => {
-                                vm.sendingToKensington = false;
-                                vm.original_proposal = helpers.copyObject(
-                                    response.body
-                                );
-                                vm.proposal = Object.assign({}, response.body);
-                                swal.fire({
-                                    title: 'Sent',
-                                    text: 'The proposal has been sent to Kensington',
-                                    icon: 'success',
-                                });
-                            },
-                            (error) => {
-                                console.log(error);
-                                swal.fire({
-                                    title: 'Error',
-                                    text: helpers.apiVueResourceError(error),
-                                    icon: 'error',
-                                });
-                                vm.sendingToKensington = false;
-                            }
-                        );
-                },
-                () => {}
-            );
+                            .then(
+                                (response) => {
+                                    vm.sendingToKensington = false;
+                                    vm.original_proposal =
+                                        helpers.copyObject(response);
+                                    vm.proposal = Object.assign({}, response);
+                                    swal.fire({
+                                        title: 'Sent',
+                                        text: 'The proposal has been sent to Kensington',
+                                        icon: 'success',
+                                    });
+                                },
+                                (error) => {
+                                    console.log(error);
+                                    swal.fire({
+                                        title: 'Error',
+                                        text: helpers.apiVueResourceError(
+                                            error
+                                        ),
+                                        icon: 'error',
+                                    });
+                                    vm.sendingToKensington = false;
+                                }
+                            );
+                    },
+                    () => {}
+                );
         },
         amendmentRequest: function () {
             this.save_wo();
@@ -1667,15 +1731,13 @@ export default {
                 'marine_parks_activities',
                 JSON.stringify(vm.proposal.marine_parks_activities)
             );
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                (response) => {
-                    if (!response.ok) {
-                        swal.fire({
-                            title: 'Error',
-                            text: helpers.apiVueResourceError(response),
-                            icon: 'error',
-                        });
-                    } else {
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    (response) => {
                         vm.refreshFromResponse(response);
                         // Note: commented this out for now, as it doesn't play well with existing logic of the component
                         // vm.refreshApplicationTypeKey(
@@ -1686,18 +1748,17 @@ export default {
                             text: 'Your application has been saved',
                             icon: 'success',
                         });
+                        vm.savingProposal = false;
+                    },
+                    (e) => {
+                        swal.fire({
+                            title: 'Error',
+                            text: e,
+                            icon: 'error',
+                        });
+                        vm.savingProposal = false;
                     }
-                    vm.savingProposal = false;
-                },
-                (e) => {
-                    swal.fire({
-                        title: 'Error',
-                        text: helpers.apiVueResourceError(e),
-                        icon: 'error',
-                    });
-                    vm.savingProposal = false;
-                }
-            );
+                );
         },
         save_wo: function () {
             let vm = this;
@@ -1722,10 +1783,15 @@ export default {
                 'marine_parks_activities',
                 JSON.stringify(vm.proposal.marine_parks_activities)
             );
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {},
-                () => {}
-            );
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {},
+                    () => {}
+                );
         },
 
         toggleProposal: function () {
@@ -1747,8 +1813,8 @@ export default {
         assignRequestUser: function () {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         vm.proposal.id + '/assign_request_user'
@@ -1756,11 +1822,9 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.proposal = Object.assign({}, response.body);
+                        vm.proposal = Object.assign({}, response);
                         vm.fetchProposalParks(vm.proposal.id);
-                        vm.original_proposal = helpers.copyObject(
-                            response.body
-                        );
+                        vm.original_proposal = helpers.copyObject(response);
                         vm.updateAssignedOfficerSelect();
                     },
                     (error) => {
@@ -1777,8 +1841,8 @@ export default {
         refreshFromResponse: function (response) {
             console.log('Tree selection: refreshFromResponse');
             let vm = this;
-            vm.original_proposal = helpers.copyObject(response.body);
-            vm.proposal = helpers.copyObject(response.body);
+            vm.original_proposal = helpers.copyObject(response);
+            vm.proposal = helpers.copyObject(response);
             vm.fetchProposalParks(vm.proposal.id);
             vm.$nextTick(() => {
                 vm.initialiseAssignedOfficerSelect(true);
@@ -1809,23 +1873,24 @@ export default {
                 data = { assessor_id: vm.proposal.assigned_officer };
             }
             if (!unassign) {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposals,
                             vm.proposal.id + '/assign_to'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.proposal = Object.assign({}, response.body);
-                            vm.original_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.proposal = Object.assign({}, response);
+                            vm.original_proposal = helpers.copyObject(response);
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchProposalParks(vm.proposal.id);
@@ -1849,8 +1914,8 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .get(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposals,
                             vm.proposal.id + '/unassign'
@@ -1858,10 +1923,8 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.proposal = Object.assign({}, response.body);
-                            vm.original_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.proposal = Object.assign({}, response);
+                            vm.original_proposal = helpers.copyObject(response);
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchProposalParks(vm.proposal.id);
@@ -1906,67 +1969,75 @@ export default {
                     'marine_parks_activities',
                     JSON.stringify(vm.proposal.marine_parks_activities)
                 );
-                vm.$http.post(vm.proposal_form_url, formData).then(
-                    () => {
-                        //save Proposal before changing status so that unsaved assessor data is saved.
-                        let data = {
-                            status: status,
-                            approver_comment: vm.approver_comment,
-                        };
-                        vm.$http
-                            .post(
-                                helpers.add_endpoint_json(
-                                    api_endpoints.proposals,
-                                    vm.proposal.id + '/switch_status'
-                                ),
-                                JSON.stringify(data),
-                                {
-                                    emulateJSON: true,
-                                }
-                            )
-                            .then(
-                                (response) => {
-                                    vm.proposal = Object.assign(
-                                        {},
-                                        response.body
-                                    );
-                                    vm.original_proposal = helpers.copyObject(
-                                        response.body
-                                    );
-                                    vm.fetchProposalParks(vm.proposal.id);
-                                    vm.approver_comment = '';
-                                    vm.$nextTick(() => {
-                                        vm.initialiseAssignedOfficerSelect(
-                                            true
+                helpers
+                    .fetchUrl(vm.proposal_form_url, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(
+                        () => {
+                            //save Proposal before changing status so that unsaved assessor data is saved.
+                            let data = {
+                                status: status,
+                                approver_comment: vm.approver_comment,
+                            };
+                            helpers
+                                .fetchUrl(
+                                    helpers.add_endpoint_json(
+                                        api_endpoints.proposals,
+                                        vm.proposal.id + '/switch_status'
+                                    ),
+                                    {
+                                        method: 'POST',
+                                        body: JSON.stringify(data),
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                    }
+                                )
+                                .then(
+                                    (response) => {
+                                        vm.proposal = Object.assign(
+                                            {},
+                                            response
                                         );
-                                        vm.updateAssignedOfficerSelect();
-                                    });
-                                },
-                                (error) => {
-                                    vm.proposal = helpers.copyObject(
-                                        vm.original_proposal
-                                    );
-                                    vm.proposal.org_applicant.address =
-                                        vm.proposal.org_applicant.address !=
-                                        null
-                                            ? vm.proposal.org_applicant.address
-                                            : {};
-                                    vm.fetchProposalParks(vm.proposal.id);
-                                    swal.fire({
-                                        title: 'Application Error',
-                                        text: helpers.apiVueResourceError(
-                                            error
-                                        ),
-                                        icon: 'error',
-                                    });
-                                }
-                            );
-                        vm.changingStatus = false;
-                    },
-                    () => {
-                        vm.changingStatus = false;
-                    }
-                );
+                                        vm.original_proposal =
+                                            helpers.copyObject(response);
+                                        vm.fetchProposalParks(vm.proposal.id);
+                                        vm.approver_comment = '';
+                                        vm.$nextTick(() => {
+                                            vm.initialiseAssignedOfficerSelect(
+                                                true
+                                            );
+                                            vm.updateAssignedOfficerSelect();
+                                        });
+                                    },
+                                    (error) => {
+                                        vm.proposal = helpers.copyObject(
+                                            vm.original_proposal
+                                        );
+                                        vm.proposal.org_applicant.address =
+                                            vm.proposal.org_applicant.address !=
+                                            null
+                                                ? vm.proposal.org_applicant
+                                                      .address
+                                                : {};
+                                        vm.fetchProposalParks(vm.proposal.id);
+                                        swal.fire({
+                                            title: 'Application Error',
+                                            text: helpers.apiVueResourceError(
+                                                error
+                                            ),
+                                            icon: 'error',
+                                        });
+                                    }
+                                );
+                            vm.changingStatus = false;
+                        },
+                        () => {
+                            vm.changingStatus = false;
+                        }
+                    );
             }
             //if approver is pushing back proposal to Assessor then navigate the approver back to dashboard page
             if (
@@ -1978,23 +2049,24 @@ export default {
                     status: status,
                     approver_comment: vm.approver_comment,
                 };
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposals,
                             vm.proposal.id + '/switch_status'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.proposal = Object.assign({}, response.body);
-                            vm.original_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.proposal = Object.assign({}, response);
+                            vm.original_proposal = helpers.copyObject(response);
                             vm.fetchProposalParks(vm.proposal.id);
                             vm.approver_comment = '';
                             vm.$nextTick(() => {
@@ -2020,23 +2092,24 @@ export default {
                     approver_comment: vm.approver_comment,
                 };
                 vm.changingStatus = true;
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposals,
                             vm.proposal.id + '/switch_status'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.proposal = Object.assign({}, response.body);
-                            vm.original_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.proposal = Object.assign({}, response);
+                            vm.original_proposal = helpers.copyObject(response);
                             vm.fetchProposalParks(vm.proposal.id);
                             vm.approver_comment = '';
                             vm.$nextTick(() => {
@@ -2062,8 +2135,8 @@ export default {
         },
         fetchProposalParks: function (proposal_id) {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         proposal_id + '/parks_and_trails'
@@ -2071,7 +2144,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.proposal_parks = helpers.copyObject(response.body);
+                        vm.proposal_parks = structuredClone(response);
                     },
                     () => {}
                 );
@@ -2079,9 +2152,9 @@ export default {
         fetchReferralRecipientGroups: function () {
             let vm = this;
             vm.loading.push('Loading Referral Recipient Groups');
-            vm.$http.get(api_endpoints.referral_recipient_groups).then(
+            helpers.fetchUrl(api_endpoints.referral_recipient_groups).then(
                 (response) => {
-                    vm.referral_recipient_groups = response.body;
+                    vm.referral_recipient_groups = response;
                     vm.loading.splice('Loading Referral Recipient Groups', 1);
                 },
                 (error) => {
@@ -2166,63 +2239,72 @@ export default {
             );
 
             vm.sendingReferral = true;
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    let data = {
-                        email_group: vm.selected_referral,
-                        text: vm.referral_text,
-                    };
-                    vm.$http
-                        .post(
-                            helpers.add_endpoint_json(
-                                api_endpoints.proposals,
-                                vm.proposal.id + '/assesor_send_referral'
-                            ),
-                            JSON.stringify(data),
-                            {
-                                emulateJSON: true,
-                            }
-                        )
-                        .then(
-                            (response) => {
-                                vm.sendingReferral = false;
-                                vm.original_proposal = helpers.copyObject(
-                                    response.body
-                                );
-                                vm.proposal = Object.assign({}, response.body);
-                                vm.fetchProposalParks(vm.proposal.id);
-                                swal.fire({
-                                    title: 'Referral Sent',
-                                    text:
-                                        'The referral has been sent to ' +
-                                        vm.selected_referral,
-                                    icon: 'success',
-                                });
-                                $(vm.$refs.referral_recipient_groups)
-                                    .val(null)
-                                    .trigger('change');
-                                vm.selected_referral = '';
-                                vm.referral_text = '';
-                            },
-                            (error) => {
-                                console.log(error);
-                                swal.fire({
-                                    title: 'Referral Error',
-                                    text: helpers.apiVueResourceError(error),
-                                    icon: 'error',
-                                });
-                                vm.sendingReferral = false;
-                            }
-                        );
-                },
-                () => {}
-            );
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {
+                        let data = {
+                            email_group: vm.selected_referral,
+                            text: vm.referral_text,
+                        };
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.proposals,
+                                    vm.proposal.id + '/assesor_send_referral'
+                                ),
+                                {
+                                    method: 'POST',
+                                    body: JSON.stringify(data),
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                }
+                            )
+                            .then(
+                                (response) => {
+                                    vm.sendingReferral = false;
+                                    vm.original_proposal =
+                                        helpers.copyObject(response);
+                                    vm.proposal = Object.assign({}, response);
+                                    vm.fetchProposalParks(vm.proposal.id);
+                                    swal.fire({
+                                        title: 'Referral Sent',
+                                        text:
+                                            'The referral has been sent to ' +
+                                            vm.selected_referral,
+                                        icon: 'success',
+                                    });
+                                    $(vm.$refs.referral_recipient_groups)
+                                        .val(null)
+                                        .trigger('change');
+                                    vm.selected_referral = '';
+                                    vm.referral_text = '';
+                                },
+                                (error) => {
+                                    console.log(error);
+                                    swal.fire({
+                                        title: 'Referral Error',
+                                        text: helpers.apiVueResourceError(
+                                            error
+                                        ),
+                                        icon: 'error',
+                                    });
+                                    vm.sendingReferral = false;
+                                }
+                            );
+                    },
+                    () => {}
+                );
         },
         remindReferral: function (r) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         r.id + '/remind'
@@ -2230,10 +2312,8 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.original_proposal = helpers.copyObject(
-                            response.body
-                        );
-                        vm.proposal = Object.assign({}, response.body);
+                        vm.original_proposal = helpers.copyObject(response);
+                        vm.proposal = Object.assign({}, response);
                         vm.fetchProposalParks(vm.proposal.id);
                         swal.fire({
                             title: 'Referral Reminder',
@@ -2256,8 +2336,8 @@ export default {
         resendReferral: function (r) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         r.id + '/resend'
@@ -2265,10 +2345,8 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.original_proposal = helpers.copyObject(
-                            response.body
-                        );
-                        vm.proposal = Object.assign({}, response.body);
+                        vm.original_proposal = helpers.copyObject(response);
+                        vm.proposal = Object.assign({}, response);
                         vm.fetchProposalParks(vm.proposal.id);
                         swal.fire({
                             title: 'Referral Resent',
@@ -2292,8 +2370,8 @@ export default {
         recallReferral: function (r) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         r.id + '/recall'
@@ -2301,10 +2379,8 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.original_proposal = helpers.copyObject(
-                            response.body
-                        );
-                        vm.proposal = Object.assign({}, response.body);
+                        vm.original_proposal = helpers.copyObject(response);
+                        vm.proposal = Object.assign({}, response);
                         vm.fetchProposalParks(vm.proposal.id);
                         swal.fire({
                             title: 'Referral Recall',
@@ -2350,7 +2426,10 @@ export default {
         proposalAddSelectedParkActivities: function () {
             let vm = this;
 
-            if (typeof vm.$refs.tclass !== 'undefined') {
+            if (
+                typeof vm.$refs.tclass !== 'undefined' &&
+                vm.$refs.tclass !== null
+            ) {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.tclass.$refs.activities_land) {
                     console.log(
@@ -2370,7 +2449,10 @@ export default {
                         vm.$refs.tclass.$refs.activities_marine.marine_parks_activities;
                 }
             }
-            if (typeof vm.$refs.event !== 'undefined') {
+            if (
+                typeof vm.$refs.event !== 'undefined' &&
+                vm.$refs.event !== null
+            ) {
                 //  hack - after a local update (re-assign assessor or send referral) these are being reset to null, so resetting these to the correct values here
                 if (vm.$refs.event.$refs.event_activities) {
                     console.log(
@@ -2380,6 +2462,9 @@ export default {
                         vm.$refs.event.$refs.event_activities.selected_trails_activities;
                 }
             }
+        },
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
         },
     },
 };

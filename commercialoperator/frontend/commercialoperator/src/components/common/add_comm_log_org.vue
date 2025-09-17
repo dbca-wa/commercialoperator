@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="commsOrgForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -221,7 +221,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="addingComms"
                     type="button"
@@ -242,7 +242,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
@@ -384,18 +384,23 @@ export default {
             let comms = new FormData(vm.form);
             comms.append('is_ledger_org_query', vm.isLedgerOrgQuery);
             vm.addingComms = true;
-            vm.$http.post(vm.url, comms).then(
-                () => {
-                    vm.addingComms = false;
-                    vm.$emit('refreshActionFromResponse', this.localAction);
-                    vm.close();
-                },
-                (error) => {
-                    vm.hasErrors = true;
-                    vm.addingComms = false;
-                    vm.errorString = helpers.apiVueResourceError(error);
-                }
-            );
+            helpers
+                .fetchUrl(vm.url, {
+                    method: 'POST',
+                    body: comms,
+                })
+                .then(
+                    () => {
+                        vm.addingComms = false;
+                        vm.$emit('refreshActionFromResponse', this.localAction);
+                        vm.close();
+                    },
+                    (error) => {
+                        vm.hasErrors = true;
+                        vm.addingComms = false;
+                        vm.errorString = helpers.apiVueResourceError(error);
+                    }
+                );
         },
         addFormValidations: function () {
             let vm = this;

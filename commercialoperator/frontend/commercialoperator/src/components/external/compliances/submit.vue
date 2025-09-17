@@ -14,23 +14,30 @@
                         >
                         <br />
                         <table>
-                            <tr>
-                                <td><strong>Compliance:</strong></td>
-                                <td>
-                                    <strong>{{ compliance.reference }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Date/Time:</strong></td>
-                                <td>
-                                    <strong>
-                                        {{
-                                            compliance.lodgement_date
-                                                | formatDate
-                                        }}</strong
-                                    >
-                                </td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <td><strong>Compliance:</strong></td>
+                                    <td>
+                                        <strong>{{
+                                            compliance.reference
+                                        }}</strong>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Date/Time:</strong></td>
+                                    <td>
+                                        <strong>
+                                            {{
+                                                formatDate(
+                                                    compliance.lodgement_date
+                                                )
+                                            }}</strong
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                         <div>
                             <p>Thank you for your submission.</p>
@@ -70,16 +77,13 @@
     </div>
 </template>
 <script>
+import { api_endpoints, helpers } from '@/utils/hooks';
+
 export default {
     components: {},
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
-    },
     beforeRouteEnter: function (to, from, next) {
         next((vm) => {
-            vm.compliance = to.params.compliance;
+            vm.fetchCompliance(to.params.compliance_id);
         });
     },
     data: function () {
@@ -92,7 +96,22 @@ export default {
         let vm = this;
         vm.form = document.forms.new_compliance;
     },
-    methods: {},
+    methods: {
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
+        },
+        fetchCompliance: async function (compliance_id) {
+            let vm = this;
+            const response = await fetch(
+                helpers.add_endpoint_json(
+                    api_endpoints.compliances,
+                    compliance_id
+                )
+            );
+            const resData = await response.json();
+            vm.compliance = Object.assign({}, resData);
+        },
+    },
 };
 </script>
 

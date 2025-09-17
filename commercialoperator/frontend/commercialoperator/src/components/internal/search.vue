@@ -236,7 +236,7 @@
                         </div>
                         <div class="row">
                             <div class="col-lg-12">
-                                <alert :show.sync="showMessage" type="danger"
+                                <alert v-if="showMessage" type="danger"
                                     ><strong>
                                         <!-- eslint-disable-next-line vue/no-v-html -->
                                         <p v-html="messageString"></p></strong
@@ -291,7 +291,7 @@
                                     @click.prevent="search_reference"
                                 />
                             </div>
-                            <alert :show.sync="showError" type="danger"
+                            <alert v-if="showError" type="danger"
                                 ><strong>{{ errorString }}</strong></alert
                             >
                         </div>
@@ -308,7 +308,8 @@ import alert from '@vue-utils/alert.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import TextFilteredField from '@/components/forms/text-filtered.vue';
 import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'ExternalDashboard',
@@ -328,10 +329,10 @@ export default {
     data() {
         let vm = this;
         return {
-            rBody: 'rBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
-            uBody: 'uBody' + vm._uid,
-            kBody: 'kBody' + vm._uid,
+            rBody: 'rBody' + uuid(),
+            oBody: 'oBody' + uuid(),
+            uBody: 'uBody' + uuid(),
+            kBody: 'kBody' + uuid(),
             loading: [],
             filtered_url: api_endpoints.filtered_users + '?search=',
             filtered_org_url: api_endpoints.filtered_organisations + '?search=',
@@ -349,7 +350,7 @@ export default {
             errorString: '',
             messages: false,
             messageString: '',
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            datatable_id: 'proposal-datatable-' + uuid(),
             proposal_headers: [
                 'Number',
                 'Type',
@@ -359,7 +360,7 @@ export default {
             ],
             proposal_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -553,9 +554,10 @@ export default {
             let vm = this;
             console.log('Calling search_reference');
             if (vm.referenceWord) {
-                vm.$http
-                    .post('/api/search_reference.json', {
+                helpers
+                    .fetchUrl('/api/search_reference.json', {
                         reference_number: vm.referenceWord,
+                        method: 'POST',
                     })
                     .then(
                         (res) => {

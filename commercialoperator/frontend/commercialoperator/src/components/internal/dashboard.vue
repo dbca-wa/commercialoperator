@@ -45,7 +45,7 @@ import ReferralDashTable from '@common-utils/referrals_dashboard.vue';
 import QAOfficerDashTable from '@common-utils/qaofficer_dashboard.vue';
 import DistrictProposalDashTable from '@common-utils/district_proposals_dashboard.vue';
 
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ExternalDashboard',
     components: {
@@ -77,10 +77,9 @@ export default {
     methods: {
         check_qaofficer_membership: function () {
             let vm = this;
-
-            vm.$http.get(vm.dashboard_url).then(
+            helpers.fetchUrl(vm.dashboard_url).then(
                 (response) => {
-                    vm.is_qaofficer = response.data['QA_Officer'];
+                    vm.is_qaofficer = response['QA_Officer'];
                 },
                 (error) => {
                     console.log(error);

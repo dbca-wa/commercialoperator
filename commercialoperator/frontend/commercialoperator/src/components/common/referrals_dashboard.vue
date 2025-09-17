@@ -159,7 +159,9 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -175,8 +177,8 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'proposal-datatable-' + uuid(),
             // Filters for Proposals
             filterApplicationType: 'All',
             filterProposalRegion: [],
@@ -202,9 +204,9 @@ export default {
             ],
             proposal_options: {
                 customProposalSearch: true,
-                tableID: 'proposal-datatable-' + vm._uid,
+                tableID: 'proposal-datatable-' + uuid(),
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -377,9 +379,11 @@ export default {
                     .draw();
             }
         },
-
-        filterProposalRegion: function () {
-            this.$refs.proposal_datatable.vmDataTable.draw();
+        filterProposalRegion: {
+            handler: function () {
+                this.$refs.proposal_datatable.vmDataTable.draw();
+            },
+            deep: true,
         },
         filterProposalSubmitter: function () {
             let vm = this;
@@ -429,14 +433,13 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list_referrals)
+            helpers
+                .fetchUrl(api_endpoints.filter_list_referrals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
-                        vm.proposal_status =
-                            response.body.processing_status_choices;
-                        vm.application_types = response.body.application_types;
+                        vm.proposal_submitters = response.submitters;
+                        vm.proposal_status = response.processing_status_choices;
+                        vm.application_types = response.application_types;
                     },
                     (error) => {
                         console.log(error);

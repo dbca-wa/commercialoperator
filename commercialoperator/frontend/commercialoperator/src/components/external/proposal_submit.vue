@@ -29,24 +29,30 @@
                         <!-- <strong>Your application for a commercial operations licence has been successfully submitted.</strong>
                         <br/> -->
                         <table>
-                            <tr>
-                                <td><strong>Application:</strong></td>
-                                <td>
-                                    <strong>{{
-                                        proposal.lodgement_number
-                                    }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Date/Time:</strong></td>
-                                <td>
-                                    <strong>
-                                        {{
-                                            proposal.lodgement_date | formatDate
-                                        }}</strong
-                                    >
-                                </td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <td><strong>Application:</strong></td>
+                                    <td>
+                                        <strong>{{
+                                            proposal.lodgement_number
+                                        }}</strong>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Date/Time:</strong></td>
+                                    <td>
+                                        <strong>
+                                            {{
+                                                formatDate(
+                                                    proposal.lodgement_date
+                                                )
+                                            }}</strong
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                         <br />
                         <label
@@ -82,15 +88,20 @@
 import { api_endpoints } from '@/utils/hooks';
 export default {
     components: {},
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
-    },
     beforeRouteEnter: function (to, from, next) {
-        next((vm) => {
-            vm.proposal = to.params.proposal;
-        });
+        if (to.params.proposal_id) {
+            fetch(`/api/proposal/${to.params.proposal_id}.json`).then(
+                (res) => {
+                    next(async (vm) => {
+                        const proposalData = await res.json();
+                        vm.proposal = proposalData;
+                    });
+                },
+                (err) => {
+                    console.error(err);
+                }
+            );
+        }
     },
     data: function () {
         return {
@@ -115,7 +126,11 @@ export default {
         let vm = this;
         vm.form = document.forms.new_proposal;
     },
-    methods: {},
+    methods: {
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
+        },
+    },
 };
 </script>
 

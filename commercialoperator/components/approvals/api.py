@@ -34,6 +34,7 @@ from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
 )
+from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.filters import (
     LedgerDatatablesFilterBackend,
 )
@@ -348,116 +349,109 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         detail=True,
     )
     @renderer_classes((JSONRenderer,))
+    @basic_exception_handler
+    @transaction.atomic
     def add_eclass_licence(self, request, *args, **kwargs):
 
         def raiser(exception):
             raise serializers.ValidationError(exception)
 
+        org_applicant = None
+        proxy_applicant = None
+
+        # _file = (
+        #     request.data.get("file-upload-0")
+        #     if request.data.get("file-upload-0")
+        #     else raiser("Licence File is required")
+        # )
+        _file = (
+            request.data.get("file")
+            if request.data.get("file")
+            else raiser("Licence File is required")
+        )
         try:
-            with transaction.atomic():
-                org_applicant = None
-                proxy_applicant = None
-
-                _file = (
-                    request.data.get("file-upload-0")
-                    if request.data.get("file-upload-0")
-                    else raiser("Licence File is required")
+            if request.data.get("applicant_type") == "org":
+                org_applicant = Organisation.objects.get(
+                    organisation_id=request.data.get("holder-selected")
                 )
-                try:
-                    if request.data.get("applicant_type") == "org":
-                        org_applicant = Organisation.objects.get(
-                            organisation_id=request.data.get("holder-selected")
-                        )
-                    else:
-                        proxy_applicant = EmailUser.objects.get(
-                            id=request.data.get("holder-selected")
-                        )
-                except:
-                    raise serializers.ValidationError("Licence holder is required")
-
-                reserved_licence = request.data.get("reserved_licence", None)
-                if reserved_licence:
-                    # check format is correct 'L001234'
-                    pattern = re.compile("L[^0-9]*[0-9]{6}$")
-                    if not bool(re.search(pattern, reserved_licence)):
-                        raise serializers.ValidationError(
-                            "Reserved Licence format must be 'L001234'"
-                        )
-
-                    if Approval.objects.filter(
-                        lodgement_number=reserved_licence
-                    ).exists():
-                        raise serializers.ValidationError(
-                            f"Reserved Licence (Lodgement Number) already exists: {reserved_licence}"
-                        )
-
-                start_date = (
-                    datetime.strptime(request.data.get("start_date"), "%Y-%m-%d")
-                    if request.data.get("start_date")
-                    else raiser("Start Date is required")
-                )
-                issue_date = (
-                    datetime.strptime(request.data.get("issue_date"), "%Y-%m-%d")
-                    if request.data.get("issue_date")
-                    else raiser("Issue Date is required")
-                )
-                expiry_date = (
-                    datetime.strptime(request.data.get("expiry_date"), "%Y-%m-%d")
-                    if request.data.get("expiry_date")
-                    else raiser("Expiry Date is required")
-                )
-
-                application_type, app_type_created = (
-                    ApplicationType.objects.get_or_create(
-                        name="E Class",
-                        defaults={
-                            "visible": False,
-                            "max_renewals": 1,
-                            "max_renewal_period": 5,
-                        },
-                    )
-                )
-
-                proposal, proposal_created = (
-                    Proposal.objects.get_or_create(  # Dummy 'E Class' proposal
-                        id=0,
-                        defaults={
-                            "application_type": application_type,
-                            "submitter": request.user,
-                            "schema": [],
-                        },
-                    )
-                )
-
-                approval = Approval.objects.create(
-                    lodgement_number=reserved_licence,
-                    reserved_licence=True if reserved_licence else False,
-                    issue_date=issue_date,
-                    expiry_date=expiry_date,
-                    start_date=start_date,
-                    org_applicant=org_applicant,
-                    proxy_applicant=proxy_applicant,
-                    current_proposal=proposal,
-                )
-
-                doc = ApprovalDocument.objects.create(approval=approval, _file=_file)
-                approval.licence_document = doc
-                approval.save()
-
-                return Response({"approval": approval.lodgement_number})
-
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
             else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
+                proxy_applicant = EmailUser.objects.get(
+                    id=request.data.get("holder-selected")
+                )
+        except:
+            raise serializers.ValidationError("Licence holder is required")
+
+        reserved_licence = request.data.get("reserved_licence", None)
+        if reserved_licence:
+            # check format is correct 'L001234'
+            pattern = re.compile("L[^0-9]*[0-9]{6}$")
+            if not bool(re.search(pattern, reserved_licence)):
+                raise serializers.ValidationError(
+                    "Reserved Licence format must be 'L001234'"
+                )
+
+            if Approval.objects.filter(
+                lodgement_number=reserved_licence
+            ).exists():
+                raise serializers.ValidationError(
+                    f"Reserved Licence (Lodgement Number) already exists: {reserved_licence}"
+                )
+
+        start_date = (
+            datetime.strptime(request.data.get("start_date"), "%Y-%m-%d")
+            if request.data.get("start_date")
+            else raiser("Start Date is required")
+        )
+        issue_date = (
+            datetime.strptime(request.data.get("issue_date"), "%Y-%m-%d")
+            if request.data.get("issue_date")
+            else raiser("Issue Date is required")
+        )
+        expiry_date = (
+            datetime.strptime(request.data.get("expiry_date"), "%Y-%m-%d")
+            if request.data.get("expiry_date")
+            else raiser("Expiry Date is required")
+        )
+
+        application_type, app_type_created = (
+            ApplicationType.objects.get_or_create(
+                name="E Class",
+                defaults={
+                    "visible": False,
+                    "max_renewals": 1,
+                    "max_renewal_period": 5,
+                },
+            )
+        )
+
+        proposal, proposal_created = (
+            Proposal.objects.get_or_create(  # Dummy 'E Class' proposal
+                id=0,
+                defaults={
+                    "application_type": application_type,
+                    "submitter": request.user,
+                    "schema": [],
+                },
+            )
+        )
+
+        approval = Approval.objects.create(
+            lodgement_number=reserved_licence,
+            reserved_licence=True if reserved_licence else False,
+            issue_date=issue_date,
+            expiry_date=expiry_date,
+            start_date=start_date,
+            org_applicant=org_applicant,
+            proxy_applicant=proxy_applicant,
+            current_proposal=proposal,
+        )
+
+        doc = ApprovalDocument.objects.create(approval=approval, _file=_file)
+        approval.licence_document = doc
+        approval.save()
+
+        return Response({"approval": approval.lodgement_number})
+
 
     @action(
         methods=[

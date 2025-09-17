@@ -11,7 +11,9 @@
 </template>
 
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+
 export default {
     name: 'MoreReferrals',
     props: {
@@ -36,12 +38,13 @@ export default {
     data() {
         let vm = this;
         return {
+            uuid: uuid(),
             table: null,
             dateFormat: 'DD/MM/YYYY HH:mm:ss',
             datatable_url: '',
             datatable_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 deferRender: true,
@@ -101,12 +104,12 @@ export default {
                                 }),
                                 result = '<span>' + truncated + '</span>',
                                 popTemplate = _.template(
-                                    '<a href="#" ' +
+                                    '<a href="javascript://" ' +
                                         'role="button" ' +
                                         'data-bs-toggle="popover" ' +
-                                        'data-bs-trigger="click" ' +
-                                        'data-bs-placement="top auto"' +
-                                        'data-bs-html="true" ' +
+                                        'data-trigger="click" ' +
+                                        'data-placement="top auto"' +
+                                        'data-html="true" ' +
                                         'data-bs-content="<%= text %>" ' +
                                         '>more</a>'
                                 );
@@ -150,8 +153,8 @@ export default {
         remindReferral: function (_id, user) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         _id + '/remind'
@@ -178,8 +181,8 @@ export default {
         },
         resendReferral: function (_id, user) {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         _id + '/resend'
@@ -207,8 +210,8 @@ export default {
         recallReferral: function (_id, user) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         _id + '/recall'
@@ -239,8 +242,13 @@ export default {
             myDefaultAllowList.table = [];
 
             let vm = this;
-            let table_id = 'more-referrals-table' + vm._uid;
-            let popover_name = 'popover-' + vm._uid;
+            let table_id = 'more-referrals-table' + vm.uuid;
+            let popover_name = 'popover-' + vm.uuid + '-referrals';
+            let popover_elem = $(vm.$refs.showRef)[0];
+            if (!popover_elem) {
+                console.info('More referral popover element not found');
+                return;
+            }
             let my_content =
                 '<table id="' +
                 table_id +
@@ -249,8 +257,6 @@ export default {
                 '<div class="popover ' +
                 popover_name +
                 '" role="tooltip"><div class="popover-arrow" style="top:110px;"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>';
-            let popover_elem = $(vm.$refs.showRef)[0];
-
             new bootstrap.Popover(popover_elem, {
                 sanitize: false,
                 html: true,
@@ -258,8 +264,8 @@ export default {
                 template: my_template,
                 title: 'Referrals',
                 container: 'body',
-                placement: 'right',
-                trigger: 'click focus',
+                placement: 'auto',
+                trigger: 'click',
             });
 
             popover_elem.addEventListener('inserted.bs.popover', function () {
@@ -267,18 +273,18 @@ export default {
 
                 // activate popover when table is drawn.
                 vm.table
-                    .on('draw.dt', function () {
-                        var $tablePopover = $(this).find(
-                            '[data-bs-toggle="popover"]'
+                    .on('draw', function () {
+                        var popoverTriggerList = [].slice.call(
+                            document.querySelectorAll(
+                                '#' + table_id + ' [data-bs-toggle="popover"]'
+                            )
                         );
-                        if ($tablePopover.length > 0) {
-                            $tablePopover.popover();
-                            // the next line prevents from scrolling up to the top after clicking on the popover.
-                            $($tablePopover).on('click', function (e) {
-                                e.preventDefault();
-                                return true;
-                            });
-                        }
+                        // eslint-disable-next-line no-unused-vars
+                        var popoverList = popoverTriggerList.map(
+                            function (popoverTriggerEl) {
+                                return new bootstrap.Popover(popoverTriggerEl);
+                            }
+                        );
                     })
                     .on('click', '.resendRef', function (e) {
                         e.preventDefault();

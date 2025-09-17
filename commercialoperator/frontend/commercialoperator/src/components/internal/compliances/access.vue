@@ -20,15 +20,17 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ compliance.lodgement_date | formatDate }}
+                                    {{ formatDate(compliance.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
-                                        <tr>
-                                            <th>Lodgement</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
-                                        </tr>
+                                        <thead>
+                                            <tr>
+                                                <th>Lodgement</th>
+                                                <th>Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
                                     </table>
                                 </div>
                             </div>
@@ -193,25 +195,19 @@
     </div>
 </template>
 <script>
-import Vue from 'vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import ComplianceAmendmentRequest from './compliance_amendment_request.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'complianceAccess',
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY') : '';
-        },
-    },
     components: {
         CommsLogs,
         ComplianceAmendmentRequest,
     },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 helpers.add_endpoint_json(
                     api_endpoints.compliances,
                     to.params.compliance_id + '/internal_compliance'
@@ -220,7 +216,7 @@ export default {
             .then(
                 (response) => {
                     next((vm) => {
-                        vm.compliance = response.body;
+                        vm.compliance = response;
                         vm.members = vm.compliance.allowed_assessors;
                     });
                 },
@@ -293,8 +289,8 @@ export default {
 
         assignMyself: function () {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.compliances,
                         vm.compliance.id + '/assign_request_user'
@@ -302,7 +298,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.compliance = response.body;
+                        vm.compliance = response;
                     },
                     (error) => {
                         console.log(error);
@@ -313,28 +309,31 @@ export default {
             let vm = this;
             if (vm.compliance.assigned_to != 'null') {
                 let data = { user_id: vm.compliance.assigned_to };
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.compliances,
                             vm.compliance.id + '/assign_to'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.compliance = response.body;
+                            vm.compliance = response;
                         },
                         (error) => {
                             console.log(error);
                         }
                     );
             } else {
-                vm.$http
-                    .get(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.compliances,
                             vm.compliance.id + '/unassign'
@@ -343,7 +342,7 @@ export default {
                     .then(
                         (response) => {
                             console.log(response);
-                            vm.compliance = response.body;
+                            vm.compliance = response;
                         },
                         (error) => {
                             console.log(error);
@@ -364,8 +363,8 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.compliances,
                                 vm.compliance.id + '/accept'
@@ -374,7 +373,7 @@ export default {
                         .then(
                             (response) => {
                                 console.log(response);
-                                vm.compliance = response.body;
+                                vm.compliance = response;
                             },
                             (error) => {
                                 console.log(error);
@@ -391,9 +390,9 @@ export default {
         },
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
+                    vm.profile = response;
                 },
                 (error) => {
                     console.log(error);
@@ -409,6 +408,9 @@ export default {
             });
             if (assessor.length > 0) return true;
             else return false;
+        },
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY') : '';
         },
     },
 };

@@ -394,6 +394,7 @@
 import FormSection from '@/components/forms/section_toggle.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { helpers } from '@/utils/hooks.js';
+import { v4 as uuid } from 'uuid';
 
 export default {
     components: {
@@ -411,15 +412,14 @@ export default {
         },
     },
     data: function () {
-        let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            lBody: 'lBody' + vm._uid,
-            iBody: 'iBody' + vm._uid,
-            mBody: 'mBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
-            cBody: 'cBody' + vm._uid,
-            dBody: 'dBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            lBody: 'lBody' + uuid(),
+            iBody: 'iBody' + uuid(),
+            mBody: 'mBody' + uuid(),
+            oBody: 'oBody' + uuid(),
+            cBody: 'cBody' + uuid(),
+            dBody: 'dBody' + uuid(),
             values: null,
             global_settings: [],
         };
@@ -470,9 +470,9 @@ export default {
     methods: {
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);

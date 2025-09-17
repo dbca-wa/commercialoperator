@@ -513,6 +513,7 @@
 import { api_endpoints, helpers } from '@/utils/hooks';
 import utils from './utils';
 import FormSection from '@/components/forms/section_toggle.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     components: {
@@ -529,7 +530,6 @@ export default {
         });
     },
     data: function () {
-        let vm = this;
         return {
             proposal: null,
             agent: {},
@@ -541,8 +541,8 @@ export default {
             },
             loading: [],
             form: null,
-            pBody: 'pBody' + vm._uid,
-            pBody2: 'pBody2' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            pBody2: 'pBody2' + uuid(),
 
             selected_application_id: '',
             selected_application_name: '',
@@ -803,22 +803,29 @@ export default {
             if (vm.org_applicant == 'yourself') {
                 vm.org_applicant = '';
             }
-            vm.$http
-                .post('/api/proposal.json', {
-                    org_applicant: vm.org_applicant,
-                    application: vm.selected_application_id,
-                    region: vm.selected_region,
-                    district: vm.selected_district,
-                    activity: vm.selected_activity,
-                    sub_activity1: vm.selected_sub_activity1,
-                    sub_activity2: vm.selected_sub_activity2,
-                    category: vm.selected_category,
-                    approval_level: vm.approval_level,
-                    selected_copy_from: vm.selected_copy_from,
+            const data = {
+                org_applicant: vm.org_applicant,
+                application: vm.selected_application_id,
+                region: vm.selected_region,
+                district: vm.selected_district,
+                activity: vm.selected_activity,
+                sub_activity1: vm.selected_sub_activity1,
+                sub_activity2: vm.selected_sub_activity2,
+                category: vm.selected_category,
+                approval_level: vm.approval_level,
+                selected_copy_from: vm.selected_copy_from,
+            };
+            helpers
+                .fetchUrl('/api/proposal.json', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                 })
                 .then(
                     (res) => {
-                        vm.proposal = res.body;
+                        vm.proposal = res;
                         vm.$router.push({
                             name: 'draft_proposal',
                             params: { proposal_id: vm.proposal.id },
@@ -843,9 +850,9 @@ export default {
         fetchRegions: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.regions).then(
+            helpers.fetchUrl(api_endpoints.regions).then(
                 (response) => {
-                    vm.api_regions = response.body;
+                    vm.api_regions = response;
 
                     for (var i = 0; i < vm.api_regions.length; i++) {
                         this.regions.push({
@@ -890,9 +897,9 @@ export default {
         fetchApplicationTypes: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.application_types).then(
+            helpers.fetchUrl(api_endpoints.application_types).then(
                 (response) => {
-                    vm.api_app_types = response.body;
+                    vm.api_app_types = response;
 
                     for (var i = 0; i < vm.api_app_types.length; i++) {
                         this.application_types.push({
@@ -934,10 +941,10 @@ export default {
             vm.categories = [];
             vm.approval_level = '';
 
-            vm.$http.get(api_endpoints.activity_matrix).then(
+            helpers.fetchUrl(api_endpoints.activity_matrix).then(
                 (response) => {
-                    this.activity_matrix = response.body[0].schema[0];
-                    this.keys_ordered = response.body[0].ordered;
+                    this.activity_matrix = response[0].schema[0];
+                    this.keys_ordered = response[0].ordered;
 
                     var keys = this.keys_ordered
                         ? Object.keys(this.activity_matrix).sort()

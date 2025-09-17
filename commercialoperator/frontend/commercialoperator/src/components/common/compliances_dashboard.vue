@@ -128,8 +128,9 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -152,9 +153,9 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
             is_payment_admin: false,
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            datatable_id: 'proposal-datatable-' + uuid(),
             // Filters for Proposals
             filterApplicationType: 'All',
             filterProposalRegion: 'All',
@@ -192,7 +193,7 @@ export default {
             ],
             proposal_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -240,8 +241,25 @@ export default {
                         }
                     },
                 },
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                buttons: ['excel', 'csv'],
+                dom: constants.DATATABLE_DOM_HTML,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: 'CSV',
+                        className: 'btn btn-primary rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                ],
                 columns: [
                     {
                         data: 'id',
@@ -427,11 +445,11 @@ export default {
                     ? vm.external_status
                     : vm.internal_status;
 
-            vm.$http
-                .get(api_endpoints.filter_list_compliances)
+            helpers
+                .fetchUrl(api_endpoints.filter_list_compliances)
                 .then(
                     (response) => {
-                        vm.application_types = response.body.application_types;
+                        vm.application_types = response.application_types;
                     },
                     (error) => {
                         console.log(error);
@@ -520,10 +538,10 @@ export default {
         },
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
-                    vm.is_payment_admin = response.body.is_payment_admin;
+                    vm.profile = response;
+                    vm.is_payment_admin = response.is_payment_admin;
                 },
                 () => {}
             );

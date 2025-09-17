@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="requirementForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -298,7 +298,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <template v-if="requirement.id">
                     <button
                         v-if="updatingRequirement"
@@ -340,7 +340,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
@@ -514,9 +514,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -561,15 +561,15 @@ export default {
                 vm.updatingRequirement = true;
                 requirement.update = true;
                 formData.append('data', JSON.stringify(requirement));
-                vm.$http
-                    .put(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposal_requirements,
                             requirement.id
                         ),
-                        formData,
                         {
-                            emulateJSON: true,
+                            method: 'PUT',
+                            body: formData,
                         }
                     )
                     .then(
@@ -588,9 +588,10 @@ export default {
                 vm.addingRequirement = true;
                 requirement.update = false;
                 formData.append('data', JSON.stringify(requirement));
-                vm.$http
-                    .post(api_endpoints.proposal_requirements, formData, {
-                        emulateJSON: true,
+                helpers
+                    .fetchUrl(api_endpoints.proposal_requirements, {
+                        method: 'POST',
+                        body: formData,
                     })
                     .then(
                         () => {

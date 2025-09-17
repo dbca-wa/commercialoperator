@@ -9,8 +9,12 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="eclassForm">
-                        <alert :show.sync="showError" type="danger"
+                    <form
+                        class="form-horizontal"
+                        name="eclassForm"
+                        enctype="multipart/form-data"
+                    >
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -313,32 +317,38 @@ export default {
         },
         _refreshFromResponse: function (response) {
             let vm = this;
-            vm.document_list = helpers.copyObject(response.body);
+            vm.document_list = helpers.copyObject(response);
         },
 
         save: function () {
             let vm = this;
             let form = new FormData(vm.form);
-            vm.$http
-                .post('/api/approvals/0/add_eclass_licence/', form, {
-                    emulateJSON: true,
+            // I manually added the file to the form data
+            if (vm.files.length > 0) {
+                form.append('file', vm.files[0].file);
+            }
+            // NOTE: The api endpoint here used to be '/api/approvals/0/add_eclass_licence/'. What?
+            helpers
+                .fetchUrl('/api/approvals/0/add_eclass_licence/', {
+                    method: 'POST',
+                    body: form,
                 })
                 .then(
                     (res) => {
-                        vm.proposal = res.body;
+                        vm.proposal = res;
                         swal.fire({
                             title: 'New E Class Licence Created',
                             text:
                                 'New E Class Licence Created: ' +
-                                res.body['approval'],
+                                res['approval'],
                             icon: 'success',
                         });
-                        vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
+                        vm.$router.push({ path: '/internal/approvals' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
                         swal.fire({
                             title: 'Submit Error',
-                            text: helpers.apiVueResourceError(err),
+                            text: err,
                             icon: 'error',
                         });
                     }
@@ -365,7 +375,7 @@ export default {
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
 
-            this.validation_form.resetForm();
+            // this.validation_form.resetForm();
         },
         addFormValidations: function () {
             let vm = this;

@@ -202,9 +202,9 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
-import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -224,8 +224,8 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'proposal-datatable-' + uuid(),
             //Profile to check if user has access to process Proposal
             profile: {},
             is_payment_admin: false,
@@ -268,7 +268,7 @@ export default {
             ],
             proposal_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -326,8 +326,25 @@ export default {
                             'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email, proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name';
                     },
                 },
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                buttons: ['excel', 'csv'],
+                dom: constants.DATATABLE_DOM_HTML,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: 'CSV',
+                        className: 'btn btn-primary rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                ],
                 columns: [
                     {
                         data: 'admission_number',
@@ -571,19 +588,18 @@ export default {
         fetchFilterLists: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.filter_list_approvals).then(
+            helpers.fetchUrl(api_endpoints.filter_list_approvals).then(
                 (response) => {
-                    vm.proposal_submitters = response.body.submitters;
-                    //vm.approval_status = response.body.approval_status_choices;
+                    vm.proposal_submitters = response.submitters;
                 },
                 (error) => {
                     console.log(error);
                 }
             );
 
-            vm.$http.get(api_endpoints.filter_list_parks).then(
+            helpers.fetchUrl(api_endpoints.filter_list_parks).then(
                 (response) => {
-                    vm.proposal_parks = response.body;
+                    vm.proposal_parks = response;
                 },
                 (error) => {
                     console.log(error);
@@ -595,9 +611,9 @@ export default {
         fetchOverdueInvoices: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.overdue_invoices).then(
+            helpers.fetchUrl(api_endpoints.overdue_invoices).then(
                 (response) => {
-                    vm.overdue_invoices = response.body;
+                    vm.overdue_invoices = response;
                 },
                 (error) => {
                     console.log(error);
@@ -780,10 +796,10 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
-                    vm.is_payment_admin = response.body.is_payment_admin;
+                    vm.profile = response;
+                    vm.is_payment_admin = response.is_payment_admin;
                 },
                 (error) => {
                     console.log(error);

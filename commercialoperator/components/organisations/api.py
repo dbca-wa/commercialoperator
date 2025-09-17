@@ -1284,9 +1284,13 @@ class OrganisationContactViewSet(viewsets.ModelViewSet):
             )
         return super(OrganisationContactViewSet, self).destroy(request, *args, **kwargs)
 
+    @basic_exception_handler
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid(raise_exception=False):
+            return Response(
+                {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if "contact_form" in request.data.get("user_status"):
             serializer.save(user_status="contact_form")

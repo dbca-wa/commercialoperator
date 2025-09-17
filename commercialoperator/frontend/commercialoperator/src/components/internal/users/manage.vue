@@ -585,6 +585,8 @@ import ApprovalDashTable from '@common-utils/approvals_dashboard.vue';
 import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import utils from '../utils';
+import { v4 as uuid } from 'uuid';
+
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'User',
@@ -628,13 +630,13 @@ export default {
     data() {
         let vm = this;
         return {
-            adBody: 'adBody' + vm._uid,
-            pdBody: 'pdBody' + vm._uid,
-            cdBody: 'cdBody' + vm._uid,
-            odBody: 'odBody' + vm._uid,
-            idBody: 'idBody' + vm._uid,
-            dTab: 'dTab' + vm._uid,
-            oTab: 'oTab' + vm._uid,
+            adBody: 'adBody' + uuid(),
+            pdBody: 'pdBody' + uuid(),
+            cdBody: 'cdBody' + uuid(),
+            odBody: 'odBody' + uuid(),
+            idBody: 'idBody' + uuid(),
+            dTab: 'dTab' + uuid(),
+            oTab: 'oTab' + uuid(),
             user: {
                 residential_address: {},
                 commercialoperatorcompliance_organisations: [],
@@ -717,21 +719,24 @@ export default {
         updateContact: function () {
             let vm = this;
             vm.updatingContact = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.users,
                         vm.user.id + '/update_contact'
                     ),
-                    JSON.stringify(vm.user),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(vm.user),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingContact = false;
-                        vm.user = response.body;
+                        vm.user = response;
                         if (vm.user.residential_address == null) {
                             vm.user.residential_address = {};
                         }
@@ -743,15 +748,11 @@ export default {
                     },
                     (error) => {
                         vm.updatingContact = false;
-                        let error_msg = '<br/>';
-                        for (var key in error.body) {
-                            error_msg += key + ': ' + error.body[key] + '<br/>';
-                        }
                         swal.fire({
                             title: 'Update Contact Details',
                             html:
                                 'There was an error updating the user contact details.<br/>' +
-                                error_msg,
+                                error,
                             icon: 'error',
                         });
                     }
@@ -760,21 +761,24 @@ export default {
         updateAddress: function () {
             let vm = this;
             vm.updatingAddress = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.users,
                         vm.user.id + '/update_address'
                     ),
-                    JSON.stringify(vm.user.residential_address),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(vm.user.residential_address),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.updatingAddress = false;
-                        vm.user = response.body;
+                        vm.user = response;
                         if (vm.user.residential_address == null) {
                             vm.user.residential_address = {};
                         }
@@ -786,15 +790,11 @@ export default {
                     },
                     (error) => {
                         vm.updatingAddress = false;
-                        let error_msg = '<br/>';
-                        for (var key in error.body) {
-                            error_msg += key + ': ' + error.body[key] + '<br/>';
-                        }
                         swal.fire({
                             title: 'Update Address Details',
                             html:
                                 'There was an error updating the user address details.<br/>' +
-                                error_msg,
+                                error,
                             icon: 'error',
                         });
                     }
@@ -815,21 +815,24 @@ export default {
             }).then(
                 (result) => {
                     if (result.value) {
-                        vm.$http
-                            .post(
+                        helpers
+                            .fetchUrl(
                                 helpers.add_endpoint_json(
                                     api_endpoints.organisations,
                                     org.id + '/unlink_user'
                                 ),
-                                JSON.stringify(vm.user),
                                 {
-                                    emulateJSON: true,
+                                    method: 'POST',
+                                    body: JSON.stringify(vm.user),
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
                                 }
                             )
                             .then(
                                 () => {
-                                    vm.$http
-                                        .get(
+                                    helpers
+                                        .fetchUrl(
                                             helpers.add_endpoint_json(
                                                 api_endpoints.users,
                                                 vm.user.id
@@ -837,7 +840,7 @@ export default {
                                         )
                                         .then(
                                             (response) => {
-                                                vm.user = response.body;
+                                                vm.user = response;
                                                 if (
                                                     vm.user
                                                         .residential_address ==
@@ -912,15 +915,18 @@ export default {
                     icon: 'error',
                 });
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.users,
                             vm.user.id + '/upload_id'
                         ),
-                        data,
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: data,
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
                         }
                     )
                     .then(
@@ -938,16 +944,11 @@ export default {
                         (error) => {
                             console.log(error);
                             vm.uploadingID = false;
-                            let error_msg = '<br/>';
-                            for (var key in error.body) {
-                                error_msg +=
-                                    key + ': ' + error.body[key] + '<br/>';
-                            }
                             swal.fire({
                                 title: 'Upload ID',
                                 html:
                                     'There was an error uploading the user ID.<br/>' +
-                                    error_msg,
+                                    error,
                                 icon: 'error',
                             });
                         }

@@ -145,6 +145,7 @@
 <script>
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'InternalProposalRequirements',
@@ -156,10 +157,9 @@ export default {
         proposal: Object,
     },
     data: function () {
-        let vm = this;
         return {
-            proposedDecision: 'proposal-decision-' + vm._uid,
-            proposedLevel: 'proposal-level-' + vm._uid,
+            proposedDecision: 'proposal-decision-' + uuid(),
+            proposedLevel: 'proposal-level-' + uuid(),
             uploadedFile: null,
         };
     },
@@ -210,20 +210,23 @@ export default {
                     vm.proposal.approval_level_document[0]
                 );
             }
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         vm.proposal.id + '/approval_level_document'
                     ),
-                    data,
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: data,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (res) => {
-                        vm.proposal = res.body;
+                        vm.proposal = res;
                         vm.$emit('refreshFromResponse', res);
                     },
                     (err) => {
@@ -243,21 +246,27 @@ export default {
         },
         removeRequirement(_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Remove Requirement',
                 text: 'Are you sure you want to remove this requirement?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Remove Requirement',
                 confirmButtonColor: '#d9534f',
             }).then(
                 () => {
-                    vm.$http
-                        .delete(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposal_requirements,
                                 _id
-                            )
+                            ),
+                            {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }
                         )
                         .then(
                             () => {

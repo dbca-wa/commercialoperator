@@ -33,7 +33,9 @@
 <script>
 import datatable from '@/utils/vue/datatable.vue';
 import editVessel from './edit_vessel.vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'VesselTableDash',
     components: {
@@ -61,8 +63,8 @@ export default {
                 size: '',
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'vessel-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'vessel-datatable-' + uuid(),
             // Filters for Vessels
 
             vessel_headers: [
@@ -75,7 +77,7 @@ export default {
             ],
             vessel_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -89,8 +91,25 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                buttons: ['excel', 'csv'],
+                dom: constants.DATATABLE_DOM_HTML,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: 'CSV',
+                        className: 'btn btn-primary rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                ],
                 columns: [
                     {
                         data: 'nominated_vessel',
@@ -182,8 +201,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_vessel(vessel_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_vessel(vessel_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({

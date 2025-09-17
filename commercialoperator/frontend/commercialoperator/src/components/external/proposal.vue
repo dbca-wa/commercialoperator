@@ -222,7 +222,6 @@ import ProposalTClass from '../form_tclass.vue';
 import ProposalFilming from '../form_filming.vue';
 import ProposalEvent from '../form_event.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
-import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 
 export default {
@@ -236,53 +235,60 @@ export default {
 
     beforeRouteEnter: function (to, from, next) {
         if (to.params.proposal_id) {
-            Vue.http.get(`/api/proposal/${to.params.proposal_id}.json`).then(
-                (res) => {
-                    next((vm) => {
-                        vm.loading.push('fetching proposal');
-                        vm.proposal = res.body;
-                        //used in activities_land for T Class licence
-                        vm.proposal.selected_trails_activities = [];
-                        vm.proposal.selected_parks_activities = [];
-                        vm.proposal.marine_parks_activities = [];
-                        vm.loading.splice('fetching proposal', 1);
-                        vm.setdata(vm.proposal.readonly);
-                        vm.fetchProposalParks(to.params.proposal_id);
+            helpers
+                .fetchUrl(`/api/proposal/${to.params.proposal_id}.json`)
+                .then(
+                    (res) => {
+                        next((vm) => {
+                            vm.loading.push('fetching proposal');
+                            vm.proposal = res;
+                            //used in activities_land for T Class licence
+                            vm.proposal.selected_trails_activities = [];
+                            vm.proposal.selected_parks_activities = [];
+                            vm.proposal.marine_parks_activities = [];
+                            vm.loading.splice('fetching proposal', 1);
+                            vm.setdata(vm.proposal.readonly);
+                            vm.fetchProposalParks(to.params.proposal_id);
 
-                        Vue.http
-                            .get(
-                                helpers.add_endpoint_json(
-                                    api_endpoints.proposals,
-                                    to.params.proposal_id + '/amendment_request'
+                            helpers
+                                .fetchUrl(
+                                    helpers.add_endpoint_json(
+                                        api_endpoints.proposals,
+                                        to.params.proposal_id +
+                                            '/amendment_request'
+                                    )
                                 )
-                            )
-                            .then(
-                                (res) => {
-                                    vm.setAmendmentData(res.body);
-                                },
-                                (err) => {
-                                    console.log(err);
-                                }
-                            );
-                    });
-                },
-                (err) => {
-                    console.log(err);
-                }
-            );
+                                .then(
+                                    (res) => {
+                                        vm.setAmendmentData(res);
+                                    },
+                                    (err) => {
+                                        console.log(err);
+                                    }
+                                );
+                        });
+                    },
+                    (err) => {
+                        console.log(err);
+                    }
+                );
         } else {
-            Vue.http.post('/api/proposal.json').then(
-                (res) => {
-                    next((vm) => {
-                        vm.loading.push('fetching proposal');
-                        vm.proposal = res.body;
-                        vm.loading.splice('fetching proposal', 1);
-                    });
-                },
-                (err) => {
-                    console.log(err);
-                }
-            );
+            helpers
+                .fetchUrl('/api/proposal.json', {
+                    method: 'POST',
+                })
+                .then(
+                    (res) => {
+                        next((vm) => {
+                            vm.loading.push('fetching proposal');
+                            vm.proposal = res;
+                            vm.loading.splice('fetching proposal', 1);
+                        });
+                    },
+                    (err) => {
+                        console.log(err);
+                    }
+                );
         }
     },
     data: function () {
@@ -395,8 +401,18 @@ export default {
                 vm.proposal_refs().$refs.profile.updateContact();
             }
             if (vm.proposal.applicant_type == 'ORG') {
-                vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
-                vm.proposal_refs().$refs.organisation.updateAddress_noconfirm();
+                // NOTE: I commented out the next line because that function is forbidden for external users
+                // vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
+                vm.proposal_refs()
+                    .$refs.organisation.updateAddress_noconfirm()
+                    .then(
+                        (response) => {
+                            console.log(response);
+                        },
+                        (err) => {
+                            console.log(err);
+                        }
+                    );
             }
         },
 
@@ -440,8 +456,11 @@ export default {
                 return;
             }
 
-            const result = await vm.$http
-                .post(vm.proposal_form_url, formData)
+            const result = helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
                 .then(
                     () => {
                         vm.savingProposal = false;
@@ -451,12 +470,11 @@ export default {
                             icon: 'success',
                         });
                     },
-                    (err) => {
-                        var errorText = helpers.apiVueResourceError(err);
+                    (error) => {
                         vm.savingProposal = false;
                         return swal.fire({
                             title: 'Save Error',
-                            text: errorText,
+                            text: error,
                             icon: 'error',
                         });
                     }
@@ -503,7 +521,28 @@ export default {
                 return;
             }
 
-            vm.$http.post(vm.proposal_form_url, formData);
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {
+                        swal.fire({
+                            title: 'Saved',
+                            text: 'Your application has been saved',
+                            icon: 'success',
+                        });
+                    },
+                    (err) => {
+                        var errorText = helpers.apiVueResourceError(err);
+                        swal.fire({
+                            title: 'Save Error',
+                            text: errorText,
+                            icon: 'error',
+                        });
+                    }
+                );
         },
         save_before_submit: async function () {
             let vm = this;
@@ -523,9 +562,11 @@ export default {
             }
             vm.saveError = false;
 
-            //vm.$http.post(vm.proposal_form_url,formData);
-            const result = await vm.$http
-                .post(vm.proposal_form_url, formData)
+            const result = await helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
                 .then(
                     () => {
                         //
@@ -560,23 +601,28 @@ export default {
             }
 
             vm.save_applicant_data();
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    /* after the above save, redirect to the Django post() method in ApplicationFeeView */
-                    vm.post_and_redirect(vm.application_fee_url, {
-                        csrfmiddlewaretoken: vm.csrf_token,
-                    });
-                },
-                (err) => {
-                    var errorText = helpers.apiVueResourceError(err);
-                    swal.fire({
-                        title: 'Save Error',
-                        text: errorText,
-                        icon: 'error',
-                    });
-                    vm.paySubmitting = false;
-                }
-            );
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {
+                        /* after the above save, redirect to the Django post() method in ApplicationFeeView */
+                        vm.post_and_redirect(vm.application_fee_url, {
+                            csrfmiddlewaretoken: vm.csrf_token,
+                        });
+                    },
+                    (err) => {
+                        var errorText = helpers.apiVueResourceError(err);
+                        swal.fire({
+                            title: 'Save Error',
+                            text: errorText,
+                            icon: 'error',
+                        });
+                        vm.paySubmitting = false;
+                    }
+                );
         },
 
         setdata: function (readonly) {
@@ -1260,17 +1306,20 @@ export default {
                         /* just save and submit - no payment required (probably application was pushed back by assessor for amendment */
                         await vm.save_before_submit();
                         if (!vm.saveError) {
-                            vm.$http
-                                .post(
+                            helpers
+                                .fetchUrl(
                                     helpers.add_endpoint_json(
                                         api_endpoints.proposals,
                                         vm.proposal.id + '/submit'
                                     ),
-                                    formData
+                                    {
+                                        method: 'POST',
+                                        body: formData,
+                                    }
                                 )
                                 .then(
                                     (res) => {
-                                        vm.proposal = res.body;
+                                        vm.proposal = res;
                                         vm.$router.push({
                                             name: 'submit_proposal',
                                             params: { proposal: vm.proposal },
@@ -1321,8 +1370,8 @@ export default {
         },
         fetchProposalParks: function (proposal_id) {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         proposal_id + '/parks_and_trails'
@@ -1330,7 +1379,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.proposal_parks = helpers.copyObject(response.body);
+                        vm.proposal_parks = helpers.copyObject(response);
                         console.log(vm.proposal_parks);
                     },
                     () => {}

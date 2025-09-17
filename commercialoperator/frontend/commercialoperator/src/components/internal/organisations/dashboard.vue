@@ -158,10 +158,11 @@
     </div>
 </template>
 <script>
-import Vue from 'vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@vue-utils/datatable.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'OrganisationAccessDashboard',
     components: {
@@ -172,7 +173,7 @@ export default {
         let vm = this;
         return {
             // Filters
-            pBody: 'pBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
             filterOrganisation: 'All',
             filterApplicant: 'All',
             filterRole: 'All',
@@ -185,7 +186,7 @@ export default {
             profile: {},
             dtOptions: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -359,18 +360,20 @@ export default {
 
         fetchAccessGroupMembers: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.organisation_access_group_members).then(
-                (response) => {
-                    vm.members = response.body;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            helpers
+                .fetchUrl(api_endpoints.organisation_access_group_members)
+                .then(
+                    (response) => {
+                        vm.members = response.body;
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                );
         },
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
                     vm.profile = response.body;
                 },
@@ -421,15 +424,14 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list_organisation_requests)
+            helpers
+                .fetchUrl(api_endpoints.filter_list_organisation_requests)
                 .then(
                     (response) => {
-                        vm.organisationChoices =
-                            response.data.organisation_choices;
-                        vm.applicantChoices = response.data.applicant_choices;
-                        vm.roleChoices = response.data.role_choices;
-                        vm.statusChoices = response.data.status_choices;
+                        vm.organisationChoices = response.organisation_choices;
+                        vm.applicantChoices = response.applicant_choices;
+                        vm.roleChoices = response.role_choices;
+                        vm.statusChoices = response.status_choices;
                     },
                     (error) => {
                         console.log(error);

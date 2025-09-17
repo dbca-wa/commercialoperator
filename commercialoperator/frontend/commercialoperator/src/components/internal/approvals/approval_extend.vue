@@ -13,7 +13,7 @@
                         class="needs-validation form-horizontal"
                         name="extendApprovalForm"
                     >
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -44,7 +44,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingApproval"
                     type="button"
@@ -65,7 +65,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
@@ -135,15 +135,18 @@ export default {
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.approvals,
                         vm.approval_id + '/approval_extend'
                     ),
-                    JSON.stringify(approval),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(approval),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
@@ -153,7 +156,7 @@ export default {
                         swal.fire({
                             title: 'Extended',
                             text: 'Licence has been extended',
-                            type: 'success',
+                            icon: 'success',
                         });
                         vm.$emit('refreshFromResponse', response);
                     },

@@ -60,7 +60,7 @@
                 />
             </template>
             <template v-else>
-                <VueSelect
+                <v-select
                     label="name"
                     name="name"
                     :filterable="false"
@@ -68,10 +68,10 @@
                     placeholder="Start typing to search for an organisation"
                     @search="onSearch"
                 >
-                    <template slot="no-options"
+                    <template #no-options
                         >Search for name, trading name or ABN</template
                     >
-                    <template slot="option" slot-scope="option">
+                    <template #option="option = { option }">
                         <div class="d-center">
                             {{ option.name }}
                             <span v-if="option.trading_name">
@@ -80,7 +80,7 @@
                         </div>
                     </template>
 
-                    <template slot="selected-option" slot-scope="option">
+                    <template #selected-option="option = { option }">
                         <div class="selected d-center" :org_id="option.org_id">
                             <input
                                 type="hidden"
@@ -96,7 +96,7 @@
                             </span>
                         </div>
                     </template>
-                </VueSelect>
+                </v-select>
             </template>
         </div>
         <Comment
@@ -114,10 +114,11 @@ import Comment from './comment.vue';
 import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
 
-import { VueSelect } from 'vue-select';
+import { helpers } from '@/utils/hooks';
 
 export default {
-    components: { Comment, HelpText, HelpTextUrl, VueSelect },
+    // components: { Comment, HelpText, HelpTextUrl, VueSelect },
+    components: { Comment, HelpText, HelpTextUrl },
     props: [
         // eslint-disable-next-line vue/require-prop-types
         'url',
@@ -166,12 +167,12 @@ export default {
             this.search(loading, search, this);
         },
         search: _.debounce((loading, search, vm) => {
-            vm.$http
-                .get(vm.url + escape(search), {
+            helpers
+                .fetchUrl(vm.url + escape(search), {
                     emulateJSON: true,
                 })
                 .then((res) => {
-                    vm.options = res.body;
+                    vm.options = res;
                     loading(false);
                 });
         }, 350),

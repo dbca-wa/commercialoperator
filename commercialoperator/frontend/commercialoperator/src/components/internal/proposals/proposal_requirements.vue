@@ -52,7 +52,7 @@
                             </div>
                         </div>
                         <datatable
-                            :id="'requirements-datatable-' + _uid"
+                            :id="datatableId"
                             ref="requirements_datatable"
                             :dt-options="requirement_options"
                             :dt-headers="requirement_headers"
@@ -74,11 +74,12 @@
     </div>
 </template>
 <script>
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import datatable from '@vue-utils/datatable.vue';
 import RequirementDetail from './proposal_add_requirement.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import '@/../../../static/commercialoperator/css/extra.css';
+import { v4 as uuid } from 'uuid';
 
 export default {
     name: 'InternalProposalRequirements',
@@ -119,7 +120,7 @@ export default {
         let vm = this;
         return {
             global_settings: [],
-            panelBody: 'proposal-requirements-' + vm._uid,
+            panelBody: 'proposal-requirements-' + uuid(),
             requirements: [],
             requirement_headers: [
                 '',
@@ -133,7 +134,7 @@ export default {
             requirement_options: {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -155,25 +156,25 @@ export default {
                     dataSrc: '',
                 },
                 order: [6, 'asc'],
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                // buttons:[
-                // 'excel', 'csv', ], //'copy'
+                dom: constants.DATATABLE_DOM_HTML,
                 buttons: [
                     {
                         extend: 'excelHtml5',
                         text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
                         exportOptions: {
                             orthogonal: 'export',
                         },
                     },
                     {
-                        extend: 'csv',
+                        extend: 'csvHtml5',
                         text: 'CSV',
+                        className: 'btn btn-primary rounded',
                         exportOptions: {
                             orthogonal: 'export',
                         },
                     },
-                ], //'copy'
+                ],
                 columns: [
                     {
                         data: 'id',
@@ -363,6 +364,9 @@ export default {
         application_type_event: function () {
             return api_endpoints.event;
         },
+        datatableId: function () {
+            return 'requirements-datatable-' + uuid();
+        },
     },
     watch: {
         hasAssessorMode() {
@@ -383,9 +387,9 @@ export default {
     methods: {
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);
@@ -414,8 +418,8 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .get(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposal_requirements,
                                 _id + '/discard'
@@ -438,9 +442,9 @@ export default {
         fetchRequirements() {
             let vm = this;
 
-            vm.$http.get(api_endpoints.proposal_standard_requirements).then(
+            helpers.fetchUrl(api_endpoints.proposal_standard_requirements).then(
                 (response) => {
-                    vm.requirements = response.body;
+                    vm.requirements = response;
                 },
                 (error) => {
                     console.log(error);
@@ -448,9 +452,8 @@ export default {
             );
         },
         editRequirement(_id) {
-            let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_requirements,
                         _id
@@ -458,29 +461,26 @@ export default {
                 )
                 .then(
                     (response) => {
-                        this.$refs.requirement_detail.requirement =
-                            response.body;
+                        this.$refs.requirement_detail.requirement = response;
                         this.$refs.requirement_detail.requirement.due_date =
-                            response.body.due_date != null &&
-                            response.body.due_date != undefined
-                                ? moment(response.body.due_date).format(
-                                      'YYYY-MM-DD'
-                                  )
+                            response.due_date != null &&
+                            response.due_date != undefined
+                                ? moment(response.due_date).format('YYYY-MM-DD')
                                 : '';
                         this.$refs.requirement_detail.requirement.referral_group =
-                            response.body.referral_group;
+                            response.referral_group;
                         this.$refs.requirement_detail.requirement.district_proposal =
-                            response.body.district_proposal;
+                            response.district_proposal;
                         this.$refs.requirement_detail.requirement.district =
-                            response.body.district;
+                            response.district;
                         this.$refs.requirement_detail.requirement.requirement_documents =
-                            response.body.requirement_documents;
-                        response.body.standard
+                            response.requirement_documents;
+                        response.standard
                             ? $(
                                   this.$refs.requirement_detail.$refs
                                       .standard_req
                               )
-                                  .val(response.body.standard_requirement)
+                                  .val(response.standard_requirement)
                                   .trigger('change')
                             : '';
                         this.addRequirement();
@@ -516,8 +516,8 @@ export default {
         },
         sendDirection(req, direction) {
             let movement = direction == 'down' ? 'move_down' : 'move_up';
-            this.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_requirements,
                         req + '/' + movement
@@ -565,7 +565,7 @@ export default {
             table.row(index).data(data2);
             table.row(index + order).data(data1);
 
-            table.page(0).draw(false);
+            table.draw('page');
         },
         setApplicationWorkflowState(bool) {
             let vm = this;

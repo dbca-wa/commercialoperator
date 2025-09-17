@@ -110,6 +110,8 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'AssessmentComponent',
     components: {
@@ -145,12 +147,11 @@ export default {
         },
     },
     data: function () {
-        let vm = this;
         return {
             values: null,
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             panelClickersInitialised: false,
             // Note: added localAssesment to prevent mutating the original assessment object
             localAssessment: JSON.parse(JSON.stringify(this.assessment)),
@@ -192,20 +193,23 @@ export default {
         update: function () {
             let vm = this;
             let assessment = JSON.parse(JSON.stringify(vm.localAssessment));
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.assessments,
                         vm.assessment.id + '/update_assessment'
                     ),
-                    JSON.stringify(assessment),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(assessment),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
-                        vm.localAssessment = helpers.copyObject(response.body);
+                        vm.localAssessment = helpers.copyObject(response);
                         swal.fire({
                             title: 'Checklist update',
                             text: 'Checklist has been updated',

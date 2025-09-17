@@ -457,7 +457,9 @@
 
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'ApplicantComponent',
     components: { FormSection },
@@ -471,15 +473,15 @@ export default {
         let vm = this;
         return {
             values: null,
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             panelClickersInitialised: false,
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_table_initialised: false,
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {

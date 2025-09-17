@@ -197,7 +197,7 @@
                                     <div class="col-sm-6">
                                         <input
                                             :value="
-                                                approval.issue_date | formatDate
+                                                formatDate(approval.issue_date)
                                             "
                                             type="text"
                                             class="form-control control-label pull-left"
@@ -215,7 +215,7 @@
                                     <div class="col-sm-6">
                                         <input
                                             :value="
-                                                approval.start_date | formatDate
+                                                formatDate(approval.start_date)
                                             "
                                             type="text"
                                             class="form-control control-label pull-left"
@@ -233,8 +233,7 @@
                                     <div class="col-sm-3">
                                         <input
                                             :value="
-                                                approval.expiry_date
-                                                    | formatDate
+                                                formatDate(approval.expiry_date)
                                             "
                                             type="text"
                                             class="form-control control-label pull-left"
@@ -298,23 +297,18 @@
 </template>
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
-import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Approval',
-    filters: {
-        formatDate: function (data) {
-            return moment(data).format('DD/MM/YYYY');
-        },
-    },
     components: {
         FormSection,
     },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 helpers.add_endpoint_json(
                     api_endpoints.approvals,
                     to.params.approval_id
@@ -323,8 +317,8 @@ export default {
             .then(
                 (response) => {
                     next((vm) => {
-                        vm.approval = response.body;
-                        vm.approval.applicant_id = response.body.applicant_id;
+                        vm.approval = response;
+                        vm.approval.applicant_id = response.applicant_id;
                         vm.fetchApplicant(
                             vm.approval.applicant_id,
                             vm.approval.applicant_type
@@ -337,7 +331,6 @@ export default {
             );
     },
     data() {
-        let vm = this;
         return {
             loading: [],
             approval: {
@@ -348,10 +341,10 @@ export default {
                 address: {},
             },
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
-            adBody: 'adBody' + vm._uid,
-            pBody: 'pBody' + vm._uid,
-            cBody: 'cBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
+            adBody: 'adBody' + uuid(),
+            pBody: 'pBody' + uuid(),
+            cBody: 'cBody' + uuid(),
+            oBody: 'oBody' + uuid(),
             org: {
                 address: {},
             },
@@ -372,8 +365,8 @@ export default {
         },
         fetchOrganisation(applicant_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         applicant_id
@@ -381,8 +374,8 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.org = response.body;
-                        vm.org.address = response.body.address;
+                        vm.org = response;
+                        vm.org.address = response.address;
                     },
                     (error) => {
                         console.log(error);
@@ -391,8 +384,8 @@ export default {
         },
         fetchOrgApplicant(applicant_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.organisations,
                         applicant_id
@@ -400,14 +393,14 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.applicant = response.body;
-                        vm.applicant.name = response.body.organisation_name;
-                        vm.applicant.abn = response.body.organisation_abn;
-                        if (response.body.organisation_address == null) {
+                        vm.applicant = response;
+                        vm.applicant.name = response.organisation_name;
+                        vm.applicant.abn = response.organisation_abn;
+                        if (response.organisation_address == null) {
                             vm.applicant.address = vm.address_default;
                         } else {
                             vm.applicant.address =
-                                response.body.organisation_address;
+                                response.organisation_address;
                         }
                     },
                     (error) => {
@@ -417,19 +410,18 @@ export default {
         },
         fetchProxyApplicant(applicant_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(api_endpoints.users, applicant_id)
                 )
                 .then(
                     (response) => {
-                        vm.applicant = response.body;
-                        vm.applicant.name = response.body.full_name;
-                        if (response.body.residential_address == null) {
+                        vm.applicant = response;
+                        vm.applicant.name = response.full_name;
+                        if (response.residential_address == null) {
                             vm.applicant.address = vm.address_default;
                         } else {
-                            vm.applicant.address =
-                                response.body.residential_address;
+                            vm.applicant.address = response.residential_address;
                         }
                     },
                     (error) => {
@@ -444,6 +436,9 @@ export default {
             } else {
                 vm.fetchProxyApplicant(applicant_id);
             }
+        },
+        formatDate: function (data) {
+            return moment(data).format('DD/MM/YYYY');
         },
     },
 };

@@ -464,6 +464,8 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import VehicleTable from '@/components/common/vehicle_table.vue';
 import VesselTable from '@/components/common/vessel_table.vue';
 import FileField from '@/components/forms/filefield.vue';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'FilmingEquipment',
     components: {
@@ -485,7 +487,7 @@ export default {
     data: function () {
         let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
             values: null,
             access_types: [],
             vehicles_url: helpers.add_endpoint_json(
@@ -505,9 +507,9 @@ export default {
     methods: {
         fetchAccessTypes: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.access_types).then(
+            helpers.fetchUrl(api_endpoints.access_types).then(
                 (response) => {
-                    vm.access_types = response.body;
+                    vm.access_types = response;
                 },
                 (error) => {
                     console.log(error);

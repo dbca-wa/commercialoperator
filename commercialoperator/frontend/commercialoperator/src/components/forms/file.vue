@@ -55,7 +55,7 @@
                         &nbsp;
                         <span v-if="!readonly && v.can_delete">
                             <a
-                                class="fa fa-trash-o"
+                                class="fa fa-trash"
                                 title="Remove file"
                                 :filename="v.name"
                                 style="cursor: pointer; color: red"
@@ -75,24 +75,26 @@
                     </p>
                 </div>
             </div>
-            <!-- eslint-disable-next-line vue/no-use-v-if-with-v-for -->
-            <div v-for="n in repeat" v-if="!readonly" :key="n">
-                <div
-                    v-if="
-                        isRepeatable || (!isRepeatable && num_documents() == 0)
-                    "
-                >
-                    <input
-                        :name="name"
-                        type="file"
-                        class="form-control"
-                        :data-que="n"
-                        :accept="fileTypes"
-                        :required="isRequired"
-                        @change="handleChange($event)"
-                    />
+            <template v-if="!readonly">
+                <div v-for="n in repeat" :key="n">
+                    <div
+                        v-if="
+                            isRepeatable ||
+                            (!isRepeatable && num_documents() == 0)
+                        "
+                    >
+                        <input
+                            :name="name"
+                            type="file"
+                            class="form-control"
+                            :data-que="n"
+                            :accept="fileTypes"
+                            :required="isRequired"
+                            @change="handleChange($event)"
+                        />
+                    </div>
                 </div>
-            </div>
+            </template>
             <span v-if="show_spinner"
                 ><i class="fa fa-2x fa-spinner fa-spin"></i
             ></span>
@@ -118,9 +120,11 @@
 import { helpers } from '@/utils/hooks';
 import Comment from './comment.vue';
 import HelpText from './help_text.vue';
+import HelpTextUrl from './help_text_url.vue';
+
 export default {
     name: 'FileComponent',
-    components: { Comment, HelpText },
+    components: { Comment, HelpText, HelpTextUrl },
     props: {
         // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop
         proposal_id: null,
@@ -259,10 +263,15 @@ export default {
             formData.append('action', 'list');
             formData.append('input_name', vm.name);
             formData.append('csrfmiddlewaretoken', vm.csrf_token);
-            vm.$http.post(vm.proposal_document_action, formData).then((res) => {
-                vm.documents = res.body;
-                vm.show_spinner = false;
-            });
+            helpers
+                .fetchUrl(vm.proposal_document_action, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then((res) => {
+                    vm.documents = res;
+                    vm.show_spinner = false;
+                });
         },
 
         delete_document: function (file) {
@@ -274,10 +283,15 @@ export default {
             formData.append('document_id', file.id);
             formData.append('csrfmiddlewaretoken', vm.csrf_token);
 
-            vm.$http.post(vm.proposal_document_action, formData).then(() => {
-                vm.documents = vm.get_documents();
-                vm.show_spinner = false;
-            });
+            helpers
+                .fetchUrl(vm.proposal_document_action, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(() => {
+                    vm.documents = vm.get_documents();
+                    vm.show_spinner = false;
+                });
         },
 
         uploadFile(e) {
@@ -308,13 +322,18 @@ export default {
             formData.append('document_list', vm.get_documents());
             formData.append('csrfmiddlewaretoken', vm.csrf_token);
 
-            vm.$http.post(vm.proposal_document_action, formData).then(
-                (res) => {
-                    vm.documents = res.body;
-                    vm.show_spinner = false;
-                },
-                () => {}
-            );
+            helpers
+                .fetchUrl(vm.proposal_document_action, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    (res) => {
+                        vm.documents = res;
+                        vm.show_spinner = false;
+                    },
+                    () => {}
+                );
         },
 
         num_documents: function () {

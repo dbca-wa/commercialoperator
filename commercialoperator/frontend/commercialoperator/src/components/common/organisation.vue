@@ -189,7 +189,7 @@
 </template>
 
 <script>
-import { api_endpoints, helpers, utils } from '@/utils/hooks';
+import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
@@ -252,7 +252,7 @@ export default {
             contacts_headers_ref: ['Name', 'Role', 'Email', 'Status', 'Action'],
             contacts_options_ref: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {
@@ -379,15 +379,18 @@ export default {
             let vm = this;
             if (action && this.action === action) {
                 if (action == 'unlink') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/unlink_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -420,7 +423,7 @@ export default {
                                         title: 'Unlink',
                                         text:
                                             'There was an error unlinking ' +
-                                            error.body +
+                                            error +
                                             '.',
                                         icon: 'error',
                                     });
@@ -428,15 +431,18 @@ export default {
                             }
                         );
                 } else if (action == 'relink') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/relink_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -463,22 +469,25 @@ export default {
                                     title: 'Relink User',
                                     text:
                                         'There was an error relinking ' +
-                                        error.body +
+                                        error +
                                         '.',
                                     icon: 'error',
                                 });
                             }
                         );
                 } else if (action == 'suspend') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/suspend_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -505,22 +514,25 @@ export default {
                                     title: 'Suspend User',
                                     text:
                                         'There was an error suspending ' +
-                                        error.body +
+                                        error +
                                         ' as a User.',
                                     icon: 'error',
                                 });
                             }
                         );
                 } else if (action == 'reinstate') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/reinstate_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -547,22 +559,25 @@ export default {
                                     title: 'Reinstate User',
                                     text:
                                         'There was an error reinstating ' +
-                                        error.body +
+                                        error +
                                         '.',
                                     icon: 'error',
                                 });
                             }
                         );
                 } else if (action == 'make_admin_contact') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/make_admin_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -589,22 +604,25 @@ export default {
                                     title: 'Organisation Admin',
                                     text:
                                         'There was an error making ' +
-                                        error.body +
+                                        error +
                                         ' an Organisation Admin.',
                                     icon: 'error',
                                 });
                             }
                         );
                 } else if (action == 'make_user_contact') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/make_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -633,7 +651,7 @@ export default {
                                     title: 'Company Admin',
                                     text:
                                         'There was an error making ' +
-                                        error.body +
+                                        error +
                                         ' an Organisation User.' +
                                         text,
                                     icon: 'error',
@@ -641,15 +659,18 @@ export default {
                             }
                         );
                 } else if (action == 'accept') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/accept_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -676,22 +697,25 @@ export default {
                                     title: 'Contact Accept',
                                     text:
                                         'There was an error accepting ' +
-                                        error.body +
+                                        error +
                                         '.',
                                     icon: 'error',
                                 });
                             }
                         );
                 } else if (action == 'decline') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/decline_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -718,22 +742,25 @@ export default {
                                     title: 'Contact Decline',
                                     text:
                                         'There was an error declining ' +
-                                        error.body +
+                                        error +
                                         '.',
                                     icon: 'error',
                                 });
                             }
                         );
                 } else if (action == 'accept_declined') {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 vm.org.id + '/accept_declined_user'
                             ),
-                            JSON.stringify(vm.contact_user),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(vm.contact_user),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
@@ -760,7 +787,7 @@ export default {
                                     title: 'Contact Accept (Previously Declined)',
                                     text:
                                         'There was an error accepting ' +
-                                        error.body +
+                                        error +
                                         '.',
                                     icon: 'error',
                                 });

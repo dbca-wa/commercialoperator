@@ -28,22 +28,26 @@
                         <br />
                         <br />
                         <table>
-                            <tr>
-                                <td>
-                                    <strong>Application:</strong>
-                                </td>
-                                <td>
-                                    <strong>{{ proposal.lodgement_number }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Date/Time:</strong>
-                                </td>
-                                <td>
-                                    <strong>{{ proposal.lodgement_date }}</strong>
-                                </td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <td>
+                                        <strong>Application:</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ proposal.lodgement_number }}</strong>
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>Date/Time:</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ proposal.lodgement_date }}</strong>
+                                    </td>
+                                </tr>
+                            </tbody>
                         </table>
                         <br />
                         {% if proposal and proposal.application_type.name == proposal.application_type.EVENT %}

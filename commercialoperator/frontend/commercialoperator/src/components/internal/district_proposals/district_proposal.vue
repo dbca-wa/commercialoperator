@@ -23,15 +23,17 @@
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <strong>Lodged on</strong><br />
-                                    {{ proposal.lodgement_date | formatDate }}
+                                    {{ formatDate(proposal.lodgement_date) }}
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
                                     <table class="table small-table">
-                                        <tr>
-                                            <th>Lodgement</th>
-                                            <th>Date</th>
-                                            <th>Action</th>
-                                        </tr>
+                                        <thead>
+                                            <tr>
+                                                <th>Lodgement</th>
+                                                <th>Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
                                     </table>
                                 </div>
                             </div>
@@ -575,14 +577,13 @@
             :district_proposal_id="district_proposal.id"
             :district_proposal_type="districtProposalType"
             :proposal_id="district_proposal.proposal.id"
-            :is-approval-level-document="isApprovalLevelDocument"
+            :is-approval-level-document="isApprovalLevelDocument || null"
             @refreshFromResponse="refreshFromResponse"
         />
     </div>
 </template>
 <script>
 import ProposalTClass from '@/components/form_tclass.vue';
-import Vue from 'vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import Requirements from '@/components/internal/proposals/proposal_requirements.vue';
 import ProposalFilming from '@/components/form_filming.vue';
@@ -590,8 +591,9 @@ import ProposalEvent from '@/components/form_event.vue';
 import ProposedDecline from './district_proposal_proposed_decline.vue';
 import ApprovalScreen from './district_proposal_approval.vue';
 import ProposedApproval from './district_proposed_issuance.vue';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
 
-import { api_endpoints, helpers } from '@/utils/hooks';
 export default {
     name: 'DistrictProposal',
     components: {
@@ -604,14 +606,9 @@ export default {
         ApprovalScreen,
         ProposedApproval,
     },
-    filters: {
-        formatDate: function (data) {
-            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
-        },
-    },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 helpers.add_endpoint_json(
                     api_endpoints.district_proposals,
                     to.params.district_proposal_id
@@ -620,7 +617,7 @@ export default {
             .then(
                 (res) => {
                     next((vm) => {
-                        vm.district_proposal = res.body;
+                        vm.district_proposal = res;
                     });
                 },
                 (err) => {
@@ -629,14 +626,14 @@ export default {
             );
     },
     beforeRouteUpdate: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 `/api/proposal/${to.params.proposal_id}/referall_proposal.json`
             )
             .then(
                 (res) => {
                     next((vm) => {
-                        vm.district_proposal = res.body;
+                        vm.district_proposal = res;
                         vm.fetchProposalParks(vm.district_proposal.proposal.id);
                         vm.district_proposal.proposal.applicant.address =
                             vm.district_proposal.proposal.applicant.address !=
@@ -654,9 +651,9 @@ export default {
     data: function () {
         let vm = this;
         return {
-            detailsBody: 'detailsBody' + vm._uid,
-            addressBody: 'addressBody' + vm._uid,
-            contactsBody: 'contactsBody' + vm._uid,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
             // district_proposal: null,
             referral_sent_list: null,
             loading: [],
@@ -674,10 +671,10 @@ export default {
             referral_recipient_groups: [],
             contacts_table_initialised: false,
             initialisedSelects: false,
-            contacts_table_id: vm._uid + 'contacts-table',
+            contacts_table_id: uuid() + 'contacts-table',
             contacts_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 responsive: true,
                 ajax: {
@@ -892,15 +889,23 @@ export default {
         save_wo: function () {
             let vm = this;
             let data = { email: vm.selected_referral, text: vm.referral_text };
-            vm.$http.post(vm.referral_form_url, JSON.stringify(data)).then(
-                () => {},
-                () => {}
-            );
+            helpers
+                .fetchUrl(vm.referral_form_url, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(
+                    () => {},
+                    () => {}
+                );
         },
 
         refreshFromResponse: function (response) {
             let vm = this;
-            vm.district_proposal = helpers.copyObject(response.body);
+            vm.district_proposal = helpers.copyObject(response);
         },
         initialiseOrgContactTable: function () {
             let vm = this;
@@ -982,16 +987,21 @@ export default {
         save: function () {
             let vm = this;
             let formData = new FormData(vm.form);
-            vm.$http.post(vm.proposal_form_url, formData).then(
-                () => {
-                    swal.fire({
-                        title: 'Saved',
-                        text: 'Your application has been saved',
-                        icon: 'success',
-                    });
-                },
-                () => {}
-            );
+            helpers
+                .fetchUrl(vm.proposal_form_url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(
+                    () => {
+                        swal.fire({
+                            title: 'Saved',
+                            text: 'Your application has been saved',
+                            icon: 'success',
+                        });
+                    },
+                    () => {}
+                );
         },
         assignTo: function () {
             let vm = this;
@@ -1013,23 +1023,25 @@ export default {
                 data = { assessor_id: vm.district_proposal.assigned_officer };
             }
             if (!unassign) {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal.id + '/assign_to'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.district_proposal = response.body;
-                            vm.original_district_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.district_proposal = response;
+                            vm.original_district_proposal =
+                                helpers.copyObject(response);
 
                             // vm.district_proposal.org_applicant.address = vm.district_proposal.org_applicant.address != null ? vm.district_proposal.org_applicant.address : {};
                             vm.updateAssignedOfficerSelect();
@@ -1048,8 +1060,8 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .get(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal.id + '/unassign'
@@ -1057,10 +1069,9 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.district_proposal = response.body;
-                            vm.original_district_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.district_proposal = response;
+                            vm.original_district_proposal =
+                                helpers.copyObject(response);
 
                             vm.updateAssignedOfficerSelect();
                             vm.fetchdistrict_proposalParks(
@@ -1085,8 +1096,8 @@ export default {
         assignRequestUser: function () {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.district_proposals,
                         vm.district_proposal.id + '/assign_request_user'
@@ -1094,10 +1105,9 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.district_proposal = response.body;
-                        vm.original_district_proposal = helpers.copyObject(
-                            response.body
-                        );
+                        vm.district_proposal = response;
+                        vm.original_district_proposal =
+                            helpers.copyObject(response);
                         vm.updateAssignedOfficerSelect();
                     },
                     (error) => {
@@ -1138,23 +1148,25 @@ export default {
                     status: status,
                     approver_comment: vm.approver_comment,
                 };
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal.id + '/switch_status'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.district_proposal = response.body;
-                            vm.original_district_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.district_proposal = response;
+                            vm.original_district_proposal =
+                                helpers.copyObject(response);
                             vm.approver_comment = '';
                             vm.$nextTick(() => {
                                 vm.initialiseAssignedOfficerSelect(true);
@@ -1179,23 +1191,25 @@ export default {
                     approver_comment: vm.approver_comment,
                 };
                 vm.changingStatus = true;
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal.id + '/switch_status'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(data),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
                         (response) => {
-                            vm.district_proposal = response.body;
-                            vm.original_district_proposal = helpers.copyObject(
-                                response.body
-                            );
+                            vm.district_proposal = response;
+                            vm.original_district_proposal =
+                                helpers.copyObject(response);
                             vm.approver_comment = '';
                             vm.$nextTick(() => {
                                 vm.initialiseAssignedOfficerSelect(true);
@@ -1221,23 +1235,31 @@ export default {
         fetchProposalGroupMembers: function () {
             let vm = this;
             vm.loading.push('Loading Application Group Members');
-            vm.$http.get(api_endpoints.organisation_access_group_members).then(
-                (response) => {
-                    vm.members = response.body;
-                    vm.loading.splice('Loading Application Group Members', 1);
-                },
-                (error) => {
-                    console.log(error);
-                    vm.loading.splice('Loading Application Group Members', 1);
-                }
-            );
+            helpers
+                .fetchUrl(api_endpoints.organisation_access_group_members)
+                .then(
+                    (response) => {
+                        vm.members = response;
+                        vm.loading.splice(
+                            'Loading Application Group Members',
+                            1
+                        );
+                    },
+                    (error) => {
+                        console.log(error);
+                        vm.loading.splice(
+                            'Loading Application Group Members',
+                            1
+                        );
+                    }
+                );
         },
         fetchReferralRecipientGroups: function () {
             let vm = this;
             vm.loading.push('Loading Referral Recipient Groups');
-            vm.$http.get(api_endpoints.referral_recipient_groups).then(
+            helpers.fetchUrl(api_endpoints.referral_recipient_groups).then(
                 (response) => {
-                    vm.referral_recipient_groups = response.body;
+                    vm.referral_recipient_groups = response;
                     vm.loading.splice('Loading Referral Recipient Groups', 1);
                 },
                 (error) => {
@@ -1337,21 +1359,24 @@ export default {
                 email_group: vm.selected_referral,
                 text: vm.referral_text,
             };
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         vm.proposal.id + '/assesor_send_referral'
                     ),
-                    JSON.stringify(data),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(
                     (response) => {
                         vm.sendingReferral = false;
-                        vm.proposal = helpers.copyObject(response.body);
+                        vm.proposal = helpers.copyObject(response);
                         swal.fire({
                             title: 'Referral Sent',
                             text:
@@ -1382,8 +1407,8 @@ export default {
         remindReferral: function (r) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         r.id + '/remind'
@@ -1412,8 +1437,8 @@ export default {
         resendReferral: function (r) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         r.id + '/resend'
@@ -1442,8 +1467,8 @@ export default {
         recallReferral: function (r) {
             let vm = this;
 
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         r.id + '/recall'
@@ -1472,8 +1497,8 @@ export default {
         fetchreferrallist: function (referral_id) {
             let vm = this;
 
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         referral_id + '/referral_list'
@@ -1481,7 +1506,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.referral_sent_list = response.body;
+                        vm.referral_sent_list = response;
                     },
                     (err) => {
                         console.log(err);
@@ -1490,8 +1515,8 @@ export default {
         },
         fetchReferral: function () {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         vm.district_proposal.id
@@ -1499,7 +1524,7 @@ export default {
                 )
                 .then(
                     (res) => {
-                        vm.district_proposal = res.body;
+                        vm.district_proposal = res;
                         vm.fetchProposalParks(vm.district_proposal.proposal.id);
                         vm.district_proposal.proposal.applicant.address =
                             vm.proposal.applicant.address != null
@@ -1513,8 +1538,8 @@ export default {
         },
         fetchProposalParks: function (proposal_id) {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposals,
                         proposal_id + '/parks_and_trails'
@@ -1522,7 +1547,7 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.proposal_parks = helpers.copyObject(response.body);
+                        vm.proposal_parks = helpers.copyObject(response);
                     },
                     () => {}
                 );
@@ -1539,20 +1564,23 @@ export default {
                 confirmButtonText: 'Submit',
             }).then(
                 () => {
-                    vm.$http
-                        .post(
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.referrals,
                                 vm.$route.params.referral_id + '/complete'
                             ),
-                            JSON.stringify(data),
                             {
-                                emulateJSON: true,
+                                method: 'POST',
+                                body: JSON.stringify(data),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
                             }
                         )
                         .then(
                             (res) => {
-                                vm.district_proposal = res.body;
+                                vm.district_proposal = res;
                                 vm.fetchProposalParks(
                                     vm.district_proposal.proposal.id
                                 );
@@ -1568,6 +1596,9 @@ export default {
                 },
                 () => {}
             );
+        },
+        formatDate: function (data) {
+            return data ? moment(data).format('DD/MM/YYYY HH:mm:ss') : '';
         },
     },
 };

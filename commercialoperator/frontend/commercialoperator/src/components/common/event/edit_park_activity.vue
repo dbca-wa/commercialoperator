@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="parkForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -104,7 +104,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingPark"
                     type="button"
@@ -125,13 +125,12 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -244,9 +243,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -256,9 +255,9 @@ export default {
         },
         fetchAllParks_orig: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.event_park_container).then(
+            helpers.fetchUrl(api_endpoints.event_park_container).then(
                 (response) => {
-                    vm.parks_list = response.body;
+                    vm.parks_list = response;
                 },
                 (error) => {
                     console.log(error);
@@ -267,14 +266,14 @@ export default {
         },
         fetchAllParks: function () {
             let vm = this;
-            vm.$http.get(api_endpoints.event_park_container).then(
+            helpers.fetchUrl(api_endpoints.event_park_container).then(
                 (response) => {
                     if (vm.is_external) {
-                        vm.parks_list = response.body['parks_external'];
+                        vm.parks_list = response['parks_external'];
                     } else {
-                        vm.parks_list = response.body['parks'];
+                        vm.parks_list = response['parks'];
                     }
-                    vm.park_activities = response.body['event_activity_types'];
+                    vm.park_activities = response['event_activity_types'];
                 },
                 (error) => {
                     console.log(error);
@@ -284,13 +283,13 @@ export default {
 
         fetchActivities: function () {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(api_endpoints.parks, 'land_parks')
                 )
                 .then(
                     (response) => {
-                        vm.land_parks = response.body;
+                        vm.land_parks = response;
                     },
                     (error) => {
                         console.log(error);
@@ -300,8 +299,8 @@ export default {
 
         fetchPark: function (vid) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_events_parks,
                         vid
@@ -309,7 +308,7 @@ export default {
                 )
                 .then(
                     (res) => {
-                        vm.park = res.body;
+                        vm.park = res;
                         if (vm.park.park) {
                             vm.events_park_id = vm.park.park.id;
                             $(vm.$refs.events_park)
@@ -356,9 +355,10 @@ export default {
             formData.append('data', JSON.stringify(park));
             vm.issuingPark = true;
             if (vm.localParkAction == 'add' && vm.park_id == null) {
-                vm.$http
-                    .post(api_endpoints.proposal_events_parks, formData, {
-                        emulateJSON: true,
+                helpers
+                    .fetchUrl(api_endpoints.proposal_events_parks, {
+                        method: 'POST',
+                        body: formData,
                     })
                     .then(
                         (response) => {
@@ -379,15 +379,15 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.proposal_events_parks,
                             vm.park_id + '/edit_park'
                         ),
-                        formData,
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: formData,
                         }
                     )
                     .then(

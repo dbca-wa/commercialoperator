@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="commsForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -216,7 +216,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="addingComms"
                     type="button"
@@ -237,7 +237,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
@@ -364,17 +364,22 @@ export default {
             vm.hasErrors = false;
             let comms = new FormData(vm.form);
             vm.addingComms = true;
-            vm.$http.post(vm.url, comms, {}).then(
-                () => {
-                    vm.addingComms = false;
-                    vm.close();
-                },
-                (error) => {
-                    vm.hasErrors = true;
-                    vm.addingComms = false;
-                    vm.errorString = helpers.apiVueResourceError(error);
-                }
-            );
+            helpers
+                .fetchUrl(vm.url, {
+                    method: 'POST',
+                    body: comms,
+                })
+                .then(
+                    () => {
+                        vm.addingComms = false;
+                        vm.close();
+                    },
+                    (error) => {
+                        vm.hasErrors = true;
+                        vm.addingComms = false;
+                        vm.errorString = helpers.apiVueResourceError(error);
+                    }
+                );
         },
         addFormValidations: function () {
             let vm = this;

@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="vehicleForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -93,7 +93,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingVehicle"
                     type="button"
@@ -115,13 +115,12 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -169,60 +168,63 @@ export default {
         },
     },
     watch: {
-        trail_sections: function () {
-            const vm = this;
-            // Note: removed_trail was called removed_section, I renamed it to removed_trail
-            var removed_trail = $(vm.trail_sections_before)
-                .not(vm.trail_sections)
-                .get();
-            // Note: added_trail was called added_section, I renamed it to added_trail
-            var added_trail = $(vm.trail_sections)
-                .not(vm.trail_sections_before)
-                .get();
-            vm.trail_sections_before = vm.trail_sections;
+        trail_sections: {
+            handler: function () {
+                const vm = this;
+                // Note: removed_trail was called removed_section, I renamed it to removed_trail
+                var removed_trail = $(vm.trail_sections_before)
+                    .not(vm.trail_sections)
+                    .get();
+                // Note: added_trail was called added_section, I renamed it to added_trail
+                var added_trail = $(vm.trail_sections)
+                    .not(vm.trail_sections_before)
+                    .get();
+                vm.trail_sections_before = vm.trail_sections;
 
-            if (added_trail.length != 0) {
-                for (var i = 0; i < added_trail.length; i++) {
-                    var found = false;
-                    for (
-                        var j = 0;
-                        j < vm.trail_sections_activities.length;
-                        j++
-                    ) {
-                        if (
-                            vm.trail_sections_activities[j].trail ==
-                            added_trail[i]
+                if (added_trail.length != 0) {
+                    for (var i = 0; i < added_trail.length; i++) {
+                        var found = false;
+                        for (
+                            var j = 0;
+                            j < vm.trail_sections_activities.length;
+                            j++
                         ) {
-                            found = true;
+                            if (
+                                vm.trail_sections_activities[j].trail ==
+                                added_trail[i]
+                            ) {
+                                found = true;
+                            }
                         }
-                    }
-                    if (found == false) {
-                        const data = {
-                            trail: added_trail[i],
-                            activities: [],
-                        };
-                        vm.trail_sections_activities.push(data);
-                    }
-                }
-            }
-            if (removed_trail.length != 0) {
-                // eslint-disable-next-line no-redeclare
-                for (var i = 0; i < removed_trail.length; i++) {
-                    for (
-                        // eslint-disable-next-line no-redeclare
-                        var j = 0;
-                        j < vm.trail_sections_activities.length;
-                        j++
-                    ) {
-                        if (
-                            vm.trail_sections_activities[j].trail ==
-                            removed_trail[i]
-                        ) {
-                            vm.trail_sections_activities.splice(j, 1);
+                        if (found == false) {
+                            const data = {
+                                trail: added_trail[i],
+                                activities: [],
+                            };
+                            vm.trail_sections_activities.push(data);
                         }
                     }
                 }
-            }
+                if (removed_trail.length != 0) {
+                    // eslint-disable-next-line no-redeclare
+                    for (var i = 0; i < removed_trail.length; i++) {
+                        for (
+                            // eslint-disable-next-line no-redeclare
+                            var j = 0;
+                            j < vm.trail_sections_activities.length;
+                            j++
+                        ) {
+                            if (
+                                vm.trail_sections_activities[j].trail ==
+                                removed_trail[i]
+                            ) {
+                                vm.trail_sections_activities.splice(j, 1);
+                            }
+                        }
+                    }
+                }
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -288,11 +290,13 @@ export default {
         },
         fetchTrail: function (trail_id) {
             let vm = this;
-            Vue.http
-                .get(helpers.add_endpoint_json(api_endpoints.trails, trail_id))
+            helpers
+                .fetchUrl(
+                    helpers.add_endpoint_json(api_endpoints.trails, trail_id)
+                )
                 .then(
                     (res) => {
-                        vm.trail = res.body;
+                        vm.trail = res;
                     },
                     (err) => {
                         console.log(err);

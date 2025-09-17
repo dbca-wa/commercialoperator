@@ -14,7 +14,7 @@
                         role="tab"
                         aria-controls="pills-applicant"
                         :aria-selected="
-                            isSelectedTabById('pills-applicant-tab')
+                            isSelectedTabById('pills-applicant-tab') || null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -35,7 +35,8 @@
                         role="tab"
                         aria-controls="pills-activities-land"
                         :aria-selected="
-                            isSelectedTabById('pills-activities-land-tab')
+                            isSelectedTabById('pills-activities-land-tab') ||
+                            null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -56,7 +57,8 @@
                         role="tab"
                         aria-controls="pills-activities-marine"
                         :aria-selected="
-                            isSelectedTabById('pills-activities-marine-tab')
+                            isSelectedTabById('pills-activities-marine-tab') ||
+                            null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -77,7 +79,7 @@
                         role="tab"
                         aria-controls="pills-other-details"
                         :aria-selected="
-                            isSelectedTabById('pills-other-details-tab')
+                            isSelectedTabById('pills-other-details-tab') || null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -98,7 +100,8 @@
                         role="tab"
                         aria-controls="pills-online-training"
                         :aria-selected="
-                            isSelectedTabById('pills-online-training-tab')
+                            isSelectedTabById('pills-online-training-tab') ||
+                            null
                         "
                         @click.prevent="tabClicked($event.target.id)"
                     >
@@ -116,7 +119,9 @@
                         href=""
                         role="tab"
                         aria-controls="pills-payment"
-                        :aria-selected="isSelectedTabById('pills-payment-tab')"
+                        :aria-selected="
+                            isSelectedTabById('pills-payment-tab') || null
+                        "
                         @click.prevent="tabClicked($event.target.id)"
                     >
                         6. Payment
@@ -133,7 +138,9 @@
                         href=""
                         role="tab"
                         aria-controls="pills-confirm"
-                        :aria-selected="isSelectedTabById('pills-confirm-tab')"
+                        :aria-selected="
+                            isSelectedTabById('pills-confirm-tab') || null
+                        "
                         @click.prevent="tabClicked($event.target.id)"
                     >
                         7. Confirmation
@@ -200,18 +207,19 @@
                     role="tabpanel"
                     aria-labelledby="pills-activities-land-tab"
                 >
+                    <!-- NOTE: Does the v-bind (it used to be v-on="$listeners" in vue2) do anything for the functionality of this component or can we axe it? -->
                     <ActivitiesLand
                         v-if="
                             proposal_parks &&
                             Object.keys(proposal_parks).length > 0
                         "
+                        v-bind="$attrs"
                         id="proposalStartActivitiesLand"
                         ref="activities_land"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
-                        v-on="$listeners"
                     ></ActivitiesLand>
                 </div>
                 <div
@@ -226,18 +234,19 @@
                     role="tabpanel"
                     aria-labelledby="pills-activities-marine-tab"
                 >
+                    <!-- NOTE: Does the v-bind (it used to be v-on="$listeners" in vue2) do anything for the functionality of this component or can we axe it? -->
                     <ActivitiesMarine
                         v-if="
                             proposal_parks &&
                             Object.keys(proposal_parks).length > 0
                         "
+                        v-bind="$attrs"
                         id="proposalStartActivitiesMarine"
                         ref="activities_marine"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
                         :proposal_parks="proposal_parks"
                         :is_external="is_external"
-                        v-on="$listeners"
                     ></ActivitiesMarine>
                 </div>
                 <div

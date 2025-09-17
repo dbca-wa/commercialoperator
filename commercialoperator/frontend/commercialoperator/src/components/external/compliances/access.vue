@@ -53,9 +53,7 @@
                                         name="complianceForm"
                                         method="post"
                                     >
-                                        <alert
-                                            :show.sync="showError"
-                                            type="danger"
+                                        <alert v-if="showError" type="danger"
                                             ><strong>{{
                                                 errorString
                                             }}</strong></alert
@@ -69,17 +67,17 @@
                                                     >Requirement:</label
                                                 >
                                                 <div class="col-sm-6">
-                                                    <TextArea
+                                                    <textarea
                                                         id="text_requirement"
+                                                        v-model="
+                                                            compliance.requirement
+                                                        "
                                                         type="text"
                                                         class="form-control w-100"
                                                         name="requirement"
                                                         disabled
                                                         readonly
-                                                        >{{
-                                                            compliance.requirement
-                                                        }}</TextArea
-                                                    >
+                                                    ></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -140,7 +138,7 @@
                                                             "
                                                         >
                                                             <a
-                                                                class="fa fa-trash-o control-label"
+                                                                class="fa fa-trash control-label"
                                                                 title="Remove file"
                                                                 style="
                                                                     cursor: pointer;
@@ -390,10 +388,10 @@
 </template>
 <script>
 import $ from 'jquery';
-import Vue from 'vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
+import { v4 as uuid } from 'uuid';
 
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
@@ -408,8 +406,8 @@ export default {
         FormSection,
     },
     beforeRouteEnter: function (to, from, next) {
-        Vue.http
-            .get(
+        helpers
+            .fetchUrl(
                 helpers.add_endpoint_json(
                     api_endpoints.compliances,
                     to.params.compliance_id
@@ -418,7 +416,7 @@ export default {
             .then(
                 (response) => {
                     next((vm) => {
-                        vm.compliance = response.body;
+                        vm.compliance = response;
                         if (
                             vm.compliance.customer_status == 'Under Review' ||
                             vm.compliance.customer_status == 'Approved'
@@ -429,8 +427,8 @@ export default {
                             vm.hasDocuments = true;
                         }
 
-                        Vue.http
-                            .get(
+                        helpers
+                            .fetchUrl(
                                 helpers.add_endpoint_json(
                                     api_endpoints.compliances,
                                     to.params.compliance_id +
@@ -439,7 +437,7 @@ export default {
                             )
                             .then(
                                 (res) => {
-                                    vm.setAmendmentData(res.body);
+                                    vm.setAmendmentData(res);
                                 },
                                 (err) => {
                                     console.log(err);
@@ -453,7 +451,6 @@ export default {
             );
     },
     data() {
-        let vm = this;
         return {
             form: null,
             loading: [],
@@ -464,8 +461,8 @@ export default {
             isFinalised: false,
             hasErrors: false,
             errorString: '',
-            pdBody: 'pdBody' + vm._uid,
-            oBody: 'oBody' + vm._uid,
+            pdBody: 'pdBody' + uuid(),
+            oBody: 'oBody' + uuid(),
             hasDocuments: false,
             validation_form: null,
             files: [
@@ -586,21 +583,24 @@ export default {
             let vm = this;
             let data = { document: doc };
             if (doc) {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.compliances,
                             vm.compliance.id + '/delete_document'
                         ),
-                        JSON.stringify(data),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data),
                         }
                     )
                     .then(
                         (response) => {
                             vm.refreshFromResponse(response);
-                            vm.compliance = response.body;
+                            vm.compliance = response;
                         },
                         (error) => {
                             vm.hasErrors = true;
@@ -615,15 +615,15 @@ export default {
             vm.hasErrors = false;
             let data = new FormData(vm.form);
             vm.addingComms = true;
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.compliances,
                         vm.compliance.id + '/submit'
                     ),
-                    data,
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: data,
                     }
                 )
                 .then(
@@ -631,10 +631,10 @@ export default {
                         vm.addingCompliance = false;
                         vm.refreshFromResponse(response);
 
-                        vm.compliance = response.body;
+                        vm.compliance = response;
                         vm.$router.push({
                             name: 'submit_compliance',
-                            params: { compliance: vm.compliance },
+                            params: { compliance_id: vm.compliance.id },
                         });
                     },
                     (error) => {
@@ -672,22 +672,22 @@ export default {
                         showCancelButton: true,
                         confirmButtonText: vm.submit_text(),
                     }).then(() => {
-                        vm.$http
-                            .post(
+                        helpers
+                            .fetchUrl(
                                 helpers.add_endpoint_json(
                                     api_endpoints.compliances,
                                     vm.compliance.id + '/submit'
                                 ),
-                                data,
                                 {
-                                    emulateJSON: true,
+                                    method: 'POST',
+                                    body: data,
                                 }
                             )
                             .then(
                                 (response) => {
                                     vm.addingCompliance = false;
                                     vm.refreshFromResponse(response);
-                                    vm.compliance = response.body;
+                                    vm.compliance = response;
 
                                     /* after the above save, redirect to the Django post() method in ApplicationFeeView */
                                     vm.post_and_redirect(
@@ -754,15 +754,20 @@ export default {
                 confirmButtonText: vm.submit_text(),
             }).then(
                 () => {
-                    vm.$http.post(vm.proposal_form_url, formData).then(
-                        () => {
-                            /* after the above save, redirect to the Django post() method in ApplicationFeeView */
-                            vm.post_and_redirect(vm.application_fee_url, {
-                                csrfmiddlewaretoken: vm.csrf_token,
-                            });
-                        },
-                        () => {}
-                    );
+                    helpers
+                        .fetchUrl(vm.proposal_form_url, {
+                            method: 'POST',
+                            body: formData,
+                        })
+                        .then(
+                            () => {
+                                /* after the above save, redirect to the Django post() method in ApplicationFeeView */
+                                vm.post_and_redirect(vm.application_fee_url, {
+                                    csrfmiddlewaretoken: vm.csrf_token,
+                                });
+                            },
+                            () => {}
+                        );
 
                     // Filming has deferred payment once assessor decides whether 'Licence' (fee) or 'Lawful Authority' (no fee) is to be issued
                     if (
@@ -774,17 +779,20 @@ export default {
                     } else {
                         /* just save and submit - no payment required (probably application was pushed back by assessor for amendment */
                         vm.save_wo_confirm();
-                        vm.$http
-                            .post(
+                        helpers
+                            .fetchUrl(
                                 helpers.add_endpoint_json(
                                     api_endpoints.proposals,
                                     vm.proposal.id + '/submit'
                                 ),
-                                formData
+                                {
+                                    method: 'POST',
+                                    body: formData,
+                                }
                             )
                             .then(
                                 (res) => {
-                                    vm.proposal = res.body;
+                                    vm.proposal = res;
                                     vm.$router.push({
                                         name: 'submit_proposal',
                                         params: { proposal: vm.proposal },
@@ -812,8 +820,8 @@ export default {
 
         refreshFromResponse: function (response) {
             let vm = this;
-            vm.original_compliance = helpers.copyObject(response.body);
-            vm.compliance = helpers.copyObject(response.body);
+            vm.original_compliance = helpers.copyObject(response);
+            vm.compliance = helpers.copyObject(response);
             if (
                 vm.compliance.customer_status == 'Under Review' ||
                 vm.compliance.customer_status == 'Approved'

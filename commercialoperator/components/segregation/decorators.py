@@ -5,7 +5,7 @@ import traceback
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
 
 logger = logging.getLogger(__name__)
@@ -19,9 +19,11 @@ def basic_exception_handler(func):
         except ValidationError as e:
             raise serializers.ValidationError(e.message)
         except serializers.ValidationError as e:
+            if hasattr(e, 'detail'):
+                raise APIException(code=e.status_code, detail=e.detail)
             raise e
         except NotImplementedError as e:
-            raise APIException(code=501, detail=str(e))
+            raise APIException(code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e))
         except Exception as e:
             if settings.DEBUG:
                 detail = {

@@ -61,7 +61,9 @@
 import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_park_activity.vue';
 import FileField from '@/components/forms/filefield.vue';
-import { api_endpoints } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'EventParkTableDash',
     components: {
@@ -101,8 +103,8 @@ export default {
                 activities: [],
                 proposal: vm.proposal.id,
             },
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'park-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'park-datatable-' + uuid(),
             uuid: 0,
             // Filters for Parks
             park_headers: [
@@ -113,7 +115,7 @@ export default {
             ],
             park_options: {
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -127,8 +129,25 @@ export default {
                     url: vm.url,
                     dataSrc: '',
                 },
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                buttons: ['excel', 'csv'],
+                dom: constants.DATATABLE_DOM_HTML,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: 'CSV',
+                        className: 'btn btn-primary rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                ],
                 columns: [
                     {
                         data: 'park',
@@ -240,8 +259,10 @@ export default {
                     if (!result.isConfirmed) {
                         return;
                     }
-                    vm.$http
-                        .delete(api_endpoints.discard_event_park(park_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_event_park(park_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
                                 swal.fire({

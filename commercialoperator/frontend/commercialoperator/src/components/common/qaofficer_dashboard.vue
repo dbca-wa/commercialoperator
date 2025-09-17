@@ -138,8 +138,9 @@
 </template>
 <script>
 import datatable from '@/utils/vue/datatable.vue';
-import Vue from 'vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -162,8 +163,8 @@ export default {
     data() {
         let vm = this;
         return {
-            pBody: 'pBody' + vm._uid,
-            datatable_id: 'proposal-datatable-' + vm._uid,
+            pBody: 'pBody' + uuid(),
+            datatable_id: 'proposal-datatable-' + uuid(),
             //Profile to check if user has access to process Proposal
             profile: {},
             // Filters for Proposals
@@ -203,7 +204,7 @@ export default {
             proposal_options: {
                 autoWidth: false,
                 language: {
-                    processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>",
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
                 columnDefs: [
                     { responsivePriority: 1, targets: 0 },
@@ -247,8 +248,25 @@ export default {
                             'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
                     },
                 },
-                dom: '<"container-fluid"<"row"<"col"l><"col"f><"col"<"float-end"B>>>>rtip', // 'lfBrtip'
-                buttons: ['excel', 'csv'],
+                dom: constants.DATATABLE_DOM_HTML,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Excel',
+                        className: 'btn btn-primary me-2 rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: 'CSV',
+                        className: 'btn btn-primary rounded',
+                        exportOptions: {
+                            orthogonal: 'export',
+                        },
+                    },
+                ],
                 columns: [
                     {
                         data: 'id',
@@ -400,11 +418,11 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http
-                .get(api_endpoints.filter_list)
+            helpers
+                .fetchUrl(api_endpoints.filter_list)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.body.submitters;
+                        vm.proposal_submitters = response.submitters;
                         vm.proposal_status =
                             vm.level == 'internal'
                                 ? vm.internal_status
@@ -421,24 +439,26 @@ export default {
 
         discardProposal: function (proposal_id) {
             let vm = this;
-            swal({
+            swal.fire({
                 title: 'Discard Application',
                 text: 'Are you sure you want to discard this application?',
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Discard Application',
                 confirmButtonColor: '#d9534f',
             }).then(
                 () => {
-                    vm.$http
-                        .delete(api_endpoints.discard_proposal(proposal_id))
+                    helpers
+                        .fetchUrl(api_endpoints.discard_proposal(proposal_id), {
+                            method: 'DELETE',
+                        })
                         .then(
                             () => {
-                                swal(
-                                    'Discarded',
-                                    'Your application has been discarded',
-                                    'success'
-                                );
+                                swal.fire({
+                                    title: 'Discarded',
+                                    text: 'Your application has been discarded',
+                                    icon: 'success',
+                                });
                                 vm.$refs.proposal_datatable.vmDataTable.ajax.reload();
                             },
                             (error) => {
@@ -541,9 +561,9 @@ export default {
 
         fetchProfile: function () {
             let vm = this;
-            Vue.http.get(api_endpoints.profile).then(
+            helpers.fetchUrl(api_endpoints.profile).then(
                 (response) => {
-                    vm.profile = response.body;
+                    vm.profile = response;
                 },
                 (error) => {
                     console.log(error);

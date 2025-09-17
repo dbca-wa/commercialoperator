@@ -1,23 +1,25 @@
 <template lang="html">
     <div>
-        <Treeselect
+        <!-- <Treeselect -->
+        <component
+            :is="'TreeselectDummy'"
             ref="treeselect"
             v-model="localValue"
             :options="options"
             :open-on-click="true"
-            :multiple="multiple"
+            :multiple="multiple || null"
             :max-height="max_height"
             :value-consists-of="value_consists_of"
-            :clearable="clearable"
-            :flat="flat"
+            :clearable="clearable || null"
+            :flat="flat || null"
             :default-expand-level="default_expand_level"
             :normalizer="normalizer"
             :open-direction="open_direction"
-            :disabled="disabled"
+            :disabled="disabled || null"
             :open-on-focus="true"
             :limit="localLimit"
-            :close-on-select="closeOnSelect"
-            :disable-branch-nodes="disableBranchNodes"
+            :close-on-select="closeOnSelect || null"
+            :disable-branch-nodes="disableBranchNodes || null"
             :z-index="zIndex"
         >
             <label
@@ -27,10 +29,12 @@
             >
                 <div class="row">
                     <div class="col-sm-8 text-nowrap">
-                        {{ node.raw.name }}
+                        <!-- NOTE: NOTE: Added ? to to all instances of node.raw deal with undefined error -->
+                        {{ node?.raw?.name }}
                     </div>
+                    <!-- NOTE: NOTE: Added ? to to all instances of node.raw deal with undefined error -->
                     <div
-                        v-if="node.raw.can_edit"
+                        v-if="node?.raw?.can_edit"
                         class="col-sm-4 option-label-container"
                     >
                         <!-- Note: I changed the listener from click to mousedown, because when opening the multiselect list, click would deselect/select a list option item before opening the modal -->
@@ -57,27 +61,33 @@
                         :title="edit_display_text(node)"
                         @mousedown.stop="edit_activities($event, node)"
                     >
-                        {{ node.label }}
+                        <!-- NOTE: Added ? to deal with undefined error -->
+                        {{ node?.label }}
                     </a>
                 </div>
                 <div v-else>
-                    <a> {{ node.label }} </a>
+                    <!-- NOTE: Added ? to deal with undefined error -->
+                    <a> {{ node?.label }} </a>
                 </div>
             </div>
-        </Treeselect>
+            <!-- </Treeselect> -->
+        </component>
     </div>
 </template>
 
 <script>
+// NOTE: Commenting out the import of the Treeselect component and its styles. This needs to be solved in vue3
 // import the component
-import Treeselect from '@riophae/vue-treeselect';
+// import Treeselect from '@riophae/vue-treeselect';
 // import the styles
-import '@riophae/vue-treeselect/dist/vue-treeselect.css';
+// import '@riophae/vue-treeselect/dist/vue-treeselect.css';
+
+import { defineAsyncComponent } from 'vue';
 
 export default {
     name: 'TreeSelect',
     components: {
-        Treeselect,
+        // Treeselect,
     },
     props: {
         proposal: {
@@ -174,19 +184,30 @@ export default {
             localValue: this.value,
             // Note: I changed from using the prop `limit` (props should not be mutated) to using a `localLimit` data property
             localLimit: this.limit,
+            // NOTE: I added data properties below to be able to access the them during rendering
+            node: null,
+            labelClassName: '',
         };
     },
 
-    computed: {},
+    computed: {
+        TreeSelectDummy() {
+            return defineAsyncComponent({
+                data() {
+                    return {
+                        dummyText: 'Select a node',
+                    };
+                },
+                template: `<div>{{dummyText}}</div>`,
+            });
+        },
+    },
     watch: {
-        localValue: function (newValue) {
-            /* allows two-way update of array value ( 'selected_access' )
-               Requires parent Prop: ' :value.sync="selected_access" ', eg.
-               <TreeSelect ref="selected_access" :proposal="proposal" :value.sync="selected_access" :options="land_access_options" :default_expand_level="1"></TreeSelect>
-            */
-            console.info('new localValue:', newValue);
-
-            this.$emit('update:value', newValue);
+        localValue: {
+            handler: function (newValue) {
+                this.$emit('update:value', newValue);
+            },
+            deep: true,
         },
     },
 
@@ -211,8 +232,9 @@ export default {
             }
         },
         edit_display_text: function (node) {
+            // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
             // eslint-disable-next-line no-prototype-builtins
-            if (node.raw.hasOwnProperty('sections')) {
+            if (node?.raw?.hasOwnProperty('sections')) {
                 return 'Edit sections and activities';
             } else {
                 return 'Edit access and activities';
@@ -220,18 +242,21 @@ export default {
         },
         edit_activities: function (event, node) {
             event.stopPropagation();
+            // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
             // eslint-disable-next-line no-prototype-builtins
-            if (node.raw.hasOwnProperty('sections')) {
+            if (node?.raw?.hasOwnProperty('sections')) {
                 this.$parent.$parent.edit_sections(node);
+                // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
                 // eslint-disable-next-line no-prototype-builtins
-            } else if (node.raw.hasOwnProperty('allowed_zone_activities')) {
+            } else if (node?.raw?.hasOwnProperty('allowed_zone_activities')) {
                 this.$parent.$parent.edit_activities(node);
             } else {
                 this.$parent.$parent.edit_activities(node);
             }
         },
         is_checked: function (node) {
-            return this.value.includes(node.id);
+            // NOTE: Added ? to deal with undefined error
+            return this.value?.includes(node?.id);
         },
     },
 };

@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="vehicleForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -69,7 +69,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingVehicle"
                     type="button"
@@ -91,13 +91,12 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -209,9 +208,9 @@ export default {
         },
         fetchAccessTypes: function () {
             let vm = this;
-            Vue.http.get('/api/access_types.json').then(
+            helpers.fetchUrl('/api/access_types.json').then(
                 (res) => {
-                    vm.access_types = res.body;
+                    vm.access_types = res;
                 },
                 (err) => {
                     console.log(err);
@@ -220,8 +219,8 @@ export default {
         },
         fetchAllowedActivities: function (park_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.parks,
                         park_id + '/allowed_activities'
@@ -229,7 +228,7 @@ export default {
                 )
                 .then(
                     (res) => {
-                        vm.allowed_activities = res.body;
+                        vm.allowed_activities = res;
                     },
                     (err) => {
                         console.log(err);
@@ -238,8 +237,8 @@ export default {
         },
         fetchAllowedAccessTypes: function (park_id) {
             let vm = this;
-            Vue.http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.parks,
                         park_id + '/allowed_access'
@@ -247,7 +246,7 @@ export default {
                 )
                 .then(
                     (res) => {
-                        vm.allowed_access_types = res.body;
+                        vm.allowed_access_types = res;
                     },
                     (err) => {
                         console.log(err);

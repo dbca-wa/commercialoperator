@@ -326,6 +326,8 @@ import ParksActivityTable from './parks_activity_table.vue';
 import TrailsActivityTable from './trails_activity_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     name: 'EventActivities',
     components: {
@@ -378,8 +380,8 @@ export default {
     data: function () {
         let vm = this;
         return {
-            lBody: 'lBody' + vm._uid,
-            tBody: 'tBody' + vm._uid,
+            lBody: 'lBody' + uuid(),
+            tBody: 'tBody' + uuid(),
             values: null,
             parks_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,
@@ -428,197 +430,219 @@ export default {
         },
     },
     watch: {
-        selected_trail_ids: function () {
-            let vm = this;
+        selected_trail_ids: {
+            handler: function () {
+                let vm = this;
 
-            vm.selected_trails = [];
-            for (let i = 0; i < vm.selected_trail_ids.length; i++) {
-                const data = vm.get_selected_trail_data(
-                    vm.selected_trail_ids[i]
-                );
-                if (data !== null) {
-                    vm.selected_trails.push(data);
+                vm.selected_trails = [];
+                for (let i = 0; i < vm.selected_trail_ids.length; i++) {
+                    const data = vm.get_selected_trail_data(
+                        vm.selected_trail_ids[i]
+                    );
+                    if (data !== null) {
+                        vm.selected_trails.push(data);
+                    }
                 }
-            }
 
-            try {
-                var removed_trail_id = $(vm.selected_trail_ids_before)
-                    .not(vm.selected_trail_ids)
-                    .get();
-            } catch (error) {
-                console.log('removed_trail: ' + error);
-            }
+                try {
+                    var removed_trail_id = $(vm.selected_trail_ids_before)
+                        .not(vm.selected_trail_ids)
+                        .get();
+                } catch (error) {
+                    console.log('removed_trail: ' + error);
+                }
 
-            try {
-                var added_trail_id = $(vm.selected_trail_ids)
-                    .not(vm.selected_trail_ids_before)
-                    .get();
-            } catch (error) {
-                console.log('added_trail: ' + error);
-            }
-            vm.selected_trail_ids_before = vm.selected_trail_ids;
+                try {
+                    var added_trail_id = $(vm.selected_trail_ids)
+                        .not(vm.selected_trail_ids_before)
+                        .get();
+                } catch (error) {
+                    console.log('added_trail: ' + error);
+                }
+                vm.selected_trail_ids_before = vm.selected_trail_ids;
 
-            var current_activities = vm.trail_activities;
+                var current_activities = vm.trail_activities;
 
-            if (vm.selected_trails_activities.length == 0) {
-                for (let i = 0; i < vm.selected_trails.length; i++) {
-                    var data = null;
-                    const section_activities = [];
+                if (vm.selected_trails_activities.length == 0) {
+                    for (let i = 0; i < vm.selected_trails.length; i++) {
+                        var data = null;
+                        const section_activities = [];
 
-                    for (
-                        var j = 0;
-                        j < vm.selected_trails[i].sections.length;
-                        j++
-                    ) {
-                        const section_data = {
-                            section: vm.selected_trails[i].sections[j],
-                            activities: current_activities,
+                        for (
+                            var j = 0;
+                            j < vm.selected_trails[i].sections.length;
+                            j++
+                        ) {
+                            const section_data = {
+                                section: vm.selected_trails[i].sections[j],
+                                activities: current_activities,
+                            };
+                            section_activities.push(section_data);
+                        }
+                        data = {
+                            trail: vm.selected_trails[i].trail,
+                            activities: section_activities,
                         };
-                        section_activities.push(section_data);
+                        vm.selected_trails_activities.push(data);
                     }
-                    data = {
-                        trail: vm.selected_trails[i].trail,
-                        activities: section_activities,
-                    };
-                    vm.selected_trails_activities.push(data);
-                }
-            } else {
-                if (added_trail_id.length != 0) {
-                    for (var i = 0; i < added_trail_id.length; i++) {
-                        var found = false;
-                        for (
-                            let j = 0;
-                            j < vm.selected_trails_activities.length;
-                            j++
-                        ) {
-                            if (
-                                vm.selected_trails_activities[j].trail ==
-                                added_trail_id[i]
-                            ) {
-                                found = true;
-                            }
-                        }
-                        if (found == false) {
-                            //original data object
-                            var section_activities = [];
-                            var trail_data = vm.get_selected_trail_data(
-                                added_trail_id[i]
-                            );
-                            if (trail_data !== null) {
-                                for (
-                                    var k = 0;
-                                    k < trail_data.sections.length;
-                                    k++
-                                ) {
-                                    const section_data = {
-                                        section: trail_data.sections[k],
-                                        activities: current_activities,
-                                    };
-                                    section_activities.push(section_data);
-                                }
-                                data = {
-                                    trail: added_trail_id[i],
-                                    activities: section_activities,
-                                };
-                            }
-                            vm.selected_trails_activities.push(data);
-                        }
-                    }
-                }
-                if (removed_trail_id.length != 0) {
-                    for (let i = 0; i < removed_trail_id.length; i++) {
-                        for (
-                            let j = 0;
-                            j < vm.selected_trails_activities.length;
-                            j++
-                        ) {
-                            if (
-                                vm.selected_trails_activities[j].trail ==
-                                removed_trail_id[i]
-                            ) {
-                                vm.selected_trails_activities.splice(j, 1);
-                            }
-                        }
-                    }
-                }
-            }
-            if (vm.proposal) {
-                vm.proposal.trails = vm.selected_trails;
-                vm.proposal.selected_trails_activities =
-                    vm.selected_trails_activities;
-            }
-        },
-        selected_trails_activities: function () {
-            let vm = this;
-
-            if (vm.proposal) {
-                vm.proposal.selected_trails_activities =
-                    vm.selected_trails_activities;
-            }
-        },
-        trail_activities: function () {
-            let vm = this;
-            var removed = $(vm.trail_activities_before)
-                .not(vm.trail_activities)
-                .get();
-            var added = $(vm.trail_activities)
-                .not(vm.trail_activities_before)
-                .get();
-            vm.trail_activities_before = vm.trail_activities;
-            if (vm.selected_trails_activities.length == 0) {
-                for (var i = 0; i < vm.selected_trail_ids.length; i++) {
-                    var data = null;
-                    data = {
-                        trail: vm.selected_trail_ids[i],
-                        activities: vm.trail_activities,
-                    };
-                    vm.selected_trails_activities.push(data);
-                }
-            } else {
-                for (let i = 0; i < vm.selected_trails_activities.length; i++) {
-                    if (added.length != 0) {
-                        for (var j = 0; j < added.length; j++) {
+                } else {
+                    if (added_trail_id.length != 0) {
+                        for (var i = 0; i < added_trail_id.length; i++) {
+                            var found = false;
                             for (
-                                var k = 0;
-                                k <
-                                vm.selected_trails_activities[i].activities
-                                    .length;
-                                k++
+                                let j = 0;
+                                j < vm.selected_trails_activities.length;
+                                j++
                             ) {
                                 if (
-                                    vm.selected_trails_activities[i].activities[
-                                        k
-                                    ].activities.indexOf(added[j]) < 0
+                                    vm.selected_trails_activities[j].trail ==
+                                    added_trail_id[i]
                                 ) {
-                                    vm.selected_trails_activities[i].activities[
-                                        k
-                                    ].activities.push(added[j]);
+                                    found = true;
                                 }
+                            }
+                            if (found == false) {
+                                //original data object
+                                var section_activities = [];
+                                var trail_data = vm.get_selected_trail_data(
+                                    added_trail_id[i]
+                                );
+                                if (trail_data !== null) {
+                                    for (
+                                        var k = 0;
+                                        k < trail_data.sections.length;
+                                        k++
+                                    ) {
+                                        const section_data = {
+                                            section: trail_data.sections[k],
+                                            activities: current_activities,
+                                        };
+                                        section_activities.push(section_data);
+                                    }
+                                    data = {
+                                        trail: added_trail_id[i],
+                                        activities: section_activities,
+                                    };
+                                }
+                                vm.selected_trails_activities.push(data);
                             }
                         }
                     }
-                    if (removed.length != 0) {
-                        for (let j = 0; j < removed.length; j++) {
+                    if (removed_trail_id.length != 0) {
+                        for (let i = 0; i < removed_trail_id.length; i++) {
                             for (
-                                let k = 0;
-                                k <
-                                vm.selected_trails_activities[i].activities
-                                    .length;
-                                k++
+                                let j = 0;
+                                j < vm.selected_trails_activities.length;
+                                j++
                             ) {
-                                var index = vm.selected_trails_activities[
-                                    i
-                                ].activities[k].activities.indexOf(removed[j]);
-                                if (index != -1) {
-                                    vm.selected_trails_activities[i].activities[
-                                        k
-                                    ].activities.splice(index, 1);
+                                if (
+                                    vm.selected_trails_activities[j].trail ==
+                                    removed_trail_id[i]
+                                ) {
+                                    vm.selected_trails_activities.splice(j, 1);
                                 }
                             }
                         }
                     }
                 }
-            }
+                if (vm.proposal) {
+                    vm.proposal.trails = vm.selected_trails;
+                    vm.proposal.selected_trails_activities =
+                        vm.selected_trails_activities;
+                }
+            },
+            deep: true,
+        },
+        selected_trails_activities: {
+            handler: function () {
+                let vm = this;
+
+                if (vm.proposal) {
+                    vm.proposal.selected_trails_activities =
+                        vm.selected_trails_activities;
+                }
+            },
+            deep: true,
+        },
+        trail_activities: {
+            handler: function () {
+                let vm = this;
+                var removed = $(vm.trail_activities_before)
+                    .not(vm.trail_activities)
+                    .get();
+                var added = $(vm.trail_activities)
+                    .not(vm.trail_activities_before)
+                    .get();
+                vm.trail_activities_before = vm.trail_activities;
+                if (vm.selected_trails_activities.length == 0) {
+                    for (var i = 0; i < vm.selected_trail_ids.length; i++) {
+                        var data = null;
+                        data = {
+                            trail: vm.selected_trail_ids[i],
+                            activities: vm.trail_activities,
+                        };
+                        vm.selected_trails_activities.push(data);
+                    }
+                } else {
+                    for (
+                        let i = 0;
+                        i < vm.selected_trails_activities.length;
+                        i++
+                    ) {
+                        if (added.length != 0) {
+                            for (var j = 0; j < added.length; j++) {
+                                for (
+                                    var k = 0;
+                                    k <
+                                    vm.selected_trails_activities[i].activities
+                                        .length;
+                                    k++
+                                ) {
+                                    if (
+                                        vm.selected_trails_activities[
+                                            i
+                                        ].activities[k].activities.indexOf(
+                                            added[j]
+                                        ) < 0
+                                    ) {
+                                        vm.selected_trails_activities[
+                                            i
+                                        ].activities[k].activities.push(
+                                            added[j]
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                        if (removed.length != 0) {
+                            for (let j = 0; j < removed.length; j++) {
+                                for (
+                                    let k = 0;
+                                    k <
+                                    vm.selected_trails_activities[i].activities
+                                        .length;
+                                    k++
+                                ) {
+                                    var index = vm.selected_trails_activities[
+                                        i
+                                    ].activities[k].activities.indexOf(
+                                        removed[j]
+                                    );
+                                    if (index != -1) {
+                                        vm.selected_trails_activities[
+                                            i
+                                        ].activities[k].activities.splice(
+                                            index,
+                                            1
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -726,9 +750,9 @@ export default {
         },
         fetchGlobalSettings: function () {
             let vm = this;
-            vm.$http.get('/api/global_settings.json').then(
+            helpers.fetchUrl('/api/global_settings.json').then(
                 (response) => {
-                    vm.global_settings = response.body;
+                    vm.global_settings = response;
                 },
                 (error) => {
                     console.log(error);
@@ -782,26 +806,26 @@ export default {
         fetchParkTreeview: function () {
             let vm = this;
 
-            vm.$http.get(api_endpoints.event_trail_container).then(
+            helpers.fetchUrl(api_endpoints.event_trail_container).then(
                 (response) => {
                     vm.land_activity_options = [
                         {
                             id: 'All',
                             name: 'Select all',
-                            children: response.body['land_activity_types'],
+                            children: response['land_activity_types'],
                         },
                     ];
                     vm.trail_activity_options = vm.land_activity_options;
-                    vm.activities = response.body['land_activity_types']; // needed to pass to Vehicle component
+                    vm.activities = response['land_activity_types']; // needed to pass to Vehicle component
 
                     vm.trail_options = [
                         {
                             id: 'All',
                             name: 'Select all',
-                            children: response.body['trails'],
+                            children: response['trails'],
                         },
                     ];
-                    vm.trails = response.body['trails'];
+                    vm.trails = response['trails'];
                 },
                 (error) => {
                     console.log(error);

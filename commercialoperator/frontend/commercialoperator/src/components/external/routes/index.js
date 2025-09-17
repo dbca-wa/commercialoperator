@@ -1,3 +1,5 @@
+import { RouterView } from 'vue-router';
+
 import ExternalDashboard from '../dashboard.vue';
 import Proposal from '../proposal.vue';
 import ProposalApply from '../proposal_apply.vue';
@@ -11,14 +13,10 @@ import PaymentDash from '@/components/common/payments_dashboard.vue';
 
 export default {
     path: '/external',
-    component: {
-        render(c) {
-            return c('router-view');
-        },
-    },
+    component: RouterView,
     children: [
         {
-            path: '/',
+            path: '',
             component: ExternalDashboard,
             name: 'external-proposals-dash',
         },
@@ -31,7 +29,7 @@ export default {
             component: Compliance,
         },
         {
-            path: 'compliance/submit',
+            path: 'compliance/submit/:compliance_id',
             component: ComplianceSubmit,
             name: 'submit_compliance',
         },
@@ -51,19 +49,15 @@ export default {
         },
         {
             path: 'proposal',
-            component: {
-                render(c) {
-                    return c('router-view');
-                },
-            },
+            component: RouterView,
             children: [
                 {
-                    path: '/',
+                    path: '',
                     component: ProposalApply,
                     name: 'apply_proposal',
                 },
                 {
-                    path: 'submit',
+                    path: 'submit/:proposal_id',
                     component: ProposalSubmit,
                     name: 'submit_proposal',
                 },

@@ -64,7 +64,7 @@ module.exports = {
 </script>
 
 <style lang="css">
-div.dataTables_processing div {
+div.dt-processing div {
     display: none;
 }
 
@@ -98,6 +98,11 @@ td > a {
 
 td {
     word-wrap: break-word;
+}
+
+table.dataTable {
+    margin-top: 8px;
+    margin-bottom: 8px !important;
 }
 
 table.table-bordered.dataTable tbody th,
@@ -145,6 +150,15 @@ table.has-columns-hidden > tbody > tr.detail-show > td span.responsiveExpander {
 table.collapsed > tbody > tr > td.child,
 table.has-columns-hidden > tbody > tr > td.child {
     background: #eee;
+}
+
+/* Prevent large content in child row (expander) from breaking out of parent width */
+tr.child td .dtr-data {
+    white-space: normal !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    display: block;
 }
 
 table.collapsed > tbody > tr > td > ul,

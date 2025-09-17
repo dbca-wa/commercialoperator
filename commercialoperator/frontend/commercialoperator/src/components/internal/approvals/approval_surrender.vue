@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="surrenderApprovalForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -79,7 +79,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingApproval"
                     type="button"
@@ -100,7 +100,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
@@ -166,9 +166,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -182,15 +182,18 @@ export default {
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
 
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.approvals,
                         vm.approval_id + '/approval_surrender'
                     ),
-                    JSON.stringify(approval),
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: JSON.stringify(approval),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
                     }
                 )
                 .then(

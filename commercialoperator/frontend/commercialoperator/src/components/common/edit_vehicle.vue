@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="vehicleForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -148,7 +148,7 @@
                     </form>
                 </div>
             </div>
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingVehicle"
                     type="button"
@@ -169,13 +169,12 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
@@ -268,9 +267,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -280,11 +279,13 @@ export default {
         },
         fetchVehicle: function (vid) {
             let vm = this;
-            Vue.http
-                .get(helpers.add_endpoint_json(api_endpoints.vehicles, vid))
+            helpers
+                .fetchUrl(
+                    helpers.add_endpoint_json(api_endpoints.vehicles, vid)
+                )
                 .then(
                     (res) => {
-                        vm.vehicle = res.body;
+                        vm.vehicle = res;
                         if (vm.vehicle.access_type) {
                             vm.vehicle_access_id = vm.vehicle.access_type.id;
                         }
@@ -304,9 +305,13 @@ export default {
             let vehicle = JSON.parse(JSON.stringify(vm.vehicle));
             vm.issuingVehicle = true;
             if (vm.localVehicleAction == 'add' && vm.vehicle_id == null) {
-                vm.$http
-                    .post(api_endpoints.vehicles, JSON.stringify(vehicle), {
-                        emulateJSON: true,
+                helpers
+                    .fetchUrl(api_endpoints.vehicles, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(vehicle),
                     })
                     .then(
                         (response) => {
@@ -327,15 +332,18 @@ export default {
                         }
                     );
             } else {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.vehicles,
                             vm.vehicle_id + '/edit_vehicle'
                         ),
-                        JSON.stringify(vehicle),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(vehicle),
                         }
                     )
                     .then(

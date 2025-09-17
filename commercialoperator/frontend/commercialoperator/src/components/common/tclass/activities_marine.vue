@@ -31,8 +31,8 @@
                                             activities</label
                                         >
                                         <TreeSelect
+                                            v-model="selected_activities"
                                             :proposal="proposal"
-                                            :value.sync="selected_activities"
                                             :options="marine_activity_options"
                                             :default_expand_level="1"
                                             :disabled="!canEditActivities"
@@ -60,8 +60,8 @@
                                             activities are required</label
                                         >
                                         <TreeSelect
+                                            v-model="selected_zone_ids"
                                             :proposal="proposal"
-                                            :value.sync="selected_zone_ids"
                                             :options="marine_park_options"
                                             :default_expand_level="0"
                                             :allow_edit="true"
@@ -145,6 +145,8 @@ import editMarineParkActivities from './edit_marine_park_activities.vue';
 import FileField from './required_docs.vue';
 import TreeSelect from '@/components/forms/treeview.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+
 export default {
     components: {
         FormSection,
@@ -181,7 +183,7 @@ export default {
             park_map: {},
             zone_map: {},
             park_activities: [],
-            pBody: 'pBody' + vm._uid,
+            pBody: 'pBody' + uuid(),
             values: null,
             vessels_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,
@@ -203,194 +205,217 @@ export default {
         };
     },
     watch: {
-        selected_zone_ids: function () {
-            let vm = this;
+        selected_zone_ids: {
+            handler: function () {
+                let vm = this;
 
-            vm.selected_zones = [];
-            for (var i = 0; i < vm.selected_zone_ids.length; i++) {
-                var zone_id = vm.selected_zone_ids[i];
-                let data = vm.get_selected_zone_data(zone_id);
-                if (data !== null) {
-                    vm.selected_zones.push(data);
+                vm.selected_zones = [];
+                for (var i = 0; i < vm.selected_zone_ids.length; i++) {
+                    var zone_id = vm.selected_zone_ids[i];
+                    let data = vm.get_selected_zone_data(zone_id);
+                    if (data !== null) {
+                        vm.selected_zones.push(data);
+                    }
                 }
-            }
 
-            if (vm.proposal) {
-                vm.proposal.parks = vm.selected_zones;
-            }
+                if (vm.proposal) {
+                    vm.proposal.parks = vm.selected_zones;
+                }
 
-            try {
-                var removed_zone_ids = $(vm.selected_zone_ids_before)
-                    .not(vm.selected_zone_ids)
+                try {
+                    var removed_zone_ids = $(vm.selected_zone_ids_before)
+                        .not(vm.selected_zone_ids)
+                        .get();
+                } catch (error) {
+                    console.log('removed_zone: ' + error);
+                }
+
+                try {
+                    var added_zone_ids = $(vm.selected_zone_ids)
+                        .not(vm.selected_zone_ids_before)
+                        .get();
+                } catch (error) {
+                    console.log('added_zone: ' + error);
+                }
+                vm.selected_zone_ids_before = vm.selected_zone_ids;
+
+                var current_activities = vm.selected_activities;
+                var zone_activities = [];
+
+                if (vm.marine_parks_activities.length == 0) {
+                    for (let i = 0; i < vm.selected_zones.length; i++) {
+                        var park_id = vm.get_park_id(vm.selected_zones[i].zone);
+                        var data = null;
+
+                        if (park_id !== null) {
+                            var zone_data = {
+                                zone: vm.selected_zones[i].zone,
+                                activities: current_activities,
+                            };
+                            zone_activities.push(zone_data);
+
+                            data = {
+                                park: parseInt(park_id),
+                                activities: zone_activities,
+                            };
+                            vm.marine_parks_activities.push(data);
+                        }
+                    }
+                } else {
+                    if (added_zone_ids.length != 0) {
+                        for (let i = 0; i < added_zone_ids.length; i++) {
+                            // eslint-disable-next-line no-redeclare
+                            var park_id = vm.get_park_id(added_zone_ids[i]);
+                            var park_idx = vm.contains_park(park_id);
+
+                            if (park_id !== null) {
+                                // eslint-disable-next-line no-redeclare
+                                var zone_data = {
+                                    zone: added_zone_ids[i],
+                                    activities: current_activities,
+                                };
+
+                                if (park_idx > -1) {
+                                    // check if vm.marine_parks_activities dict already contains park entry
+                                    vm.marine_parks_activities[
+                                        park_idx
+                                    ].activities.push(zone_data);
+                                } else {
+                                    // eslint-disable-next-line no-redeclare
+                                    var zone_activities = [];
+                                    zone_activities.push(zone_data);
+
+                                    data = {
+                                        park: parseInt(park_id),
+                                        activities: zone_activities,
+                                    };
+                                    vm.marine_parks_activities.push(data);
+                                }
+                            }
+                        }
+                    }
+                    if (removed_zone_ids.length != 0) {
+                        for (let i = 0; i < removed_zone_ids.length; i++) {
+                            // eslint-disable-next-line no-redeclare
+                            var park_id = vm.get_park_id(removed_zone_ids[i]);
+                            // eslint-disable-next-line no-redeclare
+                            var park_idx = vm.contains_park(park_id);
+                            var park_activities =
+                                vm.marine_parks_activities[park_idx].activities;
+                            var zone_idx = vm.contains_zone(
+                                park_activities,
+                                removed_zone_ids[i]
+                            );
+
+                            vm.marine_parks_activities[
+                                park_idx
+                            ].activities.splice(zone_idx, 1);
+                        }
+                    }
+                }
+                vm.checkAllowedActivities();
+            },
+            deep: true,
+        },
+        selected_activities: {
+            handler: function () {
+                let vm = this;
+                var removed = $(vm.selected_activities_before)
+                    .not(vm.selected_activities)
                     .get();
-            } catch (error) {
-                console.log('removed_zone: ' + error);
-            }
-
-            try {
-                var added_zone_ids = $(vm.selected_zone_ids)
-                    .not(vm.selected_zone_ids_before)
-                    .get();
-            } catch (error) {
-                console.log('added_zone: ' + error);
-            }
-            vm.selected_zone_ids_before = vm.selected_zone_ids;
-
-            var current_activities = vm.selected_activities;
-            var zone_activities = [];
-
-            if (vm.marine_parks_activities.length == 0) {
-                for (let i = 0; i < vm.selected_zones.length; i++) {
-                    var park_id = vm.get_park_id(vm.selected_zones[i].zone);
-                    var data = null;
-
-                    if (park_id !== null) {
-                        var zone_data = {
-                            zone: vm.selected_zones[i].zone,
-                            activities: current_activities,
-                        };
-                        zone_activities.push(zone_data);
-
+                var added = [];
+                if (vm.selected_activities_initialised) {
+                    added = $(vm.selected_activities)
+                        .not(vm.selected_activities_before)
+                        .get();
+                } else {
+                    vm.selected_activities_initialised = true;
+                }
+                vm.selected_activities_before = vm.selected_activities;
+                if (vm.marine_parks_activities.length == 0) {
+                    for (var i = 0; i < vm.selected_zones.length; i++) {
+                        var data = null;
                         data = {
-                            park: parseInt(park_id),
-                            activities: zone_activities,
+                            park: vm.selected_zones[i],
+                            activities: vm.selected_activities,
                         };
                         vm.marine_parks_activities.push(data);
                     }
-                }
-            } else {
-                if (added_zone_ids.length != 0) {
-                    for (let i = 0; i < added_zone_ids.length; i++) {
-                        // eslint-disable-next-line no-redeclare
-                        var park_id = vm.get_park_id(added_zone_ids[i]);
-                        var park_idx = vm.contains_park(park_id);
-
-                        if (park_id !== null) {
-                            // eslint-disable-next-line no-redeclare
-                            var zone_data = {
-                                zone: added_zone_ids[i],
-                                activities: current_activities,
-                            };
-
-                            if (park_idx > -1) {
-                                // check if vm.marine_parks_activities dict already contains park entry
-                                vm.marine_parks_activities[
-                                    park_idx
-                                ].activities.push(zone_data);
-                            } else {
-                                // eslint-disable-next-line no-redeclare
-                                var zone_activities = [];
-                                zone_activities.push(zone_data);
-
-                                data = {
-                                    park: parseInt(park_id),
-                                    activities: zone_activities,
-                                };
-                                vm.marine_parks_activities.push(data);
-                            }
-                        }
-                    }
-                }
-                if (removed_zone_ids.length != 0) {
-                    for (let i = 0; i < removed_zone_ids.length; i++) {
-                        // eslint-disable-next-line no-redeclare
-                        var park_id = vm.get_park_id(removed_zone_ids[i]);
-                        // eslint-disable-next-line no-redeclare
-                        var park_idx = vm.contains_park(park_id);
-                        var park_activities =
-                            vm.marine_parks_activities[park_idx].activities;
-                        var zone_idx = vm.contains_zone(
-                            park_activities,
-                            removed_zone_ids[i]
-                        );
-
-                        vm.marine_parks_activities[park_idx].activities.splice(
-                            zone_idx,
-                            1
-                        );
-                    }
-                }
-            }
-            vm.checkAllowedActivities();
-        },
-        selected_activities: function () {
-            let vm = this;
-            var removed = $(vm.selected_activities_before)
-                .not(vm.selected_activities)
-                .get();
-            var added = [];
-            if (vm.selected_activities_initialised) {
-                added = $(vm.selected_activities)
-                    .not(vm.selected_activities_before)
-                    .get();
-            } else {
-                vm.selected_activities_initialised = true;
-            }
-            vm.selected_activities_before = vm.selected_activities;
-            if (vm.marine_parks_activities.length == 0) {
-                for (var i = 0; i < vm.selected_zones.length; i++) {
-                    var data = null;
-                    data = {
-                        park: vm.selected_zones[i],
-                        activities: vm.selected_activities,
-                    };
-                    vm.marine_parks_activities.push(data);
-                }
-            } else {
-                for (let i = 0; i < vm.marine_parks_activities.length; i++) {
-                    if (added.length != 0) {
-                        for (var j = 0; j < added.length; j++) {
-                            for (
-                                var k = 0;
-                                k <
-                                vm.marine_parks_activities[i].activities.length;
-                                k++
-                            ) {
-                                if (
-                                    vm.marine_parks_activities[i].activities[
-                                        k
-                                    ].activities.indexOf(added[j]) < 0
+                } else {
+                    for (
+                        let i = 0;
+                        i < vm.marine_parks_activities.length;
+                        i++
+                    ) {
+                        if (added.length != 0) {
+                            for (var j = 0; j < added.length; j++) {
+                                for (
+                                    var k = 0;
+                                    k <
+                                    vm.marine_parks_activities[i].activities
+                                        .length;
+                                    k++
                                 ) {
-                                    vm.marine_parks_activities[i].activities[
-                                        k
-                                    ].activities.push(added[j]);
+                                    if (
+                                        vm.marine_parks_activities[
+                                            i
+                                        ].activities[k].activities.indexOf(
+                                            added[j]
+                                        ) < 0
+                                    ) {
+                                        vm.marine_parks_activities[
+                                            i
+                                        ].activities[k].activities.push(
+                                            added[j]
+                                        );
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (removed.length != 0) {
-                        for (let j = 0; j < removed.length; j++) {
-                            for (
-                                // eslint-disable-next-line no-redeclare
-                                var k = 0;
-                                k <
-                                vm.marine_parks_activities[i].activities.length;
-                                k++
-                            ) {
-                                var index = vm.marine_parks_activities[
-                                    i
-                                ].activities[k].activities.indexOf(removed[j]);
-                                if (index != -1) {
-                                    vm.marine_parks_activities[i].activities[
-                                        k
-                                    ].activities.splice(index, 1);
+                        if (removed.length != 0) {
+                            for (let j = 0; j < removed.length; j++) {
+                                for (
+                                    // eslint-disable-next-line no-redeclare
+                                    var k = 0;
+                                    k <
+                                    vm.marine_parks_activities[i].activities
+                                        .length;
+                                    k++
+                                ) {
+                                    var index = vm.marine_parks_activities[
+                                        i
+                                    ].activities[k].activities.indexOf(
+                                        removed[j]
+                                    );
+                                    if (index != -1) {
+                                        vm.marine_parks_activities[
+                                            i
+                                        ].activities[k].activities.splice(
+                                            index,
+                                            1
+                                        );
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            vm.checkRequiredDocuements(vm.marine_parks_activities);
-            vm.checkAllowedActivities();
+                vm.checkRequiredDocuements(vm.marine_parks_activities);
+                vm.checkAllowedActivities();
+            },
+            deep: true,
         },
-        marine_parks_activities: function () {
-            let vm = this;
-            vm.checkRequiredDocuements(vm.marine_parks_activities);
-            if (vm.proposal) {
-                vm.proposal.marine_parks_activities =
-                    vm.marine_parks_activities;
-            }
-            vm.checkAllowedActivities();
+        marine_parks_activities: {
+            handler: function () {
+                let vm = this;
+                vm.checkRequiredDocuements(vm.marine_parks_activities);
+                if (vm.proposal) {
+                    vm.proposal.marine_parks_activities =
+                        vm.marine_parks_activities;
+                }
+                vm.checkAllowedActivities();
+            },
+            deep: true,
         },
     },
     mounted: function () {
@@ -504,29 +529,28 @@ export default {
             let vm = this;
             vm.isLoading = true;
 
-            vm.$http.get(api_endpoints.tclass_container_marine).then(
+            helpers.fetchUrl(api_endpoints.tclass_container_marine).then(
                 (response) => {
                     vm.marine_activity_options = [
                         {
                             id: 'All',
                             name: 'Select all marine activities',
-                            children: response.body['marine_activities'],
+                            children: response['marine_activities'],
                         },
                     ];
-                    vm.marine_activities = response.body['marine_activities'];
+                    vm.marine_activities = response['marine_activities'];
 
                     if (vm.is_external) {
                         vm.marine_park_options =
-                            response.body['marine_parks_external'];
+                            response['marine_parks_external'];
                     } else {
-                        vm.marine_park_options = response.body['marine_parks'];
+                        vm.marine_park_options = response['marine_parks'];
                     }
-                    vm.marine_parks = response.body['marine_parks'];
+                    vm.marine_parks = response['marine_parks'];
                     vm.park_map = vm.get_park_map();
                     vm.park_activities = vm.get_park_activities();
 
-                    vm.required_documents_list =
-                        response.body['required_documents'];
+                    vm.required_documents_list = response['required_documents'];
                     vm.fetchRequiredDocumentList();
                     vm.isLoading = false;
                 },

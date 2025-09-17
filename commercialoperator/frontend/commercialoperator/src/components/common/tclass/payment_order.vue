@@ -368,9 +368,13 @@ export default {
                 'tbody',
                 JSON.stringify(vm.$refs.order_table.table.tbody)
             );
-            vm.$http
-                .post(`/payment/${proposal_id}/`, formData, {
-                    emulateJSON: true,
+            helpers
+                .fetchUrl(`/payment/${proposal_id}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                 })
                 .then(
                     () => {
@@ -556,9 +560,9 @@ export default {
 
         get_user_approvals: function () {
             let vm = this;
-            vm.$http.get('/api/filtered_payments').then(
+            helpers.fetchUrl('/api/filtered_payments').then(
                 (res) => {
-                    var licences = res.body;
+                    var licences = res;
                     for (var i in licences) {
                         vm.licences.push({
                             value: licences[i].current_proposal,
@@ -578,8 +582,8 @@ export default {
         },
         proposal_parks: function () {
             let vm = this;
-            vm.$http
-                .get(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.proposal_park,
                         vm.selected_licence.value + '/proposal_parks'
@@ -588,7 +592,7 @@ export default {
                 .then(
                     (res) => {
                         vm.resetTable();
-                        vm.land_parks = res.body.land_parks;
+                        vm.land_parks = res.land_parks;
                         vm.parks = [];
                         for (var i in vm.land_parks) {
                             vm.parks.push({

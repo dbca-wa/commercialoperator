@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="amendForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -75,7 +75,6 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 
@@ -113,6 +112,7 @@ export default {
             errorString: '',
             validation_form: null,
             uploadedFile: null,
+            referral_comment: '',
         };
     },
     computed: {
@@ -154,35 +154,35 @@ export default {
             let vm = this;
             let data = new FormData(vm.form);
             data.append('referral_document', vm.uploadedFile);
-            vm.$http
-                .post(
+            helpers
+                .fetchUrl(
                     helpers.add_endpoint_json(
                         api_endpoints.referrals,
                         vm.referral_id + '/complete'
                     ),
-                    data,
                     {
-                        emulateJSON: true,
+                        method: 'POST',
+                        body: data,
                     }
                 )
                 .then(
                     (res) => {
-                        swal(
-                            'Referral Complete',
-                            'Referral Complete',
-                            'success'
-                        );
+                        swal.fire({
+                            title: 'Referral Complete',
+                            text: 'The referral has been completed successfully.',
+                            icon: 'success',
+                        });
 
-                        vm.proposal = res.body;
+                        vm.proposal = res;
                         vm.$emit('refreshFromResponse', res);
                         vm.$router.push({ path: '/internal' }); //Navigate to dashboard after completing the referral
                     },
                     (err) => {
-                        swal(
-                            'Submit Error',
-                            helpers.apiVueResourceError(err),
-                            'error'
-                        );
+                        swal.fire({
+                            title: 'Submit Error',
+                            text: helpers.apiVueResourceError(err),
+                            icon: 'error',
+                        });
                     }
                 );
         },
@@ -215,9 +215,9 @@ export default {
         },
         fetchAmendmentChoices: function () {
             let vm = this;
-            vm.$http.get('/api/amendment_request_reason_choices.json').then(
+            helpers.fetchUrl('/api/amendment_request_reason_choices.json').then(
                 (response) => {
-                    vm.reason_choices = response.body;
+                    vm.reason_choices = response;
                 },
                 (error) => {
                     console.log(error);
@@ -228,14 +228,14 @@ export default {
             let vm = this;
             vm.hasErrors = false;
             let amendment = JSON.parse(JSON.stringify(vm.amendment));
-            vm.$http
-                .post(
-                    '/api/amendment_request.json',
-                    JSON.stringify(amendment),
-                    {
-                        emulateJSON: true,
-                    }
-                )
+            helpers
+                .fetchUrl('/api/amendment_request.json', {
+                    method: 'POST',
+                    body: JSON.stringify(amendment),
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
                 .then(
                     () => {
                         swal(
@@ -243,10 +243,15 @@ export default {
                             'An email has been sent to applicant with the request to amend this Application',
                             'success'
                         );
+                        swal.fire({
+                            title: 'Amendment Request Sent',
+                            text: 'An email has been sent to applicant with the request to amend this Application',
+                            icon: 'success',
+                        });
                         vm.amendingProposal = true;
                         vm.close();
-                        Vue.http
-                            .get(
+                        helpers
+                            .fetchUrl(
                                 `/api/proposal/${vm.proposal_id}/internal_proposal.json`
                             )
                             .then(

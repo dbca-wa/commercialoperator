@@ -10,7 +10,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <form class="form-horizontal" name="approvalForm">
-                        <alert :show.sync="showError" type="danger"
+                        <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
@@ -185,7 +185,7 @@
                 the lawful authority document.
             </p>
 
-            <div slot="footer">
+            <template #footer>
                 <button
                     v-if="issuingApproval"
                     type="button"
@@ -206,7 +206,7 @@
                 <button type="button" class="btn btn-default" @click="cancel">
                     Cancel
                 </button>
-            </div>
+            </template>
         </modal>
     </div>
 </template>
@@ -397,9 +397,9 @@ export default {
         },
         fetchContact: function (id) {
             let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then(
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
                 (response) => {
-                    vm.contact = response.body;
+                    vm.contact = response;
                     vm.isModalOpen = true;
                 },
                 (error) => {
@@ -413,15 +413,18 @@ export default {
             let approval = JSON.parse(JSON.stringify(vm.approval));
             vm.issuingApproval = true;
             if (vm.state == 'proposed_approval') {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal_id + '/proposed_approval'
                         ),
-                        JSON.stringify(approval),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(approval),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
@@ -438,15 +441,18 @@ export default {
                         }
                     );
             } else if (vm.state == 'final_approval') {
-                vm.$http
-                    .post(
+                helpers
+                    .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.district_proposals,
                             vm.district_proposal_id + '/final_approval'
                         ),
-                        JSON.stringify(approval),
                         {
-                            emulateJSON: true,
+                            method: 'POST',
+                            body: JSON.stringify(approval),
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
                         }
                     )
                     .then(
