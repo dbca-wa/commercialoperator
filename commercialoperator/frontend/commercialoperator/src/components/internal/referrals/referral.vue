@@ -57,7 +57,6 @@
                                 >
                                     <strong>Currently assigned to</strong><br />
                                     <div class="form-group">
-                                        <!-- <template> -->
                                         <select
                                             ref="assigned_officer"
                                             v-model="referral.assigned_officer"
@@ -83,7 +82,6 @@
                                             @click.prevent="assignRequestUser()"
                                             >Assign to me</a
                                         >
-                                        <!-- </template> -->
                                     </div>
                                 </div>
                                 <div class="col-sm-12 top-buffer-s">
