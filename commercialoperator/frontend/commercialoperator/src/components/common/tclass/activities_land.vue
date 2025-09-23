@@ -454,268 +454,307 @@ export default {
             deep: true,
         },
 
-        selected_parks: function () {
-            let vm = this;
-            var removed_park = $(vm.selected_parks_before)
-                .not(vm.selected_parks)
-                .get();
-            var added_park = $(vm.selected_parks)
-                .not(vm.selected_parks_before)
-                .get();
-            vm.selected_parks_before = vm.selected_parks;
-
-            var current_activities = vm.selected_activities;
-            var current_access = vm.selected_access;
-
-            if (vm.selected_parks_activities.length == 0) {
-                for (var i = 0; i < vm.selected_parks.length; i++) {
-                    var data = null;
-                    data = {
-                        park: vm.selected_parks[i],
-                        activities: current_activities,
-                        access: current_access,
-                    };
-                    vm.selected_parks_activities.push(data);
-                }
-            } else {
-                if (added_park.length != 0) {
-                    for (let i = 0; i < added_park.length; i++) {
-                        var found = false;
-                        for (
-                            var j = 0;
-                            j < vm.selected_parks_activities.length;
-                            j++
-                        ) {
-                            if (
-                                vm.selected_parks_activities[j].park ==
-                                added_park[i]
-                            ) {
-                                found = true;
-                            }
-                        }
-                        if (found == false) {
-                            data = {
-                                park: added_park[i],
-                                activities: current_activities,
-                                access: current_access,
-                            };
-                            vm.selected_parks_activities.push(data);
-                        }
-                    }
-                }
-                if (removed_park.length != 0) {
-                    for (let i = 0; i < removed_park.length; i++) {
-                        for (
-                            let j = 0;
-                            j < vm.selected_parks_activities.length;
-                            j++
-                        ) {
-                            if (
-                                vm.selected_parks_activities[j].park ==
-                                removed_park[i]
-                            ) {
-                                vm.selected_parks_activities.splice(j, 1);
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        selected_activities: function () {
-            let vm = this;
-            var removed = $(vm.selected_activities_before)
-                .not(vm.selected_activities)
-                .get();
-            var added = [];
-            if (vm.selected_activities_initialised) {
-                added = $(vm.selected_activities)
-                    .not(vm.selected_activities_before)
+        selected_parks: {
+            handler: function () {
+                let vm = this;
+                var removed_park = $(vm.selected_parks_before)
+                    .not(vm.selected_parks)
                     .get();
-            } else {
-                vm.selected_activities_initialised = true;
-            }
-            vm.selected_activities_before = vm.selected_activities;
-            if (vm.selected_parks_activities.length == 0) {
-                for (var i = 0; i < vm.selected_parks.length; i++) {
-                    var data = null;
-                    data = {
-                        park: vm.selected_parks[i],
-                        activities: vm.selected_activities,
-                        access: vm.selected_access,
-                    };
-                    vm.selected_parks_activities.push(data);
-                }
-            } else {
-                for (let i = 0; i < vm.selected_parks_activities.length; i++) {
-                    if (added.length != 0) {
-                        for (var j = 0; j < added.length; j++) {
-                            if (
-                                vm.selected_parks_activities[
-                                    i
-                                ].activities.indexOf(added[j]) < 0
-                            ) {
-                                vm.selected_parks_activities[i].activities.push(
-                                    added[j]
-                                );
-                            }
-                        }
-                    }
-                    if (removed.length != 0) {
-                        for (let j = 0; j < removed.length; j++) {
-                            var index = vm.selected_parks_activities[
-                                i
-                            ].activities.indexOf(removed[j]);
-                            if (index != -1) {
-                                vm.selected_parks_activities[
-                                    i
-                                ].activities.splice(index, 1);
-                            }
-                        }
-                    }
-                }
-            }
-            vm.checkRequiredDocuements(vm.selected_parks_activities);
-            vm.checkAllowedActivitiesPark();
-        },
-        selected_access: function () {
-            let vm = this;
-            var removed = $(vm.selected_access_before)
-                .not(vm.selected_access)
-                .get();
-            var added = [];
-            if (vm.selected_access_initialised) {
-                added = $(vm.selected_access)
-                    .not(vm.selected_access_before)
+                var added_park = $(vm.selected_parks)
+                    .not(vm.selected_parks_before)
                     .get();
-            } else {
-                vm.selected_access_initialised = true;
-            }
-            vm.selected_access_before = vm.selected_access;
-            if (vm.selected_parks_activities.length == 0) {
-                for (var i = 0; i < vm.selected_parks.length; i++) {
-                    var data = null;
-                    data = {
-                        park: vm.selected_parks[i],
-                        activities: vm.selected_activities,
-                        access: vm.selected_access,
-                    };
-                    vm.selected_parks_activities.push(data);
-                }
-            } else {
-                for (let i = 0; i < vm.selected_parks_activities.length; i++) {
-                    if (added.length != 0) {
-                        for (var j = 0; j < added.length; j++) {
-                            if (
-                                vm.selected_parks_activities[i].access.indexOf(
-                                    added[j]
-                                ) < 0
-                            ) {
-                                vm.selected_parks_activities[i].access.push(
-                                    added[j]
-                                );
-                            }
-                        }
+                vm.selected_parks_before = vm.selected_parks;
+
+                var current_activities = vm.selected_activities;
+                var current_access = vm.selected_access;
+
+                if (vm.selected_parks_activities.length == 0) {
+                    for (var i = 0; i < vm.selected_parks.length; i++) {
+                        var data = null;
+                        data = {
+                            park: vm.selected_parks[i],
+                            activities: current_activities,
+                            access: current_access,
+                        };
+                        vm.selected_parks_activities.push(data);
                     }
-                    if (removed.length != 0) {
-                        for (let j = 0; j < removed.length; j++) {
-                            var index = vm.selected_parks_activities[
-                                i
-                            ].access.indexOf(removed[j]);
-                            if (index != -1) {
-                                vm.selected_parks_activities[i].access.splice(
-                                    index,
-                                    1
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-            vm.checkAllowedActivitiesPark();
-        },
-        selected_parks_activities: function () {
-            let vm = this;
-            vm.checkRequiredDocuements(vm.selected_parks_activities);
-            if (vm.proposal) {
-                vm.proposal.selected_parks_activities =
-                    vm.selected_parks_activities;
-                vm.proposal.selected_land_access = vm.selected_access;
-                vm.proposal.selected_land_activities = vm.selected_activities;
-            }
-            vm.checkAllowedActivitiesPark();
-        },
-        selected_trails_activities: function () {
-            let vm = this;
-            vm.checkAllowedActivities();
-            if (vm.proposal) {
-                vm.proposal.selected_trails_activities =
-                    vm.selected_trails_activities;
-            }
-        },
-        trail_activities: function () {
-            let vm = this;
-            var removed = $(vm.trail_activities_before)
-                .not(vm.trail_activities)
-                .get();
-            var added = $(vm.trail_activities)
-                .not(vm.trail_activities_before)
-                .get();
-            vm.trail_activities_before = vm.trail_activities;
-            if (vm.selected_trails_activities.length == 0) {
-                for (var i = 0; i < vm.selected_trail_ids.length; i++) {
-                    var data = null;
-                    data = {
-                        trail: vm.selected_trail_ids[i],
-                        activities: vm.trail_activities,
-                    };
-                    vm.selected_trails_activities.push(data);
-                }
-            } else {
-                for (let i = 0; i < vm.selected_trails_activities.length; i++) {
-                    if (added.length != 0) {
-                        for (var j = 0; j < added.length; j++) {
+                } else {
+                    if (added_park.length != 0) {
+                        for (let i = 0; i < added_park.length; i++) {
+                            var found = false;
                             for (
-                                var k = 0;
-                                k <
-                                vm.selected_trails_activities[i].activities
-                                    .length;
-                                k++
+                                var j = 0;
+                                j < vm.selected_parks_activities.length;
+                                j++
                             ) {
                                 if (
-                                    vm.selected_trails_activities[i].activities[
-                                        k
-                                    ].activities.indexOf(added[j]) < 0
+                                    vm.selected_parks_activities[j].park ==
+                                    added_park[i]
                                 ) {
-                                    vm.selected_trails_activities[i].activities[
-                                        k
-                                    ].activities.push(added[j]);
+                                    found = true;
+                                }
+                            }
+                            if (found == false) {
+                                data = {
+                                    park: added_park[i],
+                                    activities: current_activities,
+                                    access: current_access,
+                                };
+                                vm.selected_parks_activities.push(data);
+                            }
+                        }
+                    }
+                    if (removed_park.length != 0) {
+                        for (let i = 0; i < removed_park.length; i++) {
+                            for (
+                                let j = 0;
+                                j < vm.selected_parks_activities.length;
+                                j++
+                            ) {
+                                if (
+                                    vm.selected_parks_activities[j].park ==
+                                    removed_park[i]
+                                ) {
+                                    vm.selected_parks_activities.splice(j, 1);
                                 }
                             }
                         }
                     }
-                    if (removed.length != 0) {
-                        for (let j = 0; j < removed.length; j++) {
-                            for (
-                                let k = 0;
-                                k <
-                                vm.selected_trails_activities[i].activities
-                                    .length;
-                                k++
-                            ) {
-                                var index = vm.selected_trails_activities[
+                }
+            },
+            deep: true,
+        },
+        selected_activities: {
+            handler: function () {
+                let vm = this;
+                var removed = $(vm.selected_activities_before)
+                    .not(vm.selected_activities)
+                    .get();
+                var added = [];
+                if (vm.selected_activities_initialised) {
+                    added = $(vm.selected_activities)
+                        .not(vm.selected_activities_before)
+                        .get();
+                } else {
+                    vm.selected_activities_initialised = true;
+                }
+                vm.selected_activities_before = vm.selected_activities;
+                if (vm.selected_parks_activities.length == 0) {
+                    for (var i = 0; i < vm.selected_parks.length; i++) {
+                        var data = null;
+                        data = {
+                            park: vm.selected_parks[i],
+                            activities: vm.selected_activities,
+                            access: vm.selected_access,
+                        };
+                        vm.selected_parks_activities.push(data);
+                    }
+                } else {
+                    for (
+                        let i = 0;
+                        i < vm.selected_parks_activities.length;
+                        i++
+                    ) {
+                        if (added.length != 0) {
+                            for (var j = 0; j < added.length; j++) {
+                                if (
+                                    vm.selected_parks_activities[
+                                        i
+                                    ].activities.indexOf(added[j]) < 0
+                                ) {
+                                    vm.selected_parks_activities[
+                                        i
+                                    ].activities.push(added[j]);
+                                }
+                            }
+                        }
+                        if (removed.length != 0) {
+                            for (let j = 0; j < removed.length; j++) {
+                                var index = vm.selected_parks_activities[
                                     i
-                                ].activities[k].activities.indexOf(removed[j]);
+                                ].activities.indexOf(removed[j]);
                                 if (index != -1) {
-                                    vm.selected_trails_activities[i].activities[
-                                        k
+                                    vm.selected_parks_activities[
+                                        i
                                     ].activities.splice(index, 1);
                                 }
                             }
                         }
                     }
                 }
-            }
-            vm.checkAllowedActivities();
+                vm.checkRequiredDocuements(vm.selected_parks_activities);
+                vm.checkAllowedActivitiesPark();
+            },
+            deep: true,
+        },
+        selected_access: {
+            handler: function () {
+                let vm = this;
+                var removed = $(vm.selected_access_before)
+                    .not(vm.selected_access)
+                    .get();
+                var added = [];
+                if (vm.selected_access_initialised) {
+                    added = $(vm.selected_access)
+                        .not(vm.selected_access_before)
+                        .get();
+                } else {
+                    vm.selected_access_initialised = true;
+                }
+                vm.selected_access_before = vm.selected_access;
+                if (vm.selected_parks_activities.length == 0) {
+                    for (var i = 0; i < vm.selected_parks.length; i++) {
+                        var data = null;
+                        data = {
+                            park: vm.selected_parks[i],
+                            activities: vm.selected_activities,
+                            access: vm.selected_access,
+                        };
+                        vm.selected_parks_activities.push(data);
+                    }
+                } else {
+                    for (
+                        let i = 0;
+                        i < vm.selected_parks_activities.length;
+                        i++
+                    ) {
+                        if (added.length != 0) {
+                            for (var j = 0; j < added.length; j++) {
+                                if (
+                                    vm.selected_parks_activities[
+                                        i
+                                    ].access.indexOf(added[j]) < 0
+                                ) {
+                                    vm.selected_parks_activities[i].access.push(
+                                        added[j]
+                                    );
+                                }
+                            }
+                        }
+                        if (removed.length != 0) {
+                            for (let j = 0; j < removed.length; j++) {
+                                var index = vm.selected_parks_activities[
+                                    i
+                                ].access.indexOf(removed[j]);
+                                if (index != -1) {
+                                    vm.selected_parks_activities[
+                                        i
+                                    ].access.splice(index, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                vm.checkAllowedActivitiesPark();
+            },
+            deep: true,
+        },
+        selected_parks_activities: {
+            handler: function () {
+                let vm = this;
+                vm.checkRequiredDocuements(vm.selected_parks_activities);
+                if (vm.proposal) {
+                    vm.proposal.selected_parks_activities =
+                        vm.selected_parks_activities;
+                    vm.proposal.selected_land_access = vm.selected_access;
+                    vm.proposal.selected_land_activities =
+                        vm.selected_activities;
+                }
+                vm.checkAllowedActivitiesPark();
+            },
+            deep: true,
+        },
+        selected_trails_activities: {
+            handler: function () {
+                let vm = this;
+                vm.checkAllowedActivities();
+                if (vm.proposal) {
+                    vm.proposal.selected_trails_activities =
+                        vm.selected_trails_activities;
+                }
+            },
+            deep: true,
+        },
+        trail_activities: {
+            handler: function () {
+                let vm = this;
+                var removed = $(vm.trail_activities_before)
+                    .not(vm.trail_activities)
+                    .get();
+                var added = $(vm.trail_activities)
+                    .not(vm.trail_activities_before)
+                    .get();
+                vm.trail_activities_before = vm.trail_activities;
+                if (vm.selected_trails_activities.length == 0) {
+                    for (var i = 0; i < vm.selected_trail_ids.length; i++) {
+                        var data = null;
+                        data = {
+                            trail: vm.selected_trail_ids[i],
+                            activities: vm.trail_activities,
+                        };
+                        vm.selected_trails_activities.push(data);
+                    }
+                } else {
+                    for (
+                        let i = 0;
+                        i < vm.selected_trails_activities.length;
+                        i++
+                    ) {
+                        if (added.length != 0) {
+                            for (var j = 0; j < added.length; j++) {
+                                for (
+                                    var k = 0;
+                                    k <
+                                    vm.selected_trails_activities[i].activities
+                                        .length;
+                                    k++
+                                ) {
+                                    if (
+                                        vm.selected_trails_activities[
+                                            i
+                                        ].activities[k].activities.indexOf(
+                                            added[j]
+                                        ) < 0
+                                    ) {
+                                        vm.selected_trails_activities[
+                                            i
+                                        ].activities[k].activities.push(
+                                            added[j]
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                        if (removed.length != 0) {
+                            for (let j = 0; j < removed.length; j++) {
+                                for (
+                                    let k = 0;
+                                    k <
+                                    vm.selected_trails_activities[i].activities
+                                        .length;
+                                    k++
+                                ) {
+                                    var index = vm.selected_trails_activities[
+                                        i
+                                    ].activities[k].activities.indexOf(
+                                        removed[j]
+                                    );
+                                    if (index != -1) {
+                                        vm.selected_trails_activities[
+                                            i
+                                        ].activities[k].activities.splice(
+                                            index,
+                                            1
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                vm.checkAllowedActivities();
+            },
+            deep: true,
         },
     },
 
