@@ -81,8 +81,8 @@
                                         >Select Parks</label
                                     >
                                     <TreeSelect
+                                        v-model="selected_parks"
                                         :proposal="proposal"
-                                        :v-model="selected_parks"
                                         :options="park_options"
                                         :default_expand_level="1"
                                         :allow_edit="true"
@@ -248,6 +248,7 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
 
 export default {
+    name: 'ActivitiesLand',
     components: {
         FormSection,
         VehicleTable,
@@ -1016,80 +1017,6 @@ export default {
                                         true;
                                 }
                             }
-                        }
-                    }
-                }
-            }
-        },
-        checkAllowedActivitiesOriginal: function () {
-            let trails = [];
-            let vm = this;
-            if (vm.trail_options.length) {
-                // Note: Had to add this check to avoid throwing an error due to an empty list
-                trails = vm.trail_options[0].children;
-            }
-            vm.trail_error_list = [];
-
-            for (var i = 0; i < vm.selected_trails_activities.length; i++) {
-                for (var j = 0; j < trails.length; j++) {
-                    let not_allowed = false;
-                    if (
-                        vm.selected_trails_activities[i].trail == trails[j].id
-                    ) {
-                        var not_allowed_activities = [];
-                        for (
-                            var k = 0;
-                            k <
-                            vm.selected_trails_activities[i].activities.length;
-                            k++
-                        ) {
-                            for (
-                                var l = 0;
-                                l <
-                                vm.selected_trails_activities[i].activities[k]
-                                    .activities.length;
-                                l++
-                            ) {
-                                if (
-                                    trails[j].allowed_activities_ids.indexOf(
-                                        vm.selected_trails_activities[i]
-                                            .activities[k].activities[l]
-                                    ) == -1
-                                ) {
-                                    var activity_name = '';
-                                    activity_name =
-                                        vm.trail_activity_options[0].children.find(
-                                            (act) =>
-                                                parseInt(act.id) ===
-                                                parseInt(
-                                                    vm
-                                                        .selected_trails_activities[
-                                                        i
-                                                    ].activities[k].activities[
-                                                        l
-                                                    ]
-                                                )
-                                        ).name;
-                                    if (
-                                        not_allowed_activities.indexOf(
-                                            activity_name
-                                        ) == -1
-                                    ) {
-                                        not_allowed_activities.push(
-                                            activity_name
-                                        );
-                                    }
-                                    not_allowed = true;
-                                }
-                            }
-                        }
-                        if (not_allowed) {
-                            vm.trail_error_list.push(
-                                'Warning: ' +
-                                    not_allowed_activities +
-                                    ' activities is/are not allowed for the trail: ' +
-                                    trails[j].name
-                            );
                         }
                     }
                 }
