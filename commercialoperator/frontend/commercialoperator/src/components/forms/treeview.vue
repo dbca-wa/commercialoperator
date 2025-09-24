@@ -1,40 +1,37 @@
 <template lang="html">
     <div>
-        <!-- <Treeselect -->
-        <component
-            :is="'TreeselectDummy'"
+        <Treeselect
             ref="treeselect"
             v-model="localValue"
+            :model-value="localValue"
+            :value="localValue"
             :options="options"
             :open-on-click="true"
-            :multiple="multiple || null"
+            :multiple="multiple"
             :max-height="max_height"
             :value-consists-of="value_consists_of"
-            :clearable="clearable || null"
-            :flat="flat || null"
+            :clearable="clearable"
+            :flat="flat"
             :default-expand-level="default_expand_level"
             :normalizer="normalizer"
             :open-direction="open_direction"
-            :disabled="disabled || null"
+            :disabled="disabled"
             :open-on-focus="true"
             :limit="localLimit"
-            :close-on-select="closeOnSelect || null"
-            :disable-branch-nodes="disableBranchNodes || null"
+            :close-on-select="closeOnSelect"
+            :disable-branch-nodes="disableBranchNodes"
             :z-index="zIndex"
+            @update:modelValue="localValue = $event"
         >
-            <label
-                slot="option-label"
-                slot-scope="{ node, labelClassName }"
-                :class="labelClassName"
-            >
-                <div class="row">
+            <template #option-label="{ node, labelClassName }">
+                <div class="row" :class="labelClassName">
                     <div class="col-sm-8 text-nowrap">
                         <!-- NOTE: NOTE: Added ? to to all instances of node.raw deal with undefined error -->
-                        {{ node?.raw?.name }}
+                        {{ node.raw.name }}
                     </div>
                     <!-- NOTE: NOTE: Added ? to to all instances of node.raw deal with undefined error -->
                     <div
-                        v-if="node?.raw?.can_edit"
+                        v-if="node.raw.can_edit"
                         class="col-sm-4 option-label-container"
                     >
                         <!-- Note: I changed the listener from click to mousedown, because when opening the multiselect list, click would deselect/select a list option item before opening the modal -->
@@ -52,9 +49,9 @@
                         </div>
                     </div>
                 </div>
-            </label>
+            </template>
 
-            <div slot="value-label" slot-scope="{ node }">
+            <template #value-label="{ node }">
                 <div v-if="allow_edit">
                     <a
                         :disabled="!is_checked(node)"
@@ -62,42 +59,36 @@
                         @mousedown.stop="edit_activities($event, node)"
                     >
                         <!-- NOTE: Added ? to deal with undefined error -->
-                        {{ node?.label }}
+                        {{ node.label }}
                     </a>
                 </div>
                 <div v-else>
                     <!-- NOTE: Added ? to deal with undefined error -->
-                    <a> {{ node?.label }} </a>
+                    <a> {{ node.label }} </a>
                 </div>
-            </div>
-            <!-- </Treeselect> -->
-        </component>
+            </template>
+        </Treeselect>
     </div>
 </template>
 
 <script>
-// NOTE: Commenting out the import of the Treeselect component and its styles. This needs to be solved in vue3
-// import the component
-// import Treeselect from '@riophae/vue-treeselect';
-// import the styles
-// import '@riophae/vue-treeselect/dist/vue-treeselect.css';
-
-import { defineAsyncComponent } from 'vue';
+import Treeselect from '@sookoll/vue-treeselect';
+import '@sookoll/vue-treeselect/dist/vue3-treeselect.css';
 
 export default {
     name: 'TreeSelect',
     components: {
-        // Treeselect,
+        Treeselect,
     },
     props: {
         proposal: {
             type: Object,
             required: true,
         },
-        // eslint-disable-next-line vue/require-default-prop
-        value: {
+        modelValue: {
             type: Array,
             required: false,
+            default: () => [],
         },
         // eslint-disable-next-line vue/require-default-prop
         options: {
@@ -167,6 +158,7 @@ export default {
             default: 999,
         },
     },
+    emits: ['update:modelValue'],
     data() {
         return {
             normalizer(node) {
@@ -181,31 +173,16 @@ export default {
                 };
             },
             // Note: I changed from using the prop `value` (props should not be mutated) to using a `localValue` data property
-            localValue: this.value,
+            // NOTE: I changed `value` to `modelValue` as per vue3 v-model convention
+            localValue: this.modelValue,
             // Note: I changed from using the prop `limit` (props should not be mutated) to using a `localLimit` data property
             localLimit: this.limit,
-            // NOTE: I added data properties below to be able to access the them during rendering
-            node: null,
-            labelClassName: '',
         };
-    },
-
-    computed: {
-        TreeSelectDummy() {
-            return defineAsyncComponent({
-                data() {
-                    return {
-                        dummyText: 'Select a node',
-                    };
-                },
-                template: `<div>{{dummyText}}</div>`,
-            });
-        },
     },
     watch: {
         localValue: {
             handler: function (newValue) {
-                this.$emit('update:value', newValue);
+                this.$emit('update:modelValue', newValue);
             },
             deep: true,
         },
@@ -234,7 +211,7 @@ export default {
         edit_display_text: function (node) {
             // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
             // eslint-disable-next-line no-prototype-builtins
-            if (node?.raw?.hasOwnProperty('sections')) {
+            if (node.raw.hasOwnProperty('sections')) {
                 return 'Edit sections and activities';
             } else {
                 return 'Edit access and activities';
@@ -244,11 +221,11 @@ export default {
             event.stopPropagation();
             // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
             // eslint-disable-next-line no-prototype-builtins
-            if (node?.raw?.hasOwnProperty('sections')) {
+            if (node.raw.hasOwnProperty('sections')) {
                 this.$parent.$parent.edit_sections(node);
                 // NOTE: <!-- NOTE: Added ? to to all instances of node.raw deal with undefined error -->
                 // eslint-disable-next-line no-prototype-builtins
-            } else if (node?.raw?.hasOwnProperty('allowed_zone_activities')) {
+            } else if (node.raw.hasOwnProperty('allowed_zone_activities')) {
                 this.$parent.$parent.edit_activities(node);
             } else {
                 this.$parent.$parent.edit_activities(node);
@@ -256,7 +233,7 @@ export default {
         },
         is_checked: function (node) {
             // NOTE: Added ? to deal with undefined error
-            return this.value?.includes(node?.id);
+            return this.modelValue.includes(node.id);
         },
     },
 };
@@ -267,10 +244,3 @@ export default {
     z-index: 999;
 }
 </style>
-
-/* data() { return { normalizer(node) { return { id: node.name, label:
-node.name, children: node.children, } }, /* _selected_items: [], _options: [],
-selected_items: [3,5], options: [ { id: 1, label: 'a', children: [ { id: 2,
-label: 'aa', can_edit: false, }, { id: 3, label: 'ab', can_edit: true, } ], }, {
-id: 4, label: 'b', can_edit: false, }, { id: 5, label: 'c', can_edit: false, }
-], */ } }, */

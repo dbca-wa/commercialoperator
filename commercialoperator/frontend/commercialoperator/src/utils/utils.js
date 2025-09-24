@@ -1,3 +1,4 @@
+import { toRaw } from 'vue';
 import { api_endpoints } from '@/utils/hooks';
 
 export default {
@@ -124,5 +125,27 @@ export default {
                     reject(error);
                 });
         });
+    },
+    deepToRawRecursive(obj) {
+        if (Array.isArray(obj)) {
+            return obj.map((item) => this.deepToRawRecursive(item)); // Recursively unwrap arrays
+        } else if (obj && typeof obj === 'object') {
+            const rawObj = toRaw(obj); // Unwrap the current level
+            return Object.fromEntries(
+                Object.entries(rawObj).map(([key, value]) => [
+                    key,
+                    this.deepToRawRecursive(value),
+                ])
+            ); // Recursively unwrap nested objects
+        }
+        return obj; // Return primitive values as-is
+    },
+    /**
+     * Recursively unwraps a Vue reactive object to its raw form.
+     * @param {Object} obj The object to unwrap. E.g. a Proxy object created by Vue's reactivity system.
+     * @returns The unwrapped object.
+     */
+    deepToRaw: function (obj) {
+        return this.deepToRawRecursive(obj); // Unwrap the object recursively
     },
 };

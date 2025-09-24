@@ -452,13 +452,16 @@ export default {
         due_date: function () {
             this.validDate = moment(this.requirement.due_date).isValid();
         },
-        'requirement.standard': function (val) {
-            if (val == true) {
-                const vm = this;
-                this.$nextTick(() => {
-                    vm.eventListeners();
-                });
-            }
+        'requirement.standard': {
+            handler: function (val) {
+                if (val == true) {
+                    const vm = this;
+                    this.$nextTick(() => {
+                        vm.eventListeners();
+                    });
+                }
+            },
+            deep: true,
         },
     },
     mounted: function () {
