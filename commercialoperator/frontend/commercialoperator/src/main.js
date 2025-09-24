@@ -102,6 +102,8 @@ window.fetch = ((orig) => {
 
 configureCompat({
     WATCH_ARRAY: false, // Disable watch array for Vue 2 compatibility. I checked all watched objects/arrays to have the deep=true property set.
+    RENDER_FUNCTION: false,
+    COMPONENT_V_MODEL: false, // The only component in cols this affects is treeview.vue. There are other components that have a value prop, but they are not used with a v-model.
 });
 
 // eslint-disable-next-line vue/component-definition-name-casing
