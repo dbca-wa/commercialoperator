@@ -144,10 +144,11 @@ import VesselTable from '@/components/common/vessel_table.vue';
 import editMarineParkActivities from './edit_marine_park_activities.vue';
 import FileField from './required_docs.vue';
 import TreeSelect from '@/components/forms/treeview.vue';
-import { api_endpoints, helpers } from '@/utils/hooks';
+import { api_endpoints, helpers, utils } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
 
 export default {
+    name: 'ActivitiesMarine',
     components: {
         FormSection,
         VesselTable,
@@ -662,134 +663,15 @@ export default {
                 }
             }
         },
-        checkAllowedActivitiesOrig: function () {
-            let parks = [];
-            let vm = this;
-            parks = vm.marine_park_options;
-            vm.park_error_list = [];
-
-            var marine_parks_activities = [];
-            marine_parks_activities = vm.marine_parks_activities;
-            for (var i = 0; i < marine_parks_activities.length; i++) {
-                for (
-                    var j = 0;
-                    j < marine_parks_activities[i].activities.length;
-                    j++
-                ) {
-                    marine_parks_activities[i].activities[j].calculated = false;
-                }
-            }
-            for (let i = 0; i < marine_parks_activities.length; i++) {
-                for (let j = 0; j < parks.length; j++) {
-                    let not_allowed = false;
-                    var not_allowed_activities = [];
-                    if (marine_parks_activities[i].park == parks[j].id) {
-                        for (
-                            var k = 0;
-                            k < marine_parks_activities[i].activities.length;
-                            k++
-                        ) {
-                            //loop through maring_parks_activities
-                            for (
-                                var v = 0;
-                                v < parks[j]['children'].length;
-                                v++
-                            ) {
-                                if (
-                                    parks[j].children[v].id ==
-                                        marine_parks_activities[i].activities[k]
-                                            .zone &&
-                                    !marine_parks_activities[i].activities[k]
-                                        .calculated
-                                ) {
-                                    not_allowed = false;
-                                    for (
-                                        var l = 0;
-                                        l <
-                                        marine_parks_activities[i].activities[k]
-                                            .activities.length;
-                                        l++
-                                    ) {
-                                        if (
-                                            parks[j].children[
-                                                v
-                                            ].allowed_activities_ids.indexOf(
-                                                marine_parks_activities[i]
-                                                    .activities[k].activities[l]
-                                            ) == -1
-                                        ) {
-                                            var activity_name = '';
-                                            for (
-                                                var s = 0;
-                                                s <
-                                                vm.marine_activity_options[0]
-                                                    .children.length;
-                                                s++
-                                            ) {
-                                                var res = null;
-                                                res =
-                                                    vm.marine_activity_options[0].children[
-                                                        s
-                                                    ].children.find(
-                                                        (act) =>
-                                                            parseInt(act.id) ===
-                                                            parseInt(
-                                                                marine_parks_activities[
-                                                                    i
-                                                                ].activities[k]
-                                                                    .activities[
-                                                                    l
-                                                                ]
-                                                            )
-                                                    );
-                                                if (
-                                                    typeof res !==
-                                                        'undefined' ||
-                                                    res != null
-                                                ) {
-                                                    activity_name = res.name;
-                                                }
-                                            }
-                                            if (
-                                                not_allowed_activities.indexOf(
-                                                    activity_name
-                                                ) == -1
-                                            ) {
-                                                not_allowed_activities.push(
-                                                    activity_name
-                                                );
-                                            }
-                                            not_allowed = true;
-                                        }
-                                    }
-                                    if (not_allowed) {
-                                        vm.park_error_list.push(
-                                            'Warning: ' +
-                                                not_allowed_activities +
-                                                ' activities is/are not allowed for the park: ' +
-                                                parks[j].name +
-                                                '-' +
-                                                parks[j].children[v].name
-                                        );
-                                    }
-                                }
-                            }
-                            marine_parks_activities[i].activities[
-                                k
-                            ].calculated = true;
-                        }
-                    }
-                }
-            }
-        },
         checkAllowedActivities: function () {
             let parks = [];
             let vm = this;
             parks = vm.marine_park_options;
             vm.park_error_list = [];
             let parks_list = [];
-            var marine_parks_activities = [];
-            marine_parks_activities = vm.marine_parks_activities;
+            const marine_parks_activities = structuredClone(
+                utils.deepToRaw(vm.marine_parks_activities)
+            );
             for (var i = 0; i < marine_parks_activities.length; i++) {
                 for (
                     var j = 0;
