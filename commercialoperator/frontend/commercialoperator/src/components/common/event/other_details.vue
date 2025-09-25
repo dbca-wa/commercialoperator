@@ -9,7 +9,7 @@
                     index="pre_event_training"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_other_details">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="">
                                 <div class="row">
@@ -189,7 +189,7 @@
                     index="other"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_other_details">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
                                 <div class="row">
@@ -282,7 +282,7 @@
                     index="insurance"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_other_details">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
                                 <div class="row">
@@ -376,7 +376,7 @@
                     index="dee_poll"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
                                 <div class="row">
