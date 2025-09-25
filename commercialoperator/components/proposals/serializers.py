@@ -960,6 +960,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
     fee_invoice_url = serializers.SerializerMethodField()
     requirements_completed = serializers.SerializerMethodField()
     proposed_issuance_approval = serializers.SerializerMethodField()
+    trails = ProposalTrailSerializer(many=True)
 
     class Meta:
         model = Proposal
@@ -1028,6 +1029,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             "fee_invoice_url",
             "fee_paid",
             "requirements_completed",
+            "trails",
         )
         read_only_fields = ("documents", "requirements")
 
