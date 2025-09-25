@@ -312,8 +312,8 @@ export default {
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             $(this.$refs.filming_park).val(null).trigger('change');
-            this.$refs.feature_of_interest = '';
-            this.$refs.park = '';
+            // this.$refs.feature_of_interest = '';
+            // this.$refs.park = '';
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {
