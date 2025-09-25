@@ -2283,6 +2283,9 @@ export default {
                                         .trigger('change');
                                     vm.selected_referral = '';
                                     vm.referral_text = '';
+                                    vm.refreshApplicationTypeKey(
+                                        vm.proposal.application_type
+                                    );
                                 },
                                 (error) => {
                                     console.log(error);

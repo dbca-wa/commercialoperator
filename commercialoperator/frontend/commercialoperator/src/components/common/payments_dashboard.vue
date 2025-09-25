@@ -442,7 +442,7 @@ export default {
                                     'monthly invoicing' &&
                                     full.invoice_reference !== null)
                             ) {
-                                links += `<a href='/cols/payments/invoice-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i></a>`;
+                                links += `<a href='/cols/payments/invoice-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'></i></a>&nbsp;`;
                                 links += `<a href='/cols/payments/confirmation-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'></i></a><br/>`;
                             } else if (
                                 full.payment_method.toLowerCase() ==

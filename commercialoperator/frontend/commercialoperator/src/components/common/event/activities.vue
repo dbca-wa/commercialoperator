@@ -9,7 +9,7 @@
                     index="event_details"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_activity">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="">
                                 <div class="row">
@@ -657,6 +657,7 @@ export default {
                 'event_activity_completion_date'
             );
         });
+
         vm.proposal.selected_trails_activities = [];
         vm.store_trails(vm.proposal.trails);
         vm.selected_trail_ids = vm.get_selected_trail_ids();
