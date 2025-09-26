@@ -50,6 +50,7 @@
                                 v-model="filterProposalLodgedFrom"
                                 type="date"
                                 class="form-control"
+                                max="2999-12-31"
                                 placeholder="DD/MM/YYYY"
                             />
                             <span class="input-group-addon">
@@ -70,6 +71,7 @@
                                 v-model="filterProposalLodgedTo"
                                 type="date"
                                 class="form-control"
+                                max="2999-12-31"
                                 placeholder="DD/MM/YYYY"
                             />
                             <span class="input-group-addon">

@@ -61,6 +61,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="event_activity_commencement_date"
+                                                max="2999-12-31"
                                                 placeholder="Commencement date"
                                                 required
                                                 :disabled="
@@ -93,6 +94,7 @@
                                                         .completion_date
                                                 "
                                                 type="date"
+                                                max="2999-12-31"
                                                 class="form-control"
                                                 name="event_activity_completion_date"
                                                 placeholder="Completion date"

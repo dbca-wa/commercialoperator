@@ -32,6 +32,7 @@
                                                         .training_date
                                                 "
                                                 type="date"
+                                                max="2999-12-31"
                                                 class="form-control"
                                                 name="training_date"
                                                 placeholder="DD/MM/YYYY"
@@ -350,6 +351,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="insurance_expiry"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                                 :disabled="proposal.readonly"

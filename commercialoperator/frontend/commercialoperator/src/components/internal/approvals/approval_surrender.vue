@@ -36,6 +36,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="surrender_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                             />

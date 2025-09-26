@@ -44,6 +44,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="start_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 disabled
                                                 required
@@ -95,6 +96,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="expiry_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 disabled
                                                 required

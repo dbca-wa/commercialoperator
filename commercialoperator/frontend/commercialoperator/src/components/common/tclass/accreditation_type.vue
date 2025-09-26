@@ -24,6 +24,7 @@
                                     type="date"
                                     class="form-control"
                                     name="accreditation_expiry"
+                                    max="2999-12-31"
                                     placeholder="DD/MM/YYYY"
                                     :disabled="readonly"
                                 />

@@ -39,6 +39,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="cancellation_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                             />
