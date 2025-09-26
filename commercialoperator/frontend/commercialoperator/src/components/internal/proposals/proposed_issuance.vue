@@ -44,6 +44,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="start_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                             />
@@ -94,6 +95,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="due_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                             />
                                             <span class="input-group-addon">
