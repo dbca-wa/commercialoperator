@@ -8,7 +8,7 @@
                     index="event_management"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_management">
                         <div class="col-sm-12 borderDecoration">
                             <div class="form-group">
                                 <div class="row">

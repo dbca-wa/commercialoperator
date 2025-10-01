@@ -400,9 +400,10 @@ export default {
                     next((vm) => {
                         vm.referral = res;
                         vm.fetchProposalParks(vm.referral.proposal.id);
-                        vm.referral.proposal.org_applicant.address =
-                            vm.proposal.org_applicant.address != null
-                                ? vm.proposal.org_applicant.address
+                        vm.referral.proposal.org_applicant.organisation_address =
+                            vm.proposal.org_applicant.organisation_address !=
+                            null
+                                ? vm.proposal.org_applicant.organisation_address
                                 : {};
                     });
                 },
@@ -421,9 +422,11 @@ export default {
                     next((vm) => {
                         vm.referral = res;
                         vm.fetchProposalParks(vm.referral.proposal.id);
-                        vm.referral.proposal.applicant.address =
-                            vm.referral.proposal.applicant.address != null
-                                ? vm.referral.proposal.applicant.address
+                        vm.referral.proposal.org_applicant.organisation_address =
+                            vm.referral.proposal.org_applicant
+                                .organisation_address != null
+                                ? vm.referral.proposal.org_applicant
+                                      .organisation_address
                                 : {};
                     });
                 },
@@ -520,10 +523,19 @@ export default {
         };
     },
     computed: {
-        proposal: function () {
-            return this.referral != null && this.referral != 'undefined'
-                ? this.referral.proposal
-                : null;
+        proposal: {
+            get: function () {
+                return this.referral != null && this.referral != 'undefined'
+                    ? this.referral.proposal
+                    : null;
+            },
+            set: function (value) {
+                this.referral.proposal = value;
+                this.proposal.org_applicant.organisation_address =
+                    this.proposal.org_applicant.organisation_address != null
+                        ? this.proposal.org_applicant.organisation_address
+                        : {};
+            },
         },
         hasReferralMode: function () {
             return this.referral && this.referral.can_process ? true : false;
@@ -639,10 +651,6 @@ export default {
         refreshFromResponse: function (response) {
             let vm = this;
             vm.proposal = helpers.copyObject(response);
-            vm.proposal.applicant.address =
-                vm.proposal.applicant.address != null
-                    ? vm.proposal.applicant.address
-                    : {};
         },
         initialiseOrgContactTable: function () {
             let vm = this;
@@ -999,9 +1007,10 @@ export default {
                     (res) => {
                         vm.referral = res;
                         vm.fetchProposalParks(vm.referral.proposal.id);
-                        vm.referral.proposal.applicant.address =
-                            vm.proposal.applicant.address != null
-                                ? vm.proposal.applicant.address
+                        vm.referral.proposal.org_applicant.organisation_address =
+                            vm.proposal.org_applicant.organisation_address !=
+                            null
+                                ? vm.proposal.org_applicant.organisation_address
                                 : {};
                     },
                     (err) => {

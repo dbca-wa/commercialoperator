@@ -39,6 +39,7 @@
                                                 "
                                                 class="form-control"
                                                 type="date"
+                                                max="2999-12-31"
                                                 name="commencement_date"
                                                 placeholder="Commencement date"
                                                 required
@@ -75,6 +76,7 @@
                                                         .completion_date
                                                 "
                                                 type="date"
+                                                max="2999-12-31"
                                                 class="form-control"
                                                 name="completion_date"
                                                 placeholder="Completion date"

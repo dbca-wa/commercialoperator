@@ -266,7 +266,7 @@ export default {
                                 popoverId =
                                     attributes.getNamedItem(
                                         'aria-describedby'
-                                    ).value;
+                                    )?.value;
                             }
 
                             if (popover.tip && popover.tip.id == popoverId) {

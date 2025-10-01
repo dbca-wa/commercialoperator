@@ -108,6 +108,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="due_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                             />
                                             <span class="input-group-addon">

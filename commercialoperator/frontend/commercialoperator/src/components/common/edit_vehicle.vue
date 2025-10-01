@@ -110,6 +110,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="rego_expiry"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                             />

@@ -550,21 +550,40 @@ export default {
         moveRow(row, direction) {
             // Move up or down (depending...)
             var table = this.$refs.requirements_datatable.vmDataTable;
+            // NOTE: It seems like the row.index is not the same as the position of the row in the table, e.g. row indexes may be [2, 0, 1] but the position, obviously, is 0, 1, 2
+            // NOTE: I changed the logic here to first map row index to table position and to then swap the table positions of the two rows
             var index = table.row(row).index();
+
+            // Get the indexes of the rows in the table
+            const rowIndexes = table.rows().indexes();
+            // The index of the row in the table
+            const rowTablePosition = rowIndexes.indexOf(index);
 
             var order = -1;
             if (direction === 'down') {
                 order = 1;
             }
 
+            let targetIndex;
+            rowIndexes.toArray().forEach((value, i) => {
+                if (i === rowTablePosition + order) {
+                    targetIndex = value;
+                }
+            });
+
+            if (targetIndex === undefined) {
+                console.warn('No target index found for row movement');
+                return; // No target index found, do nothing
+            }
+
             var data1 = table.row(index).data();
             data1.order += order;
 
-            var data2 = table.row(index + order).data();
+            var data2 = table.row(targetIndex).data();
             data2.order += -order;
 
             table.row(index).data(data2);
-            table.row(index + order).data(data1);
+            table.row(targetIndex).data(data1);
 
             table.draw('page');
         },

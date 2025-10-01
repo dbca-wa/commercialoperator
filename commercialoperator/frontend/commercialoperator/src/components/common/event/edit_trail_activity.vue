@@ -212,7 +212,7 @@ export default {
             return vm.hasErrors;
         },
         title: function () {
-            return this.localParkAction == 'add'
+            return this.localTrailAction == 'add'
                 ? 'Add a new Trail'
                 : 'Edit a Trail';
         },

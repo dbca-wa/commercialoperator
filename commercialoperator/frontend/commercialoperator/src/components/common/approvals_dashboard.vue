@@ -83,6 +83,7 @@
                                     v-model="filterStartFrom"
                                     type="date"
                                     class="form-control"
+                                    max="2999-12-31"
                                     placeholder="DD/MM/YYYY"
                                 />
                                 <span class="input-group-addon">
@@ -105,6 +106,7 @@
                                     v-model="filterStartTo"
                                     type="date"
                                     class="form-control"
+                                    max="2999-12-31"
                                     placeholder="DD/MM/YYYY"
                                 />
                                 <span class="input-group-addon">
@@ -129,6 +131,7 @@
                                     v-model="filterExpiryFrom"
                                     type="date"
                                     class="form-control"
+                                    max="2999-12-31"
                                     placeholder="DD/MM/YYYY"
                                 />
                                 <span class="input-group-addon">
@@ -151,6 +154,7 @@
                                     v-model="filterExpiryTo"
                                     type="date"
                                     class="form-control"
+                                    max="2999-12-31"
                                     placeholder="DD/MM/YYYY"
                                 />
                                 <span class="input-group-addon">

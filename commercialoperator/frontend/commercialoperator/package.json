@@ -11,8 +11,6 @@
         "build": "vite build"
     },
     "dependencies-comments": {
-        "html-entities": "This was done for vue2: html-entities is a dependency of webpack-dev-server. Pinned here to 2.5.3 to avoid index.js not found error in version 2.6.0+",
-        "vue-treeselect": "Removed vue2 package: \"@riophae/vue-treeselect\": \"^0.4.0\"",
         "vue-select": "Installed vue-select@beta for a vue3 version"
     },
     "dependencies": {
