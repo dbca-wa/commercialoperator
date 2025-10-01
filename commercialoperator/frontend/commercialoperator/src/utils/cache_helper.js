@@ -1,4 +1,4 @@
-import localforage from "localforage";
+import localforage from 'localforage';
 import Vue from 'vue';
 
 /*
@@ -13,33 +13,28 @@ import Vue from 'vue';
  */
 let dbName = 'WildlifeCompliance';
 const timeNow = Date.now();
-let expiryDiff = 86400000;  // 1 day = 86400000 milliseconds;
+let expiryDiff = 86400000; // 1 day = 86400000 milliseconds;
 
-
-module.exports = {
+export default {
     getSetCache: async (store_name, key, url, expiry) => {
-        
         let storeInstance = localforage.createInstance({
             name: dbName,
             storeName: store_name,
-          });
+        });
         if (expiry) {
             expiryDiff = expiry;
         }
         await storeInstance.ready();
 
         try {
-            let retrieved_val = await storeInstance.getItem(
-              key);
+            let retrieved_val = await storeInstance.getItem(key);
             if (retrieved_val) {
-            
                 let timeDiff = timeNow - retrieved_val[0];
                 // ensure cached value is not stale
                 if (timeDiff < expiryDiff) {
                     return retrieved_val[1];
                 }
-            }
-            else {
+            } else {
                 const returnedFromUrl = await Vue.http.get(url);
                 // url returns individual record (eg. @detail_route)
                 if (returnedFromUrl.body.id) {
@@ -52,7 +47,7 @@ module.exports = {
                     if (retrieved_val) {
                         return retrieved_val[1];
                     }
-                } 
+                }
             }
             // ensure cached value is not stale (1 week based on default expiry date)
             let store_keys = await storeInstance.keys();
@@ -65,7 +60,7 @@ module.exports = {
                     }
                 }
             }
-        } catch(err) {
+        } catch (err) {
             // on cache failure, request data from backend directly
             const returnedFromUrl = await Vue.http.get(url);
             return returnedFromUrl.body;
@@ -73,7 +68,7 @@ module.exports = {
     },
     getSetCacheList: async (store_name, url, expiry) => {
         try {
-            let returned_list = [];  
+            let returned_list = [];
             if (expiry) {
                 expiryDiff = expiry;
             }
@@ -100,36 +95,35 @@ module.exports = {
                         }
                     }
                 }
-            } 
+            }
             let fresh_keys = await storeInstance.keys();
             if (fresh_keys.length === 0) {
-            // else {    
-            // empty store - get data from url
+                // else {
+                // empty store - get data from url
                 const returnedFromUrl = await Vue.http.get(url);
                 // ensure store is empty
                 await storeInstance.clear();
                 // populate store - switch accounts for DRF method using @renderer_classes((JSONRenderer,))
                 if (returnedFromUrl.body.results) {
-                for (let record of returnedFromUrl.body.results) {
-                    let new_val = await storeInstance.setItem(
-                        record.id.toString(), 
-                        [timeNow, record]
+                    for (let record of returnedFromUrl.body.results) {
+                        let new_val = await storeInstance.setItem(
+                            record.id.toString(),
+                            [timeNow, record]
                         );
-                    returned_list.push(new_val[1]);
-                }
+                        returned_list.push(new_val[1]);
+                    }
                 } else {
                     for (let record of returnedFromUrl.body) {
-                    let new_val = await storeInstance.setItem(
-                        record.id.toString(), 
-                        [timeNow, record]
+                        let new_val = await storeInstance.setItem(
+                            record.id.toString(),
+                            [timeNow, record]
                         );
-                    returned_list.push(new_val[1]);
-                }
+                        returned_list.push(new_val[1]);
+                    }
                 }
             }
             return returned_list;
-
-        } catch(err) {
+        } catch (err) {
             // on cache failure, request data from backend directly
             const returnedFromDb = await Vue.http.get(url);
             if (returnedFromDb.body.results) {
@@ -138,5 +132,5 @@ module.exports = {
                 return returnedFromDb.body;
             }
         }
-    }
+    },
 };

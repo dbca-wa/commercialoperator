@@ -115,6 +115,7 @@ import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
 
 import { helpers } from '@/utils/hooks';
+import _ from 'lodash';
 
 export default {
     // components: { Comment, HelpText, HelpTextUrl, VueSelect },

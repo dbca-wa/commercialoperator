@@ -34,10 +34,10 @@ class InternalView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(InternalView, self).get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
+        # context["dev"] = settings.DEV_STATIC
+        # context["dev_url"] = settings.DEV_STATIC_URL
+        # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
+        #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
 
 
@@ -46,10 +46,10 @@ class ExternalView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(ExternalView, self).get_context_data(**kwargs)
-        context["dev"] = settings.DEV_STATIC
-        context["dev_url"] = settings.DEV_STATIC_URL
-        if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-            context["app_build_url"] = settings.DEV_APP_BUILD_URL
+        # context["dev"] = settings.DEV_STATIC
+        # context["dev_url"] = settings.DEV_STATIC_URL
+        # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
+        #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
 
 class AccountView(LoginRequiredMixin, TemplateView):
@@ -139,10 +139,10 @@ def first_time(request):
         context["redirect_url"] = request.GET["next"]
     else:
         context["redirect_url"] = "/"
-    context["dev"] = settings.DEV_STATIC
-    context["dev_url"] = settings.DEV_STATIC_URL
-    if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-        context["app_build_url"] = settings.DEV_APP_BUILD_URL
+    # context["dev"] = settings.DEV_STATIC
+    # context["dev_url"] = settings.DEV_STATIC_URL
+    # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
+    #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
     # return render(request, 'commercialoperator/user_profile.html', context)
     return render(request, "commercialoperator/dash/index.html", context)
 

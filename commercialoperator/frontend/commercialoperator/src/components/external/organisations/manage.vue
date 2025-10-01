@@ -407,6 +407,7 @@ import utils from '../utils';
 import FormSection from '@/components/forms/section_toggle.vue';
 import AddContact from '@common-utils/add_contact.vue';
 import { v4 as uuid } from 'uuid';
+import _ from 'lodash';
 
 export default {
     // eslint-disable-next-line vue/multi-word-component-names

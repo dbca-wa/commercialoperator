@@ -3,7 +3,7 @@ var t_class = 'Commercial operations';
 var filming = 'Filming';
 var event = 'Event';
 
-module.exports = {
+export default {
     organisation: '/api/organisations',
     organisations: '/api/organisations.json',
     filtered_organisations: '/api/filtered_organisations',

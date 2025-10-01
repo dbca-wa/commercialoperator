@@ -41,6 +41,7 @@
 import AddCommLog from './add_comm_log.vue';
 import { v4 as uuid } from 'uuid';
 import { constants } from '@/utils/hooks';
+import _ from 'lodash';
 
 export default {
     name: 'CommsLogSection',

@@ -7,6 +7,7 @@ from commercialoperator.settings import (
     TEMPLATE_GROUP,
     TEMPLATE_HEADER_LOGO,
     TEMPLATE_TITLE,
+    VUE3_ENTRY_SCRIPT,
 )
 
 
@@ -33,7 +34,7 @@ def commercialoperator_url(request):
         "build_tag": settings.BUILD_TAG,
         "LEDGER_UI_URL": settings.LEDGER_UI_URL,
         "PAYMENT_SYSTEM_PREFIX": settings.PAYMENT_SYSTEM_PREFIX,
-        "app_build_url": settings.DEV_APP_BUILD_URL,
         "ledger_totals": ledger_totals,
         "checkouthash": checkouthash,
+        "vue3_entry_script": VUE3_ENTRY_SCRIPT,
     }

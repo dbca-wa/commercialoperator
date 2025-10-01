@@ -119,6 +119,7 @@ import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
 
 import { helpers } from '@/utils/hooks';
+import _ from 'lodash';
 
 // import { Field, Form, ErrorMessage } from 'vee-validate';
 
@@ -134,15 +135,15 @@ export default {
         'name',
         // eslint-disable-next-line vue/require-prop-types
         'id',
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         'comment_value',
         // eslint-disable-next-line vue/require-prop-types
         'value',
         // eslint-disable-next-line vue/require-prop-types
         'isRequired',
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         'help_text',
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         'help_text_assessor',
         // eslint-disable-next-line vue/require-prop-types
         'assessorMode',
@@ -150,11 +151,11 @@ export default {
         'label',
         // eslint-disable-next-line vue/require-prop-types
         'readonly',
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         'assessor_readonly',
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         'help_text_url',
-        // eslint-disable-next-line vue/prop-name-casing, vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         'help_text_assessor_url',
     ],
     data() {

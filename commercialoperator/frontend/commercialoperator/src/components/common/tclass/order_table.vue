@@ -222,6 +222,7 @@
 
 <script>
 import { helpers } from '@/utils/hooks';
+import _ from 'lodash';
 
 export default {
     components: {},
