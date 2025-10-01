@@ -22,7 +22,7 @@
     </div>
 </template>
 <script>
-module.exports = {
+export default {
     name: 'DataTable',
     props: {
         dtHeaders: {
@@ -34,6 +34,7 @@ module.exports = {
             required: true,
         },
         id: {
+            type: String,
             required: true,
         },
     },
@@ -44,6 +45,12 @@ module.exports = {
         };
     },
     computed: {},
+    mounted: function () {
+        let vm = this;
+        vm.table = $('#' + vm.id);
+        // $.fn.dataTable.ext.errMode = 'throw';
+        vm.initEvents();
+    },
     methods: {
         initEvents: function () {
             let vm = this;
@@ -53,12 +60,6 @@ module.exports = {
                 vm.vmDataTable.draw(true);
             });
         },
-    },
-    mounted: function () {
-        let vm = this;
-        vm.table = $('#' + vm.id);
-        // $.fn.dataTable.ext.errMode = 'throw';
-        vm.initEvents();
     },
 };
 </script>

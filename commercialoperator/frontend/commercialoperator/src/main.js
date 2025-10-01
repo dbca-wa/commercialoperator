@@ -1,3 +1,23 @@
+import 'vite/modulepreload-polyfill';
+// The Vue build version to load with the `import` command
+// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
+
+import $ from 'jquery';
+import moment from 'moment';
+import swal from 'sweetalert2';
+import jsZip from 'jszip';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import select2 from 'select2';
+import _ from 'lodash';
+
+window.$ = $;
+window.jQuery = $;
+window.moment = moment;
+window.swal = swal;
+window.JSZip = jsZip;
+window.select2 = select2();
+window._ = _;
+
 import { createApp, configureCompat } from 'vue';
 import router from './router';
 import App from './App.vue';
@@ -16,10 +36,6 @@ import 'datatables.net-responsive-bs5';
 import 'datatables.net-buttons/js/dataTables.buttons.js';
 import 'datatables.net-buttons/js/buttons.html5.js';
 
-import jsZip from 'jszip';
-window.JSZip = jsZip;
-
-import 'select2';
 import 'jquery-validation';
 
 import 'sweetalert2/dist/sweetalert2.css';
@@ -29,10 +45,11 @@ import 'select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css';
 import '@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css';
 import '@/../node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css';
 
-require('@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css');
-require('@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css');
+import '@/../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
+import '@/../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css';
 
 extendMoment(moment);
+window.helpers = helpers;
 
 const originalFetch = window.fetch.bind(window);
 

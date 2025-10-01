@@ -262,6 +262,7 @@
 import $ from 'jquery';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import _ from 'lodash';
 
 export default {
     name: 'OrganisationAccess',

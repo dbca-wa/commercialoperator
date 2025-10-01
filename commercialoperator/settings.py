@@ -94,6 +94,7 @@ INSTALLED_APPS += [
     "django_ckeditor_5",
     "multiselectfield",
     "appmonitor_client",
+    "django_vite",
 ]
 
 # Not using django cron
@@ -163,10 +164,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATICFILES_DIRS.append(
     os.path.join(os.path.join(BASE_DIR, "commercialoperator", "static"))
 )
-DEV_STATIC = env("DEV_STATIC", False)
-DEV_STATIC_URL = env("DEV_STATIC_URL")
-if DEV_STATIC and not DEV_STATIC_URL:
-    raise ImproperlyConfigured("If running in DEV_STATIC, DEV_STATIC_URL has to be set")
+STATICFILES_DIRS.append(
+  os.path.join(os.path.join(BASE_DIR, "commercialoperator", "static", "commercialoperator_vue"))
+)
+
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # Department details
@@ -239,7 +240,6 @@ os.environ["LEDGER_PRODUCT_CUSTOM_FIELDS"] = (
 CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
 VERSION_NO = "1.0.1"
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
-DEV_APP_BUILD_URL = env("DEV_APP_BUILD_URL")
 
 TIME_ZONE = "Australia/Perth"
 USE_TZ = True
@@ -485,3 +485,29 @@ LEDGER_UI_ORGANISATION_MANAGEMENT = [
     {"organisation_abn": {"options": {"view": True, "edit": True}}},
     {"postal_address": {"options": {"view": True, "edit": True}}},
 ]
+
+RUNNING_DEVSERVER = len(sys.argv) > 1 and sys.argv[1] == "runserver"
+
+# Make sure this returns true when in local development
+# so you can use the vite dev server with hot module reloading
+DJANGO_VITE_DEV_MODE = RUNNING_DEVSERVER and EMAIL_INSTANCE == "DEV" and DEBUG is True
+
+STATIC_URL_PREFIX = "/static/commercialoperator_vue/" if DJANGO_VITE_DEV_MODE else "commercialoperator_vue/"
+
+DJANGO_VITE = {
+  "default": {
+    "dev_mode": DJANGO_VITE_DEV_MODE,
+    "manifest_path": os.path.join(
+        BASE_DIR, "commercialoperator", "static", "commercialoperator_vue", "manifest.json"
+    ),
+    "dev_server_host": "localhost", # Default host for vite (can change if needed)
+    "dev_server_port": 5173, # Default port for vite (can change if needed)
+    "static_url_prefix": STATIC_URL_PREFIX,
+  }
+}
+
+
+VUE3_ENTRY_SCRIPT = env(
+  "VUE3_ENTRY_SCRIPT",
+  default="src/main.js", # This path will be auto prefixed with the       static_url_prefix from DJANGO_VITE above
+) # Path of the vue3 entry point script served by vite

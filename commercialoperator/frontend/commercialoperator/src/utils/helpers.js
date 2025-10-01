@@ -1,8 +1,9 @@
+import _ from 'lodash';
 const ERRORS = {
     NETWORK_ERROR: `NETWORK ERROR: Please check your internet connection and try again.`,
 };
 
-module.exports = {
+export default {
     fetchUrl: async function (url, options) {
         return new Promise((resolve, reject) => {
             let f = options === undefined ? fetch(url) : fetch(url, options);

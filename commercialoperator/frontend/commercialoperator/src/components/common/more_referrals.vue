@@ -13,6 +13,7 @@
 <script>
 import { v4 as uuid } from 'uuid';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import _ from 'lodash';
 
 export default {
     name: 'MoreReferrals',

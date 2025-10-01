@@ -35,6 +35,7 @@ import datatable from '@/utils/vue/datatable.vue';
 import editPark from './edit_pre_event_park.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
+import _ from 'lodash';
 
 export default {
     name: 'EventParkTableDash',

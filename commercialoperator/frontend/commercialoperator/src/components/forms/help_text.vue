@@ -1,53 +1,58 @@
 <template lang="html">
-
-  
-        <span v-if="help_text">
-            <template v-if="!isForAssessor">
-                <template v-if="!showingHelpText">
-                    <a href="" @click.prevent="toggleHelpText"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a>
-                </template>
-                    <a v-else href="" @click.prevent="toggleHelpText"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a>
+    <span v-if="help_text">
+        <template v-if="!isForAssessor">
+            <template v-if="!showingHelpText">
+                <a href="" @click.prevent="toggleHelpText"
+                    ><i class="fa fa-question-circle" style="color: blue"
+                        >&nbsp;</i
+                    ></a
+                >
             </template>
+            <a v-else href="" @click.prevent="toggleHelpText"
+                ><i class="fa fa-question-circle" style="color: blue"
+                    >&nbsp;</i
+                ></a
+            >
+        </template>
 
-            <template v-else>
+        <template v-else>
             <template v-if="assessorMode">
                 <template v-if="!showingHelpText">
-                    <a href="" @click.prevent="toggleHelpText"><i class="fa fa-question-circle" style="color:green">&nbsp;</i></a>
+                    <a href="" @click.prevent="toggleHelpText"
+                        ><i class="fa fa-question-circle" style="color: green"
+                            >&nbsp;</i
+                        ></a
+                    >
                 </template>
-                    <a v-else href="" @click.prevent="toggleHelpText"><i class="fa fa-question-circle" style="color:green">&nbsp;</i></a>
+                <a v-else href="" @click.prevent="toggleHelpText"
+                    ><i class="fa fa-question-circle" style="color: green"
+                        >&nbsp;</i
+                    ></a
+                >
             </template>
-            </template>
-            <HelpTextDisplay v-show="showingHelpText" :help_text="help_text" />
-        </span>
-     
+        </template>
+        <HelpTextDisplay v-show="showingHelpText" :help_text="help_text" />
+    </span>
 </template>
 
- 
-
-
-
 <script>
-import HelpTextDisplay from './help_text_display.vue'
+import HelpTextDisplay from './help_text_display.vue';
 export default {
-    props:["help_text","assessorMode","isForAssessor"],
+    components: { HelpTextDisplay },
+    props: ['help_text', 'assessorMode', 'isForAssessor'],
+    data: function () {
+        return {
+            showingHelpText: false,
+            pBody: 'pBody',
+        };
+    },
 
-components: { HelpTextDisplay },
-data: function() {
-  return{
-    showingHelpText: false,
-    pBody: 'pBody'
-    }
-  },
-
- methods:{
-         toggleHelpText(){
-            this.showingHelpText = ! this.showingHelpText;
+    methods: {
+        toggleHelpText() {
+            this.showingHelpText = !this.showingHelpText;
         },
-   }
-}
+    },
+};
 </script>
 
-<style lang="css">
-</style>
-
-
+<style lang="css"></style>
