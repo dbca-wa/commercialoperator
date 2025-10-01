@@ -53,6 +53,7 @@
                     :readonly="readonly"
                     :name="name"
                     class="form-control"
+                    max="2999-12-31"
                     placeholder="DD/MM/YYYY"
                     :value="value"
                     :required="isRequired"

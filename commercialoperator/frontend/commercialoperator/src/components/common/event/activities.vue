@@ -9,7 +9,7 @@
                     index="event_details"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_activity">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="">
                                 <div class="row">
@@ -61,6 +61,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="event_activity_commencement_date"
+                                                max="2999-12-31"
                                                 placeholder="Commencement date"
                                                 required
                                                 :disabled="
@@ -93,6 +94,7 @@
                                                         .completion_date
                                                 "
                                                 type="date"
+                                                max="2999-12-31"
                                                 class="form-control"
                                                 name="event_activity_completion_date"
                                                 placeholder="Completion date"
@@ -657,6 +659,7 @@ export default {
                 'event_activity_completion_date'
             );
         });
+
         vm.proposal.selected_trails_activities = [];
         vm.store_trails(vm.proposal.trails);
         vm.selected_trail_ids = vm.get_selected_trail_ids();

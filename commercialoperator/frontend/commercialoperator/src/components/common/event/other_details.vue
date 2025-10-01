@@ -9,7 +9,7 @@
                     index="pre_event_training"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_other_details">
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="">
                                 <div class="row">
@@ -32,6 +32,7 @@
                                                         .training_date
                                                 "
                                                 type="date"
+                                                max="2999-12-31"
                                                 class="form-control"
                                                 name="training_date"
                                                 placeholder="DD/MM/YYYY"
@@ -189,7 +190,7 @@
                     index="other"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_other_details">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
                                 <div class="row">
@@ -282,7 +283,7 @@
                     index="insurance"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal.event_other_details">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
                                 <div class="row">
@@ -350,6 +351,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="insurance_expiry"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                                 :disabled="proposal.readonly"
@@ -376,7 +378,7 @@
                     index="dee_poll"
                     subtitle=""
                 >
-                    <div class="">
+                    <div v-if="proposal">
                         <div class="form-horizontal col-sm-12">
                             <div class="form-group">
                                 <div class="row">

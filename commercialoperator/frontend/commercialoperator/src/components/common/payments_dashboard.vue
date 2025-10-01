@@ -149,6 +149,7 @@
                                         v-model="filterProposalLodgedFrom"
                                         type="date"
                                         class="form-control"
+                                        max="2999-12-31"
                                         placeholder="DD/MM/YYYY"
                                     />
                                     <span class="input-group-addon">
@@ -173,6 +174,7 @@
                                         v-model="filterProposalLodgedTo"
                                         type="date"
                                         class="form-control"
+                                        max="2999-12-31"
                                         placeholder="DD/MM/YYYY"
                                     />
                                     <span class="input-group-addon">
@@ -443,7 +445,7 @@ export default {
                                     'monthly invoicing' &&
                                     full.invoice_reference !== null)
                             ) {
-                                links += `<a href='/cols/payments/invoice-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i></a>`;
+                                links += `<a href='/cols/payments/invoice-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'></i></a>&nbsp;`;
                                 links += `<a href='/cols/payments/confirmation-pdf/${full.invoice_reference}.pdf' target='_blank'><i style='color:red;' class='fa fa-file-pdf'></i></a><br/>`;
                             } else if (
                                 full.payment_method.toLowerCase() ==

@@ -141,6 +141,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="nominated_start_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                                 :disabled="
@@ -327,6 +328,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="insurance_expiry"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                                 :disabled="proposal.readonly"

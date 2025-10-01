@@ -89,6 +89,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="from_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                             />
                                             <span class="input-group-addon">
@@ -121,6 +122,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="to_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                             />
                                             <span class="input-group-addon">
@@ -312,8 +314,8 @@ export default {
             this.hasErrors = false;
             $('.has-error').removeClass('has-error');
             $(this.$refs.filming_park).val(null).trigger('change');
-            this.$refs.feature_of_interest = '';
-            this.$refs.park = '';
+            // this.$refs.feature_of_interest = '';
+            // this.$refs.park = '';
             this.validation_form.resetForm();
         },
         fetchContact: function (id) {

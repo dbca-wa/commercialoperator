@@ -1322,7 +1322,9 @@ export default {
                                         vm.proposal = res;
                                         vm.$router.push({
                                             name: 'submit_proposal',
-                                            params: { proposal: vm.proposal },
+                                            params: {
+                                                proposal_id: vm.proposal.id,
+                                            },
                                         });
                                     },
                                     (err) => {

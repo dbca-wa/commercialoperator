@@ -37,6 +37,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="from_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                             />
@@ -73,6 +74,7 @@
                                                 type="date"
                                                 class="form-control"
                                                 name="to_date"
+                                                max="2999-12-31"
                                                 placeholder="DD/MM/YYYY"
                                                 required
                                             />
