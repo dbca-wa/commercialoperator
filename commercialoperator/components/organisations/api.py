@@ -865,24 +865,33 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
+
         queryset = self.get_queryset()
 
         organisations = queryset.distinct("name").values_list("name", flat=True)
-        applicant_qs = (
-            queryset.filter(requester__isnull=False)
-            .expand_emailuser_fields("requester", {"email", "first_name", "last_name"})
-            .filter(requester_exists=True)
-            .order_by("requester_email")
-            .distinct("requester_email")
-            .values_list(
-                "requester_first_name", "requester_last_name", "requester_email"
-            )
+
+        requester_ids = (
+            queryset
+            .filter(requester__isnull=False)
+            .distinct()
+            .values_list("requester_id", flat=True)
         )
+
+        users_qs = (
+            EmailUser.objects
+            .filter(id__in=requester_ids)
+            .order_by("email")
+            .values("email", "first_name", "last_name")
+        )
+
         applicants = [
-            # dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
-            dict(search_term="{} {} ({})".format(i[0], i[1], i[2]))
-            for i in applicant_qs
+            {
+                "search_term": f'{u["first_name"]} {u["last_name"]} ({u["email"]})',
+            }
+            for u in users_qs
         ]
+
+
 
         statuses = [
             dict(search_term=i[0], value=i[1])
