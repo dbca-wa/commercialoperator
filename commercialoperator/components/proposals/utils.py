@@ -1762,20 +1762,32 @@ def get_cached_proposal_submitters(view, queryset=None):
     submitters = cache.get(cache_key)
 
     if submitters is None:
-        submitter_qs = (
-            queryset.filter(submitter__isnull=False)
-            .expand_emailuser_fields("submitter", {"email", "first_name", "last_name"})
-            .filter(submitter_exists=True)
-            .order_by("submitter_email")
-            .distinct("submitter_email")
-            .values_list(
-                "submitter_first_name", "submitter_last_name", "submitter_email"
-            )
+        
+        # 1) Collect unique submitter IDs from the proposals queryset
+        submitter_ids = (
+            queryset
+            .filter(submitter__isnull=False)
+            .distinct()
+            .values_list("submitter_id", flat=True)
+            
         )
+
+        # 2) Fetch the EmailUser records for those IDs
+        users_qs = (
+            EmailUser.objects
+            .filter(id__in=submitter_ids)
+            .order_by("email")               # ordering to match original intent
+            .values("email", "first_name", "last_name")
+        )
+
         submitters = [
-            dict(email=i[2], search_term="{} {} ({})".format(i[0], i[1], i[2]))
-            for i in submitter_qs
+            {
+                "email": u["email"],
+                "search_term": f'{u["first_name"]} {u["last_name"]} ({u["email"]})',
+            }
+            for u in users_qs
         ]
+
 
         cache.set(
             cache_key,

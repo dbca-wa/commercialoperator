@@ -466,6 +466,8 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
                 qs = qs.reverse()
             return qs
 
+    # Handle ledger lookup ordering logic here if needed
+
         # A dictionary of each ledger lookup field and its subfields
         expand_fields = {}
         for item in fields_by_ledger_lookup:

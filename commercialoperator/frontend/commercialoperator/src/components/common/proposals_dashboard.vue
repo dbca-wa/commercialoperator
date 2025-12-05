@@ -154,6 +154,26 @@
                             </div>
                         </div>
                     </div>
+                    
+            <div class="col-md-3 mb-3">
+                <label for="dt-global-search" class="d-flex justify-content-between align-items-center">
+                <span>Search</span>
+                </label>
+
+                <div class="input-group">
+                <input
+                    id="dt-global-search"
+                    v-model="globalSearch"
+                    @keypress.enter="runGlobalSearch"
+                    @keydown.esc="clearGlobalSearch"
+                    type="text"
+                    class="form-control form-control"
+                    aria-label="Global search"
+                />
+                </div>
+            </div>
+
+
                 </div>
                 <div class="row">
                     <div class="col-lg-12">
@@ -212,6 +232,7 @@ export default {
             // Filters for Proposals
             filterApplicationType: 'All',
             filterProposalStatus: 'All',
+            globalSearch: '',
             filterProposalLodgedFrom: '',
             filterProposalLodgedTo: '',
             filterProposalSubmitter: 'All',
@@ -267,6 +288,7 @@ export default {
                 ],
                 responsive: true,
                 serverSide: true,
+                pageLength:10,
                 order: [[0, 'desc']],
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
@@ -683,6 +705,21 @@ export default {
     },
 
     mounted: function () {
+        
+        const dt = this.$refs.proposal_datatable.vmDataTable;
+        // flag indicating an explicit search commit (Enter or Search button)
+        this._searchCommitted = false;
+
+        // Intercept outgoing server-side payload
+        dt.on('preXhr.dt', (e, settings, data) => {
+            // Only send the search term if user has committed it (Enter)
+            if (!this._searchCommitted) {
+            // wipe out any accidental search value
+            data.search = data.search || {};
+            data.search.value = '';
+            }
+        });
+
         this.fetchFilterLists();
         this.fetchProfile();
         let vm = this;
@@ -722,6 +759,30 @@ export default {
                     vm.isLoading = false;
                 });
         },
+
+        runGlobalSearch() {
+            const dt = this.$refs.proposal_datatable?.vmDataTable;
+            if (!dt) return;
+
+            // mark as committed and perform the search + draw (triggers one request)
+            this._searchCommitted = true;
+            dt.search(this.globalSearch || '').draw();
+            // optionally reset commit right after, so other redraws don’t carry search
+            // If you want persistent search until Clear, leave it true.
+            // this._searchCommitted = false;
+        },
+
+        clearGlobalSearch() {
+            const dt = this.$refs.proposal_datatable?.vmDataTable;
+            if (!dt) return;
+
+            this.globalSearch = '';
+            this._searchCommitted = true; // allow clearing to propagate
+            dt.search('').draw();
+            // After clearing, disable future accidental searches
+            this._searchCommitted = false;
+        },
+
 
         discardProposal: function (proposal_id) {
             let vm = this;
