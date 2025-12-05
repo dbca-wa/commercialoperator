@@ -371,8 +371,12 @@ def proposal_search_filters(
 
     submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
     if submitter_email and submitter_email != "All":
-        submitter = EmailUser.objects.get(email=submitter_email)
-        qs = qs.filter(**{submitter_id: submitter.id})
+        submitter = EmailUser.objects.filter(email__iexact=submitter_email).first()
+        if submitter:
+            qs = qs.filter(**{submitter_id: submitter.id})
+        else:
+            return qs
+
 
     return qs
 
