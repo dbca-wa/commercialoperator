@@ -1,9 +1,14 @@
 import traceback
 import os
 import json
+from django.db import models, connection
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date
+from django.db.models import QuerySet
+from typing import Optional
 from django.core.cache import cache
 from django.conf import settings
 from django.utils import timezone
@@ -132,9 +137,11 @@ from commercialoperator.components.segregation.utils import (
     retrieve_group_members,
     retrieve_organisation,
     retrieve_user_groups,
+    retrieve_email_user,
 )
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
+
 from django.core.files.storage import default_storage
 from rest_framework.pagination import PageNumberPagination
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
@@ -145,6 +152,51 @@ from reversion.models import Version
 import logging
 
 logger = logging.getLogger(__name__)
+
+def expand_emailuser_fields(queryset, emailuser_fk_field, emailuser_properties=None):
+    if emailuser_properties is None:
+        emailuser_properties = []
+
+    emailuser_fk_field_id = f"{emailuser_fk_field}_id"
+    emailuser_fk_field_id_dotnotation = emailuser_fk_field_id.replace("__", ".")
+
+    emailuser_fk_field_ids = []
+    emailuser_fk_field_property_values = {}
+
+    for obj in queryset:
+        emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id, None)
+        emailuser = retrieve_email_user(emailuser_fk_field_id_value) if emailuser_fk_field_id_value else None
+        if emailuser:
+            setattr(obj, emailuser_fk_field, emailuser)
+            if emailuser.id not in emailuser_fk_field_ids:
+                emailuser_fk_field_ids.append(emailuser.id)
+            if emailuser.id not in emailuser_fk_field_property_values:
+                emailuser_fk_field_property_values[emailuser.id] = {}
+            for prop in emailuser_properties:
+                emailuser_fk_field_property_values[emailuser.id][prop] = getattr(emailuser, prop)
+
+    # Annotate queryset with Case expressions
+    case_whens = {
+        f"{emailuser_fk_field}_{prop}".replace("__", "_"): models.Case(
+            *[
+                models.When(**{emailuser_fk_field_id: id_val}, then=models.Value(emailuser_fk_field_property_values[id_val][prop]))
+                for id_val in emailuser_fk_field_ids
+            ],
+            default=models.Value(""),
+            output_field=models.CharField(),
+        )
+        for prop in emailuser_properties
+    }
+
+    return queryset.annotate(
+        **{
+            f"{emailuser_fk_field}_exists": models.Case(
+                models.When(**{f"{emailuser_fk_field_id}__in": emailuser_fk_field_ids}, then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField(),
+            )
+        }
+    ).annotate(**case_whens)
 
 
 class GetProposalType(views.APIView):
@@ -194,12 +246,224 @@ class GetEmptyList(views.APIView):
 """
 
 
+def _get_params(request) -> dict:
+    """
+    Extract query params from either DRF Request or Django HttpRequest.
+    Works with request.query_params or request.GET.
+    """
+    if hasattr(request, "query_params"):
+        return request.query_params
+    elif hasattr(request, "GET"):
+        return request.GET
+    # As a fallback, assume dict-like
+    return getattr(request, "params", {}) or {}
+
+
+def _is_datetime_field(qs: QuerySet, field_name: str) -> bool:
+    """
+    Inspect model meta to decide if field_name is a DateTimeField.
+    Returns False for DateField and when field not found.
+    """
+    try:
+        field = qs.model._meta.get_field(field_name)
+        return field.get_internal_type() == "DateTimeField"
+    except Exception:
+        return False
+
+
+
+def search_in_emailuser_fields(search_value):
+    """
+    Search `search_value` in EmailUser fields: email, first_name, last_name.
+    Returns a list of matching EmailUser IDs.
+    """
+    if not search_value:
+        return []
+
+    search_value = search_value.strip()
+    if not search_value:
+        return []
+
+    q = (
+        Q(email__icontains=search_value) |
+        Q(first_name__icontains=search_value) |
+        Q(last_name__icontains=search_value)
+    )
+
+    return list(
+        EmailUser.objects.filter(q)
+        .values_list('id', flat=True)
+        .distinct()
+    )
+
+
+
+
+def proposal_search_filters(
+    request,
+    qs: QuerySet,
+    *,
+    lodgement_date_field: str = "lodgement_date",
+    lodgement_number_field: str = "lodgement_number",
+    processing_status_field: str = "processing_status",
+    application_type_name_path: str = "application_type__name",
+    submitter_id: str = "submitter_id",
+) -> QuerySet:
+    """
+    Standalone filter for Proposal-like querysets based on DataTables-style params.
+
+    Applies conditionally:
+      - search[value] -> filters only on lodgement_number
+      - date_from/date_to (or start_date/end_date) -> filters by lodgement_date range
+      - datatable_filter_processing_status -> filters by processing_status
+      - datatable_filter_application_type__name -> filters by application_type__name
+
+    Parameters are overridable for reuse with similar models.
+    """
+    params = _get_params(request)
+
+    search_value = (params.get("search[value]") or "").strip()
+
+    if search_value:
+        matching_ids = search_in_emailuser_fields(search_value)
+
+        # Apply both filters only if we found any matching submitters
+        if matching_ids:
+                    
+            qs = qs.filter(
+                Q(submitter_id__in=matching_ids) | Q(proxy_applicant_id__in=matching_ids) | Q(assigned_officer_id__in=matching_ids) | Q(**{f"{lodgement_number_field}__icontains": search_value})
+            )
+
+        else:
+            # Fallback: maybe still filter only by lodgement number
+            qs = qs.filter(**{f"{lodgement_number_field}__icontains": search_value})
+
+    # Date range filtering on lodgement_date ---
+    # Accept either date_from/date_to or start_date/end_date
+    date_from = (params.get("date_from") or params.get("start_date") or "").strip() or None
+    date_to = (params.get("date_to") or params.get("end_date") or "").strip() or None
+
+    df = parse_date(date_from) if date_from else None
+    dt = parse_date(date_to) if date_to else None
+
+    # Detect field type to choose correct lookup
+    is_dt_field = _is_datetime_field(qs, lodgement_date_field)
+    # If DateTimeField, use __date lookups; else direct DateField lookups
+    if df and dt:
+        lookup = f"{lodgement_date_field}__date__range" if is_dt_field else f"{lodgement_date_field}__range"
+        qs = qs.filter(**{lookup: (df, dt)})
+    elif df:
+        lookup = f"{lodgement_date_field}__date__gte" if is_dt_field else f"{lodgement_date_field}__gte"
+        qs = qs.filter(**{lookup: df})
+    elif dt:
+        lookup = f"{lodgement_date_field}__date__lte" if is_dt_field else f"{lodgement_date_field}__lte"
+        qs = qs.filter(**{lookup: dt})
+
+    # --- 3) Processing status filter ---
+    status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
+    if status and status != "All":
+        qs = qs.filter(**{processing_status_field: status})
+
+    # --- 4) Application type (license type) by name ---
+    app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
+    if app_type_name and app_type_name != "All":
+        qs = qs.filter(**{application_type_name_path: app_type_name})
+
+    submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
+    if submitter_email and submitter_email != "All":
+        submitter = EmailUser.objects.get(email=submitter_email)
+        qs = qs.filter(**{submitter_id: submitter.id})
+
+    return qs
+
+
+
+def get_sliced_queryset(
+    request,
+    excluded_type,
+    qs: Optional[QuerySet] = None,
+) -> QuerySet:
+    """
+    Return a sliced queryset of Proposal objects based on:
+      - If `qs` is provided: slice it using 'start' and 'length' from request only.
+        No additional filtering is applied.
+      - If `qs` is None: build the queryset based on the request user type
+        (internal/customer) and exclude `excluded_type` + migrated=True.
+
+    Query params used:
+      - start: int (default 0)
+      - length: int (default 10)
+
+    Args:
+        request: Django HttpRequest
+        excluded_type: The application_type to exclude when qs is not provided
+        qs: Optional pre-constructed QuerySet to slice directly
+
+    Returns:
+        QuerySet: sliced using offset/limit semantics
+    """
+    user = request.user
+
+    # Parse pagination safely
+    try:
+        start = int(request.GET.get("start", 0))
+    except (TypeError, ValueError):
+        start = 0
+    try:
+        length = int(request.GET.get("length", 10))
+    except (TypeError, ValueError):
+        length = 10
+
+    # Ensure non-negative values
+    start = max(0, start)
+    length = max(0, length)
+
+    # If an external queryset is provided, just slice and return.
+    if qs is not None:
+        return qs[start : start + length]
+
+    # Otherwise, build the queryset per the original rules.
+    if is_internal(request):
+        qs_built = Proposal.objects.exclude(application_type=excluded_type, migrated=True)
+    elif is_customer(request):
+        user_orgs = retrieve_delegate_organisation_ids(user)
+        qs_built = (
+            Proposal.objects.filter(
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
+            )
+            .exclude(application_type=excluded_type, migrated=True)
+        )
+    else:
+        qs_built = Proposal.objects.none()
+
+    # Apply slicing—this becomes LIMIT/OFFSET at the DB level
+    return qs_built[start : start + length]
+
+
+
 class ProposalFilterBackend(LedgerDatatablesFilterBackend):
     """
     Custom filters
     """
 
+
     def filter_queryset(self, request, queryset, view):
+        if isinstance(queryset, EmailUserQuerySet):
+            # Get all FK fields pointing to EmailUser
+            emailuser_fk_fields = [
+                field.name
+                for field in queryset.model._meta.get_fields()
+                if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
+            ]
+
+            emailuser_properties = ["email", "first_name", "last_name"]
+
+            # Expand for each FK field
+            for fk_field in emailuser_fk_fields:
+                queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
+
+
+
         total_count = queryset.count()
 
         # Initialise ledger lookup fields (fields that query an emailuser)
@@ -452,20 +716,20 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
             )
 
         # Apply the search filters
-        queryset = self.filter_datatables_queryset(
-            request,
-            queryset,
-            ledger_lookup_fields=ledger_lookup_fields,
-            ledger_lookup_extras=ledger_lookup_extras,
-        )
+        # queryset = self.filter_datatables_queryset(
+        #     request,
+        #     queryset,
+        #     ledger_lookup_fields=ledger_lookup_fields,
+        #     ledger_lookup_extras=ledger_lookup_extras,
+        # )
 
-        queryset = self.apply_request(
-            request,
-            queryset,
-            view,
-            ledger_lookup_fields=ledger_lookup_fields,
-            ledger_lookup_extras=ledger_lookup_extras,
-        )
+        # queryset = self.apply_request(
+        #         request,
+        #         queryset,
+        #         view,
+        #         ledger_lookup_fields=ledger_lookup_fields,
+        #         ledger_lookup_extras=ledger_lookup_extras,
+        #     )
 
         setattr(view, "_datatables_total_count", total_count)
 
@@ -485,7 +749,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             return ApplicationType.objects.get(name="E Class")
         except:
             return ApplicationType.objects.none()
-
+        
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
@@ -493,11 +757,33 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             return qs.exclude(migrated=True)
         elif is_customer(self.request):
             user_orgs = retrieve_delegate_organisation_ids(user)
+            user_id = user.id
+            queryset = Proposal.objects.filter(
+                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user_id)
+            ).exclude(migrated=True)
+
+            return queryset.exclude(application_type=self.excluded_type)
+
+        return Proposal.objects.none()
+
+    def get_sliced_queryset(self):
+        user = self.request.user
+
+        if is_internal(self.request):
+            qs = Proposal.objects.exclude(application_type=self.excluded_type, migrated=True)
+        elif is_customer(self.request):
+            user_orgs = retrieve_delegate_organisation_ids(user)
             qs = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            ).exclude(application_type=self.excluded_type)
-            return qs.exclude(migrated=True)
-        return Proposal.objects.none()
+            ).exclude(application_type=self.excluded_type, migrated=True)
+        else:
+            qs = Proposal.objects.none()
+
+        start = int(self.request.GET.get("start", 0))
+        length = int(self.request.GET.get("length", 10))
+        qs = qs[start:start + length]
+
+        return qs
 
     @action(
         methods=[
@@ -505,29 +791,41 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
+
     def proposals_internal(self, request, *args, **kwargs):
         """
-        Used by the internal dashboard
+        Internal dashboard endpoint (DataTables server-side).
 
-        http://localhost:8499/api/proposal_paginated/proposal_paginated_internal/?format=datatables&draw=1&length=2
+        Example:
+        /api/proposal_paginated/proposal_paginated_internal/?format=datatables&draw=1&start=0&length=10
         """
-        qs = self.get_queryset()
-        qs = self.filter_queryset(qs)
+        # 1) Base queryset (unfiltered)
+        original_qs = self.get_queryset()
 
-        # on the internal organisations dashboard, filter the Proposal/Approval/Compliance datatables by applicant/organisation
-        applicant_id = request.GET.get("org_id")
-        if applicant_id:
-            qs = qs.filter(org_applicant_id=applicant_id)
-        submitter_id = request.GET.get("submitter_id", None)
-        if submitter_id:
-            qs = qs.filter(submitter_id=submitter_id)
+        # 2) Apply search filters (if any) to base
+        #    proposal_search_filters should return a QuerySet or None.
+        filtered_qs = proposal_search_filters(request, original_qs) or original_qs
 
-        self.paginator.page_size = qs.count()
-        result_page = self.paginator.paginate_queryset(qs, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return self.paginator.get_paginated_response(serializer.data)
+        # 3) Apply DRF view-level filters (permissions, ordering, etc.)
+        filtered_qs = self.filter_queryset(filtered_qs)
+
+        # 4) Counts for DataTables
+        records_total = original_qs.count()          # total before filters
+        records_filtered = filtered_qs.count()       # total after filters
+
+        # 5) Slice for pagination (use the optional-qs behavior)
+        qs_page = get_sliced_queryset(request, self.excluded_type, qs=filtered_qs)
+
+        # 6) Serialize only the sliced page
+        serializer = ListProposalSerializer(qs_page, context={"request": request}, many=True)
+
+        # 7) Return DataTables-compatible payload
+        return Response({
+            "draw": int(request.GET.get("draw", 1)),
+            "recordsTotal": records_total,
+            "recordsFiltered": records_filtered,
+            "data": serializer.data,
+        })
 
     @action(
         methods=[
@@ -786,8 +1084,6 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
 
 
 class ProposalViewSet(viewsets.ModelViewSet):
-    # class ProposalViewSet(VersionableModelViewSetMixin):
-    # queryset = Proposal.objects.all()
     queryset = Proposal.objects.none()
     serializer_class = ProposalSerializer
     lookup_field = "id"
@@ -801,6 +1097,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
