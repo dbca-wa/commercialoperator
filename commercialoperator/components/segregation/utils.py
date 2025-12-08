@@ -7,6 +7,8 @@ from django.core.cache import cache
 from rest_framework import status
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from typing import Iterable, Mapping, Optional, Sequence
+from django.db.models import QuerySet
 from ledger_api_client.utils import (
     create_basket_session as ledger_create_basket_session,
     oracle_parser as ledger_oracle_parser,
@@ -121,6 +123,179 @@ def retrieve_organisation(organisation_id):
             return organisation
     else:
         return organisation
+
+
+def rgetattr(obj, dotted_path: str, *, raise_exception: bool = False):
+    """
+    Recursive getattr using dot-notation (e.g., 'foo.bar.baz').
+    Works for Django related objects that are already loaded.
+    """
+    try:
+        for part in dotted_path.split('.'):
+            obj = getattr(obj, part)
+        return obj
+    except AttributeError:
+        if raise_exception:
+            raise ValueError(f"Property {dotted_path} does not exist on {type(obj).__name__}")
+        return None
+
+
+def expand_organisation_fields(
+    queryset: QuerySet,
+    organisation_foreign_key_field: str,
+    organisation_properties: Optional[Iterable[str]] = None,  # callable: retrieve_organisation(ledger_org_id) -> Mapping[str, Any]
+) -> QuerySet:
+
+    if not organisation_foreign_key_field:
+        raise ValueError("organisation_foreign_key_field must be provided")
+
+    if organisation_properties is None:
+        organisation_properties = []
+
+    # Build names used throughout
+    org_fk_field_id = f"{organisation_foreign_key_field}_id"
+    org_fk_field_dot = organisation_foreign_key_field.replace("__", ".")
+
+    # Prepare structures
+    ledger_org_ids: list[int] = []
+    row_org_ids: list[int] = []  # local FK PKs associated with rows, used to anchor CASE
+    row_property_values: dict[int, dict[str, str]] = {}
+
+    # Pre-calculate mapping: '<ledger_object>__prop' -> list of 'prop' to read from ledger record
+    # Example: 'organisation__name' -> {'organisation_id': ['name']}
+    ledger_prop_map: dict[str, list[str]] = {}
+    for prop in organisation_properties:
+        parts = prop.split("__", 1)
+        if len(parts) != 2:
+            raise ValueError(f"Invalid organisation property '{prop}'. Expected '<object>__<field>'.")
+        ledger_object_name, ledger_prop = parts
+        ledger_id_field_name = f"{ledger_object_name}_id"
+        ledger_prop_map.setdefault(ledger_id_field_name, []).append(ledger_prop)
+
+    # Mild mitigation of N+1 on simple FK: select_related first segment
+    first_segment = organisation_foreign_key_field.split("__", 1)[0]
+    qs_iter = queryset.select_related(first_segment)
+
+    # Walk rows and collect ledger org data
+    for obj in qs_iter:
+        # e.g. row.org_applicant or row.org_applicant.organisation
+        holder = rgetattr(obj, org_fk_field_dot, raise_exception=True)
+
+        # 'row_org_id' = PK of the holder object (row-level anchor)
+        row_org_id = getattr(holder, "pk", None)
+
+        for ledger_id_field_name, ledger_props in ledger_prop_map.items():
+            # 'ledger_org_id' lives on the holder object, e.g. holder.organisation_id
+            ledger_org_id = getattr(holder, ledger_id_field_name, None)
+            if not ledger_org_id:
+                continue
+
+            # Retrieve ledger organisation record
+            ledger_org: Mapping[str, str] | None = retrieve_organisation(ledger_org_id)
+            if not ledger_org:
+                logger.error("Organisation with id %s does not exist in the ledger", ledger_org_id)
+                continue
+
+            # Collect unique ledger IDs
+            if ledger_org_id not in ledger_org_ids:
+                ledger_org_ids.append(ledger_org_id)
+
+            # Track row org ids for CASE anchors
+            if row_org_id and row_org_id not in row_org_ids:
+                row_org_ids.append(row_org_id)
+
+            # Collect property values per-row anchor
+            if row_org_id:
+                vals = row_property_values.setdefault(row_org_id, {})
+                for lp in ledger_props:
+                    vals[lp] = ledger_org.get(lp, "")
+
+    # Build CASE/WHEN annotations for each requested property
+    case_whens: dict[str, models.Case] = {}
+    for prop in organisation_properties:
+        # Final field name: '<fk>_<object>_<prop>' with double underscores flattened
+        annotated_field_name = f"{organisation_foreign_key_field}_{prop}".replace("__", "_")
+
+        whens: list[models.When] = []
+        for row_org_id_value in row_org_ids:
+            # Property key used inside the collected dict is the LAST segment of prop
+            prop_key = prop.split("__")[-1]
+            prop_val = row_property_values.get(row_org_id_value, {}).get(prop_key, "")
+
+            whens.append(
+                models.When(
+                    **{org_fk_field_id: row_org_id_value},
+                    then=models.Value(prop_val),
+                )
+            )
+
+        case_whens[annotated_field_name] = models.Case(
+            *whens,
+            default=models.Value(""),
+            output_field=models.CharField(),
+        )
+
+    # Build 'exists' boolean annotation
+    exists_field_name = f"{organisation_foreign_key_field}_exists"
+    annotations = {
+        exists_field_name: models.Case(
+            models.When(**{f"{org_fk_field_id}__in": ledger_org_ids}, then=models.Value(True)),
+            default=models.Value(False),
+            output_field=models.BooleanField(),
+        )
+    }
+    annotations.update(case_whens)
+
+    logger.debug("Annotating queryset with organisation properties: %s", list(case_whens.keys()))
+    annotated_qs = queryset.annotate(**annotations)
+
+    return annotated_qs
+
+
+def expand_emailuser_fields(queryset, emailuser_fk_field, emailuser_properties=None):
+    if emailuser_properties is None:
+        emailuser_properties = []
+
+    emailuser_fk_field_id = f"{emailuser_fk_field}_id"
+    emailuser_fk_field_id_dotnotation = emailuser_fk_field_id.replace("__", ".")
+
+    emailuser_fk_field_ids = []
+    emailuser_fk_field_property_values = {}
+
+    for obj in queryset:
+        emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id, None)
+        emailuser = retrieve_email_user(emailuser_fk_field_id_value) if emailuser_fk_field_id_value else None
+        if emailuser:
+            setattr(obj, emailuser_fk_field, emailuser)
+            if emailuser.id not in emailuser_fk_field_ids:
+                emailuser_fk_field_ids.append(emailuser.id)
+            if emailuser.id not in emailuser_fk_field_property_values:
+                emailuser_fk_field_property_values[emailuser.id] = {}
+            for prop in emailuser_properties:
+                emailuser_fk_field_property_values[emailuser.id][prop] = getattr(emailuser, prop)
+
+    # Annotate queryset with Case expressions
+    case_whens = {
+        f"{emailuser_fk_field}_{prop}".replace("__", "_"): models.Case(
+            *[
+                models.When(**{emailuser_fk_field_id: id_val}, then=models.Value(emailuser_fk_field_property_values[id_val][prop]))
+                for id_val in emailuser_fk_field_ids
+            ],
+            default=models.Value(""),
+            output_field=models.CharField(),
+        )
+        for prop in emailuser_properties
+    }
+
+    return queryset.annotate(
+        **{
+            f"{emailuser_fk_field}_exists": models.Case(
+                models.When(**{f"{emailuser_fk_field_id}__in": emailuser_fk_field_ids}, then=models.Value(True)),
+                default=models.Value(False),
+                output_field=models.BooleanField(),
+            )
+        }
+    ).annotate(**case_whens)
 
 
 def check_table_exists(table_name):
