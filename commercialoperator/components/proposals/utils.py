@@ -1,7 +1,9 @@
 import json
 import re
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Concat, Coalesce
+from django.db.models import QuerySet
 from django.utils import timezone
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -188,6 +190,95 @@ def generate_item_data(
         item_data[item["name"]] = item_data_list
     return item_data
 
+def request_has_filters(request) -> bool:
+    """
+    Returns True iff the request contains any search/filter param you care about.
+    Adjust the keys to match your frontend.
+    """
+    params = _get_params(request)
+
+    # Global search (DataTables)
+    if (params.get("search[value]") or "").strip():
+        return True
+
+    # Date range filters (support both pairs)
+    if (params.get("date_from") or params.get("start_date") or "").strip():
+        return True
+    if (params.get("date_to") or params.get("end_date") or "").strip():
+        return True
+
+    # Processing status
+    status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
+    if status and status != "All":
+        return True
+
+    # Application type (license type)
+    app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
+    if app_type_name and app_type_name != "All":
+        return True
+
+    # Submitter selection
+    submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
+    if submitter_email and submitter_email != "All":
+        return True
+
+    return False
+
+def _get_params(request) -> dict:
+    """
+    Extract query params from either DRF Request or Django HttpRequest.
+    Works with request.query_params or request.GET.
+    """
+    if hasattr(request, "query_params"):
+        return request.query_params
+    elif hasattr(request, "GET"):
+        return request.GET
+    # As a fallback, assume dict-like
+    return getattr(request, "params", {}) or {}
+
+def _is_datetime_field(qs: QuerySet, field_name: str) -> bool:
+    """
+    Inspect model meta to decide if field_name is a DateTimeField.
+    Returns False for DateField and when field not found.
+    """
+    try:
+        field = qs.model._meta.get_field(field_name)
+        return field.get_internal_type() == "DateTimeField"
+    except Exception:
+        return False
+    
+def search_in_emailuser_fields(search_value: str) -> list[int]:
+    """
+    Search `search_value` in EmailUser fields: email, first_name, last_name, and full name.
+    Returns a list of matching EmailUser IDs.
+    """
+    if not search_value:
+        return []
+
+    search_value = search_value.strip()
+    if not search_value:
+        return []
+
+    full_name_expr = Concat(
+        Coalesce('first_name', Value('')),
+        Value(' '),
+        Coalesce('last_name', Value('')),
+    )
+
+    q = (
+        Q(email__icontains=search_value) |
+        Q(first_name__icontains=search_value) |
+        Q(last_name__icontains=search_value) |
+        Q(full_name__icontains=search_value)  # annotated below
+    )
+
+    return list(
+        EmailUser.objects
+        .annotate(full_name=full_name_expr)
+        .filter(q)
+        .values_list('id', flat=True)
+        .distinct()
+    )
 
 class AssessorDataSearch(object):
 

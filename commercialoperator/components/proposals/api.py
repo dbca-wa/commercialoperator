@@ -29,6 +29,10 @@ from commercialoperator.components.proposals.utils import (
     get_cached_proposal_processing_status,
     paginate_chained_list,
     searchKeyWords,
+    _get_params,
+    _is_datetime_field,
+    search_in_emailuser_fields,
+    request_has_filters,
 )
 from commercialoperator.components.proposals.models import (
     ProposalParkActivity,
@@ -139,6 +143,7 @@ from commercialoperator.components.segregation.utils import (
     retrieve_organisation,
     retrieve_user_groups,
     retrieve_email_user,
+    expand_emailuser_fields,
 )
 from commercialoperator.helpers import is_customer, is_internal
 from django.core.files.base import ContentFile
@@ -154,50 +159,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def expand_emailuser_fields(queryset, emailuser_fk_field, emailuser_properties=None):
-    if emailuser_properties is None:
-        emailuser_properties = []
-
-    emailuser_fk_field_id = f"{emailuser_fk_field}_id"
-    emailuser_fk_field_id_dotnotation = emailuser_fk_field_id.replace("__", ".")
-
-    emailuser_fk_field_ids = []
-    emailuser_fk_field_property_values = {}
-
-    for obj in queryset:
-        emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id, None)
-        emailuser = retrieve_email_user(emailuser_fk_field_id_value) if emailuser_fk_field_id_value else None
-        if emailuser:
-            setattr(obj, emailuser_fk_field, emailuser)
-            if emailuser.id not in emailuser_fk_field_ids:
-                emailuser_fk_field_ids.append(emailuser.id)
-            if emailuser.id not in emailuser_fk_field_property_values:
-                emailuser_fk_field_property_values[emailuser.id] = {}
-            for prop in emailuser_properties:
-                emailuser_fk_field_property_values[emailuser.id][prop] = getattr(emailuser, prop)
-
-    # Annotate queryset with Case expressions
-    case_whens = {
-        f"{emailuser_fk_field}_{prop}".replace("__", "_"): models.Case(
-            *[
-                models.When(**{emailuser_fk_field_id: id_val}, then=models.Value(emailuser_fk_field_property_values[id_val][prop]))
-                for id_val in emailuser_fk_field_ids
-            ],
-            default=models.Value(""),
-            output_field=models.CharField(),
-        )
-        for prop in emailuser_properties
-    }
-
-    return queryset.annotate(
-        **{
-            f"{emailuser_fk_field}_exists": models.Case(
-                models.When(**{f"{emailuser_fk_field_id}__in": emailuser_fk_field_ids}, then=models.Value(True)),
-                default=models.Value(False),
-                output_field=models.BooleanField(),
-            )
-        }
-    ).annotate(**case_whens)
 
 
 class GetProposalType(views.APIView):
@@ -247,102 +208,6 @@ class GetEmptyList(views.APIView):
 """
 
 
-def _get_params(request) -> dict:
-    """
-    Extract query params from either DRF Request or Django HttpRequest.
-    Works with request.query_params or request.GET.
-    """
-    if hasattr(request, "query_params"):
-        return request.query_params
-    elif hasattr(request, "GET"):
-        return request.GET
-    # As a fallback, assume dict-like
-    return getattr(request, "params", {}) or {}
-
-
-def _is_datetime_field(qs: QuerySet, field_name: str) -> bool:
-    """
-    Inspect model meta to decide if field_name is a DateTimeField.
-    Returns False for DateField and when field not found.
-    """
-    try:
-        field = qs.model._meta.get_field(field_name)
-        return field.get_internal_type() == "DateTimeField"
-    except Exception:
-        return False
-
-
-
-
-
-def search_in_emailuser_fields(search_value: str) -> list[int]:
-    """
-    Search `search_value` in EmailUser fields: email, first_name, last_name, and full name.
-    Returns a list of matching EmailUser IDs.
-    """
-    if not search_value:
-        return []
-
-    search_value = search_value.strip()
-    if not search_value:
-        return []
-
-    full_name_expr = Concat(
-        Coalesce('first_name', Value('')),
-        Value(' '),
-        Coalesce('last_name', Value('')),
-    )
-
-    q = (
-        Q(email__icontains=search_value) |
-        Q(first_name__icontains=search_value) |
-        Q(last_name__icontains=search_value) |
-        Q(full_name__icontains=search_value)  # annotated below
-    )
-
-    return list(
-        EmailUser.objects
-        .annotate(full_name=full_name_expr)
-        .filter(q)
-        .values_list('id', flat=True)
-        .distinct()
-    )
-
-
-
-def request_has_filters(request) -> bool:
-    """
-    Returns True iff the request contains any search/filter param you care about.
-    Adjust the keys to match your frontend.
-    """
-    params = _get_params(request)
-
-    # Global search (DataTables)
-    if (params.get("search[value]") or "").strip():
-        return True
-
-    # Date range filters (support both pairs)
-    if (params.get("date_from") or params.get("start_date") or "").strip():
-        return True
-    if (params.get("date_to") or params.get("end_date") or "").strip():
-        return True
-
-    # Processing status
-    status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
-    if status and status != "All":
-        return True
-
-    # Application type (license type)
-    app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
-    if app_type_name and app_type_name != "All":
-        return True
-
-    # Submitter selection
-    submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
-    if submitter_email and submitter_email != "All":
-        return True
-
-    return False
 
 
 
@@ -490,7 +355,19 @@ def get_sliced_queryset(
     # Apply slicing—this becomes LIMIT/OFFSET at the DB level
     return qs_built[start : start + length]
 
+def get_expanded_queryset(request, queryset):
+    emailuser_fk_fields = [
+        field.name
+        for field in queryset.model._meta.get_fields()
+        if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
+    ]
 
+    emailuser_properties = ["email", "first_name", "last_name"]
+
+    # Expand for each FK field
+    for fk_field in emailuser_fk_fields:
+        queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
+    return queryset
 
 class ProposalFilterBackend(LedgerDatatablesFilterBackend):
     """
@@ -499,20 +376,6 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
 
 
     def filter_queryset(self, request, queryset, view):
-        if isinstance(queryset, EmailUserQuerySet):
-            # Get all FK fields pointing to EmailUser
-            emailuser_fk_fields = [
-                field.name
-                for field in queryset.model._meta.get_fields()
-                if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
-            ]
-
-            emailuser_properties = ["email", "first_name", "last_name"]
-
-            # Expand for each FK field
-            for fk_field in emailuser_fk_fields:
-                queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
-
 
 
         total_count = queryset.count()
@@ -817,25 +680,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         return Proposal.objects.none()
 
-    def get_sliced_queryset(self):
-        user = self.request.user
-
-        if is_internal(self.request):
-            qs = Proposal.objects.exclude(application_type=self.excluded_type, migrated=True)
-        elif is_customer(self.request):
-            user_orgs = retrieve_delegate_organisation_ids(user)
-            qs = Proposal.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            ).exclude(application_type=self.excluded_type, migrated=True)
-        else:
-            qs = Proposal.objects.none()
-
-        start = int(self.request.GET.get("start", 0))
-        length = int(self.request.GET.get("length", 10))
-        qs = qs[start:start + length]
-
-        return qs
-
     @action(
         methods=[
             "GET",
@@ -868,10 +712,12 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         records_filtered = filtered_qs.count()       # total after filters
 
         # 5) Slice for pagination (use the optional-qs behavior)
-        qs_page = get_sliced_queryset(request, self.excluded_type, qs=filtered_qs)
+        queryset = get_sliced_queryset(request, self.excluded_type, qs=filtered_qs)
 
+        if isinstance(queryset, EmailUserQuerySet):
+            queryset = get_expanded_queryset(request, queryset)
         # 6) Serialize only the sliced page
-        serializer = ListProposalSerializer(qs_page, context={"request": request}, many=True)
+        serializer = ListProposalSerializer(queryset, context={"request": request}, many=True)
 
         # 7) Return DataTables-compatible payload
         return Response({
