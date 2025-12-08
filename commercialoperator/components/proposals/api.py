@@ -2,7 +2,8 @@ import traceback
 import os
 import json
 from django.db import models, connection
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Concat, Coalesce
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils.dateparse import parse_date
@@ -272,9 +273,11 @@ def _is_datetime_field(qs: QuerySet, field_name: str) -> bool:
 
 
 
-def search_in_emailuser_fields(search_value):
+
+
+def search_in_emailuser_fields(search_value: str) -> list[int]:
     """
-    Search `search_value` in EmailUser fields: email, first_name, last_name.
+    Search `search_value` in EmailUser fields: email, first_name, last_name, and full name.
     Returns a list of matching EmailUser IDs.
     """
     if not search_value:
@@ -284,18 +287,62 @@ def search_in_emailuser_fields(search_value):
     if not search_value:
         return []
 
+    full_name_expr = Concat(
+        Coalesce('first_name', Value('')),
+        Value(' '),
+        Coalesce('last_name', Value('')),
+    )
+
     q = (
         Q(email__icontains=search_value) |
         Q(first_name__icontains=search_value) |
-        Q(last_name__icontains=search_value)
+        Q(last_name__icontains=search_value) |
+        Q(full_name__icontains=search_value)  # annotated below
     )
 
     return list(
-        EmailUser.objects.filter(q)
+        EmailUser.objects
+        .annotate(full_name=full_name_expr)
+        .filter(q)
         .values_list('id', flat=True)
         .distinct()
     )
 
+
+
+def request_has_filters(request) -> bool:
+    """
+    Returns True iff the request contains any search/filter param you care about.
+    Adjust the keys to match your frontend.
+    """
+    params = _get_params(request)
+
+    # Global search (DataTables)
+    if (params.get("search[value]") or "").strip():
+        return True
+
+    # Date range filters (support both pairs)
+    if (params.get("date_from") or params.get("start_date") or "").strip():
+        return True
+    if (params.get("date_to") or params.get("end_date") or "").strip():
+        return True
+
+    # Processing status
+    status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
+    if status and status != "All":
+        return True
+
+    # Application type (license type)
+    app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
+    if app_type_name and app_type_name != "All":
+        return True
+
+    # Submitter selection
+    submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
+    if submitter_email and submitter_email != "All":
+        return True
+
+    return False
 
 
 
@@ -808,7 +855,10 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
         # 2) Apply search filters (if any) to base
         #    proposal_search_filters should return a QuerySet or None.
-        filtered_qs = proposal_search_filters(request, original_qs) or original_qs
+        if request_has_filters(request):
+            filtered_qs = proposal_search_filters(request, original_qs)
+        else:
+            filtered_qs = original_qs
 
         # 3) Apply DRF view-level filters (permissions, ordering, etc.)
         filtered_qs = self.filter_queryset(filtered_qs)
