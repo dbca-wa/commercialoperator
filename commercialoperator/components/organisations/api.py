@@ -3,6 +3,9 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q, Value
 from django.db.models.functions import Concat
+import re
+from typing import Optional
+from django.db.models import QuerySet
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -26,10 +29,17 @@ from commercialoperator.components.segregation.filters import (
 )
 from commercialoperator.components.segregation.mixins import FilterHelperMixin
 from commercialoperator.components.segregation.utils import (
+    EmailUserQuerySet,
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
+    expand_emailuser_fields,
+)
+from commercialoperator.components.proposals.utils import (
+    _get_params,
+    search_in_emailuser_fields,
+    request_has_filters,
 )
 from commercialoperator.helpers import is_customer, is_internal
 from commercialoperator.components.organisations.models import (
@@ -62,6 +72,62 @@ from commercialoperator.components.organisations.serializers import (
     OrganisationRequestLogEntrySerializer,
 )
 
+def get_sliced_queryset(
+    request,
+    qs: Optional[QuerySet] = None,
+) -> QuerySet:
+    user = request.user
+
+    # Parse pagination safely
+    try:
+        start = int(request.GET.get("start", 0))
+    except (TypeError, ValueError):
+        start = 0
+    try:
+        length = int(request.GET.get("length", 10))
+    except (TypeError, ValueError):
+        length = 10
+
+    # Ensure non-negative values
+    start = max(0, start)
+    length = max(0, length)
+
+    # If an external queryset is provided, just slice and return.
+    if qs is not None:
+        return qs[start : start + length]
+
+    # Otherwise, build the queryset per the original rules.
+    if is_internal(request):
+        qs_built = OrganisationRequest.objects.all()
+    elif is_customer(request):
+        user_org_ids = retrieve_delegate_organisation_ids(user.id)
+        user_organisations = Organisation.objects.filter(
+            organisation_id__in=user_org_ids
+        )
+        user_organisation_abns = [org.abn for org in user_organisations]
+        qs_built = OrganisationRequest.objects.filter(
+                Q(abn__in=user_organisation_abns) | Q(requester_id=user)
+            )
+    else:
+        qs_built = OrganisationRequest.objects.none()
+
+    # Apply slicing—this becomes LIMIT/OFFSET at the DB level
+    return qs_built[start : start + length]
+
+def get_expanded_queryset(request, queryset):
+    emailuser_fk_fields = [
+        field.name
+        for field in queryset.model._meta.get_fields()
+        if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
+    ]
+
+    emailuser_properties = ["email", "first_name", "last_name"]
+
+    # Expand for each FK field
+    for fk_field in emailuser_fk_fields:
+        queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
+    
+    return queryset
 
 class OrganisationViewSet(viewsets.ModelViewSet):
     queryset = Organisation.objects.none()
@@ -785,45 +851,86 @@ class OrganisationRequestDatatableFilterBackend(
 ):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
+        params = _get_params(request)
 
-        ledger_lookup_fields = [
-            "requester",
-        ]
-        # Prevent the external user from searching for officers
-        if is_internal(request):
-            ledger_lookup_fields += ["assigned_officer"]
+        search_value = (params.get("search[value]") or "").strip()
 
-        if (
-            request.GET.get(f"{self.DATATABLE_FILTER_PREFIX}full_name", "").lower()
-            != "all"
-        ):
-            # Only annotate with full_name if the full_name filter is applied
-            queryset = queryset.expand_emailuser_fields(
-                "requester", {"first_name", "last_name", "email"}
-            )
-            queryset = queryset.annotate(
-                full_name=Concat(
-                    "requester_first_name",
-                    Value(" "),
-                    "requester_last_name",
-                    Value(" ("),
-                    "requester_email",
-                    Value(")"),
+        if search_value:
+            matching_ids = search_in_emailuser_fields(search_value)
+
+            if matching_ids:
+                if is_internal(request):
+                    queryset = queryset.filter(
+                        Q(requester__in=matching_ids) | Q(assigned_officer_id__in=matching_ids) | Q(name__icontains=search_value)
                 )
-            )
-        # Apply the search filters
-        queryset = self.filter_datatables_queryset(
-            request,
-            queryset,
-            ledger_lookup_fields=ledger_lookup_fields,
-        )
+                else:
+                    queryset = queryset.filter(
+                        Q(requester__in=matching_ids) | Q(name__icontains=search_value)
+                    )
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search_value)
+                )
 
-        queryset = self.apply_request(
-            request,
-            queryset,
-            view,
-            ledger_lookup_fields=ledger_lookup_fields,
-        )
+        organisation = (params.get("datatable_filter_name")).strip() or None
+        applicant = (params.get("datatable_filter_full_name")).strip() or None
+        role = (params.get("datatable_filter_role")).strip() or None
+        status = (params.get("datatable_filter_status")).strip() or None
+        if organisation and organisation.lower() != "all":
+            queryset = queryset.filter(name__icontains=organisation)
+
+        if applicant and applicant.strip() and applicant.lower() != "all":
+            emails = re.findall(r'\((.*?)\)', applicant)
+            if emails:
+                email = emails[0].strip()
+                if email:
+                    user = EmailUser.objects.filter(email__iexact=email).only('id').first()
+                    if user:
+                        queryset = queryset.filter(requester__id=user.id)
+
+        if role and role.lower() != "all":
+            queryset = queryset.filter(role=role)
+        if status and status.lower() != "all":
+            queryset = queryset.filter(status=status)
+
+        # ledger_lookup_fields = [
+        #     "requester",
+        # ]
+        # # Prevent the external user from searching for officers
+        # if is_internal(request):
+        #     ledger_lookup_fields += ["assigned_officer"]
+
+        # if (
+        #     request.GET.get(f"{self.DATATABLE_FILTER_PREFIX}full_name", "").lower()
+        #     != "all"
+        # ):
+        #     # Only annotate with full_name if the full_name filter is applied
+        #     queryset = queryset.expand_emailuser_fields(
+        #         "requester", {"first_name", "last_name", "email"}
+        #     )
+        #     queryset = queryset.annotate(
+        #         full_name=Concat(
+        #             "requester_first_name",
+        #             Value(" "),
+        #             "requester_last_name",
+        #             Value(" ("),
+        #             "requester_email",
+        #             Value(")"),
+        #         )
+        #     )
+        # Apply the search filters
+        # queryset = self.filter_datatables_queryset(
+        #     request,
+        #     queryset,
+        #     ledger_lookup_fields=ledger_lookup_fields,
+        # )
+
+        # queryset = self.apply_request(
+        #     request,
+        #     queryset,
+        #     view,
+        #     ledger_lookup_fields=ledger_lookup_fields,
+        # )
 
         setattr(view, "_datatables_total_count", total_count)
 
@@ -969,15 +1076,31 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     )
     @basic_exception_handler
     def datatable_list(self, request, *args, **kwargs):
-        qs = self.get_queryset()
-        qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
-        result_page = self.paginator.paginate_queryset(qs, request)
-        serializer = OrganisationRequestDTSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return self.paginator.get_paginated_response(serializer.data)
+        qs = self.get_queryset()
+        if request_has_filters(request):
+            filtered_qs = self.filter_queryset(qs)
+        else:
+            filtered_qs = qs
+        
+        records_total = qs.count()          # total before filters
+        records_filtered = filtered_qs.count()       # total after filters
+
+        
+        queryset = get_sliced_queryset(request, qs=filtered_qs)
+
+        if isinstance(queryset, EmailUserQuerySet):
+            queryset = get_expanded_queryset(request, queryset)
+        
+        serializer = OrganisationRequestDTSerializer(queryset, context={"request": request}, many=True)
+
+        
+        return Response({
+            "draw": int(request.GET.get("draw", 1)),
+            "recordsTotal": records_total,
+            "recordsFiltered": records_filtered,
+            "data": serializer.data,
+        })
 
     @action(
         methods=[

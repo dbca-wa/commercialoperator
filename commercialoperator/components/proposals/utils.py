@@ -209,19 +209,36 @@ def request_has_filters(request) -> bool:
 
     # Processing status
     status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
-    if status and status != "All":
+    if status and status.lower() != "all":
         return True
 
     # Application type (license type)
     app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
-    if app_type_name and app_type_name != "All":
+    if app_type_name and app_type_name.lower() != "all":
         return True
 
     # Submitter selection
     submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
-    if submitter_email and submitter_email != "All":
+    if submitter_email and submitter_email.lower() != "all":
         return True
 
+    # Specific filters for organisations
+    organisation = (params.get("datatable_filter_name") or "").strip()
+    if organisation and organisation.lower() != "all":
+        return True
+
+    # Applicant name filter
+    applicant = (params.get("datatable_filter_full_name") or "").strip()
+    if applicant and applicant.lower() != "all":
+        return True
+    # Role filter
+    role = (params.get("datatable_filter_role") or "").strip()
+    if role and role.lower() != "all":
+        return True
+    # Status filter
+    status = (params.get("datatable_filter_status") or "").strip()
+    if status and status.lower() != "all":
+        return True
     return False
 
 def _get_params(request) -> dict:

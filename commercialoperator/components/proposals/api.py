@@ -7,7 +7,6 @@ from django.db.models.functions import Concat, Coalesce
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils.dateparse import parse_date
-from django.utils.dateparse import parse_date
 from django.db.models import QuerySet
 from typing import Optional
 from django.core.cache import cache
@@ -529,12 +528,13 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 {"org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION}
             )
 
-        elif queryset.model is Approval:
-            if date_from:
-                queryset = queryset.filter(expiry_date__gte=date_from)
+        # Approval is no longer using the ProposalFilterBackend
+        # elif queryset.model is Approval:
+        #     if date_from:
+        #         queryset = queryset.filter(expiry_date__gte=date_from)
 
-            if date_to:
-                queryset = queryset.filter(expiry_date__lte=date_to)
+        #     if date_to:
+        #         queryset = queryset.filter(expiry_date__lte=date_to)
         elif queryset.model is Compliance:
             if date_from:
                 queryset = queryset.filter(due_date__gte=date_from)
