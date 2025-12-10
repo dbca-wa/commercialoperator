@@ -143,7 +143,7 @@ def rgetattr(obj, dotted_path: str, *, raise_exception: bool = False):
 def expand_organisation_fields(
     queryset: QuerySet,
     organisation_foreign_key_field: str,
-    organisation_properties: Optional[Iterable[str]] = None,  # callable: retrieve_organisation(ledger_org_id) -> Mapping[str, Any]
+    organisation_properties: Optional[Iterable[str]] = None,
 ) -> QuerySet:
 
     if not organisation_foreign_key_field:
