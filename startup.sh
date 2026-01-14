@@ -1,8 +1,7 @@
 #!/bin/bash
   
 # Start the first process
-env > /etc/.cronenv
-sed -i 's/\"/\\"/g' /etc/.cronenv
+openssl rand -hex 32 > /app/git_hash
 
 if [ $ENABLE_CRON == "True" ];
 then
