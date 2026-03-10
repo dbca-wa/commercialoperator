@@ -110,7 +110,7 @@
             
             <div class="row mb-3">
                 <div
-                    
+                    v-if="is_external"
                     class="col-md-3 ms-md-auto"
                 >
                     <div class="form-group mt-auto mb-0 align-self-end">
