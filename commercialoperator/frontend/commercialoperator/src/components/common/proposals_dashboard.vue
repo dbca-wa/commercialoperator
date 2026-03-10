@@ -1,197 +1,145 @@
 <template id="proposal_dashboard">
     <div class="row">
         <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="row mb-1">
-                    <div class="col-md-3">
-                        <div
-                            id="select_proposal_status_parent"
-                            class="form-group"
-                        >
-                            <label for="select_proposal_status">Status</label>
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_proposal_status"
-                                    ref="select_proposal_status"
-                                    v-model="filterProposalStatus"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_status"
-                                        :key="s.value"
-                                        :value="s.value"
-                                    >
-                                        {{ s.name }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div
-                            id="select_proposal_submitter_parent"
-                            class="form-group"
-                        >
-                            <label for="select_proposal_submitter"
-                                >Submitter</label
-                            >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_proposal_submitter"
-                                    ref="select_proposal_submitter"
-                                    v-model="filterProposalSubmitter"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_submitters"
-                                        :key="s.email"
-                                        :value="s.email"
-                                    >
-                                        {{ s.search_term }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+            <div class="row mb-1">
+                <div class="col-md-3">
                     <div
-                        v-if="is_external"
-                        class="col-md-6 d-flex align-items-baseline"
+                        id="select_proposal_status_parent"
+                        class="form-group"
                     >
-                        <div class="form-group mt-auto mb-0">
-                            <router-link
-                                type="button"
-                                class="btn btn-primary pull-right"
-                                :to="{ name: 'apply_proposal' }"
-                                >New Application</router-link
-                            >
+                        <label for="select_proposal_status">Status</label>
+                        <div v-show="isLoading">
+                            <select class="form-control">
+                                <option value="">Loading...</option>
+                            </select>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label for="input_lodged_from_date">Lodged From</label>
-                        <div
-                            ref="proposalDateFromPicker"
-                            class="input-group date"
-                        >
-                            <input
-                                id="input_lodged_from_date"
-                                v-model="filterProposalLodgedFrom"
-                                type="date"
+                        <div v-show="!isLoading">
+                            <select
+                                id="select_proposal_status"
+                                ref="select_proposal_status"
+                                v-model="filterProposalStatus"
                                 class="form-control"
-                                max="2999-12-31"
-                                placeholder="DD/MM/YYYY"
-                            />
-                            <span class="input-group-addon">
-                                <span
-                                    class="glyphicon glyphicon-calendar"
-                                ></span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="input_lodged_to_date">Lodged To</label>
-                        <div
-                            ref="proposalDateToPicker"
-                            class="input-group date"
-                        >
-                            <input
-                                id="input_lodged_to_date"
-                                v-model="filterProposalLodgedTo"
-                                type="date"
-                                class="form-control"
-                                max="2999-12-31"
-                                placeholder="DD/MM/YYYY"
-                            />
-                            <span class="input-group-addon">
-                                <span
-                                    class="glyphicon glyphicon-calendar"
-                                ></span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div
-                            id="select_proposal_application_type_parent"
-                            class="form-group"
-                        >
-                            <label for="select_proposal_application_type"
-                                >Licence Type</label
                             >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_proposal_application_type"
-                                    ref="select_proposal_application_type"
-                                    v-model="filterApplicationType"
-                                    class="form-control"
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in proposal_status"
+                                    :key="s.value"
+                                    :value="s.value"
                                 >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in application_types"
-                                        :key="s"
-                                        :value="s"
-                                    >
-                                        {{ s }}
-                                    </option>
-                                </select>
-                            </div>
+                                    {{ s.name }}
+                                </option>
+                            </select>
                         </div>
                     </div>
-                    
-            <div class="col-md-3 mb-3">
-                <label for="dt-global-search" class="d-flex justify-content-between align-items-center">
-                <span>Search</span>
-                </label>
-
-                <div class="input-group">
-                <input
-                    id="dt-global-search"
-                    v-model="globalSearch"
-                    @keypress.enter="runGlobalSearch"
-                    @keydown.esc="clearGlobalSearch"
-                    type="text"
-                    class="form-control form-control"
-                    aria-label="Global search"
-                />
-                </div>
-            </div>
-
-
-                </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <datatable
-                            v-if="level == 'external'"
-                            :id="datatable_id"
-                            ref="proposal_datatable"
-                            :dt-options="proposal_ex_options"
-                            :dt-headers="proposal_ex_headers"
+                </div>                    
+                <div class="col-md-3 mb-3">
+                    <label for="input_lodged_from_date">Lodged From</label>
+                    <div
+                        ref="proposalDateFromPicker"
+                        class="input-group date"
+                    >
+                        <input
+                            id="input_lodged_from_date"
+                            v-model="filterProposalLodgedFrom"
+                            type="date"
+                            class="form-control"
+                            max="2999-12-31"
+                            placeholder="DD/MM/YYYY"
                         />
-                        <datatable
-                            v-else
-                            :id="datatable_id"
-                            ref="proposal_datatable"
-                            :dt-options="proposal_options"
-                            :dt-headers="proposal_headers"
-                        />
+                        <span class="input-group-addon">
+                            <span
+                                class="glyphicon glyphicon-calendar"
+                            ></span>
+                        </span>
                     </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="input_lodged_to_date">Lodged To</label>
+                    <div
+                        ref="proposalDateToPicker"
+                        class="input-group date"
+                    >
+                        <input
+                            id="input_lodged_to_date"
+                            v-model="filterProposalLodgedTo"
+                            type="date"
+                            class="form-control"
+                            max="2999-12-31"
+                            placeholder="DD/MM/YYYY"
+                        />
+                        <span class="input-group-addon">
+                            <span
+                                class="glyphicon glyphicon-calendar"
+                            ></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div
+                        id="select_proposal_application_type_parent"
+                        class="form-group"
+                    >
+                        <label for="select_proposal_application_type"
+                            >Licence Type</label
+                        >
+                        <div v-show="isLoading">
+                            <select class="form-control">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div v-show="!isLoading">
+                            <select
+                                id="select_proposal_application_type"
+                                ref="select_proposal_application_type"
+                                v-model="filterApplicationType"
+                                class="form-control"
+                            >
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in application_types"
+                                    :key="s"
+                                    :value="s"
+                                >
+                                    {{ s }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>          
+            
+            <div class="row mb-3">
+                <div
+                    
+                    class="col-md-3 ms-md-auto"
+                >
+                    <div class="form-group mt-auto mb-0 align-self-end">
+                        <router-link
+                            type="button"
+                            class="btn btn-primary float-end"
+                            :to="{ name: 'apply_proposal' }"
+                            >New Application</router-link
+                        >
+                    </div>
+                </div>  
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-12">
+                    <datatable
+                        v-if="level == 'external'"
+                        :id="datatable_id"
+                        ref="proposal_datatable"
+                        :dt-options="proposal_ex_options"
+                        :dt-headers="proposal_ex_headers"
+                    />
+                    <datatable
+                        v-else
+                        :id="datatable_id"
+                        ref="proposal_datatable"
+                        :dt-options="proposal_options"
+                        :dt-headers="proposal_headers"
+                    />
                 </div>
             </div>
         </div>
@@ -232,10 +180,8 @@ export default {
             // Filters for Proposals
             filterApplicationType: 'All',
             filterProposalStatus: 'All',
-            globalSearch: '',
             filterProposalLodgedFrom: '',
             filterProposalLodgedTo: '',
-            filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
             application_types: [],
             external_status: [
@@ -262,7 +208,6 @@ export default {
                 { value: 'discarded', name: 'Discarded' },
                 { value: 'awaiting_payment', name: 'Awaiting Payment' },
             ],
-            proposal_submitters: [],
             proposal_status: [],
             proposal_ex_headers: [
                 'Number',
@@ -286,6 +231,7 @@ export default {
                         targets: -1,
                     },
                 ],
+                searching: true,
                 responsive: true,
                 serverSide: true,
                 pageLength:10,
@@ -316,13 +262,12 @@ export default {
                                 : '';
                         d.datatable_filter_processing_status =
                             vm.filterProposalStatus;
-                        d.datatable_filter_submitter__email =
-                            vm.filterProposalSubmitter;
                         d.datatable_filter_application_type__name =
                             vm.filterApplicationType;
                         // Add search terms to be concatenated on the queryset
-                        d.search_terms =
-                            'submitter__first_name, submitter__last_name, submitter__email, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
+                        //TODO may not be needed, remove on review
+                        //d.search_terms =
+                        //    'submitter__first_name, submitter__last_name, submitter__email, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,
@@ -466,6 +411,7 @@ export default {
                         targets: -1,
                     },
                 ],
+                searching: true,
                 responsive: true,
                 serverSide: true,
                 order: [[0, 'desc']],
@@ -495,13 +441,13 @@ export default {
                                 : '';
                         d.datatable_filter_processing_status =
                             vm.filterProposalStatus;
-                        d.datatable_filter_submitter__email =
-                            vm.filterProposalSubmitter;
                         d.datatable_filter_application_type__name =
                             vm.filterApplicationType;
                         // Add search terms to be concatenated on the queryset
-                        d.search_terms =
-                            'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name, org_applicant__organisation__organisation_name';
+                        //TODO may not be needed, remove on review
+                        //d.search_terms =
+                        //    'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name, org_applicant__organisation__organisation_name';
+                        return d
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,
@@ -537,7 +483,6 @@ export default {
                     },
                     {
                         data: 'submitter',
-                        // eslint-disable-next-line no-unused-vars
                         mRender: function (data, type, full) {
                             if (data && data.full_name) {
                                 return `${data.full_name}`;
@@ -545,14 +490,14 @@ export default {
                             return '';
                         },
                         name: 'submitter__first_name, submitter__last_name, submitter__email',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false, //override in filter backend
                     },
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name',
-                        orderable: true,
-                        searchable: true, // Note: disabled for now during segregation
+                        orderable: false,
+                        searchable: false, //override in filter backend
                     },
                     {
                         data: 'processing_status',
@@ -571,8 +516,8 @@ export default {
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false, //override in filter backend
                     },
                     {
                         data: 'event_name',
@@ -585,7 +530,6 @@ export default {
                         mRender: function (data, type, full) {
                             let links = '';
                             if (!vm.is_external) {
-                                /*if(vm.check_assessor(full) && full.can_officer_process)*/
                                 if (full.assessor_process) {
                                     links += `<a href='/internal/proposal/${full.id}'>Process</a><br/>`;
                                 } else {
@@ -610,7 +554,6 @@ export default {
                                 links += `<a href='/cols/payments/awaiting-payment-pdf/${full.id}' target='_blank'><i style='color:red;' class='fa fa-file-pdf'>&nbsp</i>Pending Invoice</a><br/>`;
                             }
 
-                            //if (full.fee_paid && full.proposal_type!='Amendment'){
                             if (
                                 full.fee_invoice_reference &&
                                 full.proposal_type != 'Amendment'
@@ -647,21 +590,6 @@ export default {
         },
     },
     watch: {
-        filterProposalSubmitter: function () {
-            //this.$refs.proposal_datatable.vmDataTable.draw();
-            let vm = this;
-            if (vm.filterProposalSubmitter != 'All') {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(2)
-                    .search(vm.filterProposalSubmitter)
-                    .draw();
-            } else {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(2)
-                    .search('')
-                    .draw();
-            }
-        },
         filterProposalStatus: function () {
             let vm = this;
             if (vm.filterProposalStatus != 'All') {
@@ -705,21 +633,6 @@ export default {
     },
 
     mounted: function () {
-        
-        const dt = this.$refs.proposal_datatable.vmDataTable;
-        // flag indicating an explicit search commit (Enter or Search button)
-        this._searchCommitted = false;
-
-        // Intercept outgoing server-side payload
-        dt.on('preXhr.dt', (e, settings, data) => {
-            // Only send the search term if user has committed it (Enter)
-            if (!this._searchCommitted) {
-            // wipe out any accidental search value
-            data.search = data.search || {};
-            data.search.value = '';
-            }
-        });
-
         this.fetchFilterLists();
         this.fetchProfile();
         let vm = this;
@@ -732,7 +645,7 @@ export default {
             }, 100);
         });
         this.$nextTick(() => {
-            vm.initialiseSearch();
+            this.dateSearch();
             vm.addEventListeners();
         });
     },
@@ -744,7 +657,6 @@ export default {
                 .fetchUrl(api_endpoints.filter_list)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.submitters;
                         vm.application_types = response.application_types;
                         vm.proposal_status =
                             vm.level == 'internal'
@@ -759,30 +671,6 @@ export default {
                     vm.isLoading = false;
                 });
         },
-
-        runGlobalSearch() {
-            const dt = this.$refs.proposal_datatable?.vmDataTable;
-            if (!dt) return;
-
-            // mark as committed and perform the search + draw (triggers one request)
-            this._searchCommitted = true;
-            dt.search(this.globalSearch || '').draw();
-            // optionally reset commit right after, so other redraws don’t carry search
-            // If you want persistent search until Clear, leave it true.
-            // this._searchCommitted = false;
-        },
-
-        clearGlobalSearch() {
-            const dt = this.$refs.proposal_datatable?.vmDataTable;
-            if (!dt) return;
-
-            this.globalSearch = '';
-            this._searchCommitted = true; // allow clearing to propagate
-            dt.search('').draw();
-            // After clearing, disable future accidental searches
-            this._searchCommitted = false;
-        },
-
 
         discardProposal: function (proposal_id) {
             let vm = this;
@@ -846,29 +734,6 @@ export default {
                 'filterApplicationType',
                 'Select Application Type',
                 false
-            );
-            helpers.initialiseSelect2.bind(this)(
-                'select_proposal_submitter',
-                'select_proposal_submitter_parent',
-                'filterProposalSubmitter',
-                'Select Submitter',
-                false
-            );
-        },
-        initialiseSearch: function () {
-            this.submitterSearch();
-            this.dateSearch();
-        },
-        submitterSearch: function () {
-            let vm = this;
-            vm.$refs.proposal_datatable.table.dataTableExt.afnFiltering.push(
-                function (settings, data, dataIndex, original) {
-                    let filtered_submitter = vm.filterProposalSubmitter;
-                    if (filtered_submitter == 'All') {
-                        return true;
-                    }
-                    return filtered_submitter == original.submitter.email;
-                }
             );
         },
         dateSearch: function () {

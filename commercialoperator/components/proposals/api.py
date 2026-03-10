@@ -368,11 +368,12 @@ def get_expanded_queryset(request, queryset):
         queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
     return queryset
 
-class ProposalFilterBackend(LedgerDatatablesFilterBackend):
+#TODO if feasible, let viewsets have their own filter backend instead of all sharing ProposalFilterBackend
+#TODO replace LedgerDatatableFilterBackend - it is overengineered for what we need and does not work
+class ProposalFilterBackend(DatatablesFilterBackend):
     """
     Custom filters
     """
-
 
     def filter_queryset(self, request, queryset, view):
 
@@ -519,22 +520,6 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
             if date_to:
                 queryset = queryset.filter(lodgement_date__lte=date_to)
 
-            ledger_lookup_fields = ["submitter", "org_applicant", "proxy_applicant"]
-            # Prevent the external user from searching for officers
-            if is_internal(request):
-                ledger_lookup_fields += ["assigned_officer"]
-
-            ledger_lookup_extras.update(
-                {"org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION}
-            )
-
-        # Approval is no longer using the ProposalFilterBackend
-        # elif queryset.model is Approval:
-        #     if date_from:
-        #         queryset = queryset.filter(expiry_date__gte=date_from)
-
-        #     if date_to:
-        #         queryset = queryset.filter(expiry_date__lte=date_to)
         elif queryset.model is Compliance:
             if date_from:
                 queryset = queryset.filter(due_date__gte=date_from)
@@ -628,22 +613,6 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                     "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
                 }
             )
-
-        # Apply the search filters
-        # queryset = self.filter_datatables_queryset(
-        #     request,
-        #     queryset,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        #     ledger_lookup_extras=ledger_lookup_extras,
-        # )
-
-        # queryset = self.apply_request(
-        #         request,
-        #         queryset,
-        #         view,
-        #         ledger_lookup_fields=ledger_lookup_fields,
-        #         ledger_lookup_extras=ledger_lookup_extras,
-        #     )
 
         setattr(view, "_datatables_total_count", total_count)
 
@@ -1083,10 +1052,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def filter_list(self, request, *args, **kwargs):
         """Used by the internal/external dashboard filters"""
 
-        submitters = get_cached_proposal_submitters(self)
         application_types = get_cached_application_types()
         data = dict(
-            submitters=submitters,
             application_types=application_types,
             approval_status_choices=[i[1] for i in Approval.STATUS_CHOICES],
         )
