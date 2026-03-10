@@ -1,5 +1,7 @@
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup
+from ledger_api_client.ledger_models import UsersInGroup
+from django.contrib.auth.models import Group
 from django.conf import settings
 
 import logging
@@ -11,6 +13,13 @@ from commercialoperator.components.segregation.utils import (
 
 logger = logging.getLogger(__name__)
 
+def is_payment_admin(user):
+    print ("is_payment_admin")
+    group = Group.objects.filter(name=settings.PAYMENT_OFFICERS_GROUP)
+    if group.exists():
+        return user.id in list(UsersInGroup.objects.filter(group_id=group.first().id).values_list('emailuser_id', flat=True))
+    else:
+        return False
 
 def belongs_to_by_user_id(user_id, group_name):
     system_group = SystemGroup.objects.filter(name=group_name).first()
