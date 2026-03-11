@@ -235,6 +235,9 @@ export default {
                         mRender: function (data, type, full) {
                             return full.lodgement_number;
                         },
+                        name: 'lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'submitter',
@@ -245,19 +248,21 @@ export default {
                             }
                             return '';
                         },
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false, //overridden by filterbackend
                         name: 'submitter__first_name, submitter__last_name, submitter__email',
                     },
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'processing_status',
                         name: 'processing_status',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'lodgement_date',
@@ -267,13 +272,14 @@ export default {
                                 ? moment(data).format(vm.dateFormat)
                                 : '';
                         },
-                        searchable: false, // handles by filter_queryset override method - class ProposalFilterBackend
+                        searchable: false,
+                        orderable: true,
                     },
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false, //overridden by filterbackend
                     },
                     {
                         data: 'id',

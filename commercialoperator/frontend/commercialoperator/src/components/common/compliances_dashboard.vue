@@ -262,6 +262,8 @@ export default {
                             return full.reference;
                         },
                         name: 'id, lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'approval_lodgement_number',
@@ -270,16 +272,20 @@ export default {
                             return data;
                         },
                         name: 'approval__lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'application_type',
                         name: 'proposal__application_type__name',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'holder',
                         name: 'approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                         mRender: function (data, type, full) {
                             return vm.level == 'external' ? full.holder : data;
                         },
@@ -291,6 +297,8 @@ export default {
                                 ? full.customer_status
                                 : data;
                         },
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'due_date',
@@ -300,11 +308,14 @@ export default {
                                 ? moment(data).format(vm.dateFormat)
                                 : '';
                         },
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'assigned_to',
                         name: 'assigned_to__first_name, assigned_to__last_name, assigned_to__email',
-                        searchable: true,
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'compliance_licence_name',

@@ -53,7 +53,6 @@ from commercialoperator.components.proposals.mixins import MembersEmailMixin
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.mixins import MembersPropertiesMixin
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     retrieve_email_user,
     retrieve_group_members,
     retrieve_user_groups,
@@ -581,7 +580,6 @@ class ParkEntry(models.Model):
 
 
 class Proposal(DirtyFieldsMixin, RevisionedMixin):
-    objects = EmailUserQuerySet.as_manager()
 
     APPLICANT_TYPE_ORGANISATION = "ORG"
     APPLICANT_TYPE_PROXY = "PRX"
@@ -4720,7 +4718,6 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
 
 
 class Referral(RevisionedMixin):
-    objects = EmailUserQuerySet.as_manager()
 
     SENT_CHOICES = ((1, "Sent From Assessor"), (2, "Sent From Referral"))
     PROCESSING_STATUS_CHOICES = (
@@ -6557,46 +6554,45 @@ class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
                 )
 
 
-class DistrictProposalQuerySet(EmailUserQuerySet):
-    def with_approver_group_id(self):
-        try:
-            default_group = DistrictProposalApproverGroup.objects.get(default=True)
-        except DistrictProposalApproverGroup.DoesNotExist:
-            default_group_id = None
-        else:
-            default_group_id = default_group.id
-
-        return self.annotate(
-            approver_group_id=Case(
-                When(
-                    district__isnull=False,
-                    then=F("district__districtproposalapprovergroup"),
-                ),
-                default=default_group_id,
-            )
-        )
-
-    def with_assessor_group_id(self):
-        try:
-            default_group = DistrictProposalAssessorGroup.objects.get(default=True)
-        except DistrictProposalAssessorGroup.DoesNotExist:
-            default_group_id = None
-        else:
-            default_group_id = default_group.id
-
-        return self.annotate(
-            assessor_group_id=Case(
-                When(
-                    district__isnull=False,
-                    then=F("district__districtproposalassessorgroup"),
-                ),
-                default=default_group_id,
-            )
-        )
+#class DistrictProposalQuerySet(EmailUserQuerySet):
+#    def with_approver_group_id(self):
+#        try:
+#            default_group = DistrictProposalApproverGroup.objects.get(default=True)
+#        except DistrictProposalApproverGroup.DoesNotExist:
+#            default_group_id = None
+#        else:
+#            default_group_id = default_group.id
+#
+#        return self.annotate(
+#            approver_group_id=Case(
+#                When(
+#                    district__isnull=False,
+#                    then=F("district__districtproposalapprovergroup"),
+#                ),
+#                default=default_group_id,
+#            )
+#        )
+#
+#    def with_assessor_group_id(self):
+#        try:
+#            default_group = DistrictProposalAssessorGroup.objects.get(default=True)
+#        except DistrictProposalAssessorGroup.DoesNotExist:
+#            default_group_id = None
+#        else:
+#            default_group_id = default_group.id
+#
+#        return self.annotate(
+#            assessor_group_id=Case(
+#                When(
+#                    district__isnull=False,
+#                    then=F("district__districtproposalassessorgroup"),
+#                ),
+#                default=default_group_id,
+#            )
+#        )
 
 
 class DistrictProposal(models.Model):
-    objects = DistrictProposalQuerySet.as_manager()
 
     PROCESSING_STATUS_WITH_ASSESSOR = "with_assessor"
     PROCESSING_STATUS_WITH_REFERRAL = "with_referral"

@@ -184,6 +184,8 @@ export default {
                             return full.proposal_lodgement_number;
                         },
                         name: 'proposal__id, proposal__lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'submitter',
@@ -195,18 +197,20 @@ export default {
                             return '';
                         },
                         name: 'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false, //overridden by filterbackend
                     },
                     {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'processing_status',
                         name: 'processing_status',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'proposal_lodgement_date',
@@ -217,6 +221,8 @@ export default {
                                 : '';
                         },
                         name: 'proposal__lodgement_date',
+                        orderable: true,
+                        searchable: false,
                     },
                     {
                         data: 'id',

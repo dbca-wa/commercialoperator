@@ -37,7 +37,6 @@ from commercialoperator.components.organisations.models import (
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     retrieve_delegate_organisation_ids,
     expand_organisation_fields,
     expand_emailuser_fields,
@@ -204,8 +203,6 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         if submitter_id:
             filtered_qs = filtered_qs.filter(submitter_id=submitter_id)
         queryset = get_sliced_queryset(request, qs=filtered_qs)
-        if isinstance(queryset, EmailUserQuerySet):
-            queryset = get_expanded_queryset(request, queryset)
         
         serializer = ApprovalSerializer(
             queryset, context={"request": request}, many=True

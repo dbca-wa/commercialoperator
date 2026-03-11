@@ -229,10 +229,14 @@ export default {
                             return full.proposal_lodgement_number + tick;
                         },
                         name: 'proposal__id, proposal__lodgement_number',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'application_type',
                         name: 'proposal__application_type__name',
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'submitter',
@@ -244,17 +248,20 @@ export default {
                             return '';
                         },
                         name: 'proposal__submitter__email',
-                        searchable: false, // Note: disabled for now during segregation
+                        searchable: false, // overriden by filterbackend
+                        orderable: false,
                     },
                     {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
-                        // Note: disabled for now during segregation
-                        searchable: true,
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'processing_status',
                         name: 'proposal__processing_status',
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'proposal_lodgement_date',
@@ -265,16 +272,20 @@ export default {
                                 : '';
                         },
                         name: 'proposal__lodgement_date',
+                        searchable: false,
+                        orderable: true,
                     },
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        searchable: false, //overriden by filterbackend
+                        orderable: false,
                     },
                     {
                         data: 'proposal_event_name',
                         name: '',
                         searchable: false,
-                        orderable: true,
+                        orderable: false,
                     },
                     {
                         data: 'id',

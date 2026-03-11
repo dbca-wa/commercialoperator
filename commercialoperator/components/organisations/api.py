@@ -26,7 +26,6 @@ from commercialoperator.components.segregation.api import (
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
@@ -1002,9 +1001,6 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
 
         
         queryset = get_sliced_queryset(request, qs=filtered_qs)
-
-        if isinstance(queryset, EmailUserQuerySet):
-            queryset = get_expanded_queryset(request, queryset)
         
         serializer = OrganisationRequestDTSerializer(queryset, context={"request": request}, many=True)
 

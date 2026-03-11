@@ -292,10 +292,14 @@ export default {
                             return full.lodgement_number;
                         },
                         name: 'id, lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'application_type',
                         name: 'application_type__name',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'submitter',
@@ -307,21 +311,20 @@ export default {
                             return '';
                         },
                         name: 'submitter__first_name, submitter__last_name, submitter__email',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false, //overridden
                     },
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'customer_status',
-                        //mRender:function(data,type,full){
-                        //    return vm.level == 'internal' ? full.processing_status: data; //Fix the issue with External dashboard Status dropdown shoing internal statuses.
-                        //},
                         name: 'customer_status',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'lodgement_date',
@@ -331,13 +334,14 @@ export default {
                                 ? moment(data).format(vm.dateFormat)
                                 : '';
                         },
-                        searchable: false, // handles by filter_queryset override method - class ProposalFilterBackend
+                        searchable: false,
+                        orderable: true,
                     },
                     {
                         data: 'event_name',
                         searchable: false,
                         orderable: false,
-                        name: '',
+                        name: 'event_name',
                     },
                     {
                         data: 'id',
@@ -468,10 +472,14 @@ export default {
                             return full.lodgement_number;
                         },
                         name: 'lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'application_type',
                         name: 'application_type__name',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'submitter',
@@ -489,11 +497,13 @@ export default {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name',
                         orderable: false,
-                        searchable: false, //override in filter backend
+                        searchable: false,
                     },
                     {
                         data: 'processing_status',
                         name: 'processing_status',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'lodgement_date',
@@ -504,6 +514,7 @@ export default {
                                 : '';
                         },
                         searchable: false, // handles by filter_queryset override method - class ProposalFilterBackend
+                        orderable: true,
                     },
                     {
                         data: 'assigned_officer',
@@ -513,9 +524,9 @@ export default {
                     },
                     {
                         data: 'event_name',
-                        searchable: false,
                         orderable: false,
-                        name: '',
+                        searchable: false,
+                        name: 'event_name',
                     },
                     {
                         data: 'id',
