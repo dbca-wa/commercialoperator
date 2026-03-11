@@ -742,7 +742,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         )
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = DTReferralSerializer(
             result_page, context={"request": request}, many=True
@@ -810,7 +809,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         if submitter_id:
             qs = qs.filter(submitter_id=submitter_id)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ListProposalSerializer(
             result_page, context={"request": request}, many=True
@@ -840,7 +838,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         if submitter_id:
             qs = qs.filter(submitter_id=submitter_id)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ListProposalSerializer(
             result_page, context={"request": request}, many=True
@@ -3820,7 +3817,6 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ListDistrictProposalSerializer(
             result_page, context={"request": request}, many=True

@@ -91,7 +91,6 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         submitter_id = request.GET.get("submitter_id", None)
         if submitter_id:
             qs = qs.filter(proposal__submitter_id=submitter_id)
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ComplianceSerializer(
             result_page, context={"request": request}, many=True
@@ -116,7 +115,6 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         submitter_id = request.GET.get("submitter_id", None)
         if submitter_id:
             qs = qs.filter(proposal__submitter_id=submitter_id)
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ComplianceSerializer(
             result_page, context={"request": request}, many=True

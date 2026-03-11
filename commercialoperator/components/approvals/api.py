@@ -155,10 +155,8 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
 
 
 class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
-    # filter_backends = (ProposalFilterBackend,)
     filter_backends = (ApprovalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Approval.objects.none()
     serializer_class = ApprovalSerializer
@@ -209,8 +207,6 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         if isinstance(queryset, EmailUserQuerySet):
             queryset = get_expanded_queryset(request, queryset)
         
-        self.paginator.page_size = qs.count()
-        # result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ApprovalSerializer(
             queryset, context={"request": request}, many=True
         )

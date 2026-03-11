@@ -29,7 +29,6 @@ from commercialoperator.components.proposals.api import ProposalFilterBackend
 class BookingPaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Booking.objects.none()
     serializer_class = BookingSerializer
@@ -69,7 +68,6 @@ class BookingPaginatedViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = BookingSerializer(
             result_page, context={"request": request}, many=True
@@ -186,7 +184,6 @@ class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = DTParkBookingSerializer(
             result_page, context={"request": request}, many=True
