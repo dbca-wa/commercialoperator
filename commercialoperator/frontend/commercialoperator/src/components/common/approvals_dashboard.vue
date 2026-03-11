@@ -166,13 +166,12 @@
                         </div>
                     </div>
 
-                    <div v-if="is_internal" class="col-md-3">
+                    <div v-if="is_internal" class="col-md-3 ms-md-auto">
                         <div class="form-group">
                             <label />
                             <div>
                                 <button
-                                    style="width: 80%"
-                                    class="btn btn-primary top-buffer-s"
+                                    class="btn btn-primary top-buffer-s float-end"
                                     :disabled="disabled"
                                     @click.prevent="createEClassLicence()"
                                 >
@@ -334,8 +333,6 @@ export default {
                             vm.filterProposalStatus.toLowerCase();
                         d.datatable_filter_current_proposal__application_type__name =
                             vm.filterApplicationType;
-                        d.search_terms =
-                            'org_applicant__organisation__organisation_name, proxy_applicant__first_name, proxy_applicant__last_name, proxy_applicant__email';
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,

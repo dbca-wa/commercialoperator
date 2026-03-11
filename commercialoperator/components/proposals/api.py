@@ -23,9 +23,7 @@ from commercialoperator.components.proposals.utils import (
     save_proponent_data,
     save_assessor_data,
     proposal_submit,
-    get_cached_application_types,
-    get_cached_proposal_submitters,
-    get_cached_proposal_processing_status,
+    get_proposal_processing_status,
     paginate_chained_list,
     searchKeyWords,
     _get_params,
@@ -131,9 +129,6 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.filters import (
-    LedgerDatatablesFilterBackend,
-)
 from commercialoperator.components.segregation.utils import (
     EmailUserQuerySet,
     QuerySetChain,
@@ -368,8 +363,6 @@ def get_expanded_queryset(request, queryset):
         queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
     return queryset
 
-#TODO if feasible, let viewsets have their own filter backend instead of all sharing ProposalFilterBackend
-#TODO replace LedgerDatatableFilterBackend - it is overengineered for what we need and does not work
 class ProposalFilterBackend(DatatablesFilterBackend):
     """
     Custom filters
@@ -513,19 +506,41 @@ class ProposalFilterBackend(DatatablesFilterBackend):
 
         date_from = request.GET.get("date_from")
         date_to = request.GET.get("date_to")
+        
+
         if queryset.model is Proposal:
+
+            processing_status = request.GET.get("datatable_filter_processing_status")
+            application_type = request.GET.get("datatable_filter_application_type__name")
+
             if date_from:
                 queryset = queryset.filter(lodgement_date__gte=date_from)
 
             if date_to:
                 queryset = queryset.filter(lodgement_date__lte=date_to)
 
+            if processing_status and processing_status.lower() != "all":
+                queryset = queryset.filter(processing_status=processing_status)
+
+            if application_type and application_type.lower() != "all":
+                queryset = queryset.filter(application_type__name=application_type)
+
         elif queryset.model is Compliance:
+
+            processing_status = request.GET.get("datatable_filter_processing_status")
+            application_type = request.GET.get("datatable_filter_proposal__application_type__name")
+
             if date_from:
                 queryset = queryset.filter(due_date__gte=date_from)
 
             if date_to:
                 queryset = queryset.filter(due_date__lte=date_to)
+
+            if processing_status and processing_status.lower() != "all":
+                queryset = queryset.filter(processing_status=processing_status)
+
+            if application_type and application_type.lower() != "all":
+                queryset = queryset.filter(proposal__application_type__name=application_type)
 
             ledger_lookup_fields = [
                 "approval__org_applicant",
@@ -877,36 +892,8 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset.exclude(application_type=self.excluded_type)
-        # logger.warning("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
-
-
-#    def perform_create(self, serializer):
-#        serializer.partial = True
-#        serializer.save(created_by=self.request.user)
-
-# @action(methods=['post'])
-# @renderer_classes((JSONRenderer,))
-# def submit(self, request, *args, **kwargs):
-#     try:
-#         instance = self.get_object()
-#         #instance.submit(request,self)
-#         #instance.save()
-#         serializer = self.get_serializer(instance)
-#         return Response(serializer.data)
-#     except serializers.ValidationError:
-#         print(traceback.print_exc())
-#         raise
-#     except ValidationError as e:
-#         if hasattr(e,'error_dict'):
-#             raise serializers.ValidationError(repr(e.error_dict))
-#         else:
-#             if hasattr(e,'message'):
-# raise serializers.ValidationError(e.message)
-#     except Exception as e:
-#         print(traceback.print_exc())
-#         raise serializers.ValidationError(str(e))
-
+    
 
 class ProposalParkViewSet(viewsets.ModelViewSet):
     """
@@ -1052,10 +1039,9 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def filter_list(self, request, *args, **kwargs):
         """Used by the internal/external dashboard filters"""
 
-        application_types = get_cached_application_types()
+        application_types = ApplicationType.objects.all().values_list("name", flat=True)
         data = dict(
             application_types=application_types,
-            approval_status_choices=[i[1] for i in Approval.STATUS_CHOICES],
         )
         return Response(data)
 
@@ -2662,11 +2648,9 @@ class ReferralViewSet(viewsets.ModelViewSet):
                 "proposal_id", flat=True
             )
         )
-        submitters = get_cached_proposal_submitters(self, qs)
-        processing_status = get_cached_proposal_processing_status(self, qs)
-        application_types = get_cached_application_types()
+        processing_status = get_proposal_processing_status()
+        application_types = ApplicationType.objects.all().values_list("name", flat=True)
         data = dict(
-            submitters=submitters,
             processing_status_choices=processing_status,
             application_types=application_types,
         )
@@ -3725,15 +3709,9 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
         """Used by the external dashboard filters"""
 
         qs = self.get_queryset()
-        qs = Proposal.objects.filter(
-            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id", flat=True
-            )
-        )
-        submitters = get_cached_proposal_submitters(self, qs)
-        processing_status = get_cached_proposal_processing_status(self, qs)
+
+        processing_status = get_proposal_processing_status()
         data = dict(
-            submitters=submitters,
             processing_status_choices=processing_status,
         )
         return Response(data)

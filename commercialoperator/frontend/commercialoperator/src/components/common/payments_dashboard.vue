@@ -324,9 +324,6 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
-
-                        d.search_terms =
-                            'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email, proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name';
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,

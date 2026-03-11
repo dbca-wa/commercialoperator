@@ -264,10 +264,6 @@ export default {
                             vm.filterProposalStatus;
                         d.datatable_filter_application_type__name =
                             vm.filterApplicationType;
-                        // Add search terms to be concatenated on the queryset
-                        //TODO may not be needed, remove on review
-                        //d.search_terms =
-                        //    'submitter__first_name, submitter__last_name, submitter__email, org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name';
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,
@@ -443,10 +439,6 @@ export default {
                             vm.filterProposalStatus;
                         d.datatable_filter_application_type__name =
                             vm.filterApplicationType;
-                        // Add search terms to be concatenated on the queryset
-                        //TODO may not be needed, remove on review
-                        //d.search_terms =
-                        //    'submitter__first_name, submitter__last_name, submitter__email, assigned_officer__first_name, assigned_officer__last_name, org_applicant__organisation__organisation_name';
                         return d
                     },
                 },

@@ -35,8 +35,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="input_proposal_date_from"
                             >Lodged From</label
@@ -79,38 +77,6 @@
                                     class="glyphicon glyphicon-calendar"
                                 ></span>
                             </span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div
-                            id="select_district_proposal_submitter_parent"
-                            class="form-group"
-                        >
-                            <label for="select_district_proposal_submitter"
-                                >Submitter</label
-                            >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_district_proposal_submitter"
-                                    ref="select_district_proposal_submitter"
-                                    v-model="filterProposalSubmitter"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_submitters"
-                                        :key="s.email"
-                                        :value="s.email"
-                                    >
-                                        {{ s.search_term }}
-                                    </option>
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -157,10 +123,8 @@ export default {
             filterProposalStatus: 'All',
             filterProposalLodgedFrom: '',
             filterProposalLodgedTo: '',
-            filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
             proposal_status: [],
-            proposal_submitters: [],
             proposal_headers: [
                 'Number',
                 'Submitter',
@@ -211,10 +175,6 @@ export default {
                                 : '';
                         d.datatable_filter_processing_status =
                             vm.filterProposalStatus;
-                        d.datatable_filter_proposal__submitter__email =
-                            vm.filterProposalSubmitter;
-                        d.search_terms =
-                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email, proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name';
                     },
                 },
                 columns: [
@@ -301,20 +261,6 @@ export default {
             },
             deep: true,
         },
-        filterProposalSubmitter: function () {
-            let vm = this;
-            if (vm.filterProposalSubmitter != 'All') {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(1)
-                    .search(vm.filterProposalSubmitter)
-                    .draw();
-            } else {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(1)
-                    .search('')
-                    .draw();
-            }
-        },
         filterProposalLodgedFrom: function () {
             this.$refs.proposal_datatable.vmDataTable.ajax.reload(
                 helpers.enablePopovers,
@@ -353,7 +299,6 @@ export default {
                 .fetchUrl(api_endpoints.filter_list_district_proposals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.submitters;
                         vm.proposal_status = response.processing_status_choices;
                     },
                     (error) => {
@@ -386,29 +331,9 @@ export default {
                 'Select Status',
                 false
             );
-            helpers.initialiseSelect2.bind(this)(
-                'select_district_proposal_submitter',
-                'select_district_proposal_submitter_parent',
-                'filterProposalSubmitter',
-                'Select Submitter',
-                false
-            );
         },
         initialiseSearch: function () {
-            this.submitterSearch();
             this.dateSearch();
-        },
-        submitterSearch: function () {
-            let vm = this;
-            vm.$refs.proposal_datatable.table.dataTableExt.afnFiltering.push(
-                function (settings, data, dataIndex, original) {
-                    let filtered_submitter = vm.filterProposalSubmitter;
-                    if (filtered_submitter == 'All') {
-                        return true;
-                    }
-                    return filtered_submitter == original.submitter.email;
-                }
-            );
         },
         dateSearch: function () {
             let vm = this;

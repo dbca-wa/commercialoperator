@@ -116,7 +116,7 @@ class Approval(RevisionedMixin):
         (APPROVAL_STATUS_CANCELLED, "Cancelled"),
         (APPROVAL_STATUS_SURRENDERED, "Surrendered"),
         (APPROVAL_STATUS_SUSPENDED, "Suspended"),
-        (APPROVAL_STATUS_EXTENDED, "extended"),
+        (APPROVAL_STATUS_EXTENDED, "Extended"),
         (APPROVAL_STATUS_AWAITING_PAYMENT, "Awaiting Payment"),
     )
     lodgement_number = models.CharField(max_length=9, blank=True, default="")

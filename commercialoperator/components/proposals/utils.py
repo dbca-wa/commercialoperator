@@ -1905,6 +1905,20 @@ def get_cached_proposal_submitters(view, queryset=None):
 
     return submitters
 
+def get_proposal_processing_status():
+    return [
+                { "value": 'draft', "name": 'Draft' },
+                { "value": 'with_assessor', "name": 'With Assessor' },
+                { "value": 'on_hold', "name": 'On Hold' },
+                { "value": 'with_qa_officer', "name": 'With QA Officer' },
+                { "value": 'with_referral', "name": 'With Referral' },
+                {"value": 'with_assessor_requirements',"name": 'With Assessor (Requirements)',},
+                { "value": 'with_approver', "name": 'With Approver' },
+                { "value": 'approved', "name": 'Approved' },
+                { "value": 'declined', "name": 'Declined' },
+                { "value": 'discarded', "name": 'Discarded' },
+                { "value": 'awaiting_payment', "name": 'Awaiting Payment' },
+            ]
 
 def get_cached_proposal_processing_status(view, queryset=None):
     if not queryset:

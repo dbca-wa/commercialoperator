@@ -292,6 +292,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         detail=False,
     )
     def filter_list(self, request, *args, **kwargs):
+        #TODO we should not present a list of all parks as a filter drop down but the parks do need to be searchable
         serializer = ParkFilterSerializer(
             self.get_queryset(), context={"request": request}, many=True
         )

@@ -2,7 +2,7 @@ import traceback
 import datetime
 import re
 from django.db.models import Q
-from typing import Callable, Optional
+from typing import Optional
 from django.db.models import QuerySet
 from django.db import transaction
 from django.core.files.base import ContentFile
@@ -15,11 +15,9 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import datetime
-from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.models import (
     Proposal,
     ApplicationType,
-    Referral,
 )
 from commercialoperator.components.approvals.models import Approval, ApprovalDocument
 from commercialoperator.components.approvals.serializers import (
@@ -37,9 +35,7 @@ from commercialoperator.components.organisations.models import (
     OrganisationContact,
 )
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.filters import (
-    LedgerDatatablesFilterBackend,
-)
+from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
     EmailUserQuerySet,
     retrieve_delegate_organisation_ids,
@@ -122,25 +118,13 @@ def get_expanded_queryset(
         queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
     return queryset
 
-class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
+class ApprovalFilterBackend(DatatablesFilterBackend):
     """
     Custom filters
     """
 
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
-
-        # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
-        regions = request.GET.get("regions")
-        if regions:
-            if queryset.model is Proposal:
-                queryset = queryset.filter(
-                    region__name__iregex=regions.replace(",", "|")
-                )
-            elif queryset.model is Referral or queryset.model is Compliance:
-                queryset = queryset.filter(
-                    proposal__region__name__iregex=regions.replace(",", "|")
-                )
 
         status = request.GET.get("datatable_filter_status")
         licence_type = request.GET.get("datatable_filter_current_proposal__application_type__name")
@@ -165,29 +149,6 @@ class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
 
             if expiry_date_to:
                 queryset = queryset.filter(expiry_date__lte=expiry_date_to)
-
-            ledger_lookup_fields = ["org_applicant", "proxy_applicant"]
-
-        # Those fields need to query ledger for an organisation not an emailuser object
-        # ledger_lookup_extras = {
-        #     "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-        # }
-
-        # # Apply the search filters
-        # queryset = self.filter_datatables_queryset(
-        #     request,
-        #     queryset,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        #     ledger_lookup_extras=ledger_lookup_extras,
-        # )
-
-        # queryset = self.apply_request(
-        #     request,
-        #     queryset,
-        #     view,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        #     ledger_lookup_extras=ledger_lookup_extras,
-        # )
 
         setattr(view, "_datatables_total_count", total_count)
         return queryset

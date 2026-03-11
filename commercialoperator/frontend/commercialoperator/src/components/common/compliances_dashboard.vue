@@ -65,8 +65,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mb-3">
+
                     <div class="col-md-3">
                         <label for="input_compliance_due_date_from"
                             >Due date From</label
@@ -235,12 +234,6 @@ export default {
                             vm.filterComplianceStatus.toLowerCase();
                         d.datatable_filter_proposal__application_type__name =
                             vm.filterApplicationType;
-                        d.search_terms =
-                            'approval__org_applicant__organisation__organisation_name, approval__proxy_applicant__email, approval__proxy_applicant__first_name, approval__proxy_applicant__last_name';
-                        if (vm.is_internal) {
-                            d.search_terms +=
-                                ', assigned_to__first_name, assigned_to__last_name, assigned_to__email';
-                        }
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,
