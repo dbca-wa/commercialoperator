@@ -2,7 +2,6 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-# from django.contrib.postgres.fields.jsonb import JSONField
 from django.db.models import JSONField
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
 from commercialoperator.components.main.mixins import RevisionedMixin
@@ -466,12 +465,17 @@ class BookingInvoice(RevisionedMixin):
 
     @property
     def overdue(self):
+        payment_status = None
+        if self.invoice:
+            from commercialoperator.components.bookings.utils import get_invoice_properties
+            invoice_properties = get_invoice_properties(self.invoice.id)
+            payment_status = invoice_properties.get("invoice", {}).get("payment_status", "")
         if (
-            self.invoice
+            payment_status
             and self.deferred_payment_date
             and (
-                self.invoice.payment_status == "unpaid"
-                or self.invoice.payment_status == "partially_paid"
+                payment_status == "unpaid"
+                or payment_status == "partially_paid"
             )
             and self.deferred_payment_date < timezone.now().date()
         ):

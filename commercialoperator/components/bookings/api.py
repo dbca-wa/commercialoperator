@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse
-
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action as list_route
 
@@ -103,11 +103,14 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
-            bi = BookingInvoice.objects.all().exclude(
+            bi = BookingInvoice.objects.exclude(
                 booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY
+            ).filter(
+                (Q(property_cache__payment_status="Unpaid")|Q(property_cache__payment_status="Partially Paid")) &
+                Q(deferred_payment_date__lt=timezone.now().date())
             )
 
-            return [inv for inv in bi if inv.overdue]
+            return bi
         elif is_customer(self.request):
             ledger_org_ids = retrieve_delegate_organisation_ids(user)
             cols_org_ids = Organisation.objects.filter(
@@ -117,8 +120,11 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
             bi = BookingInvoice.objects.filter(
                 Q(booking__proposal__org_applicant_id__in=cols_org_ids)
                 | Q(booking__proposal__submitter_id=user.id)
-            ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
-            return [inv for inv in bi if inv.overdue]
+            ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY).filter(
+                (Q(property_cache__payment_status="Unpaid")|Q(property_cache__payment_status="Partially Paid")) &
+                Q(deferred_payment_date__lt=timezone.now().date())
+            )
+            return bi
         return BookingInvoice.objects.none()
 
 
