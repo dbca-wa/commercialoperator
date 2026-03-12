@@ -204,7 +204,7 @@ def district_proposal_search_filter(qs, search_value):
                 Q(proposal__submitter_id__in=matching_ids) | Q(proposal__proxy_applicant_id__in=matching_ids) | Q(assigned_officer_id__in=matching_ids)
             )
 
-    return qs
+    return qs, matching_ids
 
 def referral_search_filter(qs, search_value):
 
@@ -218,7 +218,7 @@ def referral_search_filter(qs, search_value):
                 Q(proposal__submitter_id__in=matching_ids) | Q(proposal__proxy_applicant_id__in=matching_ids) | Q(proposal__assigned_officer_id__in=matching_ids)
             )
 
-    return qs
+    return qs, matching_ids
 
 def compliance_search_filter(qs, search_value):
 
@@ -232,7 +232,7 @@ def compliance_search_filter(qs, search_value):
                 Q(assigned_to_id__in=matching_ids)
             )
 
-    return qs
+    return qs, matching_ids
 
 def get_expanded_queryset(request, queryset):
     emailuser_fk_fields = [
@@ -297,8 +297,11 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(application_type__name=application_type)
 
             if search_text:
-                queryset = proposal_search_filter(queryset, search_text)
-                queryset = queryset.distinct() | super_queryset   
+                search_queryset, results_found = proposal_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset   
 
         elif queryset.model is Compliance:
 
@@ -318,8 +321,11 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(proposal__application_type__name=application_type)
 
             if search_text:
-                queryset = compliance_search_filter(queryset, search_text)
-                queryset = queryset.distinct() | super_queryset   
+                search_queryset, results_found = compliance_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset 
 
         elif queryset.model is Referral:
 
@@ -339,8 +345,11 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(proposal__application_type__name=application_type)
 
             if search_text:
-                queryset = referral_search_filter(queryset, search_text)
-                queryset = queryset.distinct() | super_queryset   
+                search_queryset, results_found = referral_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset 
 
         elif queryset.model is Booking:
             if date_from and date_to:
@@ -414,8 +423,11 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(processing_status=processing_status)
 
             if search_text:
-                queryset = district_proposal_search_filter(queryset, search_text)
-                queryset = queryset.distinct() | super_queryset   
+                search_queryset, results_found = district_proposal_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset 
 
         fields = self.get_fields(request)
         ordering = self.get_ordering(request, view, fields)
