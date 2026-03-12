@@ -157,14 +157,6 @@ class Booking(Payment):
         )
         return max(ids) + 1 if ids else 1
 
-    #    def set_admission_number(self):
-    #        """ Need to set admission_number after Credit Card Payment is successfully completed i.e. after BookingSuccessView.get() is executed.
-    #            Prior to this, the Booking object is temporary.
-    #        """
-    #        if self.admission_number == '':
-    #            self.admission_number = 'AD{0:06d}'.format(self.next_id)
-    #            self.save()
-
     def save(self, *args, **kwargs):
         super(Booking, self).save(*args, **kwargs)
         if (
@@ -182,7 +174,7 @@ class Booking(Payment):
     @property
     def num_visitors(self):
         if self.park_bookings:
-            for park_booking in park_bookings:
+            for park_booking in self.park_bookings:
                 num_visitors += park_booking.num_visitors
             return num_visitors
         return 0
@@ -190,7 +182,7 @@ class Booking(Payment):
     @property
     def visitors(self):
         if self.park_bookings:
-            for park_booking in park_bookings:
+            for park_booking in self.park_bookings:
                 no_adults += park_booking.no_adults
                 no_children += park_booking.no_children
                 no_free_of_charge += park_booking.no_free_of_charge

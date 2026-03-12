@@ -50,31 +50,6 @@
                         <div class="row mb-1">
                             <div class="col-md-3">
                                 <div
-                                    id="select_parkbookings_park_parent"
-                                    class="form-group"
-                                >
-                                    <label for="select_parkbookings_park"
-                                        >Park</label
-                                    >
-                                    <select
-                                        id="select_parkbookings_park"
-                                        ref="select_parkbookings_park"
-                                        v-model="filterProposalPark"
-                                        class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="p in proposal_parks"
-                                            :key="p.id"
-                                            :value="p.id"
-                                        >
-                                            {{ p.name }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div
                                     id="select_parkbooking_status_parent"
                                     class="form-group"
                                 >
@@ -134,8 +109,6 @@
                                     >
                                 </div>
                             </div>
-                        </div>
-                        <div class="row mb-3">
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="input_parkbookings_arrival_to"
@@ -347,14 +320,20 @@ export default {
                     {
                         data: 'admission_number',
                         name: 'booking__admission_number',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'approval_number',
                         name: 'booking__proposal__approval__lodgement_number',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'trading_name',
                         name: 'booking__proposal__org_applicant__organisation__organisation_trading_name, booking__proposal__org_applicant__organisation__organisation_name',
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'arrival',
@@ -366,12 +345,15 @@ export default {
                                     : '';
                             return arrival_dates;
                         },
+                        name: 'arrival',
                         searchable: false,
                         orderable: true,
                     },
                     {
                         data: 'park',
-                        name: 'park__id',
+                        name: 'park__name',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'id',
@@ -421,6 +403,8 @@ export default {
                         data: 'applicant',
                         name: 'booking__proposal__approval__org_applicant__organisation__name, booking__proposal__approval__proxy_applicant__email, proposal__approval__proxy_applicant__first_name, booking__proposal__approval__proxy_applicant__last_name',
                         visible: this.level == 'internal' ? true : false,
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'payment_status',

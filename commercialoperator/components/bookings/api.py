@@ -148,7 +148,6 @@ class ParkBookingViewSet(viewsets.ModelViewSet):
 class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = ParkBooking.objects.none()
     serializer_class = DTParkBookingSerializer
