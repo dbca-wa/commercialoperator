@@ -266,11 +266,9 @@ export default {
             filterStartTo: '',
             filterExpiryFrom: '',
             filterExpiryTo: '',
-            filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
             application_types: [],
             approval_status: [],
-            proposal_submitters: [],
             proposal_headers: [
                 'Number',
                 'Application',
@@ -404,6 +402,8 @@ export default {
                             }
                         },
                         name: 'lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'linked_applications',
@@ -416,19 +416,27 @@ export default {
                             return applications;
                         },
                         name: 'current_proposal__lodgement_number',
+                        orderable: true,
+                        searchable: true,
                     },
                     {
                         data: 'application_type',
                         name: 'current_proposal__application_type__name',
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'applicant',
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__first_name, proxy_applicant__last_name, proxy_applicant__email',
                         // Note: Set to non-searchable because for now we can't search in ledger fields (emailuser, organisation)
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                     },
-                    { data: 'status' },
+                    { 
+                        data: 'status', 
+                        orderable: false,
+                        searchable: false,
+                    },
                     {
                         data: 'start_date',
                         // eslint-disable-next-line no-unused-vars
@@ -438,6 +446,7 @@ export default {
                                 : '';
                         },
                         searchable: false,
+                        orderable: true,
                     },
                     {
                         data: 'expiry_date',
@@ -448,6 +457,7 @@ export default {
                                 : '';
                         },
                         searchable: false,
+                        orderable: true,
                     },
                     {
                         data: 'licence_document',
@@ -483,6 +493,8 @@ export default {
                             return result;
                         },
                         name: 'licence_document__name',
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'licence_name',
@@ -617,20 +629,6 @@ export default {
         },
     },
     watch: {
-        filterProposalSubmitter: function () {
-            let vm = this;
-            if (vm.filterProposalSubmitter != 'All') {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(2)
-                    .search(vm.filterProposalSubmitter)
-                    .draw();
-            } else {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(2)
-                    .search('')
-                    .draw();
-            }
-        },
         filterProposalStatus: function () {
             let vm = this;
             if (vm.filterProposalStatus != 'All') {
@@ -717,7 +715,6 @@ export default {
                 .fetchUrl(api_endpoints.filter_list_approvals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.submitters;
                         vm.approval_status = response.approval_status_choices;
                         vm.application_types = response.application_types;
                     },
@@ -870,18 +867,6 @@ export default {
         },
         initialiseSearch: function () {
             this.dateSearch();
-        },
-        submitterSearch: function () {
-            let vm = this;
-            vm.$refs.proposal_datatable.table.dataTableExt.afnFiltering.push(
-                function (settings, data, dataIndex, original) {
-                    let filtered_submitter = vm.filterProposalSubmitter;
-                    if (filtered_submitter == 'All') {
-                        return true;
-                    }
-                    return filtered_submitter == original.submitter.email;
-                }
-            );
         },
         dateSearch: function () {
             let vm = this;
