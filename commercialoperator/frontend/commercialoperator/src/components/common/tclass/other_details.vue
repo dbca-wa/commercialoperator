@@ -32,13 +32,13 @@
                                 >
                                     <input
                                         ref="Checkbox"
-                                        v-model="selected_accreditations"
                                         class="form-check-input"
                                         type="checkbox"
                                         :value="c.key"
                                         data-parsley-required
                                         :disabled="proposal.readonly"
                                         @click="selectAccreditation($event, c)"
+                                        :checked="selected_accreditations.includes(c.key)"
                                     />
                                     {{ c.value }}
                                 </li>
@@ -832,6 +832,7 @@ export default {
             }
         },
         selectAccreditation: function (e, accreditation_type) {
+            console.log("selectAccreditation")
             let vm = this;
             if (e.target.checked) {
                 var found = false;
@@ -849,7 +850,8 @@ export default {
                             false;
                     }
                 }
-                if (found == false) {
+                console.log(found)
+                if (!found) {
                     var data = {
                         accreditation_type: accreditation_type.key,
                         accreditation_expiry: null,

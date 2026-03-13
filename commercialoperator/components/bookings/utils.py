@@ -977,7 +977,6 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
     return lines
 
 
-@basic_exception_handler
 def checkout(
     request,
     proposal,
@@ -1011,15 +1010,11 @@ def checkout(
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri(
             "/"
-        ),  # 'http://mooring-ria-jm.dbca.wa.gov.au/'
-        "return_url": request.build_absolute_uri(
-            reverse(return_url_ns) + f"?checkouthash={checkouthash}"
-        ),  # 'http://mooring-ria-jm.dbca.wa.gov.au/success/'
-        "return_preload_url": request.build_absolute_uri(
-            reverse(return_url_ns)
-        ),  # 'http://mooring-ria-jm.dbca.wa.gov.au/success/'
+        ),
+        "return_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_url_ns) + f"?checkouthash={checkouthash}",
+        "return_preload_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns) + f"?checkouthash={checkouthash}",
         "force_redirect": True,
-        "invoice_text": invoice_text,  # 'Reservation for Jawaid Mushtaq from 2019-05-17 to 2019-05-19 at RIA 005'
+        "invoice_text": invoice_text,
         "proxy": True if is_internal(request) else False,
         "session_type": "ledger_api",
         "basket_owner": request.user.id,

@@ -15,6 +15,7 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = "commercialoperator.urls"
+COMMERCIALOPERATOR_EXTERNAL_URL=env("COMMERCIALOPERATOR_EXTERNAL_URL","")
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
 SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours

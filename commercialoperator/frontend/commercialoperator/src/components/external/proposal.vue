@@ -393,29 +393,6 @@ export default {
                 return 'Pay and Submit';
             }
         },
-        save_applicant_data: function () {
-            let vm = this;
-            if (vm.proposal.applicant_type == 'SUB') {
-                vm.proposal_refs().$refs.profile.updatePersonal();
-                vm.proposal_refs().$refs.profile.updateAddress();
-                vm.proposal_refs().$refs.profile.updateContact();
-            }
-            if (vm.proposal.applicant_type == 'ORG') {
-                // NOTE: I commented out the next line because that function is forbidden for external users
-                // vm.proposal_refs().$refs.organisation.updateDetails_noconfirm();
-                vm.proposal_refs()
-                    .$refs.organisation.updateAddress_noconfirm()
-                    .then(
-                        (response) => {
-                            console.log(response);
-                        },
-                        (err) => {
-                            console.log(err);
-                        }
-                    );
-            }
-        },
-
         set_formData: function (validate_form = false) {
             let vm = this;
             if (validate_form && !helpers.validateForm(vm.form)) {
@@ -441,7 +418,6 @@ export default {
         save: async function () {
             let vm = this;
             vm.savingProposal = true;
-            vm.save_applicant_data();
 
             let formData;
             try {
@@ -507,7 +483,6 @@ export default {
 
         save_wo_confirm: function () {
             let vm = this;
-            vm.save_applicant_data();
             let formData;
             try {
                 formData = vm.set_formData();
@@ -546,7 +521,6 @@ export default {
         },
         save_before_submit: async function () {
             let vm = this;
-            vm.save_applicant_data();
             let formData;
             try {
                 // Validate the form before saving
@@ -600,7 +574,6 @@ export default {
                 return;
             }
 
-            vm.save_applicant_data();
             helpers
                 .fetchUrl(vm.proposal_form_url, {
                     method: 'POST',
