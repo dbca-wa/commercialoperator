@@ -4,8 +4,6 @@ import InternalDashboard from '../dashboard.vue';
 import Search from '../search.vue';
 import OrgAccessTable from '../organisations/dashboard.vue';
 import OrgAccess from '../organisations/access.vue';
-import Organisation from '../organisations/manage.vue';
-import User from '../users/manage.vue';
 import Proposal from '../proposals/proposal.vue';
 import ProposalCompare from '../proposals/proposal_compare.vue';
 import Referral from '../referrals/referral.vue';
@@ -71,22 +69,6 @@ export default {
                     path: 'access/:access_id',
                     component: OrgAccess,
                     name: 'org-access',
-                },
-                {
-                    path: ':org_id',
-                    component: Organisation,
-                    name: 'internal-org-detail',
-                },
-            ],
-        },
-        {
-            path: 'users',
-            component: RouterView,
-            children: [
-                {
-                    path: ':user_id',
-                    component: User,
-                    name: 'internal-user-detail',
                 },
             ],
         },

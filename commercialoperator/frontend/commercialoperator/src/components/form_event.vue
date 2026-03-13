@@ -244,7 +244,7 @@
 
 <script>
 import Account from '@/components/user/account.vue';
-import Organisation from '@/components/external/organisations/manage.vue';
+import Organisation from '@/components/external/organisations/organisation_details.vue';
 import Applicant from '@/components/common/tclass/applicant.vue';
 import Assessment from '@/components/common/tclass/assessment.vue';
 import Activities from '@/components/common/event/activities.vue';

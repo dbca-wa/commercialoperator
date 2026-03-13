@@ -760,7 +760,7 @@ class OrganisationContact(models.Model):
         (
             "contact_form",
             "ContactForm",
-        ),  # status 'contact_form' if org contact was added via 'Contact Details' section in manage.vue (allows Org Contact to be distinguished from Org Delegate)
+        ), 
     )
     USER_ROLE_CHOICES = (
         ("organisation_admin", "Organisation Admin"),

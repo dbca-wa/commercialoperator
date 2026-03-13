@@ -486,6 +486,7 @@ ORGANISATION_PERMISSION_MODULE = "commercialoperator.components.permission.permi
 LEDGER_UI_ORGANISATION_MANAGEMENT = [
     {"organisation_name": {"options": {"view": True, "edit": True}}},
     {"organisation_abn": {"options": {"view": True, "edit": True}}},
+    {"organisation_trading_name": {"options": {"view": True, "edit": True}}},
     {"postal_address": {"options": {"view": True, "edit": True}}},
 ]
 
