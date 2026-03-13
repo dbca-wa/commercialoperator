@@ -400,9 +400,9 @@ export default {
                 confirmButtonText: 'Discard Application',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(api_endpoints.discard_proposal(proposal_id), {
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(api_endpoints.discard_proposal(proposal_id), {
                             method: 'DELETE',
                         })
                         .then(
@@ -418,6 +418,7 @@ export default {
                                 console.log(error);
                             }
                         );
+                    }
                 },
                 () => {}
             );

@@ -1077,9 +1077,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Submit',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.referrals,
                                 vm.$route.params.referral_id + '/complete'
@@ -1102,8 +1102,8 @@ export default {
                                 });
                             }
                         );
+                    }
                 },
-                () => {}
             );
         },
         formatDate: function (data) {

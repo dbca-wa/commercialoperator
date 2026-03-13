@@ -798,45 +798,7 @@ export default {
         },
         eventListeners: function () {
             const vm = this;
-            // vm.$refs.contacts_datatable.vmDataTable.on(
-            //     'click',
-            //     '.remove-contact',
-            //     (e) => {
-            //         e.preventDefault();
-
-            //         let name = $(e.target).data('name');
-            //         let email = $(e.target).data('email');
-            //         let id = $(e.target).data('id');
-            //         swal.fire({
-            //             title: 'Delete Contact',
-            //             text:
-            //                 'Are you sure you want to remove ' +
-            //                 name +
-            //                 '(' +
-            //                 email +
-            //                 ') as a contact  ?',
-            //             icon: 'error',
-            //             showCancelButton: true,
-            //             confirmButtonText: 'Accept',
-            //         }).then(
-            //             () => {
-            //                 vm.deleteContact(id);
-            //             },
-            //             () => {}
-            //         );
-            //     }
-            // );
-
-            // vm.$refs.contacts_datatable.vmDataTable.on(
-            //     'click',
-            //     '.edit-contact',
-            //     (e) => {
-            //         e.preventDefault();
-            //         let id = $(e.target).attr('data-edit-id');
-            //         vm.editContact(id);
-            //     }
-            // );
-
+            
             vm.$refs.contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.unlink_contact',

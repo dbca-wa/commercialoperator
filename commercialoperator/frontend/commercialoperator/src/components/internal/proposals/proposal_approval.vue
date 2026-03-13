@@ -254,9 +254,9 @@ export default {
                 confirmButtonText: 'Remove Requirement',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposal_requirements,
                                 _id
@@ -276,8 +276,8 @@ export default {
                                 console.log(error);
                             }
                         );
+                    }
                 },
-                () => {}
             );
         },
     },

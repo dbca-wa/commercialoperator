@@ -1763,8 +1763,10 @@ export default {
                         showCancelButton: true,
                         confirmButtonText: 'Accept',
                     }).then(
-                        () => {
-                            vm.deleteContact(id);
+                        (swalresult) => {
+                            if (swalresult.isConfirmed) {
+                                vm.deleteContact(id);
+                            }
                         },
                         () => {}
                     );
@@ -1809,7 +1811,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         async (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'unlink';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -1849,7 +1851,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'reinstate';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -1889,7 +1891,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'relink';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -1929,7 +1931,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'suspend';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -1969,7 +1971,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'make_admin_contact';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -2009,7 +2011,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'make_user_contact';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -2049,7 +2051,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'accept';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -2089,7 +2091,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'decline';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;
@@ -2129,7 +2131,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 this.action = 'accept_declined';
                                 this.$refs.add_comm_org.localAction =
                                     this.action;

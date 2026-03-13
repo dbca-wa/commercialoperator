@@ -888,7 +888,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -936,7 +936,6 @@ export default {
                                     );
                             }
                         },
-                        () => {}
                     );
                 }
             );
@@ -968,7 +967,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result.value) {
+                            if (result.isConfirmed && result.value) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1048,7 +1047,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1128,7 +1127,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1215,7 +1214,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1295,8 +1294,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            console.log(result);
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1382,7 +1380,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1462,7 +1460,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1542,7 +1540,7 @@ export default {
                         confirmButtonText: 'Accept',
                     }).then(
                         (result) => {
-                            if (result) {
+                            if (result.isConfirmed) {
                                 helpers
                                     .fetchUrl(
                                         helpers.add_endpoint_json(
@@ -1826,9 +1824,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisations,
                                 org.id + '/unlink_user'
@@ -1873,8 +1871,8 @@ export default {
                                 });
                             }
                         );
-                },
-                () => {}
+                    }
+                }
             );
         },
     },

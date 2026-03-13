@@ -499,7 +499,7 @@ export default {
                     confirmButtonText: 'Accept',
                 }).then(
                     async (result) => {
-                        if (result) {
+                        if (result.isConfirmed) {
                             if (
                                 vm.payment_method == 'monthly_invoicing' ||
                                 vm.payment_method == 'bpay' ||
@@ -526,9 +526,6 @@ export default {
                             }
                         }
                     },
-                    () => {
-                        //
-                    }
                 );
             } else {
                 if (

@@ -993,9 +993,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Extend licence',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.approvals,
                                 approval_id + '/approval_extend'
@@ -1007,8 +1007,7 @@ export default {
                                     'Content-Type': 'application/json',
                                 },
                             }
-                        )
-                        .then(
+                        ).then(
                             () => {
                                 vm.$router.push({
                                     name: 'internal-proposal',
@@ -1024,8 +1023,8 @@ export default {
                                 });
                             }
                         );
+                    }
                 },
-                () => {}
             );
         },
 
@@ -1043,9 +1042,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Reinstate licence',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.approvals,
                                 approval_id + '/approval_reinstate'
@@ -1076,6 +1075,7 @@ export default {
                                 });
                             }
                         );
+                    }
                 },
                 () => {}
             );
@@ -1090,20 +1090,20 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Renew licence',
             }).then(
-                () => {
-                    swal.fire({
-                        title: 'Loading...',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        didOpen: () => {
-                            swal.showLoading();
-                        },
-                        customClass: {
-                            container: 'swal2-popover',
-                        },
-                    });
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        swal.fire({
+                            title: 'Loading...',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                swal.showLoading();
+                            },
+                            customClass: {
+                                container: 'swal2-popover',
+                            },
+                        });
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposals,
                                 proposal_id + '/renew_approval'
@@ -1129,6 +1129,7 @@ export default {
                                 });
                             }
                         );
+                    }
                 },
                 () => {}
             );
