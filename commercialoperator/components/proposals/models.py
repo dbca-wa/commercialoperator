@@ -3211,9 +3211,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 logger.info("Creating filming fee invoice")
 
                 deferred_payment_date = timezone.now() + relativedelta(months=1)
-
-                # basket = createCustomBasket(lines, request.user, settings.PAYMENT_SYSTEM_ID)
-
+                
                 reference = self.lodgement_number
 
                 basket_params = {
@@ -3224,14 +3222,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "booking_reference": reference,
                     "booking_reference_link": reference,
                     "fallback_url": request.build_absolute_uri("/"),
+                    'no_payment': False,
                 }
+                
                 basket_hash = create_basket_session(
                     request, request.user.id, basket_params
                 )
 
-                basket = Basket.objects.filter(
-                    status="Open", owner=request.user
-                ).order_by("-id")[:1]
+                basket_hash_split = basket_hash.split("|")
 
                 invoice_name = self.applicant_obj.name
                 return_preload_url = request.build_absolute_uri(
@@ -3239,7 +3237,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 )
                 due_date = None
                 future_invoice_response = process_create_future_invoice(
-                    basket[0].id,
+                    basket_hash_split[0],
                     invoice_text="Payment Invoice",
                     return_preload_url=return_preload_url,
                     invoice_name=invoice_name,

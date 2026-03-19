@@ -736,6 +736,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
         return values_list
 
 
+#TODO review the anything that "needs to be implemented with ledger api client", remove if not applicable
 def createCustomBasket(*args, **kwargs):
     logger.error(ledger_create_basket_session)
     raise NotImplementedError(

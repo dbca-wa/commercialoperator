@@ -202,7 +202,6 @@ class FilmingFeeView(TemplateView):
 
         try:
             set_session_filming_invoice(request.session, filming_fee)
-            lines = filming_fee.lines
             invoice = Invoice.objects.get(reference=inv_ref)
 
             film_types = "/".join(
@@ -211,16 +210,12 @@ class FilmingFeeView(TemplateView):
                     for w in proposal.filming_activity.film_type
                 ]
             )
-            invoice_text = "Payment Invoice: {}".format(film_types)
 
             checkout_response = checkout_existing_invoice(
                 request,
                 proposal,
                 invoice,
-                lines,
                 return_url_ns="filming_fee_success",
-                return_preload_url_ns="filming_fee_success",
-                invoice_text=invoice_text,
             )
 
             logger.info(
