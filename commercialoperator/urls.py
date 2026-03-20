@@ -368,7 +368,12 @@ urlpatterns = (
             name="compliance_fee_success",
         ),
         url(
-            r"^success/filming_fee/$",
+            r"^success_preload/filming_fee/(?P<lodgement_number>.+)/",
+            booking_views.FilmingFeeSuccessViewPreload.as_view(),
+            name="filming_fee_success_preload",
+        ),
+        url(
+            r"^success/filming_fee/(?P<lodgement_number>.+)/",
             booking_views.FilmingFeeSuccessView.as_view(),
             name="filming_fee_success",
         ),

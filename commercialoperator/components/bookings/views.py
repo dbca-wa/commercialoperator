@@ -8,7 +8,8 @@ from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 
-from rest_framework import status
+from rest_framework import status, views, serializers
+from rest_framework.response import Response
 
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
@@ -202,7 +203,7 @@ class FilmingFeeView(TemplateView):
         try:
             set_session_filming_invoice(request.session, filming_fee)
             invoice = Invoice.objects.get(reference=inv_ref)
-            
+
             checkout_response = checkout_existing_invoice(
                 request,
                 proposal,
@@ -572,124 +573,85 @@ class ComplianceFeeSuccessView(TemplateView):
         return render(request, self.template_name, context)
 
 
+class FilmingFeeSuccessViewPreload(views.APIView):
+    
+    #permission_classes = [AllowAny] 
+
+    def get(self, request, lodgement_number, format=None):
+        print("FilmFeeSuccessViewPreload")
+
+        invoice_ref = request.GET.get('invoice')
+
+        try:
+            proposal = Proposal.objects.get(lodgement_number=lodgement_number)
+            print("proposal:",proposal)
+        except Exception as e:
+            print(e)
+            return redirect('home')
+
+        try:
+            filming_fee = FilmingFeeInvoice.objects.filter(invoice_reference=invoice_ref).last().filming_fee
+        except:
+            raise serializers.ValidationError("Filming Fee not found")
+
+        if not filming_fee.proposal != proposal:
+            raise serializers.ValidationError("Filming Fee Proposal does not match provided lodgement number")
+
+        if filming_fee.payment_type == FilmingFee.PAYMENT_TYPE_TEMPORARY:
+            filming_fee.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
+            filming_fee.expiry_time = None
+            success = False
+            try:
+                inv = Invoice.objects.get(reference=invoice_ref)
+                invoice_properties = get_invoice_properties(inv.id)
+                payment_status = invoice_properties.get("invoice", {}).get(
+                    "payment_status"
+                )
+                if proposal and payment_status in ["paid", "over_paid"]:
+                    proposal.fee_invoice_reference = invoice_ref
+                    proposal.save()
+                    proposal.final_approval(request, None)
+                    proposal.reset_application_discount(request.user)
+                else:
+                    logger.error(
+                        "Invoice payment status is {}".format(inv.payment_status)
+                    )
+                    raise serializers.ValidationError("Invoice payment status is {}".format(inv.payment_status))
+            except:
+                raise serializers.ValidationError("Fee success preload failed")
+            
+            if success:
+                filming_fee.save()
+
+        return Response(status=status.HTTP_200_OK)
+
 class FilmingFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_fee.html"
 
+    #TODO add auth permissions
     def get(self, request, *args, **kwargs):
-        print(" FILMING FEE SUCCESS ")
+        print("FilmingFeeSuccessView")
+        lodgement_number = kwargs.get("lodgement_number")
 
-        proposal = None
-        submitter = None
-        inv = None
         try:
-            context = template_context(self.request)
-            # basket = None
-            filming_fee = get_session_filming_invoice(request.session)
-            fee_inv = filming_fee.filming_fee_invoices.order_by("-id").first()
-            invoice_ref = fee_inv.invoice_reference
-            proposal = filming_fee.proposal
+            proposal = Proposal.objects.get(lodgement_number=lodgement_number)
+        except:
+            raise serializers.ValidationError("Proposal does not exist")
+        
+        filming_fee = get_session_filming_invoice(request.session)
+        fee_inv = filming_fee.filming_fee_invoices.order_by("-id").first()
+        invoice_ref = fee_inv.invoice_reference
 
-            applicant = proposal.applicant_obj
-            try:
-                recipient = Organisation.objects.get(id=applicant.id).email
-                submitter = applicant
-            except:
-                recipient = proposal.submitter.email
-                submitter = proposal.submitter
+        applicant = proposal.applicant_obj
+        try:
+            submitter = applicant
+        except:
+            submitter = proposal.submitter if proposal else None
 
+        try:
             inv = Invoice.objects.get(reference=invoice_ref)
-            if filming_fee.payment_type == FilmingFee.PAYMENT_TYPE_TEMPORARY:
-                try:
-                    order = Order.objects.get(number=inv.order_number)
-                except requests.exceptions.JSONDecodeError:
-                    logger.error(
-                        "{} tried paying an filming fee with an incorrect invoice".format(
-                            "User {} with id {}".format(
-                                proposal.submitter.get_full_name(),
-                                proposal.submitter.id,
-                            )
-                            if proposal.submitter
-                            else "An anonymous user"
-                        )
-                    )
-                    return redirect("external-proposal-detail", args=(proposal.id,))
-                if inv.system not in ["0557"]:
-                    logger.error(
-                        "{} tried paying an filming fee with an invoice from another system with reference number {}".format(
-                            (
-                                "User {} with id {}".format(
-                                    proposal.submitter.get_full_name(),
-                                    proposal.submitter.id,
-                                )
-                                if proposal.submitter
-                                else "An anonymous user"
-                            ),
-                            inv.reference,
-                        )
-                    )
-                    return redirect("external-proposal-detail", args=(proposal.id,))
-
-                if fee_inv:
-                    filming_fee.payment_type = FilmingFee.PAYMENT_TYPE_INTERNET
-                    filming_fee.expiry_time = None
-
-                    invoice_properties = get_invoice_properties(inv.id)
-                    payment_status = invoice_properties.get("invoice", {}).get(
-                        "payment_status"
-                    )
-                    if proposal and payment_status in ["paid", "over_paid"]:
-                        proposal.fee_invoice_reference = invoice_ref
-                        proposal.save()
-                        proposal.final_approval(request, None)
-                        proposal.reset_application_discount(request.user)
-                    else:
-                        logger.error(
-                            "Invoice payment status is {}".format(inv.payment_status)
-                        )
-                        raise
-
-                    filming_fee.save()
-                    request.session["cols_last_filming_invoice"] = filming_fee.id
-                    delete_session_filming_invoice(request.session)
-
-                    # NOTE: the confirmation invoice is sent from ../proposal/models/final_approval()
-                    # send_application_invoice_filming_email_notification(request, proposal, invoice, recipients=[recipient])
-
-                    context = {
-                        "proposal": proposal,
-                        "submitter": submitter,
-                        "fee_invoice": fee_inv,
-                    }
-                    return render(request, self.template_name, context)
-
-        except Exception as e:
-            logger.error("Error Creating Filming Fee: {}".format(e))
-
-            if (
-                "cols_last_filming_invoice" in request.session
-            ) and FilmingFee.objects.filter(
-                id=request.session["cols_last_filming_invoice"]
-            ).exists():
-                filming_fee = FilmingFee.objects.get(
-                    id=request.session["cols_last_filming_invoice"]
-                )
-                proposal = filming_fee.proposal
-
-                try:
-                    recipient = proposal.applicant.email
-                    submitter = proposal.applicant
-                except:
-                    recipient = proposal.submitter.email
-                    submitter = proposal.submitter
-
-                if (
-                    FilmingFeeInvoice.objects.filter(filming_fee=filming_fee).count()
-                    > 0
-                ):
-                    ffi = FilmingFeeInvoice.objects.filter(filming_fee=filming_fee)
-                    inv = ffi[0]
-            else:
-                return redirect("home")
+        except:
+            inv = None
 
         context = {"proposal": proposal, "submitter": submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)

@@ -3190,7 +3190,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def __create_filming_fee_invoice(
         self,
         request,
-        return_preload_url_ns="filming_fee_success",
+        return_preload_url_ns="filming_fee_success_preload",
     ):
 
         from dateutil.relativedelta import relativedelta
@@ -3233,7 +3233,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 invoice_name = self.applicant_obj.name
                 return_preload_url = request.build_absolute_uri(
-                    reverse(return_preload_url_ns)
+                    reverse(return_preload_url_ns,kwargs={"lodgement_number": self.lodgement_number})
                 )
                 due_date = None
                 future_invoice_response = process_create_future_invoice(
