@@ -38,9 +38,9 @@ def retrieve_email_user(email_user_id):
         return None
 
     if isinstance(email_user_id, EmailUser):
-        logger.warning(
-            f"Retrieved EmailUser object {email_user_id} directly. Returning."
-        )
+        #logger.warning(
+        #    f"Retrieved EmailUser object {email_user_id} directly. Returning."
+        #)
         return email_user_id
 
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)

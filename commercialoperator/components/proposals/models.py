@@ -2950,20 +2950,18 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         return licence_buffer
 
     @transaction.atomic
-    def final_approval(self, request, details):
+    def final_approval(self, request=None, details=None):
         from commercialoperator.components.approvals.models import Approval
         from commercialoperator.helpers import is_departmentUser
 
         try:
             self.proposed_decline_status = False
 
-            if (
+            if request and not ((
                 self.processing_status == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
                 and self.fee_paid
-            ) or (self.proposal_type == "amendment"):
-                # for 'Awaiting Payment' approval. External/Internal user fires this method after full payment via Make/Record Payment
-                pass
-            else:
+            ) or (self.proposal_type == "amendment")):
+
                 if not self.can_assess(request.user):
                     raise exceptions.ProposalNotAuthorized()
                 if self.processing_status != "with_approver":
@@ -2987,7 +2985,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     # needed because external users come through this workflow following 'awaiting_payment; status
                     self.approved_by = request.user
 
-            if (
+            if request and (
                 (
                     self.application_type.name == ApplicationType.FILMING
                     and self.filming_approval_type == self.LICENCE
@@ -3038,17 +3036,19 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             else:
                 self.processing_status = "approved"
                 self.customer_status = "approved"
-                # Log proposal action
-                self.log_user_action(
-                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
-                    request,
-                )
-                # Log entry for organisation
-                applicant_field = getattr(self, self.applicant_field)
-                applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
-                    request,
-                )
+                #TODO some logs have to go elsewhere, cannot rely on request
+                if request: #TODO change log user action to not need request
+                    # Log proposal action
+                    self.log_user_action(
+                        ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                        request,
+                    )
+                    # Log entry for organisation
+                    applicant_field = getattr(self, self.applicant_field)
+                    applicant_field.log_user_action(
+                        ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                        request,
+                    )
 
             if self.processing_status == self.PROCESSING_STATUS_APPROVED:
                 checking_proposal = self
@@ -3079,7 +3079,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             previous_approval.replaced_by = approval
                             previous_approval.save()
 
-                        self.reset_licence_discount(request.user)
+                        #TODO verify using submitter is ok (was request.user)
+                        self.reset_licence_discount(self.submitter) 
 
                 elif self.proposal_type == "amendment":
                     if self.previous_application:
@@ -3128,7 +3129,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             #'extracted_fields' = JSONField(blank=True, null=True)
                         },
                     )
-                    self.reset_licence_discount(request.user)
+                    #TODO verify using submitter is ok (was request.user)
+                    self.reset_licence_discount(self.submitter) 
                 # Generate compliances
                 from commercialoperator.components.compliances.models import (
                     Compliance,
@@ -3147,12 +3149,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 c.delete()
                     # Log creation
                     # Generate the document
-                    approval.generate_doc(request.user)
+                    #TODO verify using submitter is ok (was request.user)
+                    approval.generate_doc(self.submitter)
                     self.generate_compliances(approval, request)
                     # send the doc and log in approval and org
                 else:
                     # Generate the document
-                    approval.generate_doc(request.user)
+                    #TODO verify using submitter is ok (was request.user)
+                    approval.generate_doc(self.submitter)
                     # Delete the future compliances if Approval is reissued and generate the compliances again.
                     approval_compliances = Compliance.objects.filter(
                         approval=approval, proposal=self, processing_status="future"
@@ -3162,19 +3166,21 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             c.delete()
                     self.generate_compliances(approval, request)
                     # Log proposal action
-                    self.log_user_action(
-                        ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                        request,
-                    )
-                    # Log entry for organisation
-                    applicant_field = getattr(self, self.applicant_field)
-                    applicant_field.log_user_action(
-                        ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                        request,
-                    )
+                    if request: #TODO change log user action to not need request
+                        self.log_user_action(
+                            ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
+                            request,
+                        )
+                        # Log entry for organisation
+                        applicant_field = getattr(self, self.applicant_field)
+                        applicant_field.log_user_action(
+                            ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
+                            request,
+                        )
                 self.approval = approval
 
                 # send Proposal approval email with attachment
+                #TODO find a way to do this without request
                 send_proposal_approval_email_notification(self, request)
                 self.save(
                     version_comment="Final Approval: {}".format(
@@ -3232,7 +3238,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 basket_hash_split = basket_hash.split("|")
 
                 invoice_name = self.applicant_obj.name
-                return_preload_url = request.build_absolute_uri(
+                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + request.build_absolute_uri(
                     reverse(return_preload_url_ns,kwargs={"lodgement_number": self.lodgement_number})
                 )
                 due_date = None
@@ -3269,7 +3275,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
         return filming_fee
 
-    def generate_compliances(self, approval, request):
+    def generate_compliances(self, approval, request=None):
         today = timezone.now().date()
         timedelta = datetime.timedelta
         from commercialoperator.components.compliances.models import (
@@ -3324,10 +3330,11 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             approval=approval,
                             requirement=req,
                         )
-                        compliance.log_user_action(
-                            ComplianceUserAction.ACTION_CREATE.format(compliance.id),
-                            request,
-                        )
+                        if request: #TODO change log user action to not need request
+                            compliance.log_user_action( 
+                                ComplianceUserAction.ACTION_CREATE.format(compliance.id),
+                                request,
+                            )
                     if req.recurrence:
                         while current_date < approval.expiry_date:
                             for x in range(req.recurrence_schedule):
@@ -3355,12 +3362,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                         approval=approval,
                                         requirement=req,
                                     )
-                                    compliance.log_user_action(
-                                        ComplianceUserAction.ACTION_CREATE.format(
-                                            compliance.id
-                                        ),
-                                        request,
-                                    )
+                                    if request: #TODO change log user action to not need request
+                                        compliance.log_user_action(
+                                            ComplianceUserAction.ACTION_CREATE.format(
+                                                compliance.id
+                                            ),
+                                            request,
+                                        )
             except:
                 raise
 

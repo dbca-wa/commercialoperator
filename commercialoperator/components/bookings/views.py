@@ -7,7 +7,7 @@ from django.views.generic.base import View, TemplateView
 from django.conf import settings
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
-
+from rest_framework.permissions import AllowAny
 from rest_framework import status, views, serializers
 from rest_framework.response import Response
 
@@ -575,7 +575,7 @@ class ComplianceFeeSuccessView(TemplateView):
 
 class FilmingFeeSuccessViewPreload(views.APIView):
     
-    #permission_classes = [AllowAny] 
+    permission_classes = [AllowAny] 
 
     def get(self, request, lodgement_number, format=None):
         print("FilmFeeSuccessViewPreload")
@@ -594,7 +594,7 @@ class FilmingFeeSuccessViewPreload(views.APIView):
         except:
             raise serializers.ValidationError("Filming Fee not found")
 
-        if not filming_fee.proposal != proposal:
+        if filming_fee.proposal != proposal:
             raise serializers.ValidationError("Filming Fee Proposal does not match provided lodgement number")
 
         if filming_fee.payment_type == FilmingFee.PAYMENT_TYPE_TEMPORARY:
@@ -610,14 +610,15 @@ class FilmingFeeSuccessViewPreload(views.APIView):
                 if proposal and payment_status in ["paid", "over_paid"]:
                     proposal.fee_invoice_reference = invoice_ref
                     proposal.save()
-                    proposal.final_approval(request, None)
-                    proposal.reset_application_discount(request.user)
+                    proposal.final_approval()
+                    proposal.reset_application_discount(proposal.submitter) #TODO verify using submitter is ok
                 else:
                     logger.error(
                         "Invoice payment status is {}".format(inv.payment_status)
                     )
                     raise serializers.ValidationError("Invoice payment status is {}".format(inv.payment_status))
-            except:
+            except Exception as e:
+                print(e)
                 raise serializers.ValidationError("Fee success preload failed")
             
             if success:

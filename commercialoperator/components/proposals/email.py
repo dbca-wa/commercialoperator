@@ -601,7 +601,7 @@ def send_proposal_approval_email_notification(proposal, request):
                 attachment = (file_name, doc._file.file.read())
                 attachments.append(attachment)
 
-    url = request.build_absolute_uri(reverse("external"))
+    url = settings.SITE_URL + reverse("external")
     if "-internal" in url:
         # remove '-internal'. This email is for external submitters
         url = "".join(url.split("-internal"))
