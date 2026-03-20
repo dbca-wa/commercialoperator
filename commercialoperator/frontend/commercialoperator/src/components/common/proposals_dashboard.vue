@@ -108,10 +108,10 @@
                 </div>
             </div>          
             
-            <div class="row mb-3">
+            <div class="row mb-3 justify-content-end">
                 <div
                     v-if="is_external"
-                    class="col-md-3 ms-md-auto"
+                    class="col-md-3"
                 >
                     <div class="form-group mt-auto mb-0 align-self-end">
                         <router-link

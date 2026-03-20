@@ -46,7 +46,7 @@
                     index="park_entry_fees"
                     subtitle=""
                 >
-                    <div class="row">
+                    <div class="row mb-1">
                         <div class="col-md-3">
                             <div
                                 id="select_park_entry_fees_status_parent"
@@ -96,16 +96,6 @@
                                         {{ s.name }}
                                     </option>
                                 </select>
-                            </div>
-                        </div>
-                        <div v-if="is_external" class="col-md-3">
-                            <div class="form-group">
-                                <router-link
-                                    style="margin-top: 25px"
-                                    class="btn btn-primary pull-right"
-                                    :to="{ name: 'external-payment_order' }"
-                                    >Make Payment</router-link
-                                >
                             </div>
                         </div>
 
@@ -159,7 +149,22 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
+
+                    <div class="row mb-3 justify-content-end">
+                        <div v-if="is_external" class="col-md-3">
+                            <div class="form-group mt-auto mb-0 align-self-end">
+                                <router-link
+                                    type="button"
+                                    class="btn btn-primary float-end"
+                                    :to="{ name: 'external-payment_order' }"
+                                    >Make Payment</router-link
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-lg-12" style="margin-top: 25px">
                             <datatable

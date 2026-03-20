@@ -164,7 +164,6 @@ class ComplianceFeeView(TemplateView):
                     lines,
                     return_url_ns="compliance_fee_success",
                     return_preload_url_ns="compliance_fee_success",
-                    # invoice_text='Compliance Fee ({} - {})'.format(compliance.proposal.event_activity.commencement_date, compliance.proposal.event_activity.completion_date)
                     invoice_text="Per participant licence charge",
                 )
 
@@ -203,14 +202,7 @@ class FilmingFeeView(TemplateView):
         try:
             set_session_filming_invoice(request.session, filming_fee)
             invoice = Invoice.objects.get(reference=inv_ref)
-
-            film_types = "/".join(
-                [
-                    w.capitalize().replace("_", " ")
-                    for w in proposal.filming_activity.film_type
-                ]
-            )
-
+            
             checkout_response = checkout_existing_invoice(
                 request,
                 proposal,
