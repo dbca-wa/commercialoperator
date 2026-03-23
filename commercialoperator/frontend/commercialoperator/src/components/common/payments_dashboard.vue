@@ -234,7 +234,6 @@ export default {
                 { name: 'Other', value: '3' },
             ],
             proposal_submitters: [],
-            proposal_parks: [],
             proposal_headers: [
                 'Number',
                 'Licence',
@@ -579,17 +578,6 @@ export default {
                     console.log(error);
                 }
             );
-
-            helpers.fetchUrl(api_endpoints.filter_list_parks).then(
-                (response) => {
-                    vm.proposal_parks = response;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
-
-            //console.log(vm.regions);
         },
         fetchOverdueInvoices: function () {
             let vm = this;

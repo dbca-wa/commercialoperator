@@ -86,7 +86,6 @@ export default {
     filter_list_approvals: '/api/approvals/filter_list.json',
     filter_list_compliances: '/api/compliances/filter_list.json',
     filter_list_referrals: '/api/referrals/filter_list.json',
-    filter_list_parks: '/api/parks/filter_list.json',
     filter_list_district_proposals: '/api/district_proposals/filter_list.json',
     filter_list_organisation_requests:
         '/api/organisation_requests/filter_list.json',

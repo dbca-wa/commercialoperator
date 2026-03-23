@@ -475,8 +475,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
-
-    #TODO use drf search capabilites, use custom search with it not instead of it (then apply to all viewsets)
     def proposals_internal(self, request, *args, **kwargs):
         """
         Internal dashboard endpoint (DataTables server-side).
