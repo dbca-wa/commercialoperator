@@ -3033,19 +3033,18 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             else:
                 self.processing_status = "approved"
                 self.customer_status = "approved"
-                #TODO some logs have to go elsewhere, cannot rely on request
-                if request: #TODO change log user action to not need request
-                    # Log proposal action
-                    self.log_user_action(
-                        ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
-                        request.user,
-                    )
-                    # Log entry for organisation
-                    applicant_field = getattr(self, self.applicant_field)
-                    applicant_field.log_user_action(
-                        ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
-                        request.user,
-                    )
+
+                # Log proposal action
+                self.log_user_action(
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                    request.user if request else self.submitter,
+                )
+                # Log entry for organisation
+                applicant_field = getattr(self, self.applicant_field)
+                applicant_field.log_user_action(
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                    request.user if request else self.submitter,
+                )
 
             if self.processing_status == self.PROCESSING_STATUS_APPROVED:
                 checking_proposal = self
@@ -3076,7 +3075,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             previous_approval.replaced_by = approval
                             previous_approval.save()
 
-                        #TODO verify using submitter is ok (was request.user)
+                        #NOTE this function originally used request.user - meaning if a user pays on behalf of the actual applicant then the function would be misapplied
+                        #now it uses submitter - in COLS that may be acceptable but at some stage the applicant and the submitter should be distinguised in case an application is submitted on someone's behalf
                         self.reset_licence_discount(self.submitter) 
 
                 elif self.proposal_type == "amendment":
@@ -3126,7 +3126,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             #'extracted_fields' = JSONField(blank=True, null=True)
                         },
                     )
-                    #TODO verify using submitter is ok (was request.user)
                     self.reset_licence_discount(self.submitter) 
                 # Generate compliances
                 from commercialoperator.components.compliances.models import (
@@ -3146,13 +3145,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 c.delete()
                     # Log creation
                     # Generate the document
-                    #TODO verify using submitter is ok (was request.user)
+                    #NOTE this function originally used request.user - meaning if a user pays on behalf of the actual applicant then the function would be misapplied
+                    #now it uses submitter - in COLS that may be acceptable but at some stage the applicant and the submitter should be distinguised in case an application is submitted on someone's behalf
                     approval.generate_doc(self.submitter)
                     self.generate_compliances(approval, request)
                     # send the doc and log in approval and org
                 else:
                     # Generate the document
-                    #TODO verify using submitter is ok (was request.user)
                     approval.generate_doc(self.submitter)
                     # Delete the future compliances if Approval is reissued and generate the compliances again.
                     approval_compliances = Compliance.objects.filter(
@@ -3163,21 +3162,19 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             c.delete()
                     self.generate_compliances(approval, request)
                     # Log proposal action
-                    if request: #TODO change log user action to not need request
-                        self.log_user_action(
-                            ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                            request.user,
-                        )
-                        # Log entry for organisation
-                        applicant_field = getattr(self, self.applicant_field)
-                        applicant_field.log_user_action(
-                            ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                            request.user,
-                        )
+                    self.log_user_action(
+                        ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
+                        request.user if request else self.submitter,
+                    )
+                    # Log entry for organisation
+                    applicant_field = getattr(self, self.applicant_field)
+                    applicant_field.log_user_action(
+                        ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
+                        request.user if request else self.submitter,
+                    )
                 self.approval = approval
 
                 # send Proposal approval email with attachment
-                #TODO find a way to do this without request
                 send_proposal_approval_email_notification(self, request)
                 self.save(
                     version_comment="Final Approval: {}".format(
@@ -3327,11 +3324,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             approval=approval,
                             requirement=req,
                         )
-                        if request: #TODO change log user action to not need request
-                            compliance.log_user_action( 
-                                ComplianceUserAction.ACTION_CREATE.format(compliance.id),
-                                request.user,
-                            )
+                        compliance.log_user_action( 
+                            ComplianceUserAction.ACTION_CREATE.format(compliance.id),
+                            request.user if request else self.submitter,
+                        )
                     if req.recurrence:
                         while current_date < approval.expiry_date:
                             for x in range(req.recurrence_schedule):
@@ -3359,13 +3355,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                         approval=approval,
                                         requirement=req,
                                     )
-                                    if request: #TODO change log user action to not need request
-                                        compliance.log_user_action(
-                                            ComplianceUserAction.ACTION_CREATE.format(
-                                                compliance.id
-                                            ),
-                                            request.user,
-                                        )
+                                    compliance.log_user_action(
+                                        ComplianceUserAction.ACTION_CREATE.format(
+                                            compliance.id
+                                        ),
+                                        request.user if request else self.submitter,
+                                    )
             except:
                 raise
 
