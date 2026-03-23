@@ -468,6 +468,7 @@ CACHE_KEY_PROPOSAL_KEYWORD_SEARCH = "proposal-keyword-search-{id}-{lodgement_num
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"
+ROUND_INVOICE_TOTALS = env("ROUND_INVOICE_TOTALS", False)
 
 # API Exception message
 # When debug is False, the following message will be sent to the user

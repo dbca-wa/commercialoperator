@@ -730,7 +730,7 @@ def create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_p
 
     filming_parks = proposal.filming_parks.all().distinct("park__name")
     invoice_total = licence_fee
-    if settings.DEBUG: #TODO adding a rounding env var setting, do not rely on debug
+    if settings.ROUND_INVOICE_TOTALS: #TODO adding a rounding env var setting, do not rely on debug
         # since Ledger UAT only handles whole integer total
         invoice_total = round(invoice_total, 0)
 
