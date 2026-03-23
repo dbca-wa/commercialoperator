@@ -1263,7 +1263,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
             instance = serializer.save()
             instance.log_user_action(
                 OrganisationRequestUserAction.ACTION_LODGE_REQUEST.format(instance.id),
-                request,
+                request.user,
             )
             instance.send_organisation_request_email_notification(request)
         return Response(serializer.data)

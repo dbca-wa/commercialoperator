@@ -60,7 +60,7 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             serializer.save()
             # instance.add_documents(request)
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_EDIT_EVENT_PARK.format(instance.id), request
+                ProposalUserAction.ACTION_EDIT_EVENT_PARK.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -86,7 +86,7 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             instance = serializer.save()
             # instance.add_documents(request)
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_CREATE_EVENT_PARK.format(instance.id), request
+                ProposalUserAction.ACTION_CREATE_EVENT_PARK.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -159,7 +159,7 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
                 ProposalUserAction.ACTION_EDIT_ABSEILING_CLIMBING_ACTIVITY.format(
                     instance.id
                 ),
-                request,
+                request.user,
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -204,7 +204,7 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             instance.add_documents(request)
             instance.proposal.log_user_action(
                 ProposalUserAction.ACTION_EDIT_PRE_EVENT_PARK.format(instance.id),
-                request,
+                request.user,
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -231,7 +231,7 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             instance.add_documents(request)
             instance.proposal.log_user_action(
                 ProposalUserAction.ACTION_CREATE_PRE_EVENT_PARK.format(instance.id),
-                request,
+                request.user,
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -302,7 +302,7 @@ class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
             serializer.save()
             # instance.add_documents(request)
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_EDIT_EVENT_PARK.format(instance.id), request
+                ProposalUserAction.ACTION_EDIT_EVENT_PARK.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -328,7 +328,7 @@ class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
             instance = serializer.save()
             # instance.add_documents(request)
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_CREATE_EVENT_PARK.format(instance.id), request
+                ProposalUserAction.ACTION_CREATE_EVENT_PARK.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:

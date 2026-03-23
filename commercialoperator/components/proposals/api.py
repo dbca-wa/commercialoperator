@@ -3137,7 +3137,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         instance.proposal.log_user_action(
-            ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request
+            ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request.user
         )
         return Response(serializer.data)
 
@@ -3147,7 +3147,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         instance.proposal.log_user_action(
-            ProposalUserAction.ACTION_CREATE_VEHICLE.format(instance.id), request
+            ProposalUserAction.ACTION_CREATE_VEHICLE.format(instance.id), request.user
         )
         return Response(serializer.data)
 
@@ -3177,7 +3177,7 @@ class VesselViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_EDIT_VESSEL.format(instance.id), request
+                ProposalUserAction.ACTION_EDIT_VESSEL.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -3200,7 +3200,7 @@ class VesselViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_CREATE_VESSEL.format(instance.id), request
+                ProposalUserAction.ACTION_CREATE_VESSEL.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -3267,7 +3267,6 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
                         serializer_chk.save()
                     except:
                         raise
-            # instance.proposal.log_user_action(ProposalUserAction.ACTION_EDIT_VESSEL.format(instance.id),request)
             return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())

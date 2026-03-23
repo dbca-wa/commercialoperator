@@ -605,7 +605,7 @@ def save_park_activity_data(
                                         ProposalUserAction.ACTION_LINK_ACTIVITY.format(
                                             activity.id, park.park.id
                                         ),
-                                        request,
+                                        request.user,
                                     )
                             except:
                                 raise
@@ -629,7 +629,7 @@ def save_park_activity_data(
                                         ProposalUserAction.ACTION_LINK_ACCESS.format(
                                             access.id, park.park.id
                                         ),
-                                        request,
+                                        request.user,
                                     )
                             except:
                                 raise
@@ -644,7 +644,7 @@ def save_park_activity_data(
                         ProposalUserAction.ACTION_LINK_PARK.format(
                             park.park.id, instance.id
                         ),
-                        request,
+                        request.user,
                     )
                     current_activities = []
                     for a in item["activities"]:
@@ -662,7 +662,7 @@ def save_park_activity_data(
                                     ProposalUserAction.ACTION_LINK_ACTIVITY.format(
                                         activity.id, park.park.id
                                     ),
-                                    request,
+                                    request.user,
                                 )
                         except:
                             raise
@@ -681,7 +681,7 @@ def save_park_activity_data(
                                     ProposalUserAction.ACTION_LINK_ACCESS.format(
                                         access.id, park.park.id
                                     ),
-                                    request,
+                                    request.user,
                                 )
                         except:
                             raise
@@ -699,7 +699,7 @@ def save_park_activity_data(
                 act.delete()
                 instance.log_user_action(
                     ProposalUserAction.ACTION_UNLINK_ACTIVITY.format(d, park.park.id),
-                    request,
+                    request.user,
                 )
             new_access = park.access_types.all()
             new_access_id = set(a.access_type_id for a in new_access)
@@ -711,7 +711,7 @@ def save_park_activity_data(
                 acc.delete()
                 instance.log_user_action(
                     ProposalUserAction.ACTION_UNLINK_ACCESS.format(d, park.park.id),
-                    request,
+                    request.user,
                 )
     new_parks = instance.parks.filter(park__park_type="land")
     new_parks_id = set(p.park_id for p in new_parks)
@@ -729,7 +729,7 @@ def save_park_activity_data(
         pk.delete()
         instance.log_user_action(
             ProposalUserAction.ACTION_UNLINK_PARK.format(d, instance.id),
-            request,
+            request.user,
         )
 
 
@@ -793,7 +793,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                                             section.section.id,
                                                             trail.trail.id,
                                                         ),
-                                                        request,
+                                                        request.user,
                                                     )
                                             except:
                                                 raise
@@ -808,7 +808,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                         section.section.id,
                                         trail.trail.id,
                                     ),
-                                    request,
+                                    request.user,
                                 )
                                 if a["activities"]:
                                     for act in a["activities"]:
@@ -830,7 +830,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                                         section.section.id,
                                                         trail.trail.id,
                                                     ),
-                                                    request,
+                                                    request.user,
                                                 )
                                         except:
                                             raise
@@ -853,7 +853,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                         section.section.id,
                                         trail.trail.id,
                                     ),
-                                    request,
+                                    request.user,
                                 )
             except ProposalTrail.DoesNotExist:
                 try:
@@ -866,7 +866,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                         ProposalUserAction.ACTION_LINK_TRAIL.format(
                             trail.trail.id, instance.id
                         ),
-                        request,
+                        request.user,
                     )
                     current_sections = []
                     if item["activities"]:
@@ -883,7 +883,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                         section.section.id,
                                         trail.trail.id,
                                     ),
-                                    request,
+                                    request.user,
                                 )
                                 if a["activities"]:
                                     for act in a["activities"]:
@@ -905,7 +905,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                                                         section.section.id,
                                                         trail.trail.id,
                                                     ),
-                                                    request,
+                                                    request.user,
                                                 )
                                         except:
                                             raise
@@ -931,7 +931,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                 pk.delete()
                 instance.log_user_action(
                     ProposalUserAction.ACTION_UNLINK_SECTION.format(d, trail.trail.id),
-                    request,
+                    request.user,
                 )
     new_trails = instance.trails.all()
     new_trails_id = set(p.trail_id for p in new_trails)
@@ -942,7 +942,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
         pk.delete()
         instance.log_user_action(
             ProposalUserAction.ACTION_UNLINK_TRAIL.format(d, instance.id),
-            request,
+            request.user,
         )
 
 
@@ -1000,7 +1000,7 @@ def save_park_zone_activity_data(
                                         zone.zone.id,
                                         park.park.id,
                                     ),
-                                    request,
+                                    request.user,
                                 )
 
                                 if "access_point" in a:
@@ -1016,7 +1016,7 @@ def save_park_zone_activity_data(
                                     ProposalUserAction.ACTION_LINK_ZONE.format(
                                         zone.zone.id, park.park.id
                                     ),
-                                    request,
+                                    request.user,
                                 )
                                 allowed_act_ids = list(
                                     set(zone.zone.allowed_activities_ids).intersection(
@@ -1038,7 +1038,7 @@ def save_park_zone_activity_data(
                                         zone.zone.id,
                                         park.park.id,
                                     ),
-                                    request,
+                                    request.user,
                                 )
                                 if "access_point" in a:
                                     zone.access_point = a["access_point"]
@@ -1060,7 +1060,7 @@ def save_park_zone_activity_data(
                                     ProposalUserAction.ACTION_UNLINK_ACTIVITY_ZONE.format(
                                         d, zone.zone.id, park.park.id
                                     ),
-                                    request,
+                                    request.user,
                                 )
 
             except ProposalPark.DoesNotExist:
@@ -1074,7 +1074,7 @@ def save_park_zone_activity_data(
                         ProposalUserAction.ACTION_LINK_PARK.format(
                             park.park.id, instance.id
                         ),
-                        request,
+                        request.user,
                     )
                     current_zones = []
                     if item["activities"]:
@@ -1090,7 +1090,7 @@ def save_park_zone_activity_data(
                                     ProposalUserAction.ACTION_LINK_ZONE.format(
                                         zone.zone.id, park.park.id
                                     ),
-                                    request,
+                                    request.user,
                                 )
                                 allowed_act_ids = list(
                                     set(zone.zone.allowed_activities_ids).intersection(
@@ -1112,7 +1112,7 @@ def save_park_zone_activity_data(
                                         zone.zone.id,
                                         park.park.id,
                                     ),
-                                    request,
+                                    request.user,
                                 )
 
                                 if "access_point" in a:
@@ -1131,7 +1131,7 @@ def save_park_zone_activity_data(
                 pk.delete()
                 instance.log_user_action(
                     ProposalUserAction.ACTION_UNLINK_ZONE.format(d, park.park.id),
-                    request,
+                    request.user,
                 )
     new_parks = instance.parks.filter(park__park_type="marine")
     new_parks_id = set(p.park_id for p in new_parks)
@@ -1149,7 +1149,7 @@ def save_park_zone_activity_data(
         pk.delete()
         instance.log_user_action(
             ProposalUserAction.ACTION_UNLINK_PARK.format(d, instance.id),
-            request,
+            request.user,
         )
 
 
@@ -1437,12 +1437,12 @@ def proposal_submit(proposal, request):
 
         # Create a log entry for the proposal
         proposal.log_user_action(
-            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), request
+            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), request.user
         )
         # Create a log entry for the organisation
         applicant_field = getattr(proposal, proposal.applicant_field)
         applicant_field.log_user_action(
-            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), request
+            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), request.user
         )
 
         ret1 = send_submit_email_notification(request, proposal)

@@ -1317,7 +1317,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(
                                 self.id
                             ),
-                            request,
+                            request.user,
                         )
 
             elif self.proxy_applicant:
@@ -1339,7 +1339,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(
                                 self.id
                             ),
-                            request,
+                            request.user,
                         )
 
             else:
@@ -1361,7 +1361,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             ProposalUserAction.ACTION_RESET_TRAINING_COMPLETED.format(
                                 self.id
                             ),
-                            request,
+                            request.user,
                         )
 
     @property
@@ -2146,8 +2146,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "proposalassessorgroup", user.id
                 )
 
-    def log_user_action(self, action, request):
-        return ProposalUserAction.log_action(self, action, request.user)
+    def log_user_action(self, action, user):
+        return ProposalUserAction.log_action(self, action, user)
 
     def submit(self, request, viewset):
         from commercialoperator.components.proposals.utils import save_proponent_data
@@ -2175,19 +2175,16 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 # Create a log entry for the proposal
                 self.log_user_action(
-                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id), request
+                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id), request.user
                 )
-                # Create a log entry for the organisation
-                # self.applicant.log_user_action(ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id),request)
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id), request
+                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id), request.user
                 )
 
                 ret1 = send_submit_email_notification(request, self)
                 ret2 = send_external_submit_email_notification(request, self)
 
-                # self.save_form_tabs(request)
                 if ret1 and ret2:
                     self.processing_status = "with_assessor"
                     self.customer_status = "with_assessor"
@@ -2300,7 +2297,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
                     referral.id, self.id, "{}".format(referral_group.name)
                 ),
-                request,
+                request.user,
             )
             # Create a log entry for the organisation
             applicant_field = getattr(self, self.applicant_field)
@@ -2308,7 +2305,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
                     referral.id, self.id, "{}".format(referral_group.name)
                 ),
-                request,
+                request.user,
             )
             # send email
             recipients = referral_group.members_list
@@ -2335,7 +2332,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 self.id,
                                 "{}({})".format(officer.get_full_name(), officer.email),
                             ),
-                            request,
+                            request.user,
                         )
                         # Create a log entry for the organisation
                         applicant_field = getattr(self, self.applicant_field)
@@ -2344,7 +2341,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 self.id,
                                 "{}({})".format(officer.get_full_name(), officer.email),
                             ),
-                            request,
+                            request.user,
                         )
                 else:
                     if officer != self.assigned_officer:
@@ -2356,7 +2353,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 self.id,
                                 "{}({})".format(officer.get_full_name(), officer.email),
                             ),
-                            request,
+                            request.user,
                         )
                         # Create a log entry for the organisation
                         applicant_field = getattr(self, self.applicant_field)
@@ -2365,7 +2362,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 self.id,
                                 "{}({})".format(officer.get_full_name(), officer.email),
                             ),
-                            request,
+                            request.user,
                         )
             except:
                 raise
@@ -2404,13 +2401,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 )  # to allow revision to be added to reversion history
                 self.log_user_action(
                     ProposalUserAction.ACTION_APPROVAL_LEVEL_DOCUMENT.format(self.id),
-                    request,
+                    request.user,
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
                     ProposalUserAction.ACTION_APPROVAL_LEVEL_DOCUMENT.format(self.id),
-                    request,
+                    request.user,
                 )
                 return self
             except:
@@ -2428,13 +2425,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         # Create a log entry for the proposal
                         self.log_user_action(
                             ProposalUserAction.ACTION_UNASSIGN_APPROVER.format(self.id),
-                            request,
+                            request.user,
                         )
                         # Create a log entry for the organisation
                         applicant_field = getattr(self, self.applicant_field)
                         applicant_field.log_user_action(
                             ProposalUserAction.ACTION_UNASSIGN_APPROVER.format(self.id),
-                            request,
+                            request.user,
                         )
                 else:
                     if self.assigned_officer:
@@ -2443,13 +2440,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         # Create a log entry for the proposal
                         self.log_user_action(
                             ProposalUserAction.ACTION_UNASSIGN_ASSESSOR.format(self.id),
-                            request,
+                            request.user,
                         )
                         # Create a log entry for the organisation
                         applicant_field = getattr(self, self.applicant_field)
                         applicant_field.log_user_action(
                             ProposalUserAction.ACTION_UNASSIGN_ASSESSOR.format(self.id),
-                            request,
+                            request.user,
                         )
             except:
                 raise
@@ -2498,7 +2495,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 if self.processing_status == self.PROCESSING_STATUS_WITH_ASSESSOR:
                     self.log_user_action(
                         ProposalUserAction.ACTION_BACK_TO_PROCESSING.format(self.id),
-                        request,
+                        request.user,
                     )
                 elif (
                     self.processing_status
@@ -2506,7 +2503,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 ):
                     self.log_user_action(
                         ProposalUserAction.ACTION_ENTER_REQUIREMENTS.format(self.id),
-                        request,
+                        request.user,
                     )
         else:
             raise ValidationError("The provided status cannot be found.")
@@ -2542,7 +2539,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     # Create a log entry for the proposal
                     self.log_user_action(
                         ProposalUserAction.ACTION_REISSUE_APPROVAL.format(self.id),
-                        request,
+                        request.user,
                     )
                 else:
                     raise ValidationError(
@@ -2573,7 +2570,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     # Create a log entry for the proposal
                     self.log_user_action(
                         ProposalUserAction.ACTION_REISSUE_APPROVAL.format(self.id),
-                        request,
+                        request.user,
                     )
                 else:
                     raise ValidationError(
@@ -2606,12 +2603,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.move_to_status(request, "with_approver", approver_comment)
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id), request
+                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id), request
+                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id), request.user
                 )
 
                 send_approver_decline_email_notification(reason, request, self)
@@ -2644,12 +2641,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_DECLINE.format(self.id), request
+                    ProposalUserAction.ACTION_DECLINE.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_DECLINE.format(self.id), request
+                    ProposalUserAction.ACTION_DECLINE.format(self.id), request.user
                 )
                 send_proposal_decline_email_notification(
                     self, request, proposal_decline
@@ -2675,12 +2672,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_PUT_ONHOLD.format(self.id), request
+                    ProposalUserAction.ACTION_PUT_ONHOLD.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_PUT_ONHOLD.format(self.id), request
+                    ProposalUserAction.ACTION_PUT_ONHOLD.format(self.id), request.user
                 )
 
                 # send_approver_decline_email_notification(reason, request, self)
@@ -2702,12 +2699,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id), request
+                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id), request
+                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id), request.user
                 )
 
                 # send_approver_decline_email_notification(reason, request, self)
@@ -2744,12 +2741,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id), request
+                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id), request
+                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id), request.user
                 )
 
                 # send_approver_decline_email_notification(reason, request, self)
@@ -2787,13 +2784,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 # Log proposal action
                 self.log_user_action(
                     ProposalUserAction.ACTION_QA_OFFICER_COMPLETED.format(self.id),
-                    request,
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
                     ProposalUserAction.ACTION_QA_OFFICER_COMPLETED.format(self.id),
-                    request,
+                    request.user,
                 )
 
                 # send_approver_decline_email_notification(reason, request, self)
@@ -2824,12 +2821,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id), request
+                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id), request
+                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id), request.user
                 )
 
                 send_approver_approve_email_notification(request, self)
@@ -2863,12 +2860,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.customer_status = "approved"
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id), request
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id), request.user
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id), request
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id), request.user
                 )
 
                 if self.proposal_type == "renewal":
@@ -3010,7 +3007,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         ProposalUserAction.ACTION_AWAITING_PAYMENT_APPROVAL_.format(
                             self.id
                         ),
-                        request,
+                        request.user,
                     )
 
                     # Log entry for organisation
@@ -3019,7 +3016,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         ProposalUserAction.ACTION_AWAITING_PAYMENT_APPROVAL_.format(
                             self.id
                         ),
-                        request,
+                        request.user,
                     )
                     self.save(
                         version_comment="Final Approval - Awaiting Payment, Proposal: {}".format(
@@ -3041,13 +3038,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     # Log proposal action
                     self.log_user_action(
                         ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
-                        request,
+                        request.user,
                     )
                     # Log entry for organisation
                     applicant_field = getattr(self, self.applicant_field)
                     applicant_field.log_user_action(
                         ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
-                        request,
+                        request.user,
                     )
 
             if self.processing_status == self.PROCESSING_STATUS_APPROVED:
@@ -3169,13 +3166,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     if request: #TODO change log user action to not need request
                         self.log_user_action(
                             ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                            request,
+                            request.user,
                         )
                         # Log entry for organisation
                         applicant_field = getattr(self, self.applicant_field)
                         applicant_field.log_user_action(
                             ProposalUserAction.ACTION_UPDATE_APPROVAL_.format(self.id),
-                            request,
+                            request.user,
                         )
                 self.approval = approval
 
@@ -3333,7 +3330,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         if request: #TODO change log user action to not need request
                             compliance.log_user_action( 
                                 ComplianceUserAction.ACTION_CREATE.format(compliance.id),
-                                request,
+                                request.user,
                             )
                     if req.recurrence:
                         while current_date < approval.expiry_date:
@@ -3367,7 +3364,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                             ComplianceUserAction.ACTION_CREATE.format(
                                                 compliance.id
                                             ),
-                                            request,
+                                            request.user,
                                         )
             except:
                 raise
@@ -3488,12 +3485,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         requirement_document.save()
                         # Create a log entry for the proposal
                 self.log_user_action(
-                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id), request
+                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id), request.user
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id), request
+                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id), request.user
                 )
                 # Log entry for approval
                 from commercialoperator.components.approvals.models import (
@@ -3502,7 +3499,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 self.approval.log_user_action(
                     ApprovalUserAction.ACTION_RENEW_APPROVAL.format(self.approval.id),
-                    request,
+                    request.user,
                 )
                 proposal.save(
                     version_comment="New Amendment/Renewal Application created, from origin {}".format(
@@ -3576,12 +3573,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         requirement_document.save()
                         # Create a log entry for the proposal
                 self.log_user_action(
-                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id), request
+                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id), request.user
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id), request
+                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id), request.user
                 )
                 # Log entry for approval
                 from commercialoperator.components.approvals.models import (
@@ -3590,7 +3587,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 self.approval.log_user_action(
                     ApprovalUserAction.ACTION_AMEND_APPROVAL.format(self.approval.id),
-                    request,
+                    request.user,
                 )
                 proposal.save(
                     version_comment="New Amendment/Renewal Application created, from origin {}".format(
@@ -3646,7 +3643,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         self.save()
                         self.log_user_action(
                             ProposalUserAction.SEND_TO_DISTRICTS.format(self.id),
-                            request,
+                            request.user,
                         )
 
                     # for Amendment Proposal, Find the Requirements copied from previous application and assign to district Proposal according to distrcit
@@ -3736,7 +3733,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         self.save()
                         self.log_user_action(
                             ProposalUserAction.SEND_TO_DISTRICTS.format(self.id),
-                            request,
+                            request.user,
                         )
 
                         # for Amendment Proposal, Find the Requirements copied from previous application and assign to district Proposal according to distrcit
@@ -3885,16 +3882,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     )
                     requirement_document.can_delete = True
                     requirement_document.save()
-                    # Create a log entry for the proposal
-            # self.log_user_action(ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),request)
-            # Create a log entry for the organisation
-            # applicant_field=getattr(self, self.applicant_field)
-            # applicant_field.log_user_action(ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),request)
-            # Log entry for approval
-            # from commercialoperator.components.approvals.models import ApprovalUserAction
-            # self.approval.log_user_action(ApprovalUserAction.ACTION_RENEW_APPROVAL.format(self.approval.id),request)
-            # proposal.save(version_comment='New Amendment/Renewal Application created, from origin {}'.format(proposal.previous_application_id))
-            # proposal.save()
             return proposal
 
 
@@ -4424,12 +4411,12 @@ class AmendmentRequest(ProposalRequest):
                         proposal.required_documents.all().update(can_hide=True)
                     # Create a log entry for the proposal
                     proposal.log_user_action(
-                        ProposalUserAction.ACTION_ID_REQUEST_AMENDMENTS, request
+                        ProposalUserAction.ACTION_ID_REQUEST_AMENDMENTS, request.user
                     )
                     # Create a log entry for the organisation
                     applicant_field = getattr(proposal, proposal.applicant_field)
                     applicant_field.log_user_action(
-                        ProposalUserAction.ACTION_ID_REQUEST_AMENDMENTS, request
+                        ProposalUserAction.ACTION_ID_REQUEST_AMENDMENTS, request.user
                     )
 
                     # send email
@@ -4858,7 +4845,7 @@ class Referral(RevisionedMixin):
                             self.proposal.id,
                             "{}({})".format(officer.get_full_name(), officer.email),
                         ),
-                        request,
+                        request.user,
                     )
             except:
                 raise
@@ -4876,7 +4863,7 @@ class Referral(RevisionedMixin):
                         ProposalUserAction.ACTION_REFERRAL_UNASSIGN_ASSESSOR.format(
                             self.id, self.proposal.id
                         ),
-                        request,
+                        request.user,
                     )
                     # Create a log entry for the organisation
                     applicant_field = getattr(
@@ -4886,7 +4873,7 @@ class Referral(RevisionedMixin):
                         ProposalUserAction.ACTION_REFERRAL_UNASSIGN_ASSESSOR.format(
                             self.id, self.proposal.id
                         ),
-                        request,
+                        request.user,
                     )
             except:
                 raise
@@ -4899,12 +4886,12 @@ class Referral(RevisionedMixin):
             self.save()
             self.proposal.log_user_action(
                 ProposalUserAction.RECALL_REFERRAL.format(self.id, self.proposal.id),
-                request,
+                request.user,
             )
             applicant_field = getattr(self.proposal, self.proposal.applicant_field)
             applicant_field.log_user_action(
                 ProposalUserAction.RECALL_REFERRAL.format(self.id, self.proposal.id),
-                request,
+                request.user,
             )
 
     def remind(self, request):
@@ -4912,12 +4899,11 @@ class Referral(RevisionedMixin):
             if not self.proposal.can_assess(request.user):
                 raise exceptions.ProposalNotAuthorized()
             # Create a log entry for the proposal
-            # self.proposal.log_user_action(ProposalUserAction.ACTION_REMIND_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
             self.proposal.log_user_action(
                 ProposalUserAction.ACTION_REMIND_REFERRAL.format(
                     self.id, self.proposal.id, "{}".format(self.referral_group.name)
                 ),
-                request,
+                request.user,
             )
             # Create a log entry for the organisation
             applicant_field = getattr(self.proposal, self.proposal.applicant_field)
@@ -4925,7 +4911,7 @@ class Referral(RevisionedMixin):
                 ProposalUserAction.ACTION_REMIND_REFERRAL.format(
                     self.id, self.proposal.id, "{}".format(self.referral_group.name)
                 ),
-                request,
+                request.user,
             )
             # send email
             recipients = self.referral_group.members_list
@@ -4945,7 +4931,7 @@ class Referral(RevisionedMixin):
             ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
                 self.id, self.proposal.id, "{}".format(self.referral_group.name)
             ),
-            request,
+            request.user,
         )
         # Create a log entry for the organisation
         applicant_field = getattr(self.proposal, self.proposal.applicant_field)
@@ -4953,7 +4939,7 @@ class Referral(RevisionedMixin):
             ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
                 self.id, self.proposal.id, "{}".format(self.referral_group.name)
             ),
-            request,
+            request.user,
         )
         # send email
         recipients = self.referral_group.members_list
@@ -4977,7 +4963,6 @@ class Referral(RevisionedMixin):
         )
         self.add_referral_document(request)
         self.save()
-        # self.proposal.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
         self.proposal.log_user_action(
             ProposalUserAction.CONCLUDE_REFERRAL.format(
                 request.user.get_full_name(),
@@ -4985,9 +4970,8 @@ class Referral(RevisionedMixin):
                 self.proposal.id,
                 "{}".format(self.referral_group.name),
             ),
-            request,
+            request.user,
         )
-        # self.proposal.applicant.log_user_action(ProposalUserAction.CONCLUDE_REFERRAL.format(self.id,self.proposal.id,'{}({})'.format(self.referral.get_full_name(),self.referral.email)),request)
         applicant_field = getattr(self.proposal, self.proposal.applicant_field)
         applicant_field.log_user_action(
             ProposalUserAction.CONCLUDE_REFERRAL.format(
@@ -4996,7 +4980,7 @@ class Referral(RevisionedMixin):
                 self.proposal.id,
                 "{}".format(self.referral_group.name),
             ),
-            request,
+            request.user,
         )
         send_referral_complete_email_notification(self, request)
 
@@ -5038,7 +5022,7 @@ class Referral(RevisionedMixin):
                     )  # to allow revision to be added to reversion history
                     self.proposal.log_user_action(
                         ProposalUserAction.ACTION_REFERRAL_DOCUMENT.format(self.id),
-                        request,
+                        request.user,
                     )
                     # Create a log entry for the organisation
                     applicant_field = getattr(
@@ -5046,7 +5030,7 @@ class Referral(RevisionedMixin):
                     )
                     applicant_field.log_user_action(
                         ProposalUserAction.ACTION_REFERRAL_DOCUMENT.format(self.id),
-                        request,
+                        request.user,
                     )
                 return self
             except:
@@ -5118,7 +5102,7 @@ class Referral(RevisionedMixin):
                             self.proposal.id,
                             "{}({})".format(user.get_full_name(), user.email),
                         ),
-                        request,
+                        request.user,
                     )
                     # Create a log entry for the organisation
                     applicant_field = getattr(
@@ -5130,7 +5114,7 @@ class Referral(RevisionedMixin):
                             self.proposal.id,
                             "{}({})".format(user.get_full_name(), user.email),
                         ),
-                        request,
+                        request.user,
                     )
                     # send email
                     recipients = self.email_group.members_list
@@ -6839,11 +6823,8 @@ class DistrictProposal(models.Model):
                                 self.proposal.id,
                                 "{}({})".format(officer.get_full_name(), officer.email),
                             ),
-                            request,
+                            request.user,
                         )
-                        # Create a log entry for the organisation
-                        # applicant_field=getattr(self, self.applicant_field)
-                        # applicant_field.log_user_action(ProposalUserAction.ACTION_ASSIGN_TO_APPROVER.format(self.id,'{}({})'.format(officer.get_full_name(),officer.email)),request)
                 else:
                     if officer != self.assigned_officer:
                         self.assigned_officer = officer
@@ -6855,11 +6836,8 @@ class DistrictProposal(models.Model):
                                 self.proposal.id,
                                 "{}({})".format(officer.get_full_name(), officer.email),
                             ),
-                            request,
+                            request.user,
                         )
-                        # Create a log entry for the organisation
-                        # applicant_field=getattr(self, self.applicant_field)
-                        # applicant_field.log_user_action(ProposalUserAction.ACTION_ASSIGN_TO_ASSESSOR.format(self.id,'{}({})'.format(officer.get_full_name(),officer.email)),request)
             except:
                 raise
 
@@ -6877,7 +6855,7 @@ class DistrictProposal(models.Model):
                             ProposalUserAction.ACTION_UNASSIGN_DISTRICT_APPROVER.format(
                                 self.id
                             ),
-                            request,
+                            request.user,
                         )
                         # Create a log entry for the organisation
                         applicant_field = getattr(
@@ -6887,7 +6865,7 @@ class DistrictProposal(models.Model):
                             ProposalUserAction.ACTION_UNASSIGN_DISTRICT_APPROVER.format(
                                 self.id, self.proposal.id
                             ),
-                            request,
+                            request.user,
                         )
                 else:
                     if self.assigned_officer:
@@ -6898,7 +6876,7 @@ class DistrictProposal(models.Model):
                             ProposalUserAction.ACTION_UNASSIGN_DISTRICT_ASSESSOR.format(
                                 self.id, self.proposal.id
                             ),
-                            request,
+                            request.user,
                         )
                         # Create a log entry for the organisation
                         applicant_field = getattr(
@@ -6908,7 +6886,7 @@ class DistrictProposal(models.Model):
                             ProposalUserAction.ACTION_UNASSIGN_DISTRICT_ASSESSOR.format(
                                 self.id, self.proposal.id
                             ),
-                            request,
+                            request.user,
                         )
             except:
                 raise
@@ -6941,7 +6919,7 @@ class DistrictProposal(models.Model):
                         ProposalUserAction.ACTION_BACK_TO_PROCESSING_DISTRICT.format(
                             self.id, self.proposal.id
                         ),
-                        request,
+                        request.user,
                     )
                 elif (
                     self.processing_status
@@ -6951,7 +6929,7 @@ class DistrictProposal(models.Model):
                         ProposalUserAction.ACTION_ENTER_REQUIREMENTS_DISTRICT.format(
                             self.id, self.proposal.id
                         ),
-                        request,
+                        request.user,
                     )
         else:
             raise ValidationError("The provided status cannot be found.")
@@ -6983,7 +6961,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_DISTRICT_PROPOSED_DECLINE.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self.proposal, self.proposal.applicant_field)
@@ -6991,7 +6969,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_DISTRICT_PROPOSED_DECLINE.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
 
                 send_district_approver_decline_email_notification(reason, request, self)
@@ -7049,7 +7027,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_DISTRICT_DECLINE.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self.proposal, self.proposal.applicant_field)
@@ -7057,7 +7035,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_DISTRICT_DECLINE.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
 
                 send_district_proposal_decline_email_notification(
@@ -7091,7 +7069,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_DISTRICT_PROPOSED_APPROVAL.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self.proposal, self.proposal.applicant_field)
@@ -7099,7 +7077,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_DISTRICT_PROPOSED_APPROVAL.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
 
                 send_district_approver_approve_email_notification(request, self)
@@ -7195,7 +7173,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_ISSUE_APPROVAL_DISTRICT.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self.proposal, self.proposal.applicant_field)
@@ -7203,7 +7181,7 @@ class DistrictProposal(models.Model):
                     ProposalUserAction.ACTION_ISSUE_APPROVAL_DISTRICT.format(
                         self.id, self.proposal.id
                     ),
-                    request,
+                    request.user,
                 )
 
                 if self.processing_status == "approved":
@@ -7336,7 +7314,7 @@ class DistrictProposal(models.Model):
                             ProposalUserAction.ACTION_UPDATE_APPROVAL_DISTRICT.format(
                                 self.id, self.proposal.id
                             ),
-                            request,
+                            request.user,
                         )
                         # Log entry for organisation
                         applicant_field = getattr(
@@ -7346,7 +7324,7 @@ class DistrictProposal(models.Model):
                             ProposalUserAction.ACTION_UPDATE_APPROVAL_DISTRICT.format(
                                 self.id, self.proposal.id
                             ),
-                            request,
+                            request.user,
                         )
                     self.proposal.approval = approval
                     self.district_approval = district_approval
@@ -7484,7 +7462,7 @@ class DistrictProposal(models.Model):
                         )
                         compliance.log_user_action(
                             ComplianceUserAction.ACTION_CREATE.format(compliance.id),
-                            request,
+                            request.user,
                         )
                     if req.recurrence:
                         while current_date < approval.expiry_date:
@@ -7519,7 +7497,7 @@ class DistrictProposal(models.Model):
                                         ComplianceUserAction.ACTION_CREATE.format(
                                             compliance.id
                                         ),
-                                        request,
+                                        request.user,
                                     )
             except:
                 raise

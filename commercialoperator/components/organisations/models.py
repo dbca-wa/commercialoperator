@@ -130,8 +130,8 @@ class Organisation(models.Model):
             )
         )
 
-    def log_user_action(self, action, request):
-        return OrganisationAction.log_action(self, action, request.user)
+    def log_user_action(self, action, user):
+        return OrganisationAction.log_action(self, action, user)
 
     def validate_pins(self, pin1, pin2, request):
         try:
@@ -204,17 +204,17 @@ class Organisation(models.Model):
             OrganisationAction.ACTION_CONTACT_ADDED.format(
                 "{} {}({})".format(user.first_name, user.last_name, user.email)
             ),
-            request,
+            request.user,
         )
 
     @transaction.atomic
     def update_organisation(self, request):
         # log organisation details updated (eg ../internal/organisations/access/2) - incorrect - this is for OrganisationRequesti not Organisation
         # should be ../internal/organisations/1
-        self.log_user_action(OrganisationAction.ACTION_UPDATE_ORGANISATION, request)
+        self.log_user_action(OrganisationAction.ACTION_UPDATE_ORGANISATION, request.user)
 
     def update_address(self, request):
-        self.log_user_action(OrganisationAction.ACTION_UPDATE_ADDRESS, request)
+        self.log_user_action(OrganisationAction.ACTION_UPDATE_ADDRESS, request.user)
 
     def update_contacts(self, request):
         try:
@@ -225,7 +225,7 @@ class Organisation(models.Model):
                         contact.first_name, contact.last_name, contact.email
                     )
                 ),
-                request,
+                request.user,
             )
         except:
             pass
@@ -310,7 +310,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         send_organisation_link_email_notification(user, request.user, self, request)
 
@@ -332,7 +332,7 @@ class Organisation(models.Model):
             OrganisationAction.ACTION_CONTACT_DECLINED.format(
                 "{} {}({})".format(user.first_name, user.last_name, user.email)
             ),
-            request,
+            request.user,
         )
         send_organisation_contact_decline_email_notification(
             user, request.user, self, request
@@ -383,7 +383,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_link_email_notification(user, request.user, self, request)
@@ -425,7 +425,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_link_email_notification(user, request.user, self, request)
@@ -454,7 +454,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_reinstate_email_notification(
@@ -509,7 +509,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_unlink_email_notification(user, request.user, self, request)
@@ -541,7 +541,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_contact_adminuser_email_notification(
@@ -593,7 +593,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_contact_user_email_notification(
@@ -626,7 +626,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_contact_suspend_email_notification(
@@ -659,7 +659,7 @@ class Organisation(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # send email
         send_organisation_reinstate_email_notification(
@@ -981,7 +981,7 @@ class OrganisationRequest(models.Model):
         self.save()
         self.log_user_action(
             OrganisationRequestUserAction.ACTION_CONCLUDE_REQUEST.format(self.id),
-            request,
+            request.user,
         )
 
     @transaction.atomic
@@ -1017,7 +1017,7 @@ class OrganisationRequest(models.Model):
         delegate = UserDelegation.objects.create(user=self.requester, organisation=org)
         # log who approved the request
         org.log_user_action(
-            OrganisationAction.ACTION_REQUEST_APPROVED.format(self.id), request
+            OrganisationAction.ACTION_REQUEST_APPROVED.format(self.id), request.user
         )
         # log who created the link
         org.log_user_action(
@@ -1028,7 +1028,7 @@ class OrganisationRequest(models.Model):
                     delegate.user.email,
                 )
             ),
-            request,
+            request.user,
         )
         # Create contact person
         if self.role == "consultant":
@@ -1068,14 +1068,14 @@ class OrganisationRequest(models.Model):
         self.save()
         self.log_user_action(
             OrganisationRequestUserAction.ACTION_ASSIGN_TO.format(user.get_full_name()),
-            request,
+            request.user,
         )
 
     @transaction.atomic
     def unassign(self, request):
         self.assigned_officer = None
         self.save()
-        self.log_user_action(OrganisationRequestUserAction.ACTION_UNASSIGN, request)
+        self.log_user_action(OrganisationRequestUserAction.ACTION_UNASSIGN, request.user)
 
     @transaction.atomic
     def decline(self, reason, request):
@@ -1085,7 +1085,7 @@ class OrganisationRequest(models.Model):
             officer=request.user, reason=reason, request=self
         )
         self.log_user_action(
-            OrganisationRequestUserAction.ACTION_DECLINE_REQUEST, request
+            OrganisationRequestUserAction.ACTION_DECLINE_REQUEST, request.user
         )
         send_organisation_request_decline_email_notification(self, request)
 
@@ -1099,8 +1099,8 @@ class OrganisationRequest(models.Model):
                 self, request, org_access_recipients
             )
 
-    def log_user_action(self, action, request):
-        return OrganisationRequestUserAction.log_action(self, action, request.user)
+    def log_user_action(self, action, user):
+        return OrganisationRequestUserAction.log_action(self, action, user)
 
 
 class OrganisationAccessGroup(models.Model, MembersPropertiesMixin):

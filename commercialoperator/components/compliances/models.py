@@ -253,7 +253,7 @@ class Compliance(RevisionedMixin):
                     version_comment="Compliance Submitted: {}".format(self.id)
                 )
                 self.log_user_action(
-                    ComplianceUserAction.ACTION_SUBMIT_REQUEST.format(self.id), request
+                    ComplianceUserAction.ACTION_SUBMIT_REQUEST.format(self.id), request.user
                 )
                 send_external_submit_email_notification(request, self)
                 send_submit_email_notification(request, self)
@@ -277,14 +277,14 @@ class Compliance(RevisionedMixin):
         self.save()
         self.log_user_action(
             ComplianceUserAction.ACTION_ASSIGN_TO.format(user.get_full_name()),
-            request,
+            request.user,
         )
 
     def unassign(self, request):
         with transaction.atomic():
             self.assigned_to = None
             self.save()
-            self.log_user_action(ComplianceUserAction.ACTION_UNASSIGN, request)
+            self.log_user_action(ComplianceUserAction.ACTION_UNASSIGN, request.user)
 
     def accept(self, request):
         with transaction.atomic():
@@ -292,7 +292,7 @@ class Compliance(RevisionedMixin):
             self.customer_status = "approved"
             self.save()
             self.log_user_action(
-                ComplianceUserAction.ACTION_CONCLUDE_REQUEST.format(self.id), request
+                ComplianceUserAction.ACTION_CONCLUDE_REQUEST.format(self.id), request.user
             )
             send_compliance_accept_email_notification(self, request)
 
@@ -358,8 +358,8 @@ class Compliance(RevisionedMixin):
                     )
                 )
 
-    def log_user_action(self, action, request):
-        return ComplianceUserAction.log_action(self, action, request.user)
+    def log_user_action(self, action, user):
+        return ComplianceUserAction.log_action(self, action, user)
 
     def __str__(self):
         return self.lodgement_number
@@ -514,14 +514,14 @@ class ComplianceAmendmentRequest(CompRequest):
                     compliance.save()
                 # Create a log entry for the proposal
                 compliance.log_user_action(
-                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request
+                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request.user
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(
                     compliance.proposal, compliance.proposal.applicant_field
                 )
                 applicant_field.log_user_action(
-                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request
+                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request.user
                 )
                 send_amendment_email_notification(self, request, compliance)
 
