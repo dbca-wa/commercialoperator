@@ -111,10 +111,15 @@ class ApplicationFeeView(TemplateView):
                     return_url_ns="fee_success",
                     return_preload_url_ns="fee_success", #TODO replace this with preload
                     invoice_text="Application Fee",
+                    reference=proposal.lodgement_number
                 )
 
                 if proposal.allow_full_discount:
                     return redirect_to_zero_payment_view(request, proposal, lines)
+                
+                # Set session variables
+                request.session["payment_pk"] = proposal.pk
+                request.session["payment_model"] = "proposal"
 
                 logger.info(
                     "{} built payment line item {} for Application Fee and handing over to payment gateway".format(
@@ -159,7 +164,13 @@ class ComplianceFeeView(TemplateView):
                     return_url_ns="compliance_fee_success",
                     return_preload_url_ns="compliance_fee_success", #TODO replace this with preload
                     invoice_text="Per participant licence charge",
+                    reference=compliance.lodgement_number
                 )
+
+                # Set session variables
+                #TODO rework to use its own model (if necessary)
+                request.session["payment_pk"] = compliance.proposal.pk
+                request.session["payment_model"] = "proposal"
 
                 logger.info(
                     "{} built payment line item {} for Compliance Fee and handing over to payment gateway".format(
@@ -199,7 +210,7 @@ class FilmingFeeView(TemplateView):
 
             checkout_response = checkout_existing_invoice(
                 request,
-                proposal,
+                proposal.lodgement_number,
                 invoice,
                 return_url_ns="filming_fee_success",
             )
@@ -212,6 +223,11 @@ class FilmingFeeView(TemplateView):
                     proposal.id,
                 )
             )
+
+            # Set session variables
+            request.session["payment_pk"] = proposal.pk
+            request.session["payment_model"] = "proposal"
+
             return checkout_response
 
         except Exception as e:
@@ -382,12 +398,16 @@ class MakePaymentView(TemplateView):
                 checkout_response = checkout(
                     request,
                     proposal,
-                    # lines,
                     booking.as_line_items,
                     return_url_ns="public_booking_success",
                     return_preload_url_ns="public_booking_success",
                     invoice_text="Payment Invoice",
+                    reference=proposal.lodgement_number
                 )
+
+                # Set session variables
+                request.session["payment_pk"] = proposal.pk
+                request.session["payment_model"] = "proposal"
 
                 logger.info(
                     "{} built payment line items {} for Park Bookings and handing over to payment gateway".format(
@@ -405,12 +425,28 @@ class MakePaymentView(TemplateView):
                 booking.delete()
             raise
 
+
+class ComplianceFeeSuccessViewPreload(TemplateView):
+    permission_classes = [AllowAny] 
+
+    def get(self, request, reference, format=None):
+        print("ComplianceFeeSuccessViewPreload")
+
+        invoice_ref = request.GET.get('invoice')
+
+        try:
+            proposal = Proposal.objects.get(lodgement_number=reference)
+            print("proposal:",proposal)
+        except Exception as e:
+            print(e)
+            return redirect('home')
+    
 #TODO rework in to preload
 class ComplianceFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_compliance_fee.html"
 
     def get(self, request, *args, **kwargs):
-        print(" COMPLIANCE FEE SUCCESS ")
+        print("ComplianceFeeSuccessView")
 
         proposal = None
         compliance = None
@@ -560,13 +596,13 @@ class FilmingFeeSuccessViewPreload(views.APIView):
     
     permission_classes = [AllowAny] 
 
-    def get(self, request, lodgement_number, format=None):
+    def get(self, request, reference, format=None):
         print("FilmFeeSuccessViewPreload")
 
         invoice_ref = request.GET.get('invoice')
 
         try:
-            proposal = Proposal.objects.get(lodgement_number=lodgement_number)
+            proposal = Proposal.objects.get(lodgement_number=reference)
             print("proposal:",proposal)
         except Exception as e:
             print(e)
@@ -615,7 +651,7 @@ class FilmingFeeSuccessView(TemplateView):
     #TODO add auth permissions
     def get(self, request, *args, **kwargs):
         print("FilmingFeeSuccessView")
-        lodgement_number = kwargs.get("lodgement_number")
+        lodgement_number = kwargs.get("reference")
 
         try:
             proposal = Proposal.objects.get(lodgement_number=lodgement_number)

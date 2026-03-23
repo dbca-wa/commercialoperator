@@ -11,6 +11,7 @@ from rest_framework import status
 from datetime import datetime, date
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from taggit import serializers
 from commercialoperator.components.main.models import Park, ApplicationType
 from commercialoperator.components.proposals.models import Proposal, ProposalUserAction
 from commercialoperator.components.organisations.models import Organisation
@@ -984,10 +985,19 @@ def checkout(
     return_preload_url_ns="public_booking_success",
     invoice_text=None,
     vouchers=[],
-    proxy=False,
+    reference=None,
 ):
-    reference = proposal.lodgement_number
-    email_user_id = proposal.submitter.id if proposal.submitter else request.user.id
+
+    if not reference:
+        reference = proposal.lodgement_number if proposal else None
+
+    if not reference:
+        raise serializers.ValidationError("No record reference")
+
+    try:
+        email_user_id = proposal.submitter.id if proposal.submitter else request.user.id
+    except:
+        raise serializers.ValidationError("No submitter or request user id")
 
     basket_params = {
         "products": lines,
@@ -1022,14 +1032,8 @@ def checkout(
     logger.info(
         f"Creating checkout session with checkout parameters: {checkout_params}"
     )
-    if proxy or request.user.is_anonymous:
-        checkout_params["basket_owner"] = proposal.submitter_id
 
     create_checkout_session(request, checkout_params)
-
-    # Set session variables
-    request.session["payment_pk"] = proposal.pk
-    request.session["payment_model"] = "proposal"
 
     logger.info("Redirecting user to ledgergw payment details page.")
     return redirect(reverse("ledgergw-payment-details"))
@@ -1037,12 +1041,12 @@ def checkout(
 
 def checkout_existing_invoice(
     request,
-    proposal,
+    reference,
     invoice,
     return_url_ns="public_booking_success",
 ):
 
-    return_url = request.build_absolute_uri(reverse(return_url_ns,kwargs={"lodgement_number": proposal.lodgement_number}))
+    return_url = request.build_absolute_uri(reverse(return_url_ns,kwargs={"reference": reference}))
 
     fallback_url = request.build_absolute_uri("/")
     payment_session = generate_payment_session(
@@ -1052,10 +1056,6 @@ def checkout_existing_invoice(
         raise ValidationError(
             payment_session.get("message", "Error generating payment session")
         )
-
-    # Set session variables
-    request.session["payment_pk"] = proposal.pk
-    request.session["payment_model"] = "proposal"
 
     return HttpResponseRedirect(payment_session["payment_url"])
 
