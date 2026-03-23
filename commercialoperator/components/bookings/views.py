@@ -1,5 +1,3 @@
-import requests
-
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -19,17 +17,11 @@ from commercialoperator.components.bookings.context_processors import template_c
 from commercialoperator.components.bookings.invoice_compliance_pdf import (
     create_invoice_compliance_pdf_bytes,
 )
-from commercialoperator.components.bookings.invoice_filmingfee_pdf import (
-    create_invoice_filmingfee_pdf_bytes,
-)
 from commercialoperator.components.bookings.confirmation_pdf import (
     create_confirmation_pdf_bytes,
 )
 from commercialoperator.components.bookings.monthly_confirmation_pdf import (
     create_monthly_confirmation_pdf_bytes,
-)
-from commercialoperator.components.bookings.awaiting_payment_invoice_pdf import (
-    create_awaiting_payment_invoice_pdf_bytes,
 )
 from commercialoperator.components.bookings.email import (
     send_invoice_tclass_email_notification,
@@ -57,7 +49,6 @@ from commercialoperator.components.bookings.utils import (
     delete_session_compliance_invoice,
     get_session_filming_invoice,
     set_session_filming_invoice,
-    delete_session_filming_invoice,
     create_bpay_invoice,
     create_other_invoice,
     create_monthly_confirmation,
@@ -76,6 +67,8 @@ from commercialoperator.components.bookings.models import (
 )
 
 from commercialoperator.components.segregation.utils import update_payments
+from commercialoperator.components.proposals.utils import proposal_submit
+
 from commercialoperator.components.segregation.classes import CreateInvoiceBasket
 
 from ledger_api_client.ledger_models import Basket, Invoice
@@ -116,7 +109,7 @@ class ApplicationFeeView(TemplateView):
                     proposal,
                     lines,
                     return_url_ns="fee_success",
-                    return_preload_url_ns="fee_success",
+                    return_preload_url_ns="fee_success", #TODO replace this with preload
                     invoice_text="Application Fee",
                 )
 
@@ -164,7 +157,7 @@ class ComplianceFeeView(TemplateView):
                     compliance.proposal,
                     lines,
                     return_url_ns="compliance_fee_success",
-                    return_preload_url_ns="compliance_fee_success",
+                    return_preload_url_ns="compliance_fee_success", #TODO replace this with preload
                     invoice_text="Per participant licence charge",
                 )
 
@@ -238,13 +231,10 @@ class DeferredInvoicingPreviewView(TemplateView):
         proposal_id = int(kwargs["proposal_pk"])
         proposal = Proposal.objects.get(id=proposal_id)
         try:
-            recipient = proposal.applicant.email
             submitter = proposal.applicant
         except:
-            recipient = proposal.submitter.email
             submitter = proposal.submitter
 
-        # if isinstance(proposal.org_applicant, Organisation) and (proposal.org_applicant.monthly_invoicing_allowed or proposal.org_applicant.bpay_allowed or proposal.org_applicant.other_allowed):
         if isinstance(proposal.org_applicant, Organisation) and (
             proposal.org_applicant.monthly_invoicing_allowed
             or proposal.org_applicant.bpay_allowed
@@ -277,7 +267,7 @@ class DeferredInvoicingPreviewView(TemplateView):
             logger.error("Error creating booking preview: {}".format(e))
             raise
 
-
+#TODO replace below with appropriate payment functionality
 class DeferredInvoicingView(TemplateView):
     template_name = "commercialoperator/booking/success.html"
 
@@ -288,10 +278,8 @@ class DeferredInvoicingView(TemplateView):
         proposal_id = int(kwargs["proposal_pk"])
         proposal = Proposal.objects.get(id=proposal_id)
         try:
-            recipient = proposal.applicant.email
             submitter = proposal.applicant
         except:
-            recipient = proposal.submitter.email
             submitter = proposal.submitter
 
         if isinstance(proposal.org_applicant, Organisation):
@@ -303,7 +291,6 @@ class DeferredInvoicingView(TemplateView):
                     and payment_method == "monthly_invoicing"
                 ):
                     booking_type = Booking.BOOKING_TYPE_MONTHLY_INVOICING
-                # elif proposal.org_applicant.other_allowed and payment_method=='other':
                 else:
                     booking_type = Booking.BOOKING_TYPE_RECEPTION
 
@@ -346,10 +333,6 @@ class DeferredInvoicingView(TemplateView):
                 )
                 if payment_method == "other":
                     if is_payment_admin(request.user):
-                        #                        if proposal.processing_status == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT:
-                        #                            return HttpResponseRedirect(reverse('/'))
-                        #                        else:
-                        #                            return HttpResponseRedirect(reverse('payments:invoice-payment') + '?invoice={}'.format(invoice_reference))
                         return HttpResponseRedirect(
                             reverse("payments:invoice-payment")
                             + "?invoice={}".format(invoice_reference)
@@ -368,7 +351,7 @@ class DeferredInvoicingView(TemplateView):
             logger.error("Error Creating booking: {}".format(e))
             raise
 
-
+#TODO replace below with appropriate payment functionality (may not be needed, in which case remove)
 class MakePaymentView(TemplateView):
     """View to handle Park Entry Fees:Make Payment"""
 
@@ -422,7 +405,7 @@ class MakePaymentView(TemplateView):
                 booking.delete()
             raise
 
-
+#TODO rework in to preload
 class ComplianceFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_compliance_fee.html"
 
@@ -657,7 +640,7 @@ class FilmingFeeSuccessView(TemplateView):
         context = {"proposal": proposal, "submitter": submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)
 
-
+#TODO replace below with appropriate payment functionality (may not be needed, in which case remove)
 class ZeroApplicationFeeView(TemplateView):
     template_name = "commercialoperator/booking/success_fee.html"
 
@@ -753,10 +736,7 @@ class ZeroApplicationFeeView(TemplateView):
         except Exception as e:
             return redirect("home")
 
-
-from commercialoperator.components.proposals.utils import proposal_submit
-
-
+#TODO rework in to preload
 class ApplicationFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_fee.html"
 
@@ -911,7 +891,7 @@ class ApplicationFeeSuccessView(TemplateView):
         context = {"proposal": proposal, "submitter": submitter, "fee_invoice": invoice}
         return render(request, self.template_name, context)
 
-
+#TODO rework in to preload
 class BookingSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success.html"
 
@@ -1126,7 +1106,7 @@ class InvoiceFilmingFeePDFView(View):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
         proposal = Proposal.objects.get(fee_invoice_reference=invoice.reference)
 
-        organisation = proposal.org_applicant  # .organisation.organisation_set.all()[0]
+        organisation = proposal.org_applicant
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
             invoice_pdf = get_invoice_pdf(invoice.reference)
@@ -1183,7 +1163,6 @@ class InvoiceCompliancePDFView(View):
         )
 
 
-# class ConfirmationPDFView(InvoiceOwnerMixin,View):
 class ConfirmationPDFView(View):
     def get(self, request, *args, **kwargs):
         invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
@@ -1216,9 +1195,7 @@ class MonthlyConfirmationPDFBookingView(View):
 
     def get(self, request, *args, **kwargs):
         booking = get_object_or_404(Booking, id=self.kwargs["id"])
-        organisation = (
-            booking.proposal.org_applicant.organisation.organisation_set.all()[0]
-        )
+        organisation = booking.proposal.org_applicant
 
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")

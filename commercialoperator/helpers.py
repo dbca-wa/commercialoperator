@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 
 def is_payment_admin(user):
     print ("is_payment_admin")
+    if user.is_superuser:
+        return True
     group = Group.objects.filter(name=settings.PAYMENT_OFFICERS_GROUP)
     if group.exists():
         return user.id in list(UsersInGroup.objects.filter(group_id=group.first().id).values_list('emailuser_id', flat=True))

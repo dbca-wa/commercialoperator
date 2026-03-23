@@ -244,25 +244,9 @@ export default {
             table_values: null,
             payment_method: null,
             selected_licence_id: null,
-            // I commented this data property out and changed selected_licence into a computed property based on selected_licence_id
-            // selected_licence: {
-            //     default: function () {
-            //         return {
-            //             value: String,
-            //             label: String,
-            //             expiry_date: String,
-            //         };
-            //     },
-            // },
         };
     },
     computed: {
-        _payment_url: function () {
-            return `/payment/${this.proposal.id}`;
-        },
-        payment_url: function () {
-            return '/payment/' + this.proposal.id + '/';
-        },
         csrf_token: function () {
             return helpers.getCookie('csrftoken');
         },
