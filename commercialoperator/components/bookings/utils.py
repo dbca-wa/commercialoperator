@@ -1020,8 +1020,8 @@ def checkout(
         "fallback_url": request.build_absolute_uri(
             "/"
         ),
-        "return_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_url_ns) + f"?reference={reference}",
-        "return_preload_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns) + f"?reference={reference}",
+        "return_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_url_ns,kwargs={"reference": reference}),
+        "return_preload_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns,kwargs={"reference": reference}),
         "force_redirect": True,
         "invoice_text": invoice_text,
         "proxy": True if is_internal(request) else False,
@@ -1046,7 +1046,7 @@ def checkout_existing_invoice(
     return_url_ns="public_booking_success",
 ):
 
-    return_url = request.build_absolute_uri(reverse(return_url_ns,kwargs={"reference": reference}))
+    return_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_url_ns,kwargs={"reference": reference})
 
     fallback_url = request.build_absolute_uri("/")
     payment_session = generate_payment_session(

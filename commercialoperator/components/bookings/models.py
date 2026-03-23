@@ -631,8 +631,6 @@ class ComplianceFee(Payment):
         (PAYMENT_TYPE_RECEPTION, "Reception booking"),
         (PAYMENT_TYPE_BLACK, "Black booking"),
         (PAYMENT_TYPE_TEMPORARY, "Temporary reservation"),
-        #        (4, 'Cancelled Booking'),
-        #        (5, 'Changed Booking')
     )
 
     compliance = models.ForeignKey(

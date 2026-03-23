@@ -326,9 +326,7 @@ def send_compliance_accept_email_notification(compliance, request, is_test=False
 
 def send_external_submit_email_notification(request, compliance, is_test=False):
     email = ComplianceExternalSubmitSendNotificationEmail()
-    url = request.build_absolute_uri(
-        reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
-    )
+    url = settings.SITE_URL + reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
     url = "".join(url.split("-internal"))
     submitter = (
         compliance.submitter
@@ -349,7 +347,7 @@ def send_external_submit_email_notification(request, compliance, is_test=False):
     if is_test:
         return
 
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = settings.DEFAULT_FROM_EMAIL
     _log_compliance_email(msg, compliance, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(
@@ -363,9 +361,8 @@ def send_external_submit_email_notification(request, compliance, is_test=False):
 
 def send_submit_email_notification(request, compliance, is_test=False):
     email = ComplianceSubmitSendNotificationEmail()
-    url = request.build_absolute_uri(
-        reverse("internal-compliance-detail", kwargs={"compliance_pk": compliance.id})
-    )
+    url = settings.SITE_URL + reverse("internal-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    
     if "-internal" not in url:
         # add it. This email is for internal staff
         url = "-internal.{}".format(settings.SITE_DOMAIN).join(
@@ -378,7 +375,7 @@ def send_submit_email_notification(request, compliance, is_test=False):
     if is_test:
         return
 
-    sender = request.user if request else settings.DEFAULT_FROM_EMAIL
+    sender = settings.DEFAULT_FROM_EMAIL
     _log_compliance_email(msg, compliance, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(

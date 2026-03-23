@@ -222,7 +222,7 @@ class Compliance(RevisionedMixin):
             self.lodgement_number = new_lodgment_id
             self.save()
 
-    def submit(self, request):
+    def submit(self, request=None):
         with transaction.atomic():
             try:
                 if self.processing_status == "discarded":
@@ -232,13 +232,15 @@ class Compliance(RevisionedMixin):
                 if self.processing_status == "future" or "due":
                     self.processing_status = "with_assessor"
                     self.customer_status = "with_assessor"
-                    self.submitter = request.user
+                    if not self.submitter:
+                        self.submitter = request.user if request else self.proposal.submitter if self.proposal else None
 
-                    if request.FILES:
-                        for f in request.FILES:
-                            document = self.documents.create(name=str(request.FILES[f]))
-                            document._file = request.FILES[f]
-                            document.save()
+                    if request:
+                        if request.FILES:
+                            for f in request.FILES:
+                                document = self.documents.create(name=str(request.FILES[f]))
+                                document._file = request.FILES[f]
+                                document.save()
                     if self.amendment_requests:
                         qs = self.amendment_requests.filter(status="requested")
                         if qs:
@@ -246,15 +248,18 @@ class Compliance(RevisionedMixin):
                                 q.status = "amended"
                                 q.save()
 
-                # self.lodgement_date = datetime.datetime.strptime(timezone.now().strftime('%Y-%m-%d'),'%Y-%m-%d').date()
                 self.lodgement_date = timezone.now()
                 self.save(version_comment="Compliance Submitted: {}".format(self.id))
                 self.proposal.save(
                     version_comment="Compliance Submitted: {}".format(self.id)
                 )
-                self.log_user_action(
-                    ComplianceUserAction.ACTION_SUBMIT_REQUEST.format(self.id), request.user
-                )
+                try:
+                    self.log_user_action(
+                        ComplianceUserAction.ACTION_SUBMIT_REQUEST.format(self.id), request.user if request else self.submitter
+                    )
+                except:
+                    logger.error("Unable to log compliance submit")
+
                 send_external_submit_email_notification(request, self)
                 send_submit_email_notification(request, self)
                 self.documents.all().update(can_delete=False)

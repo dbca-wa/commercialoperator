@@ -152,6 +152,13 @@ class ComplianceFeeView(TemplateView):
             created_by=request.user,
             payment_type=ComplianceFee.PAYMENT_TYPE_TEMPORARY,
         )
+        
+        #NOTE: files have to uploaded prior to payment
+        if request.FILES:
+            for f in request.FILES:
+                document = compliance.documents.create(name=str(request.FILES[f]))
+                document._file = request.FILES[f]
+                document.save()
 
         try:
             with transaction.atomic():
@@ -162,7 +169,7 @@ class ComplianceFeeView(TemplateView):
                     compliance.proposal,
                     lines,
                     return_url_ns="compliance_fee_success",
-                    return_preload_url_ns="compliance_fee_success", #TODO replace this with preload
+                    return_preload_url_ns="compliance_success_preload",
                     invoice_text="Per participant licence charge",
                     reference=compliance.lodgement_number
                 )
@@ -426,7 +433,7 @@ class MakePaymentView(TemplateView):
             raise
 
 
-class ComplianceFeeSuccessViewPreload(TemplateView):
+class ComplianceFeeSuccessViewPreload(views.APIView):
     permission_classes = [AllowAny] 
 
     def get(self, request, reference, format=None):
@@ -435,160 +442,78 @@ class ComplianceFeeSuccessViewPreload(TemplateView):
         invoice_ref = request.GET.get('invoice')
 
         try:
-            proposal = Proposal.objects.get(lodgement_number=reference)
-            print("proposal:",proposal)
+            compliance = Compliance.objects.get(lodgement_number=reference)
+            print("compliance:",compliance)
         except Exception as e:
             print(e)
             return redirect('home')
+        
+        #use the latest Fee record
+        compliance_fee = ComplianceFee.objects.filter(compliance=compliance).order_by("created").last()
+
+        _, _ = ComplianceFeeInvoice.objects.get_or_create(
+            compliance_fee=compliance_fee, invoice_reference=invoice_ref
+        )
+
+        if compliance_fee.payment_type == ComplianceFee.PAYMENT_TYPE_TEMPORARY:
+            compliance_fee.payment_type = ComplianceFee.PAYMENT_TYPE_INTERNET
+            compliance_fee.expiry_time = None
+            success = False
+            try:
+                inv = Invoice.objects.get(reference=invoice_ref)
+                invoice_properties = get_invoice_properties(inv.id)
+                payment_status = invoice_properties.get("invoice", {}).get(
+                    "payment_status"
+                )
+
+                if payment_status == "paid" or payment_status == "over_paid":
+                    compliance.submit()
+                    compliance.fee_invoice_reference = invoice_ref
+                    compliance.save()
+                else:
+                    logger.error(
+                        "Invoice payment status is {}".format(payment_status)
+                    )
+                    raise serializers.ValidationError("Invoice payment status is {}".format(payment_status))
+
+            except Exception as e:
+                print(e)
+                raise serializers.ValidationError("Fee success preload failed")
+
+            if success:
+                compliance_fee.save()
+                try:
+                    send_compliance_fee_invoice_events_email_notification(
+                        request, compliance, inv, recipients=[compliance.proposal.submitter.email]
+                    )
+                except:
+                    #log the error but do not invalidate the payment and subsequent compliance submission
+                    logger.error("Unable to send compliance fee invoice email notification")
+
+        return Response(status=status.HTTP_200_OK)
     
-#TODO rework in to preload
 class ComplianceFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_compliance_fee.html"
 
     def get(self, request, *args, **kwargs):
         print("ComplianceFeeSuccessView")
+        lodgement_number = kwargs.get("reference")
 
-        proposal = None
-        compliance = None
-        submitter = None
-        invoice = None
         try:
-            context = template_context(self.request)
-            basket = None
-            compliance_fee = get_session_compliance_invoice(request.session)
-            compliance = compliance_fee.compliance
-            proposal = compliance.proposal
+            compliance = Compliance.objects.get(lodgement_number=lodgement_number)
+        except:
+            raise serializers.ValidationError("Compliance does not exist")
 
-            try:
-                recipient = proposal.applicant.email
-                submitter = proposal.applicant
-            except:
-                recipient = proposal.submitter.email
-                submitter = proposal.submitter
+        compliance_fee = get_session_compliance_invoice(request.session)
+        fee_inv = compliance_fee.compliance_fee_invoices.order_by("-id").first()
+        invoice_ref = fee_inv.invoice_reference
 
-            if self.request.user.is_authenticated:
-                basket = Basket.objects.filter(
-                    status="Submitted", owner=request.user
-                ).order_by("-id")[:1]
-            else:
-                basket = Basket.objects.filter(
-                    status="Submitted", owner=proposal.submitter
-                ).order_by("-id")[:1]
+        try:
+            inv = Invoice.objects.get(reference=invoice_ref)
+        except:
+            inv = None
 
-            order = Order.objects.get(basket=basket[0])
-            invoice = Invoice.objects.get(order_number=order.number)
-            invoice_ref = invoice.reference
-            fee_inv, created = ComplianceFeeInvoice.objects.get_or_create(
-                compliance_fee=compliance_fee, invoice_reference=invoice_ref
-            )
-
-            if compliance_fee.payment_type == ComplianceFee.PAYMENT_TYPE_TEMPORARY:
-                try:
-                    inv = Invoice.objects.get(reference=invoice_ref)
-                    order = Order.objects.get(number=inv.order_number)
-                    order.user = submitter
-                    order.save()
-                except Invoice.DoesNotExist:
-                    logger.error(
-                        "{} tried paying an compliance fee with an incorrect invoice".format(
-                            "User {} with id {}".format(
-                                proposal.submitter.get_full_name(),
-                                proposal.submitter.id,
-                            )
-                            if proposal.submitter
-                            else "An anonymous user"
-                        )
-                    )
-                    return redirect("external-proposal-detail", args=(proposal.id,))
-                if inv.system not in ["0557"]:
-                    logger.error(
-                        "{} tried paying an compliance fee with an invoice from another system with reference number {}".format(
-                            (
-                                "User {} with id {}".format(
-                                    proposal.submitter.get_full_name(),
-                                    proposal.submitter.id,
-                                )
-                                if proposal.submitter
-                                else "An anonymous user"
-                            ),
-                            inv.reference,
-                        )
-                    )
-                    return redirect("external-proposal-detail", args=(proposal.id,))
-
-                if fee_inv:
-                    # application_fee.payment_type = 1  # internet booking
-                    compliance_fee.payment_type = ComplianceFee.PAYMENT_TYPE_INTERNET
-                    compliance_fee.expiry_time = None
-                    update_payments(invoice_ref)
-
-                    if proposal and (
-                        invoice.payment_status == "paid"
-                        or invoice.payment_status == "over_paid"
-                    ):
-                        compliance.submit(request)
-                        compliance.fee_invoice_reference = invoice_ref
-                        compliance.save()
-                    else:
-                        logger.error(
-                            "Invoice payment status is {}".format(
-                                invoice.payment_status
-                            )
-                        )
-                        raise
-
-                    compliance_fee.save()
-                    request.session["cols_last_comp_invoice"] = compliance_fee.id
-                    delete_session_compliance_invoice(request.session)
-
-                    send_compliance_fee_invoice_events_email_notification(
-                        request, compliance, invoice, recipients=[recipient]
-                    )
-
-                    context = {
-                        "compliance": compliance,
-                        "submitter": submitter,
-                        "fee_invoice": invoice,
-                    }
-                    return render(request, self.template_name, context)
-
-        except Exception as e:
-            if (
-                "cols_last_comp_invoice" in request.session
-            ) and ComplianceFee.objects.filter(
-                id=request.session["cols_last_comp_invoice"]
-            ).exists():
-                compliance_fee = ComplianceFee.objects.get(
-                    id=request.session["cols_last_comp_invoice"]
-                )
-                compliance = compliance_fee.compliance
-                proposal = compliance.proposal
-
-                try:
-                    recipient = proposal.applicant.email
-                    submitter = proposal.applicant
-                except:
-                    recipient = proposal.submitter.email
-                    submitter = proposal.submitter
-
-                if (
-                    ComplianceFeeInvoice.objects.filter(
-                        compliance_fee=compliance_fee
-                    ).count()
-                    > 0
-                ):
-                    cfi = ComplianceFeeInvoice.objects.filter(
-                        compliance_fee=compliance_fee
-                    )
-                    invoice = cfi[0]
-            else:
-                return redirect("home")
-
-        context = {
-            "compliance": compliance,
-            "submitter": submitter,
-            "fee_invoice": invoice,
-        }
+        context = {"proposal": compliance.proposal, "submitter": compliance.submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)
 
 
