@@ -775,12 +775,11 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
-                () => {
-                    if (!vm.has_active_proposals()) {
+                (swalresult) => {
+                    if (swalresult.isConfirmed && !vm.has_active_proposals()) {
                         vm.createProposal();
                     }
-                },
-                () => {}
+                }
             );
         },
         alertText: function () {
@@ -899,8 +898,7 @@ export default {
 
             helpers.fetchUrl(api_endpoints.application_types).then(
                 (response) => {
-                    vm.api_app_types = response;
-
+                    vm.api_app_types = response.results;
                     for (var i = 0; i < vm.api_app_types.length; i++) {
                         this.application_types.push({
                             text: vm.api_app_types[i].name,

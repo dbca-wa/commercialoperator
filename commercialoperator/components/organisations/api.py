@@ -24,12 +24,8 @@ from commercialoperator.components.segregation.api import (
     LedgerOrganisationFilterBackend,
 )
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.filters import (
-    LedgerDatatablesFilterBackend,
-)
-from commercialoperator.components.segregation.mixins import FilterHelperMixin
+from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     filter_organisation_list,
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
@@ -846,9 +842,7 @@ class OrganisationListFilterView(generics.ListAPIView):
         return Response(serializer.data)
 
 
-class OrganisationRequestDatatableFilterBackend(
-    LedgerDatatablesFilterBackend, FilterHelperMixin
-):
+class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
         params = _get_params(request)
@@ -872,65 +866,13 @@ class OrganisationRequestDatatableFilterBackend(
                     Q(name__icontains=search_value)
                 )
 
-        organisation = (params.get("datatable_filter_name")).strip() or None
-        applicant = (params.get("datatable_filter_full_name")).strip() or None
-        role = (params.get("datatable_filter_role")).strip() or None
-        status = (params.get("datatable_filter_status")).strip() or None
-        if organisation and organisation.lower() != "all":
-            queryset = queryset.filter(name__icontains=organisation)
-
-        if applicant and applicant.strip() and applicant.lower() != "all":
-            emails = re.findall(r'\((.*?)\)', applicant)
-            if emails:
-                email = emails[0].strip()
-                if email:
-                    user = EmailUser.objects.filter(email__iexact=email).only('id').first()
-                    if user:
-                        queryset = queryset.filter(requester__id=user.id)
+        role = (params.get("datatable_filter_role")).strip() if params.get("datatable_filter_role") else None
+        status = (params.get("datatable_filter_status")).strip() if params.get("datatable_filter_status") else None
 
         if role and role.lower() != "all":
             queryset = queryset.filter(role=role)
         if status and status.lower() != "all":
             queryset = queryset.filter(status=status)
-
-        # ledger_lookup_fields = [
-        #     "requester",
-        # ]
-        # # Prevent the external user from searching for officers
-        # if is_internal(request):
-        #     ledger_lookup_fields += ["assigned_officer"]
-
-        # if (
-        #     request.GET.get(f"{self.DATATABLE_FILTER_PREFIX}full_name", "").lower()
-        #     != "all"
-        # ):
-        #     # Only annotate with full_name if the full_name filter is applied
-        #     queryset = queryset.expand_emailuser_fields(
-        #         "requester", {"first_name", "last_name", "email"}
-        #     )
-        #     queryset = queryset.annotate(
-        #         full_name=Concat(
-        #             "requester_first_name",
-        #             Value(" "),
-        #             "requester_last_name",
-        #             Value(" ("),
-        #             "requester_email",
-        #             Value(")"),
-        #         )
-        #     )
-        # Apply the search filters
-        # queryset = self.filter_datatables_queryset(
-        #     request,
-        #     queryset,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        # )
-
-        # queryset = self.apply_request(
-        #     request,
-        #     queryset,
-        #     view,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        # )
 
         setattr(view, "_datatables_total_count", total_count)
 
@@ -973,33 +915,6 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     )
     def filter_list(self, request, *args, **kwargs):
 
-        queryset = self.get_queryset()
-
-        organisations = queryset.distinct("name").values_list("name", flat=True)
-
-        requester_ids = (
-            queryset
-            .filter(requester__isnull=False)
-            .distinct()
-            .values_list("requester_id", flat=True)
-        )
-
-        users_qs = (
-            EmailUser.objects
-            .filter(id__in=requester_ids)
-            .order_by("email")
-            .values("email", "first_name", "last_name")
-        )
-
-        applicants = [
-            {
-                "search_term": f'{u["first_name"]} {u["last_name"]} ({u["email"]})',
-            }
-            for u in users_qs
-        ]
-
-
-
         statuses = [
             dict(search_term=i[0], value=i[1])
             for i in OrganisationRequest.STATUS_CHOICES
@@ -1009,8 +924,6 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         data = dict(
             status_choices=statuses,
             role_choices=roles,
-            organisation_choices=list(organisations),
-            applicant_choices=applicants,
         )
         return Response(data)
 
@@ -1088,9 +1001,6 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
 
         
         queryset = get_sliced_queryset(request, qs=filtered_qs)
-
-        if isinstance(queryset, EmailUserQuerySet):
-            queryset = get_expanded_queryset(request, queryset)
         
         serializer = OrganisationRequestDTSerializer(queryset, context={"request": request}, many=True)
 
@@ -1353,7 +1263,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
             instance = serializer.save()
             instance.log_user_action(
                 OrganisationRequestUserAction.ACTION_LODGE_REQUEST.format(instance.id),
-                request,
+                request.user,
             )
             instance.send_organisation_request_email_notification(request)
         return Response(serializer.data)

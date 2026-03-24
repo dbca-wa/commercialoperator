@@ -2,7 +2,6 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-# from django.contrib.postgres.fields.jsonb import JSONField
 from django.db.models import JSONField
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
 from commercialoperator.components.main.mixins import RevisionedMixin
@@ -13,8 +12,6 @@ from decimal import Decimal as D
 from ledger_api_client.utils import calculate_excl_gst
 
 import logging
-
-from commercialoperator.components.segregation.utils import EmailUserQuerySet
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +104,6 @@ class Payment(RevisionedMixin):
 
 
 class Booking(Payment):
-    objects = EmailUserQuerySet.as_manager()
 
     BOOKING_TYPE_INTERNET = 0
     BOOKING_TYPE_RECEPTION = 1
@@ -161,14 +157,6 @@ class Booking(Payment):
         )
         return max(ids) + 1 if ids else 1
 
-    #    def set_admission_number(self):
-    #        """ Need to set admission_number after Credit Card Payment is successfully completed i.e. after BookingSuccessView.get() is executed.
-    #            Prior to this, the Booking object is temporary.
-    #        """
-    #        if self.admission_number == '':
-    #            self.admission_number = 'AD{0:06d}'.format(self.next_id)
-    #            self.save()
-
     def save(self, *args, **kwargs):
         super(Booking, self).save(*args, **kwargs)
         if (
@@ -186,7 +174,7 @@ class Booking(Payment):
     @property
     def num_visitors(self):
         if self.park_bookings:
-            for park_booking in park_bookings:
+            for park_booking in self.park_bookings:
                 num_visitors += park_booking.num_visitors
             return num_visitors
         return 0
@@ -194,7 +182,7 @@ class Booking(Payment):
     @property
     def visitors(self):
         if self.park_bookings:
-            for park_booking in park_bookings:
+            for park_booking in self.park_bookings:
                 no_adults += park_booking.no_adults
                 no_children += park_booking.no_children
                 no_free_of_charge += park_booking.no_free_of_charge
@@ -466,12 +454,17 @@ class BookingInvoice(RevisionedMixin):
 
     @property
     def overdue(self):
+        payment_status = None
+        if self.invoice:
+            from commercialoperator.components.bookings.utils import get_invoice_properties
+            invoice_properties = get_invoice_properties(self.invoice.id)
+            payment_status = invoice_properties.get("invoice", {}).get("payment_status", "")
         if (
-            self.invoice
+            payment_status
             and self.deferred_payment_date
             and (
-                self.invoice.payment_status == "unpaid"
-                or self.invoice.payment_status == "partially_paid"
+                payment_status == "unpaid"
+                or payment_status == "partially_paid"
             )
             and self.deferred_payment_date < timezone.now().date()
         ):
@@ -638,8 +631,6 @@ class ComplianceFee(Payment):
         (PAYMENT_TYPE_RECEPTION, "Reception booking"),
         (PAYMENT_TYPE_BLACK, "Black booking"),
         (PAYMENT_TYPE_TEMPORARY, "Temporary reservation"),
-        #        (4, 'Cancelled Booking'),
-        #        (5, 'Changed Booking')
     )
 
     compliance = models.ForeignKey(

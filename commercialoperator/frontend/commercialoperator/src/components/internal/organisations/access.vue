@@ -591,9 +591,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisation_requests,
                                 vm.access.id + '/accept'
@@ -627,6 +627,7 @@ export default {
                                 });
                             }
                         );
+                    }
                 },
                 () => {}
             );
@@ -641,9 +642,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Decline',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisation_requests,
                                 vm.access.id + '/decline'
@@ -658,8 +659,8 @@ export default {
                                 console.log(error);
                             }
                         );
+                    }
                 },
-                () => {}
             );
         },
 

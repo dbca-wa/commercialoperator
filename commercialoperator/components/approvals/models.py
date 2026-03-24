@@ -33,7 +33,6 @@ from commercialoperator.components.approvals.email import (
     send_approval_surrender_email_notification,
 )
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )
@@ -100,7 +99,6 @@ class NotificationPeriod(RevisionedMixin):
 
 # class Approval(models.Model):
 class Approval(RevisionedMixin):
-    objects = EmailUserQuerySet.as_manager()
 
     APPROVAL_STATUS_CURRENT = "current"
     APPROVAL_STATUS_EXPIRED = "expired"
@@ -116,7 +114,7 @@ class Approval(RevisionedMixin):
         (APPROVAL_STATUS_CANCELLED, "Cancelled"),
         (APPROVAL_STATUS_SURRENDERED, "Surrendered"),
         (APPROVAL_STATUS_SUSPENDED, "Suspended"),
-        (APPROVAL_STATUS_EXTENDED, "extended"),
+        (APPROVAL_STATUS_EXTENDED, "Extended"),
         (APPROVAL_STATUS_AWAITING_PAYMENT, "Awaiting Payment"),
     )
     lodgement_number = models.CharField(max_length=9, blank=True, default="")
@@ -636,8 +634,8 @@ class Approval(RevisionedMixin):
                     raise
         return copied_data
 
-    def log_user_action(self, action, request):
-        return ApprovalUserAction.log_action(self, action, request.user)
+    def log_user_action(self, action, user):
+        return ApprovalUserAction.log_action(self, action, user)
 
     def expire_approval(self, user):
         with transaction.atomic():
@@ -687,14 +685,14 @@ class Approval(RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ApprovalUserAction.ACTION_EXTEND_APPROVAL.format(self.id), request
+                    ApprovalUserAction.ACTION_EXTEND_APPROVAL.format(self.id), request.user
                 )
                 # Log entry for organisation
                 self.current_proposal.log_user_action(
                     ProposalUserAction.ACTION_EXTEND_APPROVAL.format(
                         self.current_proposal.id
                     ),
-                    request,
+                    request.user,
                 )
             except:
                 raise
@@ -730,14 +728,14 @@ class Approval(RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ApprovalUserAction.ACTION_CANCEL_APPROVAL.format(self.id), request
+                    ApprovalUserAction.ACTION_CANCEL_APPROVAL.format(self.id), request.user
                 )
                 # Log entry for organisation
                 self.current_proposal.log_user_action(
                     ProposalUserAction.ACTION_CANCEL_APPROVAL.format(
                         self.current_proposal.id
                     ),
-                    request,
+                    request.user,
                 )
             except:
                 raise
@@ -778,14 +776,14 @@ class Approval(RevisionedMixin):
                 self.save()
                 # Log approval action
                 self.log_user_action(
-                    ApprovalUserAction.ACTION_SUSPEND_APPROVAL.format(self.id), request
+                    ApprovalUserAction.ACTION_SUSPEND_APPROVAL.format(self.id), request.user
                 )
                 # Log entry for proposal
                 self.current_proposal.log_user_action(
                     ProposalUserAction.ACTION_SUSPEND_APPROVAL.format(
                         self.current_proposal.id
                     ),
-                    request,
+                    request.user,
                 )
             except:
                 raise
@@ -819,14 +817,14 @@ class Approval(RevisionedMixin):
                 # Log approval action
                 self.log_user_action(
                     ApprovalUserAction.ACTION_REINSTATE_APPROVAL.format(self.id),
-                    request,
+                    request.user,
                 )
                 # Log entry for proposal
                 self.current_proposal.log_user_action(
                     ProposalUserAction.ACTION_REINSTATE_APPROVAL.format(
                         self.current_proposal.id
                     ),
-                    request,
+                    request.user,
                 )
             except:
                 raise
@@ -875,14 +873,14 @@ class Approval(RevisionedMixin):
         # Log approval action
         self.log_user_action(
             ApprovalUserAction.ACTION_SURRENDER_APPROVAL.format(self.id),
-            request,
+            request.user,
         )
         # Log entry for proposal
         self.current_proposal.log_user_action(
             ProposalUserAction.ACTION_SURRENDER_APPROVAL.format(
                 self.current_proposal.id
             ),
-            request,
+            request.user,
         )
 
 

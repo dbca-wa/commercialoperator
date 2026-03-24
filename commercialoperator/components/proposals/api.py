@@ -23,9 +23,7 @@ from commercialoperator.components.proposals.utils import (
     save_proponent_data,
     save_assessor_data,
     proposal_submit,
-    get_cached_application_types,
-    get_cached_proposal_submitters,
-    get_cached_proposal_processing_status,
+    get_proposal_processing_status,
     paginate_chained_list,
     searchKeyWords,
     _get_params,
@@ -131,17 +129,11 @@ from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.filters import (
-    LedgerDatatablesFilterBackend,
-)
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     QuerySetChain,
     retrieve_delegate_organisation_ids,
     retrieve_group_members,
-    retrieve_organisation,
     retrieve_user_groups,
-    retrieve_email_user,
     expand_emailuser_fields,
 )
 from commercialoperator.helpers import is_customer, is_internal
@@ -186,54 +178,7 @@ class GetEmptyList(views.APIView):
         return Response([])
 
 
-"""
-1. internal_proposal.json
-2. regions.json
-3. trails.json
-4. vehicles.json
-5. access_types.json
-6. required_documents.json
-7. land_activities.json
-8. vessels.json
-9. marine_activities.json
-10. marine_parks.json
-11. accreditation_choices.json
-12. licence_period_choices.json
-13. global_settings.json
-14. questions.json
-15. amendment_request_reason_choices.json
-16. contacts.json
-
-"""
-
-
-
-
-
-def proposal_search_filters(
-    request,
-    qs: QuerySet,
-    *,
-    lodgement_date_field: str = "lodgement_date",
-    lodgement_number_field: str = "lodgement_number",
-    processing_status_field: str = "processing_status",
-    application_type_name_path: str = "application_type__name",
-    submitter_id: str = "submitter_id",
-) -> QuerySet:
-    """
-    Standalone filter for Proposal-like querysets based on DataTables-style params.
-
-    Applies conditionally:
-      - search[value] -> filters only on lodgement_number
-      - date_from/date_to (or start_date/end_date) -> filters by lodgement_date range
-      - datatable_filter_processing_status -> filters by processing_status
-      - datatable_filter_application_type__name -> filters by application_type__name
-
-    Parameters are overridable for reuse with similar models.
-    """
-    params = _get_params(request)
-
-    search_value = (params.get("search[value]") or "").strip()
+def proposal_search_filter(qs, search_value):
 
     if search_value:
         matching_ids = search_in_emailuser_fields(search_value)
@@ -242,117 +187,52 @@ def proposal_search_filters(
         if matching_ids:
                     
             qs = qs.filter(
-                Q(submitter_id__in=matching_ids) | Q(proxy_applicant_id__in=matching_ids) | Q(assigned_officer_id__in=matching_ids) | Q(**{f"{lodgement_number_field}__icontains": search_value})
+                Q(submitter_id__in=matching_ids) | Q(proxy_applicant_id__in=matching_ids) | Q(assigned_officer_id__in=matching_ids)
             )
-
-        else:
-            # Fallback: maybe still filter only by lodgement number
-            qs = qs.filter(**{f"{lodgement_number_field}__icontains": search_value})
-
-    # Date range filtering on lodgement_date ---
-    # Accept either date_from/date_to or start_date/end_date
-    date_from = (params.get("date_from") or params.get("start_date") or "").strip() or None
-    date_to = (params.get("date_to") or params.get("end_date") or "").strip() or None
-
-    df = parse_date(date_from) if date_from else None
-    dt = parse_date(date_to) if date_to else None
-
-    # Detect field type to choose correct lookup
-    is_dt_field = _is_datetime_field(qs, lodgement_date_field)
-    # If DateTimeField, use __date lookups; else direct DateField lookups
-    if df and dt:
-        lookup = f"{lodgement_date_field}__date__range" if is_dt_field else f"{lodgement_date_field}__range"
-        qs = qs.filter(**{lookup: (df, dt)})
-    elif df:
-        lookup = f"{lodgement_date_field}__date__gte" if is_dt_field else f"{lodgement_date_field}__gte"
-        qs = qs.filter(**{lookup: df})
-    elif dt:
-        lookup = f"{lodgement_date_field}__date__lte" if is_dt_field else f"{lodgement_date_field}__lte"
-        qs = qs.filter(**{lookup: dt})
-
-    # --- 3) Processing status filter ---
-    status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
-    if status and status != "All":
-        qs = qs.filter(**{processing_status_field: status})
-
-    # --- 4) Application type (license type) by name ---
-    app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
-    if app_type_name and app_type_name != "All":
-        qs = qs.filter(**{application_type_name_path: app_type_name})
-
-    submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
-    if submitter_email and submitter_email != "All":
-        submitter = EmailUser.objects.filter(email__iexact=submitter_email).first()
-        if submitter:
-            qs = qs.filter(**{submitter_id: submitter.id})
-        else:
-            return qs
-
 
     return qs
 
+def district_proposal_search_filter(qs, search_value):
 
+    if search_value:
+        matching_ids = search_in_emailuser_fields(search_value)
 
-def get_sliced_queryset(
-    request,
-    excluded_type,
-    qs: Optional[QuerySet] = None,
-) -> QuerySet:
-    """
-    Return a sliced queryset of Proposal objects based on:
-      - If `qs` is provided: slice it using 'start' and 'length' from request only.
-        No additional filtering is applied.
-      - If `qs` is None: build the queryset based on the request user type
-        (internal/customer) and exclude `excluded_type` + migrated=True.
-
-    Query params used:
-      - start: int (default 0)
-      - length: int (default 10)
-
-    Args:
-        request: Django HttpRequest
-        excluded_type: The application_type to exclude when qs is not provided
-        qs: Optional pre-constructed QuerySet to slice directly
-
-    Returns:
-        QuerySet: sliced using offset/limit semantics
-    """
-    user = request.user
-
-    # Parse pagination safely
-    try:
-        start = int(request.GET.get("start", 0))
-    except (TypeError, ValueError):
-        start = 0
-    try:
-        length = int(request.GET.get("length", 10))
-    except (TypeError, ValueError):
-        length = 10
-
-    # Ensure non-negative values
-    start = max(0, start)
-    length = max(0, length)
-
-    # If an external queryset is provided, just slice and return.
-    if qs is not None:
-        return qs[start : start + length]
-
-    # Otherwise, build the queryset per the original rules.
-    if is_internal(request):
-        qs_built = Proposal.objects.exclude(application_type=excluded_type, migrated=True)
-    elif is_customer(request):
-        user_orgs = retrieve_delegate_organisation_ids(user)
-        qs_built = (
-            Proposal.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
+        # Apply both filters only if we found any matching submitters
+        if matching_ids:
+                    
+            qs = qs.filter(
+                Q(proposal__submitter_id__in=matching_ids) | Q(proposal__proxy_applicant_id__in=matching_ids) | Q(assigned_officer_id__in=matching_ids)
             )
-            .exclude(application_type=excluded_type, migrated=True)
-        )
-    else:
-        qs_built = Proposal.objects.none()
 
-    # Apply slicing—this becomes LIMIT/OFFSET at the DB level
-    return qs_built[start : start + length]
+    return qs, matching_ids
+
+def referral_search_filter(qs, search_value):
+
+    if search_value:
+        matching_ids = search_in_emailuser_fields(search_value)
+
+        # Apply both filters only if we found any matching submitters
+        if matching_ids:
+                    
+            qs = qs.filter(
+                Q(proposal__submitter_id__in=matching_ids) | Q(proposal__proxy_applicant_id__in=matching_ids) | Q(proposal__assigned_officer_id__in=matching_ids)
+            )
+
+    return qs, matching_ids
+
+def compliance_search_filter(qs, search_value):
+
+    if search_value:
+        matching_ids = search_in_emailuser_fields(search_value)
+
+        # Apply both filters only if we found any matching submitters
+        if matching_ids:
+                    
+            qs = qs.filter(
+                Q(assigned_to_id__in=matching_ids)
+            )
+
+    return qs, matching_ids
 
 def get_expanded_queryset(request, queryset):
     emailuser_fk_fields = [
@@ -368,20 +248,21 @@ def get_expanded_queryset(request, queryset):
         queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
     return queryset
 
-class ProposalFilterBackend(LedgerDatatablesFilterBackend):
+class ProposalFilterBackend(DatatablesFilterBackend):
     """
     Custom filters
     """
 
-
     def filter_queryset(self, request, queryset, view):
 
-
         total_count = queryset.count()
+        super_queryset = None
+        try:
+            super_queryset = super(ProposalFilterBackend, self).filter_queryset(request, queryset, view).distinct()
+        except Exception as e:
+            logger.exception(f'Failed to filter the queryset.  Error: [{e}]')
 
-        # Initialise ledger lookup fields (fields that query an emailuser)
-        ledger_lookup_fields = []
-        ledger_lookup_extras = {}
+        search_text = request.GET.get('search[value]')
 
         # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
         regions = request.GET.get("regions")
@@ -394,15 +275,94 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                 queryset = queryset.filter(
                     proposal__region__name__iregex=regions.replace(",", "|")
                 )
+               
+        date_from = request.GET.get("date_from")
+        date_to = request.GET.get("date_to")
+        
+        if queryset.model is Proposal:
 
-        # on the internal dashboard, the Payment Status filter is a property field (not a DB field) - have to use the custom filter below
-        if queryset.model is Booking:
-            park = request.GET.get("park")
+            processing_status = request.GET.get("datatable_filter_processing_status")
+            application_type = request.GET.get("datatable_filter_application_type__name")
+
+            if date_from:
+                queryset = queryset.filter(lodgement_date__gte=date_from)
+
+            if date_to:
+                queryset = queryset.filter(lodgement_date__lte=date_to)
+
+            if processing_status and processing_status.lower() != "all":
+                queryset = queryset.filter(processing_status=processing_status)
+
+            if application_type and application_type.lower() != "all":
+                queryset = queryset.filter(application_type__name=application_type)
+
+            if search_text and super_queryset:
+                search_queryset = proposal_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset   
+
+        elif queryset.model is Compliance:
+
+            processing_status = request.GET.get("datatable_filter_processing_status")
+            application_type = request.GET.get("datatable_filter_proposal__application_type__name")
+
+            if date_from:
+                queryset = queryset.filter(due_date__gte=date_from)
+
+            if date_to:
+                queryset = queryset.filter(due_date__lte=date_to)
+
+            if processing_status and processing_status.lower() != "all":
+                queryset = queryset.filter(processing_status=processing_status)
+
+            if application_type and application_type.lower() != "all":
+                queryset = queryset.filter(proposal__application_type__name=application_type)
+
+            if search_text and super_queryset:
+                search_queryset, results_found = compliance_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset 
+
+        elif queryset.model is Referral:
+
+            processing_status = request.GET.get("datatable_filter_processing_status")
+            application_type = request.GET.get("datatable_filter_proposal__application_type__name")
+            
+            if date_from:
+                queryset = queryset.filter(proposal__lodgement_date__gte=date_from)
+
+            if date_to:
+                queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
+
+            if processing_status and processing_status.lower() != "all":
+                queryset = queryset.filter(proposal__processing_status=processing_status)
+
+            if application_type and application_type.lower() != "all":
+                queryset = queryset.filter(proposal__application_type__name=application_type)
+
+            if search_text and super_queryset:
+                search_queryset, results_found = referral_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset 
+
+        elif queryset.model is Booking:
+            if date_from and date_to:
+                queryset = queryset.filter(
+                    park_bookings__arrival__range=[date_from, date_to]
+                )
+            elif date_from:
+                queryset = queryset.filter(park_bookings__arrival__gte=date_from)
+            elif date_to:
+                queryset = queryset.filter(park_bookings__arrival__lte=date_to)
+
             payment_method = request.GET.get("payment_method")
             payment_status = request.GET.get("payment_status")
-
-            if park:
-                queryset = queryset.filter(park_bookings__park__id__in=[park])
 
             if payment_method:
                 queryset = queryset.filter(
@@ -410,53 +370,22 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                     | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING)
                 )
 
-            if payment_status:
-                ids = []
-                if payment_status.lower() == "overdue":
-                    ids = list(
-                        ParkBooking.objects.filter(
-                            (
-                                ~Q(booking__invoices=None)
-                                & Q(
-                                    booking__invoices__property_cache__payment_status="Unpaid"
-                                )
-                            )
-                            | Q(booking__invoices=None)
-                            & ~Q(booking__invoices=None)
-                            & ~Q(booking__invoices__deferred_payment_date=None)
-                            & Q(
-                                booking__invoices__deferred_payment_date__lt=timezone.now().date()
-                            )
-                        ).values_list("id", flat=True)
-                    )
-                elif payment_status.lower() == "unpaid":
-                    ids = list(
-                        ParkBooking.objects.filter(
-                            Q(
-                                booking__invoices__property_cache__payment_status="Unpaid"
-                            )
-                            | Q(booking__invoices=None)
-                        ).values_list("id", flat=True)
-                    )
-                else:
-                    ids = list(
-                        ParkBooking.objects.filter(
-                            booking__invoices__property_cache__payment_status__iexact=payment_status.lower().replace(
-                                "_", " "
-                            )
-                        ).values_list("id", flat=True)
-                    )
+            if payment_status and payment_status.lower() != "all":
+                queryset = queryset.filter(invoices__property_cache__payment_status__iexact=payment_status.lower())
 
-                queryset = queryset.filter(park_bookings__in=ids)
+            if search_text and super_queryset:
+                queryset = queryset.distinct() & super_queryset   
 
-        # Filtering for ParkBooking dashboard
-        if queryset.model is ParkBooking:
-            park = request.GET.get("park")
+        elif queryset.model is ParkBooking:
+            if date_from and date_to:
+                queryset = queryset.filter(arrival__range=[date_from, date_to])
+            elif date_from:
+                queryset = queryset.filter(arrival__gte=date_from)
+            elif date_to:
+                queryset = queryset.filter(arrival__lte=date_to)
+
             payment_method = request.GET.get("payment_method")
             payment_status = request.GET.get("payment_status")
-
-            if park:
-                queryset = queryset.filter(park__id__in=[park])
 
             if payment_method:
                 if payment_method == str(
@@ -474,176 +403,36 @@ class ProposalFilterBackend(LedgerDatatablesFilterBackend):
                         Q(booking__invoices__payment_method=payment_method)
                     )
 
-            if payment_status:
-                ids = []
-                if payment_status.lower() == "overdue":
-                    for i in ParkBooking.objects.all():
-                        if (
-                            (
-                                i.booking.invoices.last()
-                                and i.booking.invoices.last().payment_status == "Unpaid"
-                            )
-                            or not i.booking.invoices.last()
-                            and i.booking.invoices.last()
-                            and i.booking.deferred_payment_date
-                            and i.booking.deferred_payment_date < timezone.now().date()
-                        ):
+            if payment_status and payment_status.lower() != "all":
+                queryset = queryset.filter(booking__invoices__property_cache__payment_status__iexact=payment_status.lower())
 
-                            ids.append(i.id)
-                if payment_status.lower() == "unpaid":
-                    for i in ParkBooking.objects.all():
-                        if (
-                            i.booking.invoices.last()
-                            and i.booking.invoices.last().payment_status.lower()
-                            == "unpaid"
-                        ) or not i.booking.invoices.last():
-                            ids.append(i.id)
-                else:
-                    for i in ParkBooking.objects.all():
-                        if (
-                            i.booking.invoices.last()
-                            and i.booking.invoices.last().payment_status
-                            and i.booking.invoices.last().payment_status.lower()
-                            == payment_status.lower().replace("_", " ")
-                        ):
-                            ids.append(i.id)
+            if search_text and super_queryset:
+                queryset = queryset.distinct() & super_queryset
 
-                queryset = queryset.filter(id__in=ids)
-
-        date_from = request.GET.get("date_from")
-        date_to = request.GET.get("date_to")
-        if queryset.model is Proposal:
-            if date_from:
-                queryset = queryset.filter(lodgement_date__gte=date_from)
-
-            if date_to:
-                queryset = queryset.filter(lodgement_date__lte=date_to)
-
-            ledger_lookup_fields = ["submitter", "org_applicant", "proxy_applicant"]
-            # Prevent the external user from searching for officers
-            if is_internal(request):
-                ledger_lookup_fields += ["assigned_officer"]
-
-            ledger_lookup_extras.update(
-                {"org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION}
-            )
-
-        # Approval is no longer using the ProposalFilterBackend
-        # elif queryset.model is Approval:
-        #     if date_from:
-        #         queryset = queryset.filter(expiry_date__gte=date_from)
-
-        #     if date_to:
-        #         queryset = queryset.filter(expiry_date__lte=date_to)
-        elif queryset.model is Compliance:
-            if date_from:
-                queryset = queryset.filter(due_date__gte=date_from)
-
-            if date_to:
-                queryset = queryset.filter(due_date__lte=date_to)
-
-            ledger_lookup_fields = [
-                "approval__org_applicant",
-                "approval__proxy_applicant",
-            ]
-            ledger_lookup_extras.update(
-                {
-                    "approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-                }
-            )
-            # Prevent the external user from searching for officers
-            if is_internal(request):
-                ledger_lookup_fields += ["assigned_to"]
-        elif queryset.model is Referral:
-            if date_from:
-                queryset = queryset.filter(proposal__lodgement_date__gte=date_from)
-
-            if date_to:
-                queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
-
-            ledger_lookup_fields = [
-                "proposal__submitter",
-                "proposal__proxy_applicant",
-                "proposal__org_applicant",
-            ]
-            # Prevent the external user from searching for officers
-            if is_internal(request):
-                ledger_lookup_fields += ["assigned_officer"]
-            ledger_lookup_extras.update(
-                {
-                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-                }
-            )
-        elif queryset.model is Booking:
-            if date_from and date_to:
-                queryset = queryset.filter(
-                    park_bookings__arrival__range=[date_from, date_to]
-                )
-            elif date_from:
-                queryset = queryset.filter(park_bookings__arrival__gte=date_from)
-            elif date_to:
-                queryset = queryset.filter(park_bookings__arrival__lte=date_to)
-
-            ledger_lookup_fields = [
-                "proposal__approval__org_applicant",
-                "proposal__approval__proxy_applicant",
-                "proposal__org_applicant",
-            ]
-            ledger_lookup_extras.update(
-                {
-                    "proposal__approval__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-                }
-            )
-        elif queryset.model is ParkBooking:
-            if date_from and date_to:
-                queryset = queryset.filter(arrival__range=[date_from, date_to])
-            elif date_from:
-                queryset = queryset.filter(arrival__gte=date_from)
-            elif date_to:
-                queryset = queryset.filter(arrival__lte=date_to)
-
-            ledger_lookup_fields = [
-                "booking__proposal__org_applicant",
-            ]
-            ledger_lookup_extras.update(
-                {
-                    "booking__proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
-                }
-            )
         elif queryset.model is DistrictProposal:
+
+            processing_status = request.GET.get("datatable_filter_processing_status")
+
             if date_from:
                 queryset = queryset.filter(proposal__lodgement_date__gte=date_from)
 
             if date_to:
                 queryset = queryset.filter(proposal__lodgement_date__lte=date_to)
 
-            ledger_lookup_fields = [
-                "proposal__submitter",
-                "proposal__org_applicant",
-                "proposal__proxy_applicant",
-            ]
-            ledger_lookup_extras.update(
-                {
-                    "proposal__org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION
-                }
-            )
+            if processing_status and processing_status.lower() != "all":
+                queryset = queryset.filter(processing_status=processing_status)
 
-        # Apply the search filters
-        # queryset = self.filter_datatables_queryset(
-        #     request,
-        #     queryset,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        #     ledger_lookup_extras=ledger_lookup_extras,
-        # )
+            if search_text and super_queryset:
+                search_queryset, results_found = district_proposal_search_filter(queryset, search_text)
+                if results_found:
+                    queryset = search_queryset.distinct() | super_queryset   
+                else:
+                    queryset = queryset.distinct() & super_queryset 
 
-        # queryset = self.apply_request(
-        #         request,
-        #         queryset,
-        #         view,
-        #         ledger_lookup_fields=ledger_lookup_fields,
-        #         ledger_lookup_extras=ledger_lookup_extras,
-        #     )
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
 
         setattr(view, "_datatables_total_count", total_count)
 
@@ -686,7 +475,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         ],
         detail=False,
     )
-
     def proposals_internal(self, request, *args, **kwargs):
         """
         Internal dashboard endpoint (DataTables server-side).
@@ -694,38 +482,17 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         Example:
         /api/proposal_paginated/proposal_paginated_internal/?format=datatables&draw=1&start=0&length=10
         """
-        # 1) Base queryset (unfiltered)
-        original_qs = self.get_queryset()
+        if not is_internal(request):
+            return Response([])
 
-        # 2) Apply search filters (if any) to base
-        #    proposal_search_filters should return a QuerySet or None.
-        if request_has_filters(request):
-            filtered_qs = proposal_search_filters(request, original_qs)
-        else:
-            filtered_qs = original_qs
+        qs = self.get_queryset()
+        qs = self.filter_queryset(qs)
 
-        # 3) Apply DRF view-level filters (permissions, ordering, etc.)
-        filtered_qs = self.filter_queryset(filtered_qs)
-
-        # 4) Counts for DataTables
-        records_total = original_qs.count()          # total before filters
-        records_filtered = filtered_qs.count()       # total after filters
-
-        # 5) Slice for pagination (use the optional-qs behavior)
-        queryset = get_sliced_queryset(request, self.excluded_type, qs=filtered_qs)
-
-        if isinstance(queryset, EmailUserQuerySet):
-            queryset = get_expanded_queryset(request, queryset)
-        # 6) Serialize only the sliced page
-        serializer = ListProposalSerializer(queryset, context={"request": request}, many=True)
-
-        # 7) Return DataTables-compatible payload
-        return Response({
-            "draw": int(request.GET.get("draw", 1)),
-            "recordsTotal": records_total,
-            "recordsFiltered": records_filtered,
-            "data": serializer.data,
-        })
+        result_page = self.paginator.paginate_queryset(qs, request)
+        serializer = ListProposalSerializer(
+            result_page, context={"request": request}, many=True
+        )
+        return self.paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=[
@@ -748,17 +515,12 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             "ReferralRecipientGroup", request_user_id
         )
 
-        qs = (
-            Referral.objects.filter(
-                # referral_group__in=request.user.referralrecipientgroup_set.all() # Replaced this with the line below
+        qs = Referral.objects.filter(
                 referral_group__in=request_user_referralrecipientgroup_set
-            )
-            if is_internal(self.request)
-            else Referral.objects.none()
-        )
+            ) if is_internal(self.request) else Referral.objects.none()
+        
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = DTReferralSerializer(
             result_page, context={"request": request}, many=True
@@ -826,7 +588,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         if submitter_id:
             qs = qs.filter(submitter_id=submitter_id)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ListProposalSerializer(
             result_page, context={"request": request}, many=True
@@ -856,7 +617,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         if submitter_id:
             qs = qs.filter(submitter_id=submitter_id)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ListProposalSerializer(
             result_page, context={"request": request}, many=True
@@ -908,36 +668,8 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset.exclude(application_type=self.excluded_type)
-        # logger.warning("User is neither customer nor internal user: {} <{}>".format(user.get_full_name(), user.email))
         return Proposal.objects.none()
-
-
-#    def perform_create(self, serializer):
-#        serializer.partial = True
-#        serializer.save(created_by=self.request.user)
-
-# @action(methods=['post'])
-# @renderer_classes((JSONRenderer,))
-# def submit(self, request, *args, **kwargs):
-#     try:
-#         instance = self.get_object()
-#         #instance.submit(request,self)
-#         #instance.save()
-#         serializer = self.get_serializer(instance)
-#         return Response(serializer.data)
-#     except serializers.ValidationError:
-#         print(traceback.print_exc())
-#         raise
-#     except ValidationError as e:
-#         if hasattr(e,'error_dict'):
-#             raise serializers.ValidationError(repr(e.error_dict))
-#         else:
-#             if hasattr(e,'message'):
-# raise serializers.ValidationError(e.message)
-#     except Exception as e:
-#         print(traceback.print_exc())
-#         raise serializers.ValidationError(str(e))
-
+    
 
 class ProposalParkViewSet(viewsets.ModelViewSet):
     """
@@ -1083,12 +815,9 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def filter_list(self, request, *args, **kwargs):
         """Used by the internal/external dashboard filters"""
 
-        submitters = get_cached_proposal_submitters(self)
-        application_types = get_cached_application_types()
+        application_types = ApplicationType.objects.all().values_list("name", flat=True)
         data = dict(
-            submitters=submitters,
             application_types=application_types,
-            approval_status_choices=[i[1] for i in Approval.STATUS_CHOICES],
         )
         return Response(data)
 
@@ -2695,11 +2424,9 @@ class ReferralViewSet(viewsets.ModelViewSet):
                 "proposal_id", flat=True
             )
         )
-        submitters = get_cached_proposal_submitters(self, qs)
-        processing_status = get_cached_proposal_processing_status(self, qs)
-        application_types = get_cached_application_types()
+        processing_status = get_proposal_processing_status()
+        application_types = ApplicationType.objects.all().values_list("name", flat=True)
         data = dict(
-            submitters=submitters,
             processing_status_choices=processing_status,
             application_types=application_types,
         )
@@ -3410,7 +3137,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         instance.proposal.log_user_action(
-            ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request
+            ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request.user
         )
         return Response(serializer.data)
 
@@ -3420,7 +3147,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
         instance.proposal.log_user_action(
-            ProposalUserAction.ACTION_CREATE_VEHICLE.format(instance.id), request
+            ProposalUserAction.ACTION_CREATE_VEHICLE.format(instance.id), request.user
         )
         return Response(serializer.data)
 
@@ -3450,7 +3177,7 @@ class VesselViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_EDIT_VESSEL.format(instance.id), request
+                ProposalUserAction.ACTION_EDIT_VESSEL.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -3473,7 +3200,7 @@ class VesselViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
             instance.proposal.log_user_action(
-                ProposalUserAction.ACTION_CREATE_VESSEL.format(instance.id), request
+                ProposalUserAction.ACTION_CREATE_VESSEL.format(instance.id), request.user
             )
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -3540,7 +3267,6 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
                         serializer_chk.save()
                     except:
                         raise
-            # instance.proposal.log_user_action(ProposalUserAction.ACTION_EDIT_VESSEL.format(instance.id),request)
             return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())
@@ -3758,15 +3484,9 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
         """Used by the external dashboard filters"""
 
         qs = self.get_queryset()
-        qs = Proposal.objects.filter(
-            id__in=qs.filter(proposal__submitter_id__isnull=False).values_list(
-                "proposal_id", flat=True
-            )
-        )
-        submitters = get_cached_proposal_submitters(self, qs)
-        processing_status = get_cached_proposal_processing_status(self, qs)
+
+        processing_status = get_proposal_processing_status()
         data = dict(
-            submitters=submitters,
             processing_status_choices=processing_status,
         )
         return Response(data)
@@ -3840,22 +3560,24 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
+
+            #TODO review and adjust this so it can work securely without the manager classes
             user_id = user.id
-            # user_id = 132360  # A real user id for testing
             user_assessor_groups = retrieve_user_groups(
                 "districtproposalassessorgroup", user_id
             )
             user_approver_groups = retrieve_user_groups(
                 "districtproposalapprovergroup", user_id
             )
-
             return (
-                DistrictProposal.objects.with_approver_group_id()
-                .with_assessor_group_id()
-                .filter(
-                    Q(approver_group_id__in=user_approver_groups)
-                    | Q(assessor_group_id__in=user_assessor_groups)
-                )
+                DistrictProposal.objects.all()
+                #TODO remove manager dependency while retaining auth
+                #.with_approver_group_id()
+                #.with_assessor_group_id()
+                #.filter(
+                #    Q(approver_group_id__in=user_approver_groups)
+                #    | Q(assessor_group_id__in=user_assessor_groups)
+                #)
             )
 
         return DistrictProposal.objects.none()
@@ -3875,7 +3597,6 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ListDistrictProposalSerializer(
             result_page, context={"request": request}, many=True

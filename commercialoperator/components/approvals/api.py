@@ -2,7 +2,7 @@ import traceback
 import datetime
 import re
 from django.db.models import Q
-from typing import Callable, Optional
+from typing import Optional
 from django.db.models import QuerySet
 from django.db import transaction
 from django.core.files.base import ContentFile
@@ -15,11 +15,9 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import datetime
-from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.models import (
     Proposal,
     ApplicationType,
-    Referral,
 )
 from commercialoperator.components.approvals.models import Approval, ApprovalDocument
 from commercialoperator.components.approvals.serializers import (
@@ -37,11 +35,8 @@ from commercialoperator.components.organisations.models import (
     OrganisationContact,
 )
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.filters import (
-    LedgerDatatablesFilterBackend,
-)
+from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
-    EmailUserQuerySet,
     retrieve_delegate_organisation_ids,
     expand_organisation_fields,
     expand_emailuser_fields,
@@ -49,80 +44,12 @@ from commercialoperator.components.segregation.utils import (
 from commercialoperator.helpers import is_customer, is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
-def get_sliced_queryset(
-    request,
-    qs: Optional[QuerySet] = None,
-) -> QuerySet:
-    """
-    Return a sliced queryset of Proposal objects based on:
-      - If `qs` is provided: slice it using 'start' and 'length' from request only.
-        No additional filtering is applied.
-      - If `qs` is None: build the queryset based on the request user type
-        (internal/customer) and exclude `excluded_type` + migrated=True.
+import logging
 
-    Query params used:
-      - start: int (default 0)
-      - length: int (default 10)
-
-    Args:
-        request: Django HttpRequest
-        qs: Optional pre-constructed QuerySet to slice directly
-
-    Returns:
-        QuerySet: sliced using offset/limit semantics
-    """
-    user = request.user
-
-    # Parse pagination safely
-    try:
-        start = int(request.GET.get("start", 0))
-    except (TypeError, ValueError):
-        start = 0
-    try:
-        length = int(request.GET.get("length", 10))
-    except (TypeError, ValueError):
-        length = 10
-
-    # Ensure non-negative values
-    start = max(0, start)
-    length = max(0, length)
-
-    # If an external queryset is provided, just slice and return.
-    if qs is not None:
-        return qs[start : start + length]
-    if is_internal(request):
-        qs_built =  Approval.objects.all()
-    elif is_customer(request):
-        user = request.user
-        user_orgs = retrieve_delegate_organisation_ids(user.id)
-        qs_built = Approval.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            )
-    else:
-        qs_built = Approval.objects.none()
-
-    return qs_built[start : start + length]
-
-def get_expanded_queryset(
-    request,
-    queryset: QuerySet,
-) -> QuerySet:
-
-    organisation_properties = ["organisation__organisation_name"]
-    emailuser_properties = ["email", "first_name", "last_name"]
-
-    # Expand for each FK field
-    queryset = expand_organisation_fields(queryset, 'org_applicant', organisation_properties)
-    
-    emailuser_fk_fields = ['proxy_applicant', 'submitter']
+logger = logging.getLogger(__name__)
 
 
-    # Expand for each FK field
-    for fk_field in emailuser_fk_fields:
-        queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
-    return queryset
-
-class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
+class ApprovalFilterBackend(DatatablesFilterBackend):
     """
     Custom filters
     """
@@ -130,17 +57,11 @@ class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
-        # on the internal dashboard, the Region filter is multi-select - have to use the custom filter below
-        regions = request.GET.get("regions")
-        if regions:
-            if queryset.model is Proposal:
-                queryset = queryset.filter(
-                    region__name__iregex=regions.replace(",", "|")
-                )
-            elif queryset.model is Referral or queryset.model is Compliance:
-                queryset = queryset.filter(
-                    proposal__region__name__iregex=regions.replace(",", "|")
-                )
+        super_queryset = None
+        try:
+            super_queryset = super(ApprovalFilterBackend, self).filter_queryset(request, queryset, view).distinct()
+        except Exception as e:
+            logger.exception(f'Failed to filter the queryset.  Error: [{e}]')
 
         status = request.GET.get("datatable_filter_status")
         licence_type = request.GET.get("datatable_filter_current_proposal__application_type__name")
@@ -166,38 +87,21 @@ class ApprovalFilterBackend(LedgerDatatablesFilterBackend):
             if expiry_date_to:
                 queryset = queryset.filter(expiry_date__lte=expiry_date_to)
 
-            ledger_lookup_fields = ["org_applicant", "proxy_applicant"]
+        if super_queryset:
+            queryset = queryset.distinct() & super_queryset
 
-        # Those fields need to query ledger for an organisation not an emailuser object
-        # ledger_lookup_extras = {
-        #     "org_applicant": EmailUserQuerySet.LEDGER_EXPAND_TARGET_ORGANISATION,
-        # }
-
-        # # Apply the search filters
-        # queryset = self.filter_datatables_queryset(
-        #     request,
-        #     queryset,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        #     ledger_lookup_extras=ledger_lookup_extras,
-        # )
-
-        # queryset = self.apply_request(
-        #     request,
-        #     queryset,
-        #     view,
-        #     ledger_lookup_fields=ledger_lookup_fields,
-        #     ledger_lookup_extras=ledger_lookup_extras,
-        # )
+        fields = self.get_fields(request)
+        ordering = self.get_ordering(request, view, fields)
+        if len(ordering):
+            queryset = queryset.order_by(*ordering)
 
         setattr(view, "_datatables_total_count", total_count)
         return queryset
 
 
 class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
-    # filter_backends = (ProposalFilterBackend,)
     filter_backends = (ApprovalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Approval.objects.none()
     serializer_class = ApprovalSerializer
@@ -228,37 +132,14 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
             http://localhost:8000/api/approval_paginated/approvals_external/?format=datatables&draw=1&length=2
         """
 
-        ids = (
-            self.get_queryset()
-            .order_by("lodgement_number", "-issue_date")
-            .distinct("lodgement_number")
-            .values_list("id", flat=True)
-        )
-        qs = Approval.objects.filter(id__in=ids)
-        filtered_qs = self.filter_queryset(qs)
-        records_total = qs.count()          # total before filters
-        records_filtered = filtered_qs.count()       # total after filters
-        applicant_id = request.GET.get("org_id")
-        if applicant_id:
-            filtered_qs = filtered_qs.filter(org_applicant_id=applicant_id)
-        submitter_id = request.GET.get("submitter_id", None)
-        if submitter_id:
-            filtered_qs = filtered_qs.filter(submitter_id=submitter_id)
-        queryset = get_sliced_queryset(request, qs=filtered_qs)
-        if isinstance(queryset, EmailUserQuerySet):
-            queryset = get_expanded_queryset(request, queryset)
-        
-        self.paginator.page_size = qs.count()
-        # result_page = self.paginator.paginate_queryset(qs, request)
+        qs = self.get_queryset()
+        qs = self.filter_queryset(qs)
+
+        result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ApprovalSerializer(
-            queryset, context={"request": request}, many=True
+            result_page, context={"request": request}, many=True
         )
-        return Response({
-            "draw": int(request.GET.get("draw", 1)),
-            "recordsTotal": records_total,
-            "recordsFiltered": records_filtered,
-            "data": serializer.data,
-        })
+        return self.paginator.get_paginated_response(serializer.data)
 
 
 from rest_framework import filters

@@ -671,9 +671,9 @@ export default {
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonText: vm.submit_text(),
-                    }).then(() => {
-                        helpers
-                            .fetchUrl(
+                    }).then((swalresult) => {
+                        if (swalresult.isConfirmed) {
+                            helpers.fetchUrl(
                                 helpers.add_endpoint_json(
                                     api_endpoints.compliances,
                                     vm.compliance.id + '/submit'
@@ -702,6 +702,7 @@ export default {
                                         helpers.apiVueResourceError(error);
                                 }
                             );
+                        }
                     });
                 }
             }
@@ -753,9 +754,9 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: vm.submit_text(),
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(vm.proposal_form_url, {
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(vm.proposal_form_url, {
                             method: 'POST',
                             body: formData,
                         })
@@ -806,6 +807,7 @@ export default {
                                     });
                                 }
                             );
+                        }
                     }
                 },
                 () => {

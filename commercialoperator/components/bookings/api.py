@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse
-
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action as list_route
 
@@ -29,7 +29,6 @@ from commercialoperator.components.proposals.api import ProposalFilterBackend
 class BookingPaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Booking.objects.none()
     serializer_class = BookingSerializer
@@ -69,7 +68,6 @@ class BookingPaginatedViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = BookingSerializer(
             result_page, context={"request": request}, many=True
@@ -103,11 +101,14 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
-            bi = BookingInvoice.objects.all().exclude(
+            bi = BookingInvoice.objects.exclude(
                 booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY
+            ).filter(
+                (Q(property_cache__payment_status="Unpaid")|Q(property_cache__payment_status="Partially Paid")) &
+                Q(deferred_payment_date__lt=timezone.now().date())
             )
 
-            return [inv for inv in bi if inv.overdue]
+            return bi
         elif is_customer(self.request):
             ledger_org_ids = retrieve_delegate_organisation_ids(user)
             cols_org_ids = Organisation.objects.filter(
@@ -117,8 +118,11 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
             bi = BookingInvoice.objects.filter(
                 Q(booking__proposal__org_applicant_id__in=cols_org_ids)
                 | Q(booking__proposal__submitter_id=user.id)
-            ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
-            return [inv for inv in bi if inv.overdue]
+            ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY).filter(
+                (Q(property_cache__payment_status="Unpaid")|Q(property_cache__payment_status="Partially Paid")) &
+                Q(deferred_payment_date__lt=timezone.now().date())
+            )
+            return bi
         return BookingInvoice.objects.none()
 
 
@@ -144,7 +148,6 @@ class ParkBookingViewSet(viewsets.ModelViewSet):
 class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = ParkBooking.objects.none()
     serializer_class = DTParkBookingSerializer
@@ -180,7 +183,6 @@ class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
-        self.paginator.page_size = qs.count()
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = DTParkBookingSerializer(
             result_page, context={"request": request}, many=True

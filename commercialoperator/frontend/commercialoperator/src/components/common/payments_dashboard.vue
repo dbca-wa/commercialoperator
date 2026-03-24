@@ -46,32 +46,7 @@
                     index="park_entry_fees"
                     subtitle=""
                 >
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div
-                                id="select_park_entry_fees_parks_parent"
-                                class="form-group"
-                            >
-                                <label for="select_park_entry_fees_parks"
-                                    >Park</label
-                                >
-                                <select
-                                    id="select_park_entry_fees_parks"
-                                    ref="select_park_entry_fees_parks"
-                                    v-model="filterProposalPark"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="p in proposal_parks"
-                                        :key="p.id"
-                                        :value="p.id"
-                                    >
-                                        {{ p.name }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="row mb-1">
                         <div class="col-md-3">
                             <div
                                 id="select_park_entry_fees_status_parent"
@@ -123,18 +98,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div v-if="is_external" class="col-md-3">
-                            <div class="form-group">
-                                <router-link
-                                    style="margin-top: 25px"
-                                    class="btn btn-primary pull-right"
-                                    :to="{ name: 'external-payment_order' }"
-                                    >Make Payment</router-link
-                                >
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
+
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="input_proposal_lodged_from"
@@ -185,7 +149,22 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
+
+                    <div class="row mb-3 justify-content-end">
+                        <div v-if="is_external" class="col-md-3">
+                            <div class="form-group mt-auto mb-0 align-self-end">
+                                <router-link
+                                    type="button"
+                                    class="btn btn-primary float-end"
+                                    :to="{ name: 'external-payment_order' }"
+                                    >Make Payment</router-link
+                                >
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-lg-12" style="margin-top: 25px">
                             <datatable
@@ -255,7 +234,6 @@ export default {
                 { name: 'Other', value: '3' },
             ],
             proposal_submitters: [],
-            proposal_parks: [],
             proposal_headers: [
                 'Number',
                 'Licence',
@@ -324,9 +302,6 @@ export default {
                                       'YYYY-MM-DD'
                                   )
                                 : '';
-
-                        d.search_terms =
-                            'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email, proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name';
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,
@@ -352,23 +327,27 @@ export default {
                     {
                         data: 'admission_number',
                         name: 'admission_number',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'approval_number',
                         name: 'proposal__approval__lodgement_number',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'applicant',
                         name: 'proposal__approval__org_applicant__organisation__organisation_name, proposal__approval__proxy_applicant__first_name, proposal__approval__proxy_applicant__last_name, proposal__approval__proxy_applicant__email',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                         visible: this.level == 'internal' ? true : false,
                     },
                     {
                         data: 'trading_name',
                         name: 'proposal__org_applicant__organisation__organisation_trading_name, proposal__org_applicant__organisation__organisation_name',
-                        orderable: true,
-                        searchable: true,
+                        orderable: false,
+                        searchable: false,
                     },
                     {
                         data: 'payment_status',
@@ -394,10 +373,10 @@ export default {
                                               vm.dateFormat
                                           )
                                         : '') + '<br>';
-                                //arrival_dates += arrival_dates + '<br>'
                             });
                             return arrival_dates;
                         },
+                        name: 'park_bookings__arrival',
                         searchable: false,
                         orderable: true,
                     },
@@ -411,8 +390,8 @@ export default {
                             });
                             return parks;
                         },
-                        //name: "park__id, park__name"
                         name: 'park_bookings__park__name',
+                        searchable: true,
                     },
                     {
                         data: 'park_bookings',
@@ -432,7 +411,7 @@ export default {
                             return visitors;
                         },
                         searchable: false,
-                        orderable: true,
+                        orderable: false,
                     },
                     {
                         data: 'id',
@@ -599,17 +578,6 @@ export default {
                     console.log(error);
                 }
             );
-
-            helpers.fetchUrl(api_endpoints.filter_list_parks).then(
-                (response) => {
-                    vm.proposal_parks = response;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
-
-            //console.log(vm.regions);
         },
         fetchOverdueInvoices: function () {
             let vm = this;

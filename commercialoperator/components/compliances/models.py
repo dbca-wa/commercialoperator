@@ -30,15 +30,9 @@ from commercialoperator.components.compliances.email import (
 )
 
 import logging
-
-from commercialoperator.components.segregation.utils import EmailUserQuerySet
-
 logger = logging.getLogger(__name__)
 
-
-# class Compliance(models.Model):
 class Compliance(RevisionedMixin):
-    objects = EmailUserQuerySet.as_manager()
 
     PROCESSING_STATUS_CHOICES = (
         ("due", "Due"),
@@ -228,7 +222,7 @@ class Compliance(RevisionedMixin):
             self.lodgement_number = new_lodgment_id
             self.save()
 
-    def submit(self, request):
+    def submit(self, request=None):
         with transaction.atomic():
             try:
                 if self.processing_status == "discarded":
@@ -238,13 +232,15 @@ class Compliance(RevisionedMixin):
                 if self.processing_status == "future" or "due":
                     self.processing_status = "with_assessor"
                     self.customer_status = "with_assessor"
-                    self.submitter = request.user
+                    if not self.submitter:
+                        self.submitter = request.user if request else self.proposal.submitter if self.proposal else None
 
-                    if request.FILES:
-                        for f in request.FILES:
-                            document = self.documents.create(name=str(request.FILES[f]))
-                            document._file = request.FILES[f]
-                            document.save()
+                    if request:
+                        if request.FILES:
+                            for f in request.FILES:
+                                document = self.documents.create(name=str(request.FILES[f]))
+                                document._file = request.FILES[f]
+                                document.save()
                     if self.amendment_requests:
                         qs = self.amendment_requests.filter(status="requested")
                         if qs:
@@ -252,15 +248,18 @@ class Compliance(RevisionedMixin):
                                 q.status = "amended"
                                 q.save()
 
-                # self.lodgement_date = datetime.datetime.strptime(timezone.now().strftime('%Y-%m-%d'),'%Y-%m-%d').date()
                 self.lodgement_date = timezone.now()
                 self.save(version_comment="Compliance Submitted: {}".format(self.id))
                 self.proposal.save(
                     version_comment="Compliance Submitted: {}".format(self.id)
                 )
-                self.log_user_action(
-                    ComplianceUserAction.ACTION_SUBMIT_REQUEST.format(self.id), request
-                )
+                try:
+                    self.log_user_action(
+                        ComplianceUserAction.ACTION_SUBMIT_REQUEST.format(self.id), request.user if request else self.submitter
+                    )
+                except:
+                    logger.error("Unable to log compliance submit")
+
                 send_external_submit_email_notification(request, self)
                 send_submit_email_notification(request, self)
                 self.documents.all().update(can_delete=False)
@@ -283,14 +282,14 @@ class Compliance(RevisionedMixin):
         self.save()
         self.log_user_action(
             ComplianceUserAction.ACTION_ASSIGN_TO.format(user.get_full_name()),
-            request,
+            request.user,
         )
 
     def unassign(self, request):
         with transaction.atomic():
             self.assigned_to = None
             self.save()
-            self.log_user_action(ComplianceUserAction.ACTION_UNASSIGN, request)
+            self.log_user_action(ComplianceUserAction.ACTION_UNASSIGN, request.user)
 
     def accept(self, request):
         with transaction.atomic():
@@ -298,7 +297,7 @@ class Compliance(RevisionedMixin):
             self.customer_status = "approved"
             self.save()
             self.log_user_action(
-                ComplianceUserAction.ACTION_CONCLUDE_REQUEST.format(self.id), request
+                ComplianceUserAction.ACTION_CONCLUDE_REQUEST.format(self.id), request.user
             )
             send_compliance_accept_email_notification(self, request)
 
@@ -364,8 +363,8 @@ class Compliance(RevisionedMixin):
                     )
                 )
 
-    def log_user_action(self, action, request):
-        return ComplianceUserAction.log_action(self, action, request.user)
+    def log_user_action(self, action, user):
+        return ComplianceUserAction.log_action(self, action, user)
 
     def __str__(self):
         return self.lodgement_number
@@ -520,14 +519,14 @@ class ComplianceAmendmentRequest(CompRequest):
                     compliance.save()
                 # Create a log entry for the proposal
                 compliance.log_user_action(
-                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request
+                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request.user
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(
                     compliance.proposal, compliance.proposal.applicant_field
                 )
                 applicant_field.log_user_action(
-                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request
+                    ComplianceUserAction.ACTION_ID_REQUEST_AMENDMENTS, request.user
                 )
                 send_amendment_email_notification(self, request, compliance)
 

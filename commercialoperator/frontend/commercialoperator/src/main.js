@@ -127,3 +127,13 @@ configureCompat({
 // eslint-disable-next-line vue/component-definition-name-casing
 app.component('v-select', VueSelect).use(router);
 router.isReady().then(() => app.mount('#app'));
+
+queueMicrotask(() => {
+  const btn = document.getElementById('navbarScrollingDropdown');
+  if (btn) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      bootstrap.Dropdown.getOrCreateInstance(btn).toggle();
+    });
+  }
+});

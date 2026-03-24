@@ -93,7 +93,7 @@ export default {
             let vm = this;
             helpers.fetchUrl(api_endpoints.access_types).then(
                 (response) => {
-                    vm.access_types = response;
+                    vm.access_types = response.results;
                 },
                 (error) => {
                     console.log(error);

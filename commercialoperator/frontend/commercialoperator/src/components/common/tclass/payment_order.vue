@@ -194,14 +194,6 @@
                                     </li>
                                 </ul>
                             </div>
-
-                            <button
-                                type="submit"
-                                class="dropdown-item"
-                                @click="payment_method = 'existing_invoice'"
-                            >
-                                Existing invoice
-                            </button>
                         </form>
                     </FormSection>
                 </div>
@@ -244,25 +236,9 @@ export default {
             table_values: null,
             payment_method: null,
             selected_licence_id: null,
-            // I commented this data property out and changed selected_licence into a computed property based on selected_licence_id
-            // selected_licence: {
-            //     default: function () {
-            //         return {
-            //             value: String,
-            //             label: String,
-            //             expiry_date: String,
-            //         };
-            //     },
-            // },
         };
     },
     computed: {
-        _payment_url: function () {
-            return `/payment/${this.proposal.id}`;
-        },
-        payment_url: function () {
-            return '/payment/' + this.proposal.id + '/';
-        },
         csrf_token: function () {
             return helpers.getCookie('csrftoken');
         },
@@ -478,14 +454,6 @@ export default {
         },
         submit: function () {
             let vm = this;
-            if (vm.payment_method == 'existing_invoice') {
-                vm.form.action =
-                    '/existing_invoice_payment/' +
-                    '05572566192' +
-                    '/?method=' +
-                    vm.payment_method;
-                vm.form.submit();
-            }
 
             vm.formErrors = vm.check_form_valid();
             vm.warnings = vm.check_duplicate_parks();
@@ -499,7 +467,7 @@ export default {
                     confirmButtonText: 'Accept',
                 }).then(
                     async (result) => {
-                        if (result) {
+                        if (result.isConfirmed) {
                             if (
                                 vm.payment_method == 'monthly_invoicing' ||
                                 vm.payment_method == 'bpay' ||
@@ -526,9 +494,6 @@ export default {
                             }
                         }
                     },
-                    () => {
-                        //
-                    }
                 );
             } else {
                 if (

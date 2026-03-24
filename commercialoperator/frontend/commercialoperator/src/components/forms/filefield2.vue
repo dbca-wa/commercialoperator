@@ -248,9 +248,9 @@ export default {
                 confirmButtonText: 'Delete Document',
                 confirmButtonColor: '#d9534f',
             }).then(
-                () => {
-                    helpers
-                        .fetchUrl(vm.delete_url, {
+                (swalresult) => {
+                    if (swalresult.isConfirmed) {
+                        helpers.fetchUrl(vm.delete_url, {
                             method: 'POST',
                             body: JSON.stringify(data),
                             headers: {
@@ -267,8 +267,8 @@ export default {
                                 console.log(err);
                             }
                         );
+                    }
                 },
-                () => {}
             );
         },
         num_documents: function () {

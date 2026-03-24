@@ -66,8 +66,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mb-3">
                     <div class="col-md-3">
                         <label for="input_proposal_lodged_from"
                             >Lodged From</label
@@ -110,38 +108,6 @@
                                     class="glyphicon glyphicon-calendar"
                                 ></span>
                             </span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div
-                            id="select_referral_submitter_parent"
-                            class="form-group"
-                        >
-                            <label for="select_referral_submitter"
-                                >Submitter</label
-                            >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_referral_submitter"
-                                    ref="select_referral_submitter"
-                                    v-model="filterProposalSubmitter"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_submitters"
-                                        :key="s.email"
-                                        :value="s.email"
-                                    >
-                                        {{ s.search_term }}
-                                    </option>
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -188,11 +154,9 @@ export default {
             filterProposalStatus: 'All',
             filterProposalLodgedFrom: '',
             filterProposalLodgedTo: '',
-            filterProposalSubmitter: 'All',
             dateFormat: 'DD/MM/YYYY',
             application_types: [],
             proposal_status: [],
-            proposal_submitters: [],
             proposal_headers: [
                 'Number',
                 'Licence Type',
@@ -248,10 +212,6 @@ export default {
                             vm.filterProposalStatus;
                         d.datatable_filter_proposal__application_type__name =
                             vm.filterApplicationType;
-                        d.datatable_filter_proposal__submitter__email =
-                            vm.filterProposalSubmitter;
-                        d.search_terms =
-                            'proposal__submitter__first_name, proposal__submitter__last_name, proposal__submitter__email, assigned_officer__first_name, assigned_officer__last_name, proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name';
                     },
                 },
                 columns: [
@@ -269,10 +229,14 @@ export default {
                             return full.proposal_lodgement_number + tick;
                         },
                         name: 'proposal__id, proposal__lodgement_number',
+                        searchable: true,
+                        orderable: true,
                     },
                     {
                         data: 'application_type',
                         name: 'proposal__application_type__name',
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'submitter',
@@ -284,17 +248,20 @@ export default {
                             return '';
                         },
                         name: 'proposal__submitter__email',
-                        searchable: true, // Note: disabled for now during segregation
+                        searchable: false, // overriden by filterbackend
+                        orderable: false,
                     },
                     {
                         data: 'applicant',
                         name: 'proposal__org_applicant__organisation__organisation_name, proposal__proxy_applicant__email, proposal__proxy_applicant__first_name, proposal__proxy_applicant__last_name',
-                        // Note: disabled for now during segregation
-                        searchable: true,
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'processing_status',
                         name: 'proposal__processing_status',
+                        searchable: false,
+                        orderable: false,
                     },
                     {
                         data: 'proposal_lodgement_date',
@@ -305,16 +272,20 @@ export default {
                                 : '';
                         },
                         name: 'proposal__lodgement_date',
+                        searchable: false,
+                        orderable: true,
                     },
                     {
                         data: 'assigned_officer',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
+                        searchable: false, //overriden by filterbackend
+                        orderable: false,
                     },
                     {
                         data: 'proposal_event_name',
                         name: '',
                         searchable: false,
-                        orderable: true,
+                        orderable: false,
                     },
                     {
                         data: 'id',
@@ -387,20 +358,6 @@ export default {
             },
             deep: true,
         },
-        filterProposalSubmitter: function () {
-            let vm = this;
-            if (vm.filterProposalSubmitter != 'All') {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(2)
-                    .search(vm.filterProposalSubmitter)
-                    .draw();
-            } else {
-                vm.$refs.proposal_datatable.vmDataTable
-                    .columns(2)
-                    .search('')
-                    .draw();
-            }
-        },
         filterProposalLodgedFrom: function () {
             this.$refs.proposal_datatable.vmDataTable.ajax.reload(
                 helpers.enablePopovers,
@@ -439,7 +396,6 @@ export default {
                 .fetchUrl(api_endpoints.filter_list_referrals)
                 .then(
                     (response) => {
-                        vm.proposal_submitters = response.submitters;
                         vm.proposal_status = response.processing_status_choices;
                         vm.application_types = response.application_types;
                     },
@@ -480,29 +436,9 @@ export default {
                 'Select Application Type',
                 false
             );
-            helpers.initialiseSelect2.bind(this)(
-                'select_referral_submitter',
-                'select_referral_submitter_parent',
-                'filterProposalSubmitter',
-                'Select Submitter',
-                false
-            );
         },
         initialiseSearch: function () {
-            this.submitterSearch();
             this.dateSearch();
-        },
-        submitterSearch: function () {
-            let vm = this;
-            vm.$refs.proposal_datatable.table.dataTableExt.afnFiltering.push(
-                function (settings, data, dataIndex, original) {
-                    let filtered_submitter = vm.filterProposalSubmitter;
-                    if (filtered_submitter == 'All') {
-                        return true;
-                    }
-                    return filtered_submitter == original.submitter.email;
-                }
-            );
         },
         dateSearch: function () {
             let vm = this;

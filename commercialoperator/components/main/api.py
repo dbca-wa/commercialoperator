@@ -291,18 +291,6 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
         ],
         detail=False,
     )
-    def filter_list(self, request, *args, **kwargs):
-        serializer = ParkFilterSerializer(
-            self.get_queryset(), context={"request": request}, many=True
-        )
-        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
     def events_parks_list(self, request, *args, **kwargs):
         serializer = EventsParkSerializer(
             self.get_queryset(), context={"request": request}, many=True

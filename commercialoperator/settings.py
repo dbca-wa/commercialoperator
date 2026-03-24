@@ -15,6 +15,7 @@ os.environ.setdefault("BASE_DIR", BASE_DIR)
 from ledger_api_client.settings_base import *  # noqa: F403
 
 ROOT_URLCONF = "commercialoperator.urls"
+COMMERCIALOPERATOR_EXTERNAL_URL=env("COMMERCIALOPERATOR_EXTERNAL_URL","")
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
 SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
@@ -117,6 +118,9 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 
@@ -464,6 +468,7 @@ CACHE_KEY_PROPOSAL_KEYWORD_SEARCH = "proposal-keyword-search-{id}-{lodgement_num
 
 # Error messages
 INVOICE_NOT_FOUND = "Invoice not found"
+ROUND_INVOICE_TOTALS = env("ROUND_INVOICE_TOTALS", False)
 
 # API Exception message
 # When debug is False, the following message will be sent to the user
@@ -483,6 +488,7 @@ ORGANISATION_PERMISSION_MODULE = "commercialoperator.components.permission.permi
 LEDGER_UI_ORGANISATION_MANAGEMENT = [
     {"organisation_name": {"options": {"view": True, "edit": True}}},
     {"organisation_abn": {"options": {"view": True, "edit": True}}},
+    {"organisation_trading_name": {"options": {"view": True, "edit": True}}},
     {"postal_address": {"options": {"view": True, "edit": True}}},
 ]
 

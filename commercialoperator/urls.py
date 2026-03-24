@@ -338,11 +338,6 @@ urlpatterns = (
             name="make_payment",
         ),
         url(
-            r"^zero_fee_success/",
-            booking_views.ZeroApplicationFeeView.as_view(),
-            name="zero_fee_success",
-        ),
-        url(
             r"^payment_deferred/(?P<proposal_pk>\d+)/$",
             booking_views.DeferredInvoicingView.as_view(),
             name="deferred_invoicing",
@@ -358,17 +353,32 @@ urlpatterns = (
             name="public_booking_success",
         ),
         url(
-            r"^success/fee/$",
+            r"^success_preload/fee/(?P<reference>.+)/",
+            booking_views.ApplicationFeeSuccessViewPreload.as_view(),
+            name="fee_success_preload",
+        ),
+        url(
+            r"^success/fee/(?P<reference>.+)/",
             booking_views.ApplicationFeeSuccessView.as_view(),
             name="fee_success",
         ),
         url(
-            r"^success/compliance_fee/$",
+            r"^success_preload/compliance_fee/(?P<reference>.+)/",
+            booking_views.ComplianceFeeSuccessViewPreload.as_view(),
+            name="compliance_success_preload",
+        ),
+        url(
+            r"^success/compliance_fee/(?P<reference>.+)/",
             booking_views.ComplianceFeeSuccessView.as_view(),
             name="compliance_fee_success",
         ),
         url(
-            r"^success/filming_fee/$",
+            r"^success_preload/filming_fee/(?P<reference>.+)/",
+            booking_views.FilmingFeeSuccessViewPreload.as_view(),
+            name="filming_fee_success_preload",
+        ),
+        url(
+            r"^success/filming_fee/(?P<reference>.+)/",
             booking_views.FilmingFeeSuccessView.as_view(),
             name="filming_fee_success",
         ),

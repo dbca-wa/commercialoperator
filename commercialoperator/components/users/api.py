@@ -244,14 +244,6 @@ class UserViewSet(viewsets.ModelViewSet):
             instance.upload_identification(request)
             with transaction.atomic():
                 instance.save()
-                instance.log_user_action(
-                    EmailUserAction.ACTION_ID_UPDATE.format(
-                        "{} {} ({})".format(
-                            instance.first_name, instance.last_name, instance.email
-                        )
-                    ),
-                    request,
-                )
             serializer = UserSerializer(instance, partial=True)
             return Response(serializer.data)
         except serializers.ValidationError:

@@ -814,7 +814,7 @@ export default {
                 confirmButtonText: 'Accept',
             }).then(
                 (result) => {
-                    if (result.value) {
+                    if (result.isConfirmed) {
                         helpers
                             .fetchUrl(
                                 helpers.add_endpoint_json(
