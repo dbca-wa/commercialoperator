@@ -3232,9 +3232,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 basket_hash_split = basket_hash.split("|")
 
                 invoice_name = self.applicant_obj.name
-                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + request.build_absolute_uri(
-                    reverse(return_preload_url_ns,kwargs={"lodgement_number": self.lodgement_number})
-                )
+                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns,kwargs={"reference": self.lodgement_number})
+                
                 due_date = None
                 future_invoice_response = process_create_future_invoice(
                     basket_hash_split[0],

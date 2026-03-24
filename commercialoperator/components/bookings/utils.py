@@ -1046,7 +1046,7 @@ def checkout_existing_invoice(
     return_url_ns="public_booking_success",
 ):
 
-    return_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_url_ns,kwargs={"reference": reference})
+    return_url = settings.SITE_URL + reverse(return_url_ns,kwargs={"reference": reference})
 
     fallback_url = request.build_absolute_uri("/")
     payment_session = generate_payment_session(
