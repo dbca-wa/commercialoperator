@@ -623,7 +623,7 @@ class ApplicationFeeSuccessViewPreload(views.APIView):
         proposal_fee = ApplicationFee.objects.filter(proposal=proposal).order_by("created").last()
 
         _, _ = ApplicationFeeInvoice.objects.get_or_create(
-            proposal_fee=proposal_fee, invoice_reference=invoice_ref
+            application_fee=proposal_fee, invoice_reference=invoice_ref
         )
 
         if proposal_fee.payment_type == ApplicationFee.PAYMENT_TYPE_TEMPORARY:
