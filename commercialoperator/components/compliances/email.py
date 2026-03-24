@@ -11,7 +11,7 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 logger = logging.getLogger(__name__)
 
 SYSTEM_NAME = settings.SYSTEM_NAME_SHORT + " Automated Message"
-
+from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
 class ComplianceExternalSubmitSendNotificationEmail(TemplateEmailBase):
     subject = "{} - Commercial Operations licence requirement.".format(
@@ -347,7 +347,11 @@ def send_external_submit_email_notification(request, compliance, is_test=False):
     if is_test:
         return
 
-    sender = settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_compliance_email(msg, compliance, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(
@@ -375,7 +379,11 @@ def send_submit_email_notification(request, compliance, is_test=False):
     if is_test:
         return
 
-    sender = settings.DEFAULT_FROM_EMAIL
+    sender = (
+        request.user
+        if request
+        else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
+    )
     _log_compliance_email(msg, compliance, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(
