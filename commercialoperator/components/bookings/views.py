@@ -112,7 +112,7 @@ class ApplicationFeeView(TemplateView):
                     proposal,
                     lines,
                     return_url_ns="fee_success",
-                    return_preload_url_ns="fee_success", #TODO replace this with preload
+                    return_preload_url_ns="fee_success_preload",
                     invoice_text="Application Fee",
                     reference=proposal.lodgement_number
                 )
@@ -672,159 +672,35 @@ class ApplicationFeeSuccessViewPreload(views.APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-#TODO rework in to preload
 class ApplicationFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_fee.html"
 
     def get(self, request, *args, **kwargs):
-        print(" APPLICATION FEE SUCCESS ")
+        print("ApplicationFeeSuccessView")
+        lodgement_number = kwargs.get("reference")
 
-        proposal = None
-        submitter = None
-        invoice = None
         try:
-            context = template_context(self.request)
-            basket = None
-            application_fee = get_session_application_invoice(request.session)
-            proposal = application_fee.proposal
+            proposal = Proposal.objects.get(lodgement_number=lodgement_number)
+        except:
+            raise serializers.ValidationError("Proposal does not exist")
+        
+        application_fee = get_session_application_invoice(request.session)
 
-            applicant = proposal.applicant_obj
-            try:
-                recipient = Organisation.objects.get(id=applicant.id).email
-                submitter = applicant
-            except:
-                recipient = proposal.submitter.email
-                submitter = proposal.submitter
+        fee_inv = application_fee.application_fee_invoices.order_by("-id").first()
+        invoice_ref = fee_inv.invoice_reference
 
-            user = self.request.user
+        applicant = proposal.applicant_obj
+        try:
+            submitter = applicant
+        except:
+            submitter = proposal.submitter if proposal else None
 
-            if user.is_authenticated:
-                basket = Basket.objects.filter(status="Submitted", owner=user).order_by(
-                    "-id"
-                )[:1]
-            else:
-                basket = Basket.objects.filter(
-                    status="Submitted", owner=proposal.submitter
-                ).order_by("-id")[:1]
+        try:
+            inv = Invoice.objects.get(reference=invoice_ref)
+        except:
+            inv = None
 
-            order = Order.objects.get(basket_id=basket[0].id)
-
-            invoice = Invoice.objects.get(order_number=order.number)
-            invoice_ref = invoice.reference
-            fee_inv, created = ApplicationFeeInvoice.objects.get_or_create(
-                application_fee=application_fee, invoice_reference=invoice_ref
-            )
-
-            if application_fee.payment_type == ApplicationFee.PAYMENT_TYPE_TEMPORARY:
-                try:
-                    inv = Invoice.objects.get(reference=invoice_ref)
-                    order = Order.objects.get(number=inv.order_number)
-                except Invoice.DoesNotExist:
-                    logger.error(
-                        "{} tried paying an application fee with an incorrect invoice".format(
-                            "User {} with id {}".format(
-                                proposal.submitter.get_full_name(),
-                                proposal.submitter.id,
-                            )
-                            if proposal.submitter
-                            else "An anonymous user"
-                        )
-                    )
-                    return redirect("external-proposal-detail", args=(proposal.id,))
-                if inv.system not in ["0557"]:
-                    logger.error(
-                        "{} tried paying an application fee with an invoice from another system with reference number {}".format(
-                            (
-                                "User {} with id {}".format(
-                                    proposal.submitter.get_full_name(),
-                                    proposal.submitter.id,
-                                )
-                                if proposal.submitter
-                                else "An anonymous user"
-                            ),
-                            inv.reference,
-                        )
-                    )
-                    return redirect("external-proposal-detail", args=(proposal.id,))
-
-                if fee_inv:
-                    application_fee.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
-                    application_fee.expiry_time = None
-
-                    if (
-                        proposal.processing_status
-                        == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
-                        and proposal.application_type.name == ApplicationType.FILMING
-                    ):
-                        proposal.final_approval(request, None)
-                    else:
-                        proposal = proposal_submit(proposal, request)
-
-                    invoice_properties = get_invoice_properties(invoice.id)
-                    payment_status = invoice_properties.get("invoice", {}).get(
-                        "payment_status"
-                    )
-
-                    if proposal and payment_status in ["paid", "over_paid"]:
-                        proposal.fee_invoice_reference = invoice_ref
-                        proposal.save()
-                        proposal.reset_application_discount(request.user)
-                    else:
-                        logger.error(
-                            "Invoice payment status is {}".format(payment_status)
-                        )
-                        raise
-
-                    application_fee.save()
-
-                    request.session["cols_last_app_invoice"] = application_fee.id
-                    delete_session_application_invoice(request.session)
-
-                    send_application_fee_invoice_tclass_email_notification(
-                        request, proposal, invoice, recipients=[recipient]
-                    )
-
-                    context = {
-                        "proposal": proposal,
-                        "submitter": submitter,
-                        "fee_invoice": fee_inv,
-                    }
-                    return render(request, self.template_name, context)
-
-        except Exception as e:
-            logger.error("Error Creating Application Fee: {}".format(e))
-
-            if (
-                "cols_last_app_invoice" in request.session
-            ) and ApplicationFee.objects.filter(
-                id=request.session["cols_last_app_invoice"]
-            ).exists():
-                application_fee = ApplicationFee.objects.get(
-                    id=request.session["cols_last_app_invoice"]
-                )
-                proposal = application_fee.proposal
-
-                try:
-                    recipient = proposal.applicant.email
-                    submitter = proposal.applicant
-                except:
-                    recipient = proposal.submitter.email
-                    submitter = proposal.submitter
-
-                if (
-                    ApplicationFeeInvoice.objects.filter(
-                        application_fee=application_fee
-                    ).count()
-                    > 0
-                ):
-                    afi = ApplicationFeeInvoice.objects.filter(
-                        application_fee=application_fee
-                    )
-                    invoice = afi[0]
-            else:
-                return redirect("home")
-
-        context = {"proposal": proposal, "submitter": submitter, "fee_invoice": invoice}
+        context = {"proposal": proposal, "submitter": submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)
 
 #TODO rework in to preload

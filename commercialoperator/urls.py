@@ -353,7 +353,12 @@ urlpatterns = (
             name="public_booking_success",
         ),
         url(
-            r"^success/fee/$",
+            r"^success_preload/fee/(?P<reference>.+)/",
+            booking_views.ApplicationFeeSuccessViewPreload.as_view(),
+            name="fee_success_preload",
+        ),
+        url(
+            r"^success/fee/(?P<reference>.+)/",
             booking_views.ApplicationFeeSuccessView.as_view(),
             name="fee_success",
         ),
