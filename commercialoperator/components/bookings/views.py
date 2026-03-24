@@ -486,7 +486,7 @@ class ComplianceFeeSuccessViewPreload(views.APIView):
             if success:
                 compliance_fee.save()
                 try:
-                    send_compliance_fee_invoice_events_email_notification(
+                    send_compliance_fee_invoice_events_email_notification( #TODO fix this
                         request, compliance, inv, recipients=[compliance.proposal.submitter.email]
                     )
                 except:

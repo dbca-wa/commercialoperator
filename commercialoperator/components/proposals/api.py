@@ -297,7 +297,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 queryset = queryset.filter(application_type__name=application_type)
 
             if search_text:
-                search_queryset, results_found = proposal_search_filter(queryset, search_text)
+                search_queryset = proposal_search_filter(queryset, search_text)
                 if results_found:
                     queryset = search_queryset.distinct() | super_queryset   
                 else:
