@@ -472,6 +472,7 @@ class ComplianceFeeSuccessViewPreload(views.APIView):
                     compliance.submit()
                     compliance.fee_invoice_reference = invoice_ref
                     compliance.save()
+                    success = False
                 else:
                     logger.error(
                         "Invoice payment status is {}".format(payment_status)
@@ -642,6 +643,7 @@ class ApplicationFeeSuccessViewPreload(views.APIView):
                     proposal.fee_invoice_reference = invoice_ref
                     proposal.save()
                     proposal.reset_application_discount(proposal.submitter)
+                    success = True
                 else:
                     logger.error(
                         "Invoice payment status is {}".format(payment_status)
