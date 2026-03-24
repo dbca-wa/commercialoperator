@@ -94,6 +94,9 @@ class ApplicationFeeView(TemplateView):
 
         try:
             proposal = self.get_object()
+            proposal.submitter = request.user
+            proposal.save()
+            
             application_fee = ApplicationFee.objects.create(
                 proposal=proposal,
                 created_by=request.user,
@@ -599,6 +602,74 @@ class FilmingFeeSuccessView(TemplateView):
 
         context = {"proposal": proposal, "submitter": submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)
+
+
+class ApplicationFeeSuccessViewPreload(views.APIView):
+    permission_classes = [AllowAny] 
+
+    def get(self, request, reference, format=None):
+        print("ApplicationFeeSuccessViewPreload")
+
+        invoice_ref = request.GET.get('invoice')
+
+        try:
+            proposal = Proposal.objects.get(lodgement_number=reference)
+            print("proposal:",proposal)
+        except Exception as e:
+            print(e)
+            return redirect('home')
+        
+        #use the latest Fee record
+        proposal_fee = ApplicationFee.objects.filter(proposal=proposal).order_by("created").last()
+
+        _, _ = ApplicationFeeInvoice.objects.get_or_create(
+            proposal_fee=proposal_fee, invoice_reference=invoice_ref
+        )
+
+        if proposal_fee.payment_type == ApplicationFee.PAYMENT_TYPE_TEMPORARY:
+            proposal_fee.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
+            proposal_fee.expiry_time = None
+            success = False
+            try:
+                inv = Invoice.objects.get(reference=invoice_ref)
+                invoice_properties = get_invoice_properties(inv.id)
+                payment_status = invoice_properties.get("invoice", {}).get(
+                    "payment_status"
+                )
+
+                if payment_status == "paid" or payment_status == "over_paid":
+                    proposal = proposal_submit(proposal)
+                    proposal.fee_invoice_reference = invoice_ref
+                    proposal.save()
+                    proposal.reset_application_discount(proposal.submitter)
+                else:
+                    logger.error(
+                        "Invoice payment status is {}".format(payment_status)
+                    )
+                    raise serializers.ValidationError("Invoice payment status is {}".format(payment_status))
+
+            except Exception as e:
+                print(e)
+                raise serializers.ValidationError("Fee success preload failed")
+
+            if success:
+                proposal_fee.save()
+                applicant = proposal.applicant_obj
+                try:
+                    recipient = Organisation.objects.get(id=applicant.id).email
+                except:
+                    recipient = proposal.submitter.email
+                
+                try:
+                    #NOTE: request=None works fine with this email function
+                    send_application_fee_invoice_tclass_email_notification(
+                        request, proposal, inv, recipients=[recipient]
+                    )
+                except:
+                    #log the error but do not invalidate the payment and subsequent compliance submission
+                    logger.error("Unable to send compliance fee invoice email notification")
+
+        return Response(status=status.HTTP_200_OK)
 
 
 #TODO rework in to preload

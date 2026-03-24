@@ -1423,9 +1423,10 @@ def save_assessor_data(instance, request, viewset):
 
 
 @transaction.atomic
-def proposal_submit(proposal, request):
+def proposal_submit(proposal, request=None):
     if proposal.can_user_edit:
-        proposal.submitter = request.user
+        if request: #if being called after payment, this has already been set
+            proposal.submitter = request.user
         proposal.lodgement_date = timezone.now()
         proposal.training_completed = True
         if proposal.amendment_requests:
@@ -1437,14 +1438,14 @@ def proposal_submit(proposal, request):
 
         # Create a log entry for the proposal
         proposal.log_user_action(
-            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), request.user
+            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), proposal.submitter
         )
         # Create a log entry for the organisation
         applicant_field = getattr(proposal, proposal.applicant_field)
         applicant_field.log_user_action(
-            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), request.user
+            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), proposal.submitter
         )
-
+        #NOTE: request=None works fine with these email functions
         ret1 = send_submit_email_notification(request, proposal)
         ret2 = send_external_submit_email_notification(request, proposal)
 
