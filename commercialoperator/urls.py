@@ -338,11 +338,6 @@ urlpatterns = (
             name="make_payment",
         ),
         url(
-            r"^zero_fee_success/",
-            booking_views.ZeroApplicationFeeView.as_view(),
-            name="zero_fee_success",
-        ),
-        url(
             r"^payment_deferred/(?P<proposal_pk>\d+)/$",
             booking_views.DeferredInvoicingView.as_view(),
             name="deferred_invoicing",

@@ -113,9 +113,6 @@ class ApplicationFeeView(TemplateView):
                     invoice_text="Application Fee",
                     reference=proposal.lodgement_number
                 )
-
-                if proposal.allow_full_discount:
-                    return redirect_to_zero_payment_view(request, proposal, lines)
                 
                 # Set session variables
                 request.session["payment_pk"] = proposal.pk
@@ -153,7 +150,9 @@ class ComplianceFeeView(TemplateView):
             payment_type=ComplianceFee.PAYMENT_TYPE_TEMPORARY,
         )
         
-        #NOTE: files have to uploaded prior to payment
+        #NOTE: files have to be uploaded prior to payment
+        #TODO: file upload does not appear to work - investigate (here and in the standard submit)
+        #TODO: consider file upload as a separate process to submission so users don't have to upload every submit attempt
         if request.FILES:
             for f in request.FILES:
                 document = compliance.documents.create(name=str(request.FILES[f]))
@@ -601,101 +600,6 @@ class FilmingFeeSuccessView(TemplateView):
         context = {"proposal": proposal, "submitter": submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)
 
-#TODO replace below with appropriate payment functionality (may not be needed, in which case remove)
-class ZeroApplicationFeeView(TemplateView):
-    template_name = "commercialoperator/booking/success_fee.html"
-
-    def post(self, request, *args, **kwargs):
-        try:
-            context_processor = template_context(request)
-            application_fee = (
-                ApplicationFee.objects.get(pk=request.session["cols_app_invoice"])
-                if "cols_app_invoice" in request.session
-                else None
-            )
-            proposal = application_fee.proposal
-
-            try:
-                recipient = proposal.applicant.email
-                submitter = proposal.applicant
-            except:
-                recipient = proposal.submitter.email
-                submitter = proposal.submitter
-
-            if (
-                request.user.is_staff
-                or request.user.is_superuser
-                or ApplicationFee.objects.filter(pk=application_fee.id).count() == 1
-            ):
-                invoice = None
-                # basket = get_basket(request)
-                basket = request.basket
-
-                # here we are manually creating an order and invoice from the basket - by-passing credit card payment screen.
-                ## commenting below lines and using CreateInvoiceBasket because basket created in previous view
-                # order_response = place_order_submission(request)
-                # order = Order.objects.get(basket=basket, user=submitter)
-
-                order = CreateInvoiceBasket(
-                    payment_method="other", system=settings.PAYMENT_SYSTEM_PREFIX
-                ).create_invoice_and_order(
-                    basket,
-                    0,
-                    None,
-                    None,
-                    user=request.user,
-                    invoice_text="Application Fee",
-                )
-                invoice = Invoice.objects.get(order_number=order.number)
-                fee_inv, created = ApplicationFeeInvoice.objects.get_or_create(
-                    application_fee=application_fee, invoice_reference=invoice.reference
-                )
-
-                if fee_inv:
-                    application_fee.payment_type = ApplicationFee.PAYMENT_TYPE_ZERO
-                    application_fee.expiry_time = None
-
-                    proposal = proposal_submit(proposal, request)
-                    if proposal and (
-                        invoice.payment_status == "paid"
-                        or invoice.payment_status == "over_paid"
-                    ):
-                        proposal.fee_invoice_reference = invoice.reference
-                        proposal.save()
-                        proposal.reset_application_discount(request.user)
-                    else:
-                        logger.error(
-                            "Invoice payment status is {}".format(
-                                invoice.payment_status
-                            )
-                        )
-                        raise
-
-                    application_fee.save()
-                    request.session["cols_last_app_invoice"] = application_fee.id
-                    delete_session_application_invoice(request.session)
-
-                    send_application_fee_invoice_tclass_email_notification(
-                        request, proposal, invoice, recipients=[recipient]
-                    )
-
-                context = {
-                    "proposal": proposal,
-                    "submitter": submitter,
-                    "fee_invoice": fee_inv,
-                    "basket": basket,
-                    "lines": request.basket.lines.all(),
-                    "line_details": "N/A",  # request.POST['payment'],
-                    "proposal_id": proposal.id,
-                    "payment_method": "N/A",
-                }
-
-                return render(request, self.template_name, context)
-            else:
-                return HttpResponseRedirect(reverse("home"))
-
-        except Exception as e:
-            return redirect("home")
 
 #TODO rework in to preload
 class ApplicationFeeSuccessView(TemplateView):
