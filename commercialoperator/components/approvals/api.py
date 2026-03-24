@@ -57,6 +57,7 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
         total_count = queryset.count()
 
+        super_queryset = None
         try:
             super_queryset = super(ApprovalFilterBackend, self).filter_queryset(request, queryset, view).distinct()
         except Exception as e:
@@ -86,7 +87,8 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
             if expiry_date_to:
                 queryset = queryset.filter(expiry_date__lte=expiry_date_to)
 
-        queryset = queryset.distinct() & super_queryset
+        if super_queryset:
+            queryset = queryset.distinct() & super_queryset
 
         fields = self.get_fields(request)
         ordering = self.get_ordering(request, view, fields)
