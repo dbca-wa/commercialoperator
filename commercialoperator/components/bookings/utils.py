@@ -1009,13 +1009,10 @@ def checkout(
         "fallback_url": request.build_absolute_uri("/"),
         'no_payment': False,
     }
-    print("\n\n\nDEBUG\n\n\n")
-    print(basket_params)
     # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
     basket_params = json.loads(json.dumps(basket_params, cls=DecimalEncoder))
 
     basket_session = create_basket_session(request, email_user_id, basket_params)
-    print(basket_session)
 
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
@@ -1038,10 +1035,6 @@ def checkout(
     create_checkout_session(request, checkout_params)
     
     logger.info("Redirecting user to ledgergw payment details page.")
-
-    print(checkout_params)
-    print(reverse("ledgergw-payment-details"))
-    print(request.session['payment_session'])
     return redirect(reverse("ledgergw-payment-details"))
 
 
