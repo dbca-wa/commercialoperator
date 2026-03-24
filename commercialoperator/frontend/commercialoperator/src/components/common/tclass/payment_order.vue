@@ -194,14 +194,6 @@
                                     </li>
                                 </ul>
                             </div>
-
-                            <button
-                                type="submit"
-                                class="dropdown-item"
-                                @click="payment_method = 'existing_invoice'"
-                            >
-                                Existing invoice
-                            </button>
                         </form>
                     </FormSection>
                 </div>
@@ -462,14 +454,6 @@ export default {
         },
         submit: function () {
             let vm = this;
-            if (vm.payment_method == 'existing_invoice') {
-                vm.form.action =
-                    '/existing_invoice_payment/' +
-                    '05572566192' +
-                    '/?method=' +
-                    vm.payment_method;
-                vm.form.submit();
-            }
 
             vm.formErrors = vm.check_form_valid();
             vm.warnings = vm.check_duplicate_parks();

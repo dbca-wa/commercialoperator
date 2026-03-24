@@ -242,7 +242,7 @@ class FilmingFeeView(TemplateView):
                 filming_fee.delete()
             raise
 
-
+#TODO (may not be needed, in which case remove)
 class DeferredInvoicingPreviewView(TemplateView):
     template_name = "commercialoperator/booking/preview_deferred.html"
 
@@ -289,7 +289,7 @@ class DeferredInvoicingPreviewView(TemplateView):
             logger.error("Error creating booking preview: {}".format(e))
             raise
 
-#TODO replace below with appropriate payment functionality
+#TODO replace below with appropriate payment functionality (may not be needed, in which case remove)
 class DeferredInvoicingView(TemplateView):
     template_name = "commercialoperator/booking/success.html"
 
@@ -373,7 +373,7 @@ class DeferredInvoicingView(TemplateView):
             logger.error("Error Creating booking: {}".format(e))
             raise
 
-#TODO replace below with appropriate payment functionality (may not be needed, in which case remove)
+#TODO replace below with appropriate payment functionality 
 class MakePaymentView(TemplateView):
     """View to handle Park Entry Fees:Make Payment"""
 
