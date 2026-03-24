@@ -1023,7 +1023,7 @@ def checkout(
         "return_preload_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns,kwargs={"reference": reference}),
         "force_redirect": True,
         "invoice_text": invoice_text,
-        "proxy": True if is_internal(request) else False,
+        #"proxy": True if is_internal(request) else False,
         "session_type": "ledger_api",
         "basket_owner": email_user_id,
     }
