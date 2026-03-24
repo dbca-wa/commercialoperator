@@ -1009,18 +1009,20 @@ def checkout(
         "fallback_url": request.build_absolute_uri("/"),
         'no_payment': False,
     }
-
+    print("\n\n\nDEBUG\n\n\n")
+    print(basket_params)
     # Note: this solution circumvents json.dumps from throwing an error (can not serialize Decimal)
     basket_params = json.loads(json.dumps(basket_params, cls=DecimalEncoder))
 
-    create_basket_session(request, email_user_id, basket_params)
+    basket_session = create_basket_session(request, email_user_id, basket_params)
+    print(basket_session)
 
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri(
             "/"
         ),
-        "return_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_url_ns,kwargs={"reference": reference}),
+        "return_url": request.build_absolute_uri(reverse(return_url_ns,kwargs={"reference": reference})),
         "return_preload_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns,kwargs={"reference": reference}),
         "force_redirect": True,
         "invoice_text": invoice_text,
@@ -1028,14 +1030,18 @@ def checkout(
         "session_type": "ledger_api",
         "basket_owner": email_user_id,
     }
-
+    
     logger.info(
         f"Creating checkout session with checkout parameters: {checkout_params}"
     )
 
     create_checkout_session(request, checkout_params)
-
+    
     logger.info("Redirecting user to ledgergw payment details page.")
+
+    print(checkout_params)
+    print(reverse("ledgergw-payment-details"))
+    print(request.session['payment_session'])
     return redirect(reverse("ledgergw-payment-details"))
 
 
@@ -1046,7 +1052,7 @@ def checkout_existing_invoice(
     return_url_ns="public_booking_success",
 ):
 
-    return_url = settings.SITE_URL + reverse(return_url_ns,kwargs={"reference": reference})
+    return_url = request.build_absolute_uri(reverse(return_url_ns,kwargs={"reference": reference}))
 
     fallback_url = request.build_absolute_uri("/")
     payment_session = generate_payment_session(
