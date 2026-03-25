@@ -527,7 +527,7 @@ export default {
             let vm = this;
             helpers.fetchUrl('/api/filtered_payments').then(
                 (res) => {
-                    var licences = res;
+                    var licences = res.results;
                     for (var i in licences) {
                         vm.licences.push({
                             value: licences[i].current_proposal,
