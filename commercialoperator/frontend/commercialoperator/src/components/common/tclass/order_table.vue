@@ -78,6 +78,7 @@
                                 <template v-if="col_types[col_idx] == 'date'">
                                     <input
                                         id="id_arrival_date"
+                                        style="width:100%"
                                         v-model="row[col_idx]"
                                         class="tbl_input form-control"
                                         :type="col_types[col_idx]"

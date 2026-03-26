@@ -364,11 +364,27 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             payment_method = request.GET.get("payment_method")
             payment_status = request.GET.get("payment_status")
 
+            #if payment_method:
+            #    queryset = queryset.filter(
+            #        Q(invoices__payment_method=payment_method)
+            #        | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING)
+            #    )
             if payment_method:
-                queryset = queryset.filter(
-                    Q(invoices__payment_method=payment_method)
-                    | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING)
-                )
+                if payment_method == str(
+                    BookingInvoice.PAYMENT_METHOD_MONTHLY_INVOICING
+                ):
+                    # for deferred payment where invoice not yet created (monthly invoicing), append the following qs
+                    queryset = queryset.filter(
+                        Q(invoices__payment_method=payment_method)
+                        | Q(
+                            booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING
+                        )
+                    )
+                else:
+                    queryset = queryset.filter(
+                        Q(invoices__payment_method=payment_method)
+                    )
+
 
             if payment_status and payment_status.lower() != "all":
                 queryset = queryset.filter(invoices__property_cache__payment_status__iexact=payment_status.lower())
