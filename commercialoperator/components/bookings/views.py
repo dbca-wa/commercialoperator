@@ -403,7 +403,6 @@ class MakePaymentView(TemplateView):
 
             with transaction.atomic():
                 set_session_booking(request.session, booking)
-                # lines = create_lines(request)
                 checkout_response = checkout(
                     request,
                     proposal,
@@ -430,8 +429,6 @@ class MakePaymentView(TemplateView):
 
         except Exception as e:
             logger.error("Error Creating booking: {}".format(e))
-            if booking:
-                booking.delete()
             raise
 
 
@@ -704,6 +701,74 @@ class ApplicationFeeSuccessView(TemplateView):
 
         context = {"proposal": proposal, "submitter": submitter, "fee_invoice": inv}
         return render(request, self.template_name, context)
+
+
+class BookingSuccessViewPreload(views.APIView):
+
+    def get(self, request, reference, format=None):
+        print("BookingSuccessViewPreload")
+
+        invoice_ref = request.GET.get('invoice')
+
+        try:
+            proposal = Proposal.objects.get(lodgement_number=reference)
+            print("proposal:",proposal)
+        except Exception as e:
+            print(e)
+            return redirect('home')
+
+        #use the latest Fee record
+        booking = Booking.objects.filter(proposal=proposal).order_by("created").last()
+
+        _, _ = BookingInvoice.objects.get_or_create(
+            booking=booking,
+            invoice_reference=invoice_ref,
+            payment_method=Invoice.PAYMENT_METHOD_CC, #if we are here, it was paid by credit_card
+        )
+
+        if booking.payment_type == ApplicationFee.PAYMENT_TYPE_TEMPORARY:
+            booking.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
+            booking.expiry_time = None
+            success = False
+            try:
+                inv = Invoice.objects.get(reference=invoice_ref)
+                invoice_properties = get_invoice_properties(inv.id)
+                payment_status = invoice_properties.get("invoice", {}).get(
+                    "payment_status"
+                )
+
+                if payment_status == "paid" or payment_status == "over_paid":
+                    success = True
+                else:
+                    logger.error(
+                        "Invoice payment status is {}".format(payment_status)
+                    )
+                    raise serializers.ValidationError("Invoice payment status is {}".format(payment_status))
+
+            except Exception as e:
+                print(e)
+                raise serializers.ValidationError("Fee success preload failed")
+
+            if success:
+                booking.save()
+                recipients = [request.user.email]
+
+                try:
+                    recipients.append(proposal.applicant.email)
+                except:
+                    if proposal.submitter and proposal.submitter.email:
+                        recipients.append(proposal.submitter.email)
+
+                if recipients:
+                    #TODO using submitter instead of request user as sender but ideally sender should be the system in all cases (tbd)
+                    send_invoice_tclass_email_notification(
+                        proposal.submitter, booking, inv, recipients=recipients
+                    )
+                    send_confirmation_tclass_email_notification(
+                        proposal.submitter, booking, inv, recipients=recipients
+                    )
+
+        return Response(status=status.HTTP_200_OK)
 
 #TODO rework in to preload
 class BookingSuccessView(TemplateView):
