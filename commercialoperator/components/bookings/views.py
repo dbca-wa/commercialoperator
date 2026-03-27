@@ -377,7 +377,6 @@ class DeferredInvoicingView(TemplateView):
             raise
 
 #TODO: determine if non-cc payments are still required - handle as needed with alternative payment approaches (if required) 
-#TODO also implement preload for standard CC payments
 class MakePaymentView(TemplateView):
     """View to handle Park Entry Fees:Make Payment"""
 
@@ -743,8 +742,8 @@ class BookingSuccessViewPreload(views.APIView):
             except:
                 logger.error("Unable to log booking invoice creation")
 
-        if booking.payment_type == ApplicationFee.PAYMENT_TYPE_TEMPORARY:
-            booking.payment_type = ApplicationFee.PAYMENT_TYPE_INTERNET
+        if booking.booking_type == Booking.BOOKING_TYPE_TEMPORARY:
+            booking.booking_type = Booking.BOOKING_TYPE_INTERNET
             booking.expiry_time = None
             success = False
             try:
