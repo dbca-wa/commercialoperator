@@ -348,7 +348,12 @@ urlpatterns = (
             name="preview_deferred_invoicing",
         ),
         url(
-            r"^success/booking/$",
+            r"^success/booking_preload/(?P<reference>.+)/",
+            booking_views.BookingSuccessViewPreload.as_view(),
+            name="public_booking_success_preload",
+        ),
+        url(
+            r"^success/booking/(?P<reference>.+)/",
             booking_views.BookingSuccessView.as_view(),
             name="public_booking_success",
         ),
