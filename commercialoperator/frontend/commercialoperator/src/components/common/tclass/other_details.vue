@@ -20,7 +20,7 @@
                             </li>
                         </ul>
                         <div v-for=" accreditation in proposal.other_details.accreditations">
-                            <div v-if="!accreditation.is_deleted && accreditation.accreditation_type!='no'" class="col-sm-12">
+                            <div v-if="!accreditation.is_deleted && accreditation.accreditation_type!='no' && accreditation.accreditation_type!='narta'" class="col-sm-12">
                                 <Accreditation :accreditation="accreditation":proposal_id="proposal.id" :readonly="proposal.readonly" id="accreditation" :ref="accreditation.accreditation_type" :canEditActivities="canEditActivities"></Accreditation >
                             </div>
                             <!-- <fieldset class="scheduler-border">
@@ -49,6 +49,48 @@
                                     </div>
                                 </div>
                             </fieldset> -->
+                        </div>
+                    </div>
+                </div>
+            </div>                
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Tourism Accessibility and emissions reduction standards <small></small>
+                <a class="panelClicker" :href="'#'+pBody" data-toggle="collapse"  data-parent="#userInfo" expanded="true" :aria-controls="pBody">
+                <span class="glyphicon glyphicon-chevron-up pull-right "></span>
+                </a>
+                </h3>
+            </div>
+            <div class="panel-body collapse in" :id="pBody">
+                <div class="" >                        
+                    <div class="form-horizontal col-sm-12 borderDecoration">
+                        <label class="">Select which provider you have used to complete your assessments and provide a link to your publicly available information. Click  <a :href="tourism_standards_link" target="_blank"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a> for more information.</label>
+                        <label class="">Accessible Tourism Information Standards</label>
+                        <ul class="list-inline"  >
+                            <li v-for="c in information_standard_choices" class="form-check list-inline-item">
+                                <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectInformationStandard($event, c)" v-model="selected_information_standards" :value="c.key" data-parsley-required :disabled="proposal.readonly" />
+                                        {{ c.value }}
+                            </li>
+                        </ul>
+                        <div v-for=" information_standard in proposal.other_details.information_standards">
+                            <div v-if="!information_standard.is_deleted" class="col-sm-12">
+                                <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="proposal.readonly" id="information_standard" :ref="information_standard.accreditation_type" :canEditActivities="canEditActivities"></InformationStandard >
+                            </div>
+                        </div>
+                        <label class="control-label">Tourism Emissions Reduction Standards</label>
+                        <ul class="list-inline"  >
+                            <li v-for="c in emission_standard_choices" class="form-check list-inline-item">
+                                <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" v-model="selected_emission_standards" :value="c.key" data-parsley-required :disabled="proposal.readonly" />
+                                        {{ c.value }}
+                            </li>
+                        </ul>
+                        <div v-for=" emission_standard in proposal.other_details.emission_standards">
+                            <div v-if="!emission_standard.is_deleted " class="col-sm-12">
+                                <EmissionStandard :emission_standard="emission_standard":proposal_id="proposal.id" :readonly="proposal.readonly" id="emission_standard" :ref="emission_standard.accreditation_type" :canEditActivities="canEditActivities"></EmissionStandard >
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -170,7 +212,7 @@
                                     </label>
                                 </div>
                                 <div class="col-sm-3">
-                                    <FileField :proposal_id="proposal.id" isRepeatable="false" name="currency_certificate" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="currency_doc"></FileField>
+                                    <FileField :proposal_id="proposal.id" :isRepeatable="false" name="currency_certificate" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="currency_doc"></FileField>
                                 </div>
                                 <div class="col-sm-3">
                                     <label class="control-label pull-left"  for="Name">Expiry Date
@@ -217,7 +259,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <FileField :proposal_id="proposal.id" isRepeatable="true" name="other_details" :id="'proposal'+proposal.id" :readonly="!canEditActivities"></FileField>
+                                    <FileField :proposal_id="proposal.id" :isRepeatable="true" name="other_details" :id="'proposal'+proposal.id" :readonly="!canEditActivities"></FileField>
                                 </div>                                
                             </div>
                        </div> 
@@ -332,7 +374,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <FileField :proposal_id="proposal.id" isRepeatable="false" name="deed_poll" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="deed_poll_doc"></FileField>
+                                    <FileField :proposal_id="proposal.id" :isRepeatable="false" name="deed_poll" :id="'proposal'+proposal.id" :readonly="!canEditActivities" ref="deed_poll_doc"></FileField>
                                 </div>                                
                             </div>
                        </div> 
@@ -349,6 +391,8 @@
 import Vue from 'vue' 
 //import FileField from './required_docs.vue'
 import Accreditation from './accreditation_type.vue'
+import InformationStandard from './information_standard.vue'
+import EmissionStandard from './emission_standard.vue'
 import FileField from '@/components/forms/filefield.vue'
 import {
   api_endpoints,
@@ -380,6 +424,10 @@ export default {
                 accreditation_choices:[],
                 accreditation_type:[],
                 selected_accreditations:[],
+                information_standard_choices:[],
+                selected_information_standards:[],
+                emission_standard_choices:[],
+                selected_emission_standards:[],
                 licence_period_choices:[],
                 mooring: [''],
                 global_settings:[],
@@ -395,7 +443,9 @@ export default {
         },
         components: {
           FileField,
-          Accreditation
+          Accreditation,
+          InformationStandard,
+          EmissionStandard,
         },
         computed: {
             deed_poll_url: function(){
@@ -414,6 +464,17 @@ export default {
                 if(vm.global_settings){
                     for(var i=0; i<vm.global_settings.length; i++){
                         if(vm.global_settings[i].key=='credit_facility_link'){
+                            return vm.global_settings[i].value;
+                        }
+                    }
+                }
+                return '';
+            },
+            tourism_standards_link: function(){
+                let vm=this;
+                if(vm.global_settings){
+                    for(var i=0; i<vm.global_settings.length; i++){
+                        if(vm.global_settings[i].key=='tourism_standards_link'){
                             return vm.global_settings[i].value;
                         }
                     }
@@ -513,6 +574,17 @@ export default {
                     console.log(error);
                 } );
             },
+            fetchTourismStandards: function(){
+                let vm = this;
+                vm.$http.get('/api/tourism_standard_choices.json').then((response) => {
+                    //vm.tourism_standard_choices = response.body;
+                    vm.information_standard_choices = response.body.information_standard_choices;
+                    vm.emission_standard_choices = response.body.emission_standard_choices;
+                    
+                },(error) => {
+                    console.log(error);
+                } );
+            },
             fetchLicencePeriodChoices: function(){
                 let vm = this;
                 vm.$http.get('/api/licence_period_choices.json').then((response) => {
@@ -537,6 +609,24 @@ export default {
                     for(var i=0; i<vm.proposal.other_details.accreditations.length; i++){
                         vm.proposal.other_details.accreditations[i].is_deleted=false;
                         vm.selected_accreditations.push(vm.proposal.other_details.accreditations[i].accreditation_type);
+                    }
+                }
+            },
+            checkProposalInformationStandard: function(){
+                let vm= this;
+                if(vm.proposal && vm.proposal.other_details){
+                    for(var i=0; i<vm.proposal.other_details.information_standards.length; i++){
+                        vm.proposal.other_details.information_standards[i].is_deleted=false;
+                        vm.selected_information_standards.push(vm.proposal.other_details.information_standards[i].information_standard_type);
+                    }
+                }
+            },
+            checkProposalEmissionStandard: function(){
+                let vm= this;
+                if(vm.proposal && vm.proposal.other_details){
+                    for(var i=0; i<vm.proposal.other_details.emission_standards.length; i++){
+                        vm.proposal.other_details.emission_standards[i].is_deleted=false;
+                        vm.selected_emission_standards.push(vm.proposal.other_details.emission_standards[i].emission_standard_type);
                     }
                 }
             },
@@ -584,6 +674,94 @@ export default {
                         }
                     }
                 }
+            },
+            selectInformationStandard: function(e, info_standard_type){
+                let vm=this;
+                if(e.target.checked){
+                    var found=false;
+                    for(var i=0;i<vm.proposal.other_details.information_standards.length; i++){
+                        if(vm.proposal.other_details.information_standards[i].information_standard_type==info_standard_type.key){
+                            found=true;
+                            vm.proposal.other_details.information_standards[i].is_deleted=false;
+                        }
+                    }
+                    if(found==false){
+                    var data={
+                        'information_standard_type': info_standard_type.key,
+                        'comments':'',
+                        'proposal_other_details': vm.proposal.other_details.id,
+                        'is_deleted': false,
+                        'information_standard_type_value': info_standard_type.value
+                    }
+                    var acc=helpers.copyObject(vm.proposal.other_details.information_standards);
+                    acc.push(data);
+                    vm.proposal.other_details.information_standards=acc;
+                    }
+                }
+                else{
+                    for(var i=0;i<vm.proposal.other_details.information_standards.length; i++)
+                    {
+
+                        if(vm.proposal.other_details.information_standards[i].information_standard_type==info_standard_type.key)
+                        {
+                            if(vm.proposal.other_details.information_standards[i].id){
+                                //console.log('yes')
+                                var acc=helpers.copyObject(vm.proposal.other_details.information_standards);
+                                acc[i].is_deleted=true;
+                                vm.proposal.other_details.information_standards=acc;
+                            }
+                            else{
+                                var acc=helpers.copyObject(vm.proposal.other_details.information_standards);
+                                acc.splice(i,1);
+                                vm.proposal.other_details.information_standards=acc;
+                            }
+                        }
+                    }
+                }
+            },
+            selectEmissionStandard: function(e, emission_standard_type){
+                    let vm=this;
+                    if(e.target.checked){
+                        var found=false;
+                        for(var i=0;i<vm.proposal.other_details.emission_standards.length; i++){
+                            if(vm.proposal.other_details.emission_standards[i].emission_standard_type==emission_standard_type.key){
+                                found=true;
+                                vm.proposal.other_details.emission_standards[i].is_deleted=false;
+                            }
+                        }
+                        if(found==false){
+                        var data={
+                            'emission_standard_type': emission_standard_type.key,
+                            'comments':'',
+                            'proposal_other_details': vm.proposal.other_details.id,
+                            'is_deleted': false,
+                            'emission_standard_type_value': emission_standard_type.value
+                        }
+                        var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
+                        acc.push(data);
+                        vm.proposal.other_details.emission_standards=acc;
+                        }
+                    }
+                    else{
+                        for(var i=0;i<vm.proposal.other_details.emission_standards.length; i++)
+                        {
+    
+                            if(vm.proposal.other_details.emission_standards[i].emission_standard_type==emission_standard_type.key)
+                            {
+                                if(vm.proposal.other_details.emission_standards[i].id){
+                                    //console.log('yes')
+                                    var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
+                                    acc[i].is_deleted=true;
+                                    vm.proposal.other_details.emission_standards=acc;
+                                }
+                                else{
+                                    var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
+                                    acc.splice(i,1);
+                                    vm.proposal.other_details.emission_standards=acc;
+                                }
+                            }
+                        }
+                    }
             },
             eventListeners:function (){
                 let vm=this;
@@ -652,9 +830,12 @@ export default {
         mounted: function(){
             let vm = this;
             vm.fetchAccreditationChoices();
+            vm.fetchTourismStandards();
             vm.fetchLicencePeriodChoices();
             vm.fetchGlobalSettings();
             vm.checkProposalAccreditation();
+            vm.checkProposalInformationStandard();
+            vm.checkProposalEmissionStandard();
             vm.showDockteNumber();
             vm.showCreditFacilityLink();
             this.$nextTick(()=>{

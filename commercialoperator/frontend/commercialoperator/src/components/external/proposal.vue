@@ -464,7 +464,7 @@ export default {
           }
           else{
             for(var i=0; i<vm.proposal.other_details.accreditations.length; i++){
-              if(!vm.proposal.other_details.accreditations[i].is_deleted && vm.proposal.other_details.accreditations[i].accreditation_type!='no'){
+              if(!vm.proposal.other_details.accreditations[i].is_deleted && vm.proposal.other_details.accreditations[i].accreditation_type!='no' && vm.proposal.other_details.accreditations[i].accreditation_type!='narta'){
                 if(vm.proposal.other_details.accreditations[i].accreditation_expiry==null || vm.proposal.other_details.accreditations[i].accreditation_expiry==''){
                   blank_fields.push('Expiry date for accreditation type '+vm.proposal.other_details.accreditations[i].accreditation_type_value+' is required')
                 }
@@ -478,7 +478,12 @@ export default {
               }
             }
           }
-
+          if (vm.$refs.proposal_tclass.$refs.other_details.selected_information_standards.length==0 ){
+            blank_fields.push(' Accessible Tourism Information is required')
+          }
+          if (vm.$refs.proposal_tclass.$refs.other_details.selected_emission_standards.length==0 ){
+            blank_fields.push(' Tourism Emission Reduction Standards is required')
+          }
           if (vm.proposal.other_details.preferred_licence_period=='' || vm.proposal.other_details.preferred_licence_period==null ){
             blank_fields.push(' Preferred Licence Period is required')
           }

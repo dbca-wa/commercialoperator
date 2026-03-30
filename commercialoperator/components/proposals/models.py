@@ -2900,9 +2900,9 @@ class ProposalAccreditation(models.Model):
     #activities_land = models.CharField(max_length=24, blank=True, default='')
     ACCREDITATION_TYPE_CHOICES = (
         ('no', 'None'),
-        ('atap', 'QTA'),
-        ('eco_certification', 'Eco Certification'),
-        ('narta', 'NARTA'),
+        ('atap', 'QTF (i.e. Tourism Council WA)'),
+        ('eco_certification', 'Eco Tourism Australia'),
+        # ('narta', 'NARTA'),
         ('other', 'Other')
     )
 
@@ -2914,6 +2914,46 @@ class ProposalAccreditation(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.accreditation_type, self.comments)
+
+    class Meta:
+        app_label = 'commercialoperator'
+
+
+
+class ProposalInformationStandard(models.Model):
+    INFORMATION_STANDARD_TYPE_CHOICES = (
+        ('no', 'None'),
+        ('tourism_council', 'Tourism Council WA'),
+        ('eco_tourism', 'Eco Tourism Australia'),
+        ('other', 'Other')
+    )
+
+    information_standard_type = models.CharField('Information Standard', max_length=40, choices=INFORMATION_STANDARD_TYPE_CHOICES,
+                                       default=INFORMATION_STANDARD_TYPE_CHOICES[0][0])
+    information_comments=models.TextField(blank=True)
+    proposal_other_details = models.ForeignKey(ProposalOtherDetails, related_name='information_standards', null=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.information_standard_type, self.information_comments)
+
+    class Meta:
+        app_label = 'commercialoperator'
+
+class ProposalEmissionStandard(models.Model):
+    EMISSION_STANDARD_TYPE_CHOICES = (
+        ('no', 'None'),
+        ('tourism_council', 'Tourism Council WA'),
+        ('eco_tourism', 'Eco Tourism Australia'),
+        ('other', 'Other')
+    )
+
+    emission_standard_type = models.CharField('Emission Standard', max_length=40, choices=EMISSION_STANDARD_TYPE_CHOICES,
+                                       default=EMISSION_STANDARD_TYPE_CHOICES[0][0])
+    emission_comments=models.TextField(blank=True)
+    proposal_other_details = models.ForeignKey(ProposalOtherDetails, related_name='emission_standards', null=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.emission_standard_type, self.emission_comments)
 
     class Meta:
         app_label = 'commercialoperator'
