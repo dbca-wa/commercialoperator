@@ -8,7 +8,7 @@ from ledger.accounts.models import EmailUser #, Document
 from commercialoperator.components.proposals.models import ProposalDocument, ProposalPark, ProposalParkActivity, ProposalParkAccess, ProposalTrail, ProposalTrailSectionActivity, ProposalTrailSection, ProposalParkZone, ProposalParkZoneActivity, ProposalOtherDetails, ProposalAccreditation, ProposalUserAction, ProposalAssessment, ProposalAssessmentAnswer, ChecklistQuestion,ProposalStandardRequirement
 from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.proposals.email import send_submit_email_notification, send_external_submit_email_notification
-from commercialoperator.components.proposals.serializers import SaveProposalSerializer, SaveProposalParkSerializer, SaveProposalTrailSerializer, ProposalAccreditationSerializer, ProposalOtherDetailsSerializer, SaveInternalFilmingProposalSerializer, SaveInternalEventProposalSerializer
+from commercialoperator.components.proposals.serializers import SaveProposalSerializer, SaveProposalParkSerializer, SaveProposalTrailSerializer, ProposalAccreditationSerializer, ProposalOtherDetailsSerializer, SaveInternalFilmingProposalSerializer, SaveInternalEventProposalSerializer, ProposalInformationStandardSerializer, ProposalEmissionStandardSerializer
 from commercialoperator.components.main.models import Activity, Park, AccessType, Trail, Section, Zone
 import traceback
 import os
@@ -851,7 +851,81 @@ def save_proponent_data_tclass(instance,request,viewset,parks=None,trails=None):
                         serializer.save()
                     else:
                         logger.warn('Possible duplicate Accreditation Type for Application {}'.format(instance.lodgement_number))
+            #Save information standards data
+            if 'information_standards' in other_details_data:
+                information_standard_types = instance.other_details.information_standards.values_list('information_standard_type', flat=True)
+                for info in other_details_data['information_standards']:
+                    #print info
+                    if 'id' in info:
+                        #info_qs = ProposalInformationStandard.objects.filter(id=info['id'])
+                        info_qs = instance.other_details.information_standards.filter(id=info['id'])
 
+                        if info_qs and 'is_deleted' in info and info['is_deleted']==True:
+                            info_qs[0].delete()
+
+                        elif info['information_standard_type'] in information_standard_types:
+                            try:
+                                instance.other_details.information_standards.filter(id=info['id']).update(
+                                    information_standard_type = info['information_standard_type'],
+                                    information_comments = info['comments'],
+                                )
+                            except Exception as e:
+                                logger.error('An error occurred while updating Information Standards {}'.format(e))
+                        else:
+                            serializer=ProposalInformationStandardSerializer(data=info)
+                            serializer.is_valid(raise_exception=True)
+                            serializer.save()
+                            #ProposalAccreditation.objects.create(
+                            #    id=acc['id'],
+                            #    accreditation_type=acc['accreditation_type'],
+                            #    comments = acc['comments'],
+                            #    accreditation_expiry = datetime.strptime(acc['accreditation_expiry'], "%d/%m/%Y").date(),
+                            #)
+
+                    elif info['information_standard_type'] not in information_standard_types:
+                        serializer=ProposalInformationStandardSerializer(data=info)
+                        serializer.is_valid(raise_exception=True)
+                        serializer.save()
+                    else:
+                        logger.warn('Possible duplicate Information Standard Type for Application {}'.format(instance.lodgement_number))
+            
+            #Save emission standards data
+            if 'emission_standards' in other_details_data:
+                emission_standard_types = instance.other_details.emission_standards.values_list('emission_standard_type', flat=True)
+                for info in other_details_data['emission_standards']:
+                    #print info
+                    if 'id' in info:
+                        #info_qs = ProposalEmissionStandard.objects.filter(id=info['id'])
+                        info_qs = instance.other_details.emission_standards.filter(id=info['id'])
+
+                        if info_qs and 'is_deleted' in info and info['is_deleted']==True:
+                            info_qs[0].delete()
+
+                        elif info['emission_standard_type'] in emission_standard_types:
+                            try:
+                                instance.other_details.emission_standards.filter(id=info['id']).update(
+                                    emission_standard_type = info['emission_standard_type'],
+                                    emission_comments = info['comments'],
+                                )
+                            except Exception as e:
+                                logger.error('An error occurred while updating Emission Standards {}'.format(e))
+                        else:
+                            serializer=ProposalEmissionStandardSerializer(data=info)
+                            serializer.is_valid(raise_exception=True)
+                            serializer.save()
+                            #ProposalAccreditation.objects.create(
+                            #    id=acc['id'],
+                            #    accreditation_type=acc['accreditation_type'],
+                            #    comments = acc['comments'],
+                            #    accreditation_expiry = datetime.strptime(acc['accreditation_expiry'], "%d/%m/%Y").date(),
+                            #)
+
+                    elif info['emission_standard_type'] not in emission_standard_types:
+                        serializer=ProposalEmissionStandardSerializer(data=info)
+                        serializer.is_valid(raise_exception=True)
+                        serializer.save()
+                    else:
+                        logger.warn('Possible duplicate Emission Standard Type for Application {}'.format(instance.lodgement_number))
             if select_parks_activities or len(select_parks_activities)==0:
                 try:
 

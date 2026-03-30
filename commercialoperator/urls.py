@@ -116,6 +116,7 @@ api_patterns = [
     url(r'^api/search_keywords',proposal_api.SearchKeywordsView.as_view(),name='search_keywords'),
     url(r'^api/search_reference',proposal_api.SearchReferenceView.as_view(),name='search_reference'),
     url(r'^api/accreditation_choices',proposal_api.AccreditationTypeView.as_view(),name='accreditation_choices'),
+    url(r'^api/tourism_standard_choices',proposal_api.TourismStandardsView.as_view(),name='tourism_standard_choices'),
     url(r'^api/licence_period_choices',proposal_api.LicencePeriodChoicesView.as_view(),name='licence_period_choices'),
     url(r'^api/filming_licence_charge_choices',proposal_api.FilmingLicenceChargeView.as_view(),name='filming_licence_charge_choices '),
 
