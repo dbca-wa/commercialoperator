@@ -30,6 +30,8 @@ if env("CONSOLE_EMAIL_BACKEND", False):
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 SHOW_ROOT_API = env("SHOW_ROOT_API", False)
+SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE', True)
+CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE', True)
 
 TEMPLATE_TITLE = "Commercial Operator Licensing"
 TEMPLATE_HEADER_LOGO = "/static/commercialoperator/img/logo-park-stay-trunc.gif"
@@ -105,12 +107,6 @@ ADD_REVERSION_ADMIN = True
 
 # maximum number of days allowed for a booking
 WSGI_APPLICATION = "commercialoperator.wsgi.application"
-
-"""REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'commercialoperator.perms.OfficerPermission',
-    )
-}"""
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
