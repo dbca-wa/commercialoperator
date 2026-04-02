@@ -11,3 +11,4 @@ class BookingAdmin(admin.ModelAdmin):
     readonly_fields = (
         "proposal",
     )
+    search_fields = ["admission_number", "booking_type", "proposal__lodgement_number"]

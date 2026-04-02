@@ -69,6 +69,8 @@ class ProposalAdmin(VersionAdmin):
     inlines = [
         ProposalDocumentInline,
     ]
+    list_display = ["id", "lodgement_number", "application_type", "processing_status", "applicant", "submitter"]
+    search_fields = ["id", "lodgement_number", "processing_status"]
 
 
 class ProposalAssessorGroupMembersInline(admin.TabularInline):
@@ -344,8 +346,8 @@ class ParkAdmin(admin.ModelAdmin):
     inlines = [
         OracleCodeInline,
     ]
-    list_display = ["name", "district"]
-    # filter_horizontal = ('allowed_activities',)
+    list_display = ["name", "district", "park_type", "adult_price", "child_price"]
+    search_fields = ["name", "district__name"]
     filter_horizontal = ("allowed_activities", "allowed_access")
     ordering = ("name",)
 
@@ -373,6 +375,7 @@ class ZoneAdmin(admin.ModelAdmin):
 @admin.register(models.Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = ["access_type", "capacity", "rego", "license", "rego_expiry"]
+    search_fields = ["access_type__name", "rego", "license"]
     ordering = ("access_type",)
 
 
@@ -384,7 +387,14 @@ class VesselAdmin(admin.ModelAdmin):
         "hire_rego",
         "craft_no",
         "size",
-        "proposal",
+        "proposal__lodgement_number",
+    ]
+    search_fields = [
+        "nominated_vessel",
+        "spv_no",
+        "hire_rego",
+        "craft_no",
+        "proposal__lodgement_number",
     ]
     ordering = ("nominated_vessel",)
 
@@ -498,12 +508,14 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(ApplicationFee)
 class ApplicationFeeAdmin(admin.ModelAdmin):
     raw_id_fields = ("proposal", "created_by")
-
+    list_display = ("id", "proposal__lodgement_number", "created_by", "payment_type", "cost")
+    search_fields = ("id", "proposal__lodgement_number")
 
 @admin.register(ApplicationFeeInvoice)
 class SectionAdmin(admin.ModelAdmin):
     list_display = [f.name for f in ApplicationFeeInvoice._meta.fields]
     raw_id_fields = ("application_fee",)
+    search_fields = ("id","invoice_reference",)
 
 
 class DistrictProposalAssessorGroupMembersInline(admin.TabularInline):
