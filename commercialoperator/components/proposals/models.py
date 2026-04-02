@@ -2949,7 +2949,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @transaction.atomic
     def final_approval(self, request=None, details=None):
         from commercialoperator.components.approvals.models import Approval
-        from commercialoperator.helpers import is_departmentUser
+        from commercialoperator.helpers import is_internal
 
         try:
             self.proposed_decline_status = False
@@ -2978,7 +2978,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "cc_email": details.get("cc_email"),
                 }
 
-                if is_departmentUser(request):
+                if is_internal(request):
                     # needed because external users come through this workflow following 'awaiting_payment; status
                     self.approved_by = request.user
 
