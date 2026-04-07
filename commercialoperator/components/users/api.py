@@ -32,23 +32,11 @@ from commercialoperator.components.organisations.serializers import (
     OrganisationRequestDTSerializer,
 )
 from commercialoperator.components.main.models import UserSystemSettings
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 
 import logging
 
 logger = logging.getLogger(__name__)
-
-# class DepartmentUserList(views.APIView):
-#     renderer_classes = [JSONRenderer,]
-#     def get(self, request, format=None):
-#         data = cache.get('department_users')
-#         if not data:
-#             retrieve_department_users()
-#             data = cache.get('department_users')
-#         return Response(data)
-
-#         serializer  = UserSerializer(request.user)
-
 
 class GetCountries(views.APIView):
     renderer_classes = [
@@ -110,10 +98,9 @@ class UserListFilterView(generics.ListAPIView):
         user = self.request.user
         if is_internal(self.request):
             return EmailUser.objects.all()
-        elif is_customer(self.request):
+        else:
             qs = EmailUser.objects.filter(Q(id=user.id))
             return qs
-        return EmailUser.objects.none()
 
     @basic_exception_handler
     def list(self, request, *args, **kwargs):
@@ -141,10 +128,9 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return EmailUser.objects.all()
-        elif is_customer(self.request):
+        else:
             qs = EmailUser.objects.filter(Q(id=user.id))
             return qs
-        return EmailUser.objects.none()
 
     @action(
         methods=[

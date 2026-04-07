@@ -21,7 +21,7 @@ from commercialoperator.components.bookings.serializers import (
 )
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
 
@@ -39,7 +39,7 @@ class BookingPaginatedViewSet(viewsets.ModelViewSet):
             return Booking.objects.all().exclude(
                 booking_type=Booking.BOOKING_TYPE_TEMPORARY
             )
-        elif is_customer(self.request):
+        else:
             ledger_user_orgs = retrieve_delegate_organisation_ids(user)
             cols_org_ids = Organisation.objects.filter(
                 organisation_id__in=ledger_user_orgs
@@ -49,7 +49,6 @@ class BookingPaginatedViewSet(viewsets.ModelViewSet):
                 Q(proposal__org_applicant_id__in=cols_org_ids)
                 | Q(proposal__submitter_id=user.id)
             ).exclude(booking_type=Booking.BOOKING_TYPE_TEMPORARY)
-        return Booking.objects.none()
 
     @list_route(
         methods=[
@@ -85,13 +84,12 @@ class BookingViewSet(viewsets.ModelViewSet):
             return Booking.objects.all().exclude(
                 booking_type=Booking.BOOKING_TYPE_TEMPORARY
             )
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             return Booking.objects.filter(
                 Q(proposal__org_applicant_id__in=user_orgs)
                 | Q(proposal__submitter=user)
             ).exclude(booking_type=Booking.BOOKING_TYPE_TEMPORARY)
-        return Booking.objects.none()
 
 
 class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
@@ -109,7 +107,7 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
             )
 
             return bi
-        elif is_customer(self.request):
+        else:
             ledger_org_ids = retrieve_delegate_organisation_ids(user)
             cols_org_ids = Organisation.objects.filter(
                 organisation_id__in=ledger_org_ids
@@ -123,7 +121,6 @@ class OverdueBookingInvoiceViewSet(viewsets.ModelViewSet):
                 Q(deferred_payment_date__lt=timezone.now().date())
             )
             return bi
-        return BookingInvoice.objects.none()
 
 
 class ParkBookingViewSet(viewsets.ModelViewSet):
@@ -136,13 +133,12 @@ class ParkBookingViewSet(viewsets.ModelViewSet):
             return ParkBooking.objects.all().exclude(
                 booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY
             )
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             return ParkBooking.objects.filter(
                 Q(booking__proposal__org_applicant_id__in=user_orgs)
                 | Q(booking__proposal__submitter=user)
             ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
-        return ParkBooking.objects.none()
 
 
 class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
@@ -158,13 +154,12 @@ class ParkBookingPaginatedViewSet(viewsets.ModelViewSet):
             return ParkBooking.objects.all().exclude(
                 booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY
             )
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             return ParkBooking.objects.filter(
                 Q(booking__proposal__org_applicant_id__in=user_orgs)
                 | Q(booking__proposal__submitter=user)
             ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
-        return ParkBooking.objects.none()
 
     @list_route(
         methods=[

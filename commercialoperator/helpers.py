@@ -57,6 +57,7 @@ def is_finance_officer(request):
 def is_organisation_access_officer(request):
     return belongs_to(request.user, settings.GROUP_NAME_ORGANISATION_ACCESS)
 
+#NOTE: this is now used only in the UserSerializer for information - it should not be used to determine internal group membership
 def in_dbca_domain(request):
     user = request.user
     try:
@@ -73,9 +74,6 @@ def is_in_organisation_contacts(request, organisation):
     delegate_emails = [delegate.email for delegate in delegates]
 
     return request.user.email in delegate_emails
-
-def is_customer(request):
-    return request.user.is_authenticated and not request.user.is_staff
 
 def is_approver(request):
     return request.user.is_superuser or retrieve_user_groups("proposalapprovergroup", request.user.id).exists() if request.user else False

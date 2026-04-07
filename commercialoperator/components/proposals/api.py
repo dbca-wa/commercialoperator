@@ -136,7 +136,7 @@ from commercialoperator.components.segregation.utils import (
     retrieve_user_groups,
     expand_emailuser_fields,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 from django.core.files.base import ContentFile
 
 from django.core.files.storage import default_storage
@@ -234,19 +234,6 @@ def compliance_search_filter(qs, search_value):
 
     return qs, matching_ids
 
-def get_expanded_queryset(request, queryset):
-    emailuser_fk_fields = [
-        field.name
-        for field in queryset.model._meta.get_fields()
-        if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
-    ]
-
-    emailuser_properties = ["email", "first_name", "last_name"]
-
-    # Expand for each FK field
-    for fk_field in emailuser_fk_fields:
-        queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
-    return queryset
 
 class ProposalFilterBackend(DatatablesFilterBackend):
     """
@@ -474,7 +461,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             user_id = user.id
             queryset = Proposal.objects.filter(
@@ -482,8 +469,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             ).exclude(migrated=True)
 
             return queryset.exclude(application_type=self.excluded_type)
-
-        return Proposal.objects.none()
 
     @action(
         methods=[
@@ -678,13 +663,12 @@ class ProposalSubmitViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return Proposal.objects.all().exclude(application_type=self.excluded_type)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             queryset = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset.exclude(application_type=self.excluded_type)
-        return Proposal.objects.none()
     
 
 class ProposalParkViewSet(viewsets.ModelViewSet):
@@ -710,14 +694,13 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
-            return qs  # .exclude(migrated=True)
-        elif is_customer(self.request):
+            return qs
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             queryset = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            )  # .exclude(migrated=True)
+            )
             return queryset.exclude(application_type=self.excluded_type)
-        return Proposal.objects.none()
 
     @action(
         methods=[
@@ -749,18 +732,15 @@ class ProposalViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
-            # user_orgs = [1] # This is an existing org id for testing
             user_id = user.id
-            # user_id = 394315 # This is an existing user id for testing
             queryset = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user_id)
             ).exclude(migrated=True)
 
             return queryset.exclude(application_type=self.excluded_type)
 
-        return Proposal.objects.none()
 
     def get_object(self):
 
@@ -2697,14 +2677,13 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ProposalRequirement.objects.exclude(is_deleted=True)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = ProposalRequirement.objects.exclude(is_deleted=True).filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             )
             return qs
-        return ProposalRequirement.objects.none()
 
     @action(
         methods=[
@@ -2882,14 +2861,13 @@ class AmendmentRequestViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return AmendmentRequest.objects.all()
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = AmendmentRequest.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             )
             return qs
-        return AmendmentRequest.objects.none()
 
     def create(self, request, *args, **kwargs):
         try:
@@ -3136,14 +3114,13 @@ class VehicleViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return Vehicle.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = Vehicle.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
             return qs
-        return Vehicle.objects.none()
 
     @action(methods=["post"], detail=True)
     @basic_exception_handler
@@ -3176,14 +3153,13 @@ class VesselViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return Vessel.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = Vessel.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
             return qs
-        return Vessel.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_vessel(self, request, *args, **kwargs):
@@ -3252,14 +3228,13 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ProposalAssessment.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = ProposalAssessment.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
             return qs
-        return ProposalAssessment.objects.none()
 
     @action(methods=["post"], detail=True)
     def update_assessment(self, request, *args, **kwargs):

@@ -28,7 +28,7 @@ from commercialoperator.components.segregation.utils import (
     retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_delegate_organisation_ids,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
 
@@ -48,7 +48,7 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
                 Q(processing_status="discarded")
                 | Q(requirement__notification_only=True)
             )
-        elif is_customer(self.request):
+        else:
             user = self.request.user
 
             commercialoperator_organisations = (
@@ -65,7 +65,6 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
                 | Q(requirement__notification_only=True)
             )
             return queryset
-        return Compliance.objects.none()
 
     @action(
         methods=[
@@ -130,7 +129,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return Compliance.objects.all().exclude(processing_status="discarded")
-        elif is_customer(self.request):
+        else:
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Compliance.objects.filter(
@@ -138,7 +137,6 @@ class ComplianceViewSet(viewsets.ModelViewSet):
                 | Q(proposal__submitter_id=user.id)
             ).exclude(processing_status="discarded")
             return queryset
-        return Compliance.objects.none()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -472,14 +470,13 @@ class ComplianceAmendmentRequestViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ComplianceAmendmentRequest.objects.all()
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             qs = ComplianceAmendmentRequest.objects.filter(
                 Q(compliance_id__proposal_id__org_applicant_id__in=user_orgs)
                 | Q(compliance_id__proposal_id__submitter_id=user.id)
             )
             return qs
-        return ComplianceAmendmentRequest.objects.none()
 
     def create(self, request, *args, **kwargs):
         try:

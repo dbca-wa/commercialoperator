@@ -37,7 +37,7 @@ from commercialoperator.components.proposals.utils import (
     search_in_emailuser_fields,
     request_has_filters,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 from commercialoperator.components.organisations.models import (
     Organisation,
     OrganisationContact,
@@ -68,63 +68,6 @@ from commercialoperator.components.organisations.serializers import (
     OrganisationRequestLogEntrySerializer,
 )
 
-def get_sliced_queryset(
-    request,
-    qs: Optional[QuerySet] = None,
-) -> QuerySet:
-    user = request.user
-
-    # Parse pagination safely
-    try:
-        start = int(request.GET.get("start", 0))
-    except (TypeError, ValueError):
-        start = 0
-    try:
-        length = int(request.GET.get("length", 10))
-    except (TypeError, ValueError):
-        length = 10
-
-    # Ensure non-negative values
-    start = max(0, start)
-    length = max(0, length)
-
-    # If an external queryset is provided, just slice and return.
-    if qs is not None:
-        return qs[start : start + length]
-
-    # Otherwise, build the queryset per the original rules.
-    if is_internal(request):
-        qs_built = OrganisationRequest.objects.all()
-    elif is_customer(request):
-        user_org_ids = retrieve_delegate_organisation_ids(user.id)
-        user_organisations = Organisation.objects.filter(
-            organisation_id__in=user_org_ids
-        )
-        user_organisation_abns = [org.abn for org in user_organisations]
-        qs_built = OrganisationRequest.objects.filter(
-                Q(abn__in=user_organisation_abns) | Q(requester_id=user)
-            )
-    else:
-        qs_built = OrganisationRequest.objects.none()
-
-    # Apply slicing—this becomes LIMIT/OFFSET at the DB level
-    return qs_built[start : start + length]
-
-def get_expanded_queryset(request, queryset):
-    emailuser_fk_fields = [
-        field.name
-        for field in queryset.model._meta.get_fields()
-        if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
-    ]
-
-    emailuser_properties = ["email", "first_name", "last_name"]
-
-    # Expand for each FK field
-    for fk_field in emailuser_fk_fields:
-        queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
-    
-    return queryset
-
 class OrganisationViewSet(viewsets.ModelViewSet):
     queryset = Organisation.objects.none()
     serializer_class = OrganisationSerializer
@@ -134,10 +77,9 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request) or self.allow_external:
             return Organisation.objects.all()
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return Organisation.objects.filter(organisation_id__in=user_orgs)
-        return Organisation.objects.none()
 
     def get_object(self):
         org_id = self.kwargs.get("pk", None)
@@ -893,7 +835,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return OrganisationRequest.objects.all()
-        elif is_customer(self.request):
+        else:
             user_org_ids = retrieve_delegate_organisation_ids(user.id)
             user_organisations = Organisation.objects.filter(
                 organisation_id__in=user_org_ids
@@ -904,8 +846,6 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
             return OrganisationRequest.objects.filter(
                 Q(abn__in=user_organisation_abns) | Q(requester_id=user)
             )
-
-        return OrganisationRequest.objects.none()
 
     @action(
         methods=[
@@ -991,26 +931,13 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
     def datatable_list(self, request, *args, **kwargs):
 
         qs = self.get_queryset()
-        if request_has_filters(request):
-            filtered_qs = self.filter_queryset(qs)
-        else:
-            filtered_qs = qs
+        qs = self.filter_queryset(qs)
         
-        records_total = qs.count()          # total before filters
-        records_filtered = filtered_qs.count()       # total after filters
+        result_page = self.paginator.paginate_queryset(qs, request)
+        
+        serializer = OrganisationRequestDTSerializer(result_page, context={"request": request}, many=True)
 
-        
-        queryset = get_sliced_queryset(request, qs=filtered_qs)
-        
-        serializer = OrganisationRequestDTSerializer(queryset, context={"request": request}, many=True)
-
-        
-        return Response({
-            "draw": int(request.GET.get("draw", 1)),
-            "recordsTotal": records_total,
-            "recordsFiltered": records_filtered,
-            "data": serializer.data,
-        })
+        return self.paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=[
@@ -1309,10 +1236,9 @@ class OrganisationContactViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return OrganisationContact.objects.all()
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             return OrganisationContact.objects.filter(Q(organisation_id__in=user_orgs))
-        return OrganisationContact.objects.none()
 
     def destroy(self, request, *args, **kwargs):
         """delete an Organisation contact"""
@@ -1350,7 +1276,6 @@ class MyOrganisationsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return Organisation.objects.all()
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return Organisation.objects.filter(organisation_id__in=user_orgs)
-        return Organisation.objects.none()

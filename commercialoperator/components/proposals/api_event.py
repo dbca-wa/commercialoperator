@@ -26,7 +26,7 @@ from commercialoperator.components.proposals.serializers_event import (
 )
 
 from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 
 import logging
 
@@ -41,13 +41,12 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ProposalEventsParks.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalEventsParks.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
-        return ProposalEventsParks.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
@@ -138,13 +137,12 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return AbseilingClimbingActivity.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return AbseilingClimbingActivity.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
-        return AbseilingClimbingActivity.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_abseiling_climbing(self, request, *args, **kwargs):
@@ -184,13 +182,12 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ProposalPreEventsParks.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalPreEventsParks.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
-        return ProposalPreEventsParks.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
@@ -283,13 +280,12 @@ class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ProposalEventsTrails.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalEventsTrails.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
-        return ProposalEventsTrails.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_trail(self, request, *args, **kwargs):

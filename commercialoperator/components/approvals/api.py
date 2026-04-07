@@ -41,7 +41,7 @@ from commercialoperator.components.segregation.utils import (
     expand_organisation_fields,
     expand_emailuser_fields,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 import logging
@@ -109,14 +109,13 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return Approval.objects.all()
-        elif is_customer(self.request):
+        else:
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
-        return Approval.objects.none()
 
     @action(
         methods=[
@@ -208,14 +207,13 @@ class ApprovalViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return Approval.objects.all()
-        elif is_customer(self.request):
+        else:
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
-        return Approval.objects.none()
 
     def list(self, request, *args, **kwargs):
         # queryset = self.get_queryset()

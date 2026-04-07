@@ -24,7 +24,7 @@ from commercialoperator.components.proposals.serializers_filming import (
     DistrictProposalSerializer,
 )
 
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,30 +51,12 @@ class ProposalFilmingViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
-            # return Proposal.objects.filter(region__isnull=False)
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             queryset = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter=user)
             ).exclude(migrated=True)
-            # queryset =  Proposal.objects.filter(region__isnull=False).filter( Q(applicant_id__in = user_orgs) | Q(submitter = user) )
             return queryset.exclude(application_type=self.excluded_type)
-        logger.warning(
-            "User is neither customer nor internal user: {} <{}>".format(
-                user.get_full_name(), user.email
-            )
-        )
-        return Proposal.objects.none()
-
-    def get_object(self):
-
-        check_db_connection()
-        try:
-            obj = super(ProposalViewSet, self).get_object()
-        except Exception as e:
-            # because current queryset excludes migrated licences
-            obj = get_object_or_404(Proposal, id=self.kwargs["id"])
-        return obj
 
 
 class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
@@ -85,13 +67,12 @@ class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return ProposalFilmingParks.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
             return ProposalFilmingParks.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter=user)
             ).order_by("id")
-        return ProposalFilmingParks.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_park(self, request, *args, **kwargs):
