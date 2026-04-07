@@ -12,7 +12,7 @@
             <div class="panel-body collapse in" :id="pBody">
                 <div class="" >                        
                     <div class="form-horizontal col-sm-12 borderDecoration">
-                        <label class="control-label">Select which level of tourism accreditation you have achieved. <a href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees" target="_blank"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a></label>
+                        <label class="control-label">Select which tourism accreditation you have achieved and attach a copy of your certificate. <a href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees" target="_blank"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a></label>
                         <ul class="list-inline"  >
                             <li v-for="c in accreditation_choices" class="form-check list-inline-item">
                                 <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectAccreditation($event, c)" v-model="selected_accreditations" :value="c.key" data-parsley-required :disabled="proposal.readonly" />
@@ -58,7 +58,7 @@
     <div class="col-sm-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Tourism Accessibility and emissions reduction standards <small></small>
+                <h3 class="panel-title">Tourism accessibility and emissions reduction standards <small></small>
                 <a class="panelClicker" :href="'#'+pBody" data-toggle="collapse"  data-parent="#userInfo" expanded="true" :aria-controls="pBody">
                 <span class="glyphicon glyphicon-chevron-up pull-right "></span>
                 </a>
@@ -68,7 +68,7 @@
                 <div class="" >                        
                     <div class="form-horizontal col-sm-12 borderDecoration">
                         <label class="">Select which provider you have used to complete your assessments and provide a link to your publicly available information. Click  <a :href="tourism_standards_link" target="_blank"><i class="fa fa-question-circle" style="color:blue">&nbsp;</i></a> for more information.</label>
-                        <label class="">Accessible Tourism Information Standards</label>
+                        <label class="">Accessible Tourism Information Standard</label>
                         <ul class="list-inline"  >
                             <li v-for="c in information_standard_choices" class="form-check list-inline-item">
                                 <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectInformationStandard($event, c)" v-model="selected_information_standards" :value="c.key" data-parsley-required :disabled="proposal.readonly" />
@@ -80,7 +80,7 @@
                                 <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="proposal.readonly" id="information_standard" :ref="information_standard.accreditation_type" :canEditActivities="canEditActivities"></InformationStandard >
                             </div>
                         </div>
-                        <label class="control-label">Tourism Emissions Reduction Standards</label>
+                        <label class="control-label">Tourism Emissions Reduction Standard</label>
                         <ul class="list-inline"  >
                             <li v-for="c in emission_standard_choices" class="form-check list-inline-item">
                                 <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" v-model="selected_emission_standards" :value="c.key" data-parsley-required :disabled="proposal.readonly" />

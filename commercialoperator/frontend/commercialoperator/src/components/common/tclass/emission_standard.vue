@@ -31,7 +31,7 @@
                             </div>
                             <div class="col-sm-9">
                                 <div class="" ref="emission_comments" style="width: 70%;">
-                                    <input type="textarea" class="form-control" v-model="emission_standard.emission_comments" name="emission_standard_comments" :disabled="readonly">        
+                                    <textarea class="form-control" v-model="emission_standard.emission_comments" name="emission_standard_comments" :disabled="readonly"></textarea>        
                                 </div>
                             </div>
                         </div>
