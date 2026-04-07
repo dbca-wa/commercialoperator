@@ -1,12 +1,7 @@
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup
 from ledger_api_client.ledger_models import UsersInGroup
 from django.contrib.auth.models import Group
 from django.conf import settings
-
-from commercialoperator.components.proposals.models import(
-    ProposalApproverGroup,
-)
 
 import logging
 
@@ -27,7 +22,6 @@ def is_payment_admin(user):
         return user.id in list(UsersInGroup.objects.filter(group_id=group.first().id).values_list('emailuser_id', flat=True))
     else:
         return False
-
 
 def belongs_to_by_user_id(user_id, group_name):
     system_group = SystemGroup.objects.filter(name=group_name).first()
@@ -63,7 +57,6 @@ def is_finance_officer(request):
 def is_organisation_access_officer(request):
     return belongs_to(request.user, settings.GROUP_NAME_ORGANISATION_ACCESS)
 
-
 def in_dbca_domain(request):
     user = request.user
     try:
@@ -71,7 +64,6 @@ def in_dbca_domain(request):
         return domain in settings.DEPT_DOMAINS
     except:
         return False
-
 
 def is_in_organisation_contacts(request, organisation):
     """Takes a cols Organisation object and checks if the request.user is in the organisation's contacts."""
@@ -82,10 +74,8 @@ def is_in_organisation_contacts(request, organisation):
 
     return request.user.email in delegate_emails
 
-
 def is_customer(request):
     return request.user.is_authenticated and not request.user.is_staff
-
 
 def is_approver(request):
     return request.user.is_superuser or retrieve_user_groups("proposalapprovergroup", request.user.id).exists() if request.user else False
@@ -94,16 +84,19 @@ def is_assessor(request):
     return request.user.is_superuser or retrieve_user_groups("proposalassessorgroup", request.user.id).exists() if request.user else False
 
 def is_district_approver(request):
-    pass
+    return request.user.is_superuser or retrieve_user_groups("districtproposalapprovergroup", request.user.id).exists() if request.user else False
 
 def is_district_assessor(request):
-    pass
+    return request.user.is_superuser or retrieve_user_groups("districtproposalassessorgroup", request.user.id).exists() if request.user else False
 
 def is_organisation_access_approver(request):
-    pass
+    return request.user.is_superuser or retrieve_user_groups("organisationaccessgroup", request.user.id).exists() if request.user else False
 
 def is_referrer(request):
-    pass
+    return request.user.is_superuser or retrieve_user_groups("referralrecipientgroup", request.user.id).exists() if request.user else False
+
+def is_qa_officer(request):
+    return request.user.is_superuser or retrieve_user_groups("qaofficergroup", request.user.id).exists() if request.user else False
 
 def is_internal(request):
     """Any users in an internal user group"""
@@ -113,7 +106,8 @@ def is_internal(request):
         is_payment_admin(request.user) or
         is_commercialoperator_admin(request) or
         is_finance_officer(request) or 
-        is_organisation_access_officer(request) 
+        is_organisation_access_officer(request) or
+        is_qa_officer(request)
     )
 
 
