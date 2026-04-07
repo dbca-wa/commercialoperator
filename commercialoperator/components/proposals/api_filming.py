@@ -2,26 +2,19 @@ import traceback
 import json
 from django.db.models import Q
 from django.core.exceptions import ValidationError
-from rest_framework import viewsets, serializers, views
+from rest_framework import viewsets, serializers, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from commercialoperator.components.proposals.models import ProposalUserAction
-from commercialoperator.components.main.utils import check_db_connection
 
-from django.shortcuts import get_object_or_404
-from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.proposals.models import (
     ProposalFilmingActivity,
     ProposalFilmingParks,
-    Proposal,
-    DistrictProposal,
 )
 from commercialoperator.components.proposals.serializers_filming import (
     ProposalFilmingParksSerializer,
-    ProposalFilmingSerializer,
     SaveProposalFilmingParksSerializer,
-    DistrictProposalSerializer,
 )
 
 from commercialoperator.helpers import is_internal
@@ -30,36 +23,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ProposalFilmingViewSet(viewsets.ModelViewSet):
-    """
-    Similar to ProposalViewSet, except get_queryset include migrated_licences
-    """
-
-    queryset = Proposal.objects.none()
-    serializer_class = ProposalFilmingSerializer
-    lookup_field = "id"
-
-    @property
-    def excluded_type(self):
-        try:
-            return ApplicationType.objects.get(name="E Class")
-        except:
-            return ApplicationType.objects.none()
-
-    def get_queryset(self):
-        user = self.request.user
-        if is_internal(self.request):
-            qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
-            return qs.exclude(migrated=True)
-        else:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
-            queryset = Proposal.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter=user)
-            ).exclude(migrated=True)
-            return queryset.exclude(application_type=self.excluded_type)
-
-
-class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
+class ProposalFilmingParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalFilmingParks.objects.none()
     serializer_class = ProposalFilmingParksSerializer
 
@@ -158,23 +122,6 @@ class ProposalFilmingParksViewSet(viewsets.ModelViewSet):
 
 class FilmingActivityTabView(views.APIView):
 
-    # renderer_classes = [JSONRenderer,]
-    # def get(self,request, format=None):
-    #     Container= namedtuple('ActivityTab',('film_type_choices', 'purpose_choices', 'sponsorship_choices', 'film_usage_choices'))
-    #     container = Container(
-    #         film_type_choices=ProposalFilmingActivity.FILM_TYPE_CHOICES,
-    #         purpose_choices=ProposalFilmingActivity.PURPOSE_CHOICES,
-    #         sponsorship_choices=ProposalFilmingActivity.SPONSORSHIP_CHOICES,
-    #         film_usage_choices=ProposalFilmingActivity.FILM_USE_CHOICES
-    #     )
-    #     print container
-
-    #     return Response(container)
-
-    renderer_classes = [
-        JSONRenderer,
-    ]
-
     def get(self, request, format=None):
         container = {}
         film_type_choices = []
@@ -208,17 +155,3 @@ class FilmingActivityTabView(views.APIView):
         container.update({"film_usage_choices": film_usage_choices})
 
         return Response(container)
-
-
-class DistrictProposalViewSet(viewsets.ModelViewSet):
-    # queryset = Referral.objects.all()
-    queryset = DistrictProposal.objects.none()
-    serializer_class = DistrictProposalSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated and is_internal(self.request):
-            # queryset =  Referral.objects.filter(referral=user)
-            queryset = DistrictProposal.objects.all()
-            return queryset
-        return DistrictProposal.objects.none()

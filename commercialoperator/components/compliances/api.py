@@ -4,7 +4,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.conf import settings
-from rest_framework import viewsets, serializers, views
+from rest_framework import viewsets, serializers, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -33,17 +33,15 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
 
 
-class CompliancePaginatedViewSet(viewsets.ModelViewSet):
+class CompliancePaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Compliance.objects.none()
     serializer_class = ComplianceSerializer
 
     def get_queryset(self):
         if is_internal(self.request):
-            # return Compliance.objects.all()
             return Compliance.objects.all().exclude(
                 Q(processing_status="discarded")
                 | Q(requirement__notification_only=True)
@@ -121,9 +119,8 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         return self.paginator.get_paginated_response(serializer.data)
 
 
-class ComplianceViewSet(viewsets.ModelViewSet):
+class ComplianceViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = ComplianceSerializer
-    # queryset = Compliance.objects.all()
     queryset = Compliance.objects.none()
 
     def get_queryset(self):
@@ -137,18 +134,6 @@ class ComplianceViewSet(viewsets.ModelViewSet):
                 | Q(proposal__submitter_id=user.id)
             ).exclude(processing_status="discarded")
             return queryset
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        # Filter by org
-        org_id = request.GET.get("org_id", None)
-        if org_id:
-            queryset = queryset.filter(proposal__org_applicant_id=org_id)
-        submitter_id = request.GET.get("submitter_id", None)
-        if submitter_id:
-            qs = qs.filter(proposal__submitter_id=submitter_id)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(
         methods=[
@@ -462,21 +447,10 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ComplianceAmendmentRequestViewSet(viewsets.ModelViewSet):
+class ComplianceAmendmentRequestViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ComplianceAmendmentRequest.objects.none()
     serializer_class = ComplianceAmendmentRequestSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        if is_internal(self.request):
-            return ComplianceAmendmentRequest.objects.all()
-        else:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
-            qs = ComplianceAmendmentRequest.objects.filter(
-                Q(compliance_id__proposal_id__org_applicant_id__in=user_orgs)
-                | Q(compliance_id__proposal_id__submitter_id=user.id)
-            )
-            return qs
+    #TODO permissions (internal only)
 
     def create(self, request, *args, **kwargs):
         try:

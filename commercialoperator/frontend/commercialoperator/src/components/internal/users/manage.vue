@@ -578,6 +578,9 @@
 </template>
 
 <script>
+
+//TODO make address and contact details readonly, remove/replace action log and comms log
+
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import ProposalDashTable from '@common-utils/proposals_dashboard.vue';
@@ -648,7 +651,6 @@ export default {
             updatingContact: false,
             uploadingID: false,
             uploadedID: null,
-            empty_list: '/api/empty_list',
             logsTable: null,
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
             activate_tables: false,
@@ -715,90 +717,6 @@ export default {
                 'user.residential_address.country',
                 'Select a Country'
             );
-        },
-        updateContact: function () {
-            let vm = this;
-            vm.updatingContact = true;
-            helpers
-                .fetchUrl(
-                    helpers.add_endpoint_json(
-                        api_endpoints.users,
-                        vm.user.id + '/update_contact'
-                    ),
-                    {
-                        method: 'POST',
-                        body: JSON.stringify(vm.user),
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                )
-                .then(
-                    (response) => {
-                        vm.updatingContact = false;
-                        vm.user = response;
-                        if (vm.user.residential_address == null) {
-                            vm.user.residential_address = {};
-                        }
-                        swal.fire({
-                            title: 'Update Contact Details',
-                            html: 'User contact details has been successfully updated.',
-                            icon: 'success',
-                        });
-                    },
-                    (error) => {
-                        vm.updatingContact = false;
-                        swal.fire({
-                            title: 'Update Contact Details',
-                            html:
-                                'There was an error updating the user contact details.<br/>' +
-                                error,
-                            icon: 'error',
-                        });
-                    }
-                );
-        },
-        updateAddress: function () {
-            let vm = this;
-            vm.updatingAddress = true;
-            helpers
-                .fetchUrl(
-                    helpers.add_endpoint_json(
-                        api_endpoints.users,
-                        vm.user.id + '/update_address'
-                    ),
-                    {
-                        method: 'POST',
-                        body: JSON.stringify(vm.user.residential_address),
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                )
-                .then(
-                    (response) => {
-                        vm.updatingAddress = false;
-                        vm.user = response;
-                        if (vm.user.residential_address == null) {
-                            vm.user.residential_address = {};
-                        }
-                        swal.fire({
-                            title: 'Update Address Details',
-                            html: 'User address details has been successfully updated.',
-                            icon: 'success',
-                        });
-                    },
-                    (error) => {
-                        vm.updatingAddress = false;
-                        swal.fire({
-                            title: 'Update Address Details',
-                            html:
-                                'There was an error updating the user address details.<br/>' +
-                                error,
-                            icon: 'error',
-                        });
-                    }
-                );
         },
         unlinkUser: function (org) {
             let vm = this;

@@ -1,24 +1,16 @@
 import traceback
-from django.conf import settings
-from django.core.cache import cache
-from django.db.models import Q, Value
-from django.db.models.functions import Concat
-import re
-from typing import Optional
-from django.db.models import QuerySet
+from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-from rest_framework import viewsets, serializers, status, generics, views
+from rest_framework import viewsets, serializers, status, generics, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import update_organisation_obj, get_all_organisation
+from ledger_api_client.utils import get_all_organisation
 
 from commercialoperator.components.approvals.serializers import EmailUserSerializer
-from commercialoperator.components.organisations.utils import can_admin_org
 from commercialoperator.components.permission.permission import organisation_permissions
 from commercialoperator.components.segregation.api import (
     LedgerOrganisationFilterBackend,
@@ -30,12 +22,10 @@ from commercialoperator.components.segregation.utils import (
     retrieve_delegate_organisation_ids,
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
-    expand_emailuser_fields,
 )
 from commercialoperator.components.proposals.utils import (
     _get_params,
     search_in_emailuser_fields,
-    request_has_filters,
 )
 from commercialoperator.helpers import is_internal
 from commercialoperator.components.organisations.models import (
@@ -49,8 +39,6 @@ from commercialoperator.components.organisations.models import (
 
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
-    DetailsSerializer,
-    SaveDiscountSerializer,
     OrganisationRequestSerializer,
     OrganisationRequestDTSerializer,
     OrganisationContactSerializer,
@@ -68,7 +56,7 @@ from commercialoperator.components.organisations.serializers import (
     OrganisationRequestLogEntrySerializer,
 )
 
-class OrganisationViewSet(viewsets.ModelViewSet):
+class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Organisation.objects.none()
     serializer_class = OrganisationSerializer
     allow_external = False  # NOTE: Workaround for allowing organisations to be accessed when validating pins
@@ -513,22 +501,6 @@ class OrganisationViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    #    @action(methods=['GET',])
-    #    def applications(self, request, *args, **kwargs):
-    #        try:
-    #            instance = self.get_object()
-    #            qs = instance.org_applications.all()
-    #            serializer = BaseApplicationSerializer(qs,many=True)
-    #            return Response(serializer.data)
-    #        except serializers.ValidationError:
-    #            print(traceback.print_exc())
-    #            raise
-    #        except ValidationError as e:
-    #            print(traceback.print_exc())
-    #            raise serializers.ValidationError(repr(e.error_dict))
-    #        except Exception as e:
-    #            print(traceback.print_exc())
-    #            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[
@@ -588,114 +560,18 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         detail=False,
     )
     @basic_exception_handler
-    def existance(self, request, *args, **kwargs):
+    def existence(self, request, *args, **kwargs):
         serializer = OrganisationCheckSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         name = serializer.validated_data.get("name", None)
         abn = serializer.validated_data.get("abn", None)
-        data = Organisation.existance(name, abn)
+        data = Organisation.existence(name, abn)
         # Check request user cannot be relinked to org.
         data.update([("user", request.user.id)])
         data.update([("abn", request.data["abn"])])
         serializer = OrganisationCheckExistSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-    )
-    @basic_exception_handler
-    def update_details(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if not can_admin_org(instance, request.user.id):
-            return Response(
-                status=status.HTTP_403_FORBIDDEN,
-                data={
-                    "message": "You do not have permission to update this organisation."
-                },
-            )
-
-        serializer = DetailsSerializer(
-            instance, data=request.data, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-
-        # NOTE: Throwing an error here, but the code below is working
-        raise NotImplementedError(
-            "Updating organisation details is currently supported through the manage organisation option"
-        )
-
-        response_ledger = update_organisation_obj(request.data)
-        response_ledger_status = response_ledger.get("status", None)
-        if not response_ledger_status == status.HTTP_200_OK:
-            return Response(
-                status=response_ledger_status,
-                data=response_ledger.get("message", None),
-            )
-
-        cache.delete(
-            settings.CACHE_KEY_LEDGER_ORGANISATION.format(instance.organisation_id)
-        )
-
-        instance = serializer.save()
-
-        if is_internal(request) and "apply_application_discount" in request.data:
-            data = request.data
-            if not data["apply_application_discount"]:
-                data["application_discount"] = 0
-            if not data["apply_licence_discount"]:
-                data["licence_discount"] = 0
-
-            if data["application_discount"] == 0:
-                data["apply_application_discount"] = False
-            if data["licence_discount"] == 0:
-                data["apply_licence_discount"] = False
-
-            if (
-                is_internal(request)
-                and "charge_once_per_year" in request.data
-                and request.data.get("charge_once_per_year")
-            ):
-                DD = int(request.data.get("charge_once_per_year").split("/")[0])
-                MM = int(request.data.get("charge_once_per_year").split("/")[1])
-                YYYY = timezone.now().year  # set to current year
-                data["charge_once_per_year"] = "{}-{}-{}".format(YYYY, MM, DD)
-            else:
-                data["charge_once_per_year"] = None
-
-            serializer = SaveDiscountSerializer(instance, data=data)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-    )
-    @basic_exception_handler
-    def update_address(self, request, *args, **kwargs):
-        raise NotImplementedError(
-            "Updating addresses is currently supported through the manage organisation option"
-        )
-        instance = self.get_object()
-        request.data["organisation_id"] = instance.organisation_id
-        return self.update_details(request, *args, **kwargs)
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-    )
-    def upload_id(self, request, *args, **kwargs):
-        pass
 
     @action(
         methods=[
@@ -821,9 +697,7 @@ class OrganisationRequestDatatableFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class OrganisationRequestsViewSet(viewsets.ModelViewSet):
-    http_method_names = ["head", "get", "post", "put", "patch"]
-
+class OrganisationRequestsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = OrganisationRequest.objects.none()
     serializer_class = OrganisationRequestSerializer
     filter_backends = (OrganisationRequestDatatableFilterBackend,)
@@ -1181,7 +1055,7 @@ class OrganisationRequestsViewSet(viewsets.ModelViewSet):
         serializer.validated_data["requester"] = request.user
         if request.data["role"] == "consultant":
             # Check if consultant can be relinked to org.
-            data = Organisation.existance(request.data["abn"])
+            data = Organisation.existence(request.data["abn"])
             data.update([("user", request.user.id)])
             data.update([("abn", request.data["abn"])])
             existing_org = OrganisationCheckExistSerializer(data=data)
@@ -1228,7 +1102,7 @@ class OrganisationAccessGroupMembersView(views.APIView):
         return Response(members)
 
 
-class OrganisationContactViewSet(viewsets.ModelViewSet):
+class OrganisationContactViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = OrganisationContactSerializer
     queryset = OrganisationContact.objects.none()
 
@@ -1268,7 +1142,7 @@ class OrganisationContactViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class MyOrganisationsViewSet(viewsets.ModelViewSet):
+class MyOrganisationsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Organisation.objects.none()
     serializer_class = MyOrganisationsSerializer
 

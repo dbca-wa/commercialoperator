@@ -8,7 +8,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
 from rest_framework import status
-from rest_framework import viewsets, serializers, generics, views
+from rest_framework import viewsets, serializers, generics, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -120,7 +120,7 @@ class UserListFilterView(generics.ListAPIView):
     search_fields = ("email", "first_name", "last_name")
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = EmailUser.objects.none()
     serializer_class = UserSerializer
 
@@ -131,75 +131,6 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             qs = EmailUser.objects.filter(Q(id=user.id))
             return qs
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-    )
-    @basic_exception_handler
-    def update_contact(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = ContactSerializer(instance, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        serializer = UserSerializer(instance, context={"request": request})
-
-        raise NotImplementedError("Need to implement contact update in ledger")
-        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-    )
-    @transaction.atomic
-    @basic_exception_handler
-    def update_address(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = UserAddressSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        if instance.residential_address_id:
-            account_details_response = get_account_details(request, str(instance.id))
-            if account_details_response.status_code != status.HTTP_200_OK:
-                raise serializers.ValidationError(
-                    "Error retrieving address details from ledger"
-                )
-            residential_address = (
-                json.loads(account_details_response.content)
-                .get("data", {})
-                .get("residential_address", {})
-            )
-            raise NotImplementedError("Need to implement update of address in ledger")
-
-            total_addresses = address.count()
-            if total_addresses > 0:
-                residential_address.locality = serializer.validated_data["locality"]
-                residential_address.state = serializer.validated_data["state"]
-                residential_address.country = serializer.validated_data["country"]
-                residential_address.postcode = serializer.validated_data["postcode"]
-                residential_address.line1 = serializer.validated_data["line1"]
-                residential_address.save()
-                instance.residential_address = residential_address
-        else:
-            address = Address.objects.create(
-                line1=serializer.validated_data["line1"],
-                locality=serializer.validated_data["locality"],
-                state=serializer.validated_data["state"],
-                country=serializer.validated_data["country"],
-                postcode=serializer.validated_data["postcode"],
-                user=instance,
-            )
-            address.save()
-            instance.residential_address = address
-            instance.save()
-
-        instance.save()
-        serializer = UserSerializer(instance)
-
-        return Response(serializer.data)
 
     @action(
         methods=[
@@ -252,7 +183,6 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             requester_id = instance.id
-            # requester_id = 284700 # An existing user id
             serializer = OrganisationRequestDTSerializer(
                 OrganisationRequest.objects.filter(
                     status="with_assessor", requester_id=requester_id
@@ -271,6 +201,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
+    #TODO remove or replace comms/action log for user
     @action(
         methods=[
             "GET",
@@ -394,7 +325,7 @@ class UserViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-
+#TODO determine if the below are needed (or at least if they can be refactored)
 class GetLedgerAccount(views.APIView):
     renderer_classes = [
         JSONRenderer,
@@ -405,7 +336,6 @@ class GetLedgerAccount(views.APIView):
             return Response({"error": "User is not logged in."})
         response = get_account_details(request, str(request.user.id))
         return response
-
 
 class GetRequestUserID(views.APIView):
     """Yes, this is a bit silly but for now the get_account_details from ledger_api_client doesn't return the

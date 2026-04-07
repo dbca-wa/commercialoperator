@@ -23,7 +23,6 @@ export default {
     proposal_type: '/api/proposal_type',
     proposals: '/api/proposal.json',
     proposal_park: '/api/proposal_park.json',
-    proposal_submit: '/api/proposal_submit.json',
     approvals: '/api/approvals.json',
     referrals: '/api/referrals.json',
     compliances: '/api/compliances.json',

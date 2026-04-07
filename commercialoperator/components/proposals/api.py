@@ -1,18 +1,13 @@
 import traceback
 import os
 import json
-from django.db import models, connection
-from django.db.models import Q, Value
-from django.db.models.functions import Concat, Coalesce
+from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from django.utils.dateparse import parse_date
-from django.db.models import QuerySet
-from typing import Optional
 from django.core.cache import cache
 from django.conf import settings
 from django.utils import timezone
-from rest_framework import viewsets, serializers, status, views
+from rest_framework import viewsets, serializers, status, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -26,20 +21,13 @@ from commercialoperator.components.proposals.utils import (
     get_proposal_processing_status,
     paginate_chained_list,
     searchKeyWords,
-    _get_params,
-    _is_datetime_field,
     search_in_emailuser_fields,
-    request_has_filters,
 )
 from commercialoperator.components.proposals.models import (
-    ProposalParkActivity,
     search_reference,
     ProposalUserAction,
 )
-from commercialoperator.components.main.utils import check_db_connection
 
-from django.urls import reverse
-from django.shortcuts import redirect, get_object_or_404
 from commercialoperator.components.main.models import (
     Region,
     District,
@@ -134,13 +122,11 @@ from commercialoperator.components.segregation.utils import (
     retrieve_delegate_organisation_ids,
     retrieve_group_members,
     retrieve_user_groups,
-    expand_emailuser_fields,
 )
 from commercialoperator.helpers import is_internal
 from django.core.files.base import ContentFile
 
 from django.core.files.storage import default_storage
-from rest_framework.pagination import PageNumberPagination
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -149,7 +135,6 @@ from reversion.models import Version
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 
 class GetProposalType(views.APIView):
@@ -167,15 +152,6 @@ class GetProposalType(views.APIView):
                 {"error": "There is currently no application type."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
-
-class GetEmptyList(views.APIView):
-    renderer_classes = [
-        JSONRenderer,
-    ]
-
-    def get(self, request, format=None):
-        return Response([])
 
 
 def proposal_search_filter(qs, search_value):
@@ -285,7 +261,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
 
             if search_text and super_queryset:
                 search_queryset = proposal_search_filter(queryset, search_text)
-                if results_found:
+                if search_queryset.exists():
                     queryset = search_queryset.distinct() | super_queryset   
                 else:
                     queryset = queryset.distinct() & super_queryset   
@@ -442,7 +418,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class ProposalPaginatedViewSet(viewsets.ModelViewSet):
+class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
     queryset = Proposal.objects.none()
@@ -625,53 +601,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         return self.paginator.get_paginated_response(serializer.data)
 
 
-class VersionableModelViewSetMixin(viewsets.ModelViewSet):
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=True,
-    )
-    def history(self, request, *args, **kwargs):
-        _object = self.get_object()
-        # _versions = reversion.get_for_object(_object)
-        _versions = Version.objects.get_for_object(_object)
-
-        _context = {"request": request}
-
-        # _version_serializer = VersionSerializer(_versions, many=True, context=_context)
-        _version_serializer = ProposalSerializer(
-            [v.object for v in _versions], many=True, context=_context
-        )
-
-        return Response(_version_serializer.data)
-
-
-class ProposalSubmitViewSet(viewsets.ModelViewSet):
-    queryset = Proposal.objects.none()
-    serializer_class = ProposalSerializer
-    lookup_field = "id"
-
-    @property
-    def excluded_type(self):
-        try:
-            return ApplicationType.objects.get(name="E Class")
-        except:
-            return ApplicationType.objects.none()
-
-    def get_queryset(self):
-        user = self.request.user
-        if is_internal(self.request):
-            return Proposal.objects.all().exclude(application_type=self.excluded_type)
-        else:
-            user_orgs = retrieve_delegate_organisation_ids(user)
-            queryset = Proposal.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            )
-            return queryset.exclude(application_type=self.excluded_type)
-    
-
-class ProposalParkViewSet(viewsets.ModelViewSet):
+class ProposalParkViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     """
     Similar to ProposalViewSet, except get_queryset include migrated_licences
     """
@@ -714,7 +644,7 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ProposalViewSet(viewsets.ModelViewSet):
+class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Proposal.objects.none()
     serializer_class = ProposalSerializer
     lookup_field = "id"
@@ -740,19 +670,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
             ).exclude(migrated=True)
 
             return queryset.exclude(application_type=self.excluded_type)
-
-
-    def get_object(self):
-
-        check_db_connection()
-        try:
-            obj = super(ProposalViewSet, self).get_object()
-        except Exception as e:
-            # because current queryset excludes migrated licences
-            obj = get_object_or_404(Proposal, id=self.kwargs["id"])
-            if self.request.user.id != obj.submitter_id:
-                raise
-        return obj
 
     def get_serializer_class(self):
         try:
@@ -1102,32 +1019,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    #    def list(self, request, *args, **kwargs):
-    #        #queryset = self.get_queryset()
-    #        #serializer = DTProposalSerializer(queryset, many=True)
-    #        #serializer = DTProposalSerializer(self.get_queryset(), many=True)
-    #        serializer = ListProposalSerializer(self.get_queryset(), context={'request':request}, many=True)
-    #        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def list_paginated(self, request, *args, **kwargs):
-        """
-        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-        """
-        proposals = self.get_queryset()
-        paginator = PageNumberPagination()
-        # paginator = LimitOffsetPagination()
-        paginator.page_size = 5
-        result_page = paginator.paginate_queryset(proposals, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return paginator.get_paginated_response(serializer.data)
 
     @action(
         methods=[
@@ -1450,50 +1341,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         serializer = ListProposalSerializer(qs, context={"request": request}, many=True)
         return Response(serializer.data)
 
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def user_list_paginated(self, request, *args, **kwargs):
-        """
-        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
-        otherwise all serializers will use the default pagination class
-
-        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-        """
-        proposals = self.get_queryset().exclude(processing_status="discarded")
-        paginator = DatatablesPageNumberPagination()
-        paginator.page_size = proposals.count()
-        result_page = paginator.paginate_queryset(proposals, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return paginator.get_paginated_response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def list_paginated(self, request, *args, **kwargs):
-        """
-        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
-        otherwise all serializers will use the default pagination class
-
-        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-        """
-        proposals = self.get_queryset()
-        paginator = DatatablesPageNumberPagination()
-        paginator.page_size = proposals.count()
-        result_page = paginator.paginate_queryset(proposals, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return paginator.get_paginated_response(serializer.data)
-
     # Documents on Activities(land)and Activities(Marine) tab for T-Class related to required document questions
     @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
@@ -1737,15 +1584,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
                         "The status provided is not allowed"
                     )
             instance.move_to_status(request, status, approver_comment)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
-            # if instance.application_type.name==ApplicationType.TCLASS:
-            #     serializer = InternalProposalSerializer(instance,context={'request':request})
-            # elif instance.application_type.name==ApplicationType.FILMING:
-            #     serializer = InternalFilmingProposalSerializer(instance,context={'request':request})
-            # elif instance.application_type.name==ApplicationType.EVENT:
-            #     serializer = InternalProposalSerializer(instance,context={'request':request})
             return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())
@@ -2392,15 +2232,13 @@ class ProposalViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ReferralViewSet(viewsets.ModelViewSet):
-    # queryset = Referral.objects.all()
+class ReferralViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Referral.objects.none()
     serializer_class = ReferralSerializer
 
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated and is_internal(self.request):
-            # queryset =  Referral.objects.filter(referral=user)
             queryset = Referral.objects.all()
             return queryset
         return Referral.objects.none()
@@ -2669,7 +2507,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ProposalRequirementViewSet(viewsets.ModelViewSet):
+class ProposalRequirementViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalRequirement.objects.none()
     serializer_class = ProposalRequirementSerializer
 
@@ -2853,7 +2691,7 @@ class ProposalStandardRequirementViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class AmendmentRequestViewSet(viewsets.ModelViewSet):
+class AmendmentRequestViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = AmendmentRequest.objects.none()
     serializer_class = AmendmentRequestSerializer
 
@@ -3049,7 +2887,7 @@ class SearchProposalsFilterBackend(DatatablesFilterBackend):
         return chained_qs
 
 
-class SearchProposalsViewSet(viewsets.ModelViewSet):
+class SearchProposalsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Proposal.objects.none()
     serializer_class = SearchKeywordSerializer
     filter_backends = (SearchProposalsFilterBackend,)
@@ -3106,7 +2944,7 @@ class SearchReferenceView(views.APIView):
             raise serializers.ValidationError(str(e))
 
 
-class VehicleViewSet(viewsets.ModelViewSet):
+class VehicleViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Vehicle.objects.none()
     serializer_class = VehicleSerializer
 
@@ -3145,7 +2983,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class VesselViewSet(viewsets.ModelViewSet):
+class VesselViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Vessel.objects.none()
     serializer_class = VesselSerializer
 
@@ -3220,7 +3058,7 @@ class AssessorChecklistViewSet(viewsets.ReadOnlyModelViewSet):
         return qs
 
 
-class ProposalAssessmentViewSet(viewsets.ModelViewSet):
+class ProposalAssessmentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalAssessment.objects.none()
     serializer_class = ProposalAssessmentSerializer
 
@@ -3273,8 +3111,7 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class DistrictProposalViewSet(viewsets.ModelViewSet):
-    # queryset = Referral.objects.all()
+class DistrictProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = DistrictProposal.objects.none()
     serializer_class = DistrictProposalSerializer
 
@@ -3541,7 +3378,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
+class DistrictProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
     queryset = DistrictProposal.objects.none()

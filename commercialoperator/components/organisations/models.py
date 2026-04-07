@@ -255,7 +255,7 @@ class Organisation(models.Model):
 
     @staticmethod
     @basic_exception_handler
-    def existance(name, abn):
+    def existence(name, abn):
         exists = True
         org = None
 

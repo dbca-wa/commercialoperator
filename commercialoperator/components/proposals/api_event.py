@@ -2,7 +2,7 @@ import traceback
 import json
 from django.db.models import Q
 from django.core.exceptions import ValidationError
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -33,7 +33,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ProposalEventsParksViewSet(viewsets.ModelViewSet):
+class ProposalEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalEventsParks.objects.none()
     serializer_class = ProposalEventsParksSerializer
 
@@ -129,7 +129,7 @@ class ProposalEventsParksViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
+class AbseilingClimbingActivityViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = AbseilingClimbingActivity.objects.none()
     serializer_class = AbseilingClimbingActivitySerializer
 
@@ -174,7 +174,7 @@ class AbseilingClimbingActivityViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
+class ProposalPreEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalPreEventsParks.objects.none()
     serializer_class = ProposalPreEventsParksSerializer
 
@@ -272,7 +272,7 @@ class ProposalPreEventsParksViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ProposalEventsTrailsViewSet(viewsets.ModelViewSet):
+class ProposalEventsTrailsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalEventsTrails.objects.none()
     serializer_class = ProposalEventsTrailsSerializer
 

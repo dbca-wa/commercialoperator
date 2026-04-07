@@ -2,8 +2,6 @@ import traceback
 import datetime
 import re
 from django.db.models import Q
-from typing import Optional
-from django.db.models import QuerySet
 from django.db import transaction
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
@@ -38,11 +36,11 @@ from commercialoperator.components.segregation.decorators import basic_exception
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
     retrieve_delegate_organisation_ids,
-    expand_organisation_fields,
-    expand_emailuser_fields,
 )
 from commercialoperator.helpers import is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework import filters, mixins
+
 
 import logging
 
@@ -99,7 +97,7 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
+class ApprovalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ApprovalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
     page_size = 10
@@ -126,9 +124,6 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     def approvals_external(self, request, *args, **kwargs):
         """
         Paginated serializer for datatables - used by the internal and external dashboard (filtered by the get_queryset method)
-
-        To test:
-            http://localhost:8000/api/approval_paginated/approvals_external/?format=datatables&draw=1&length=2
         """
 
         qs = self.get_queryset()
@@ -141,23 +136,18 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         return self.paginator.get_paginated_response(serializer.data)
 
 
-from rest_framework import filters
-
-
 class ApprovalPaymentFilterViewSet(generics.ListAPIView):
     """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
 
     queryset = Approval.objects.none()
     serializer_class = ApprovalPaymentSerializer
     filter_backends = (filters.SearchFilter,)
-    # search_fields = ('applicant', 'applicant_id',)
     search_fields = ("id",)
 
     def get_queryset(self):
         """
         Return All approvals associated with user (proxy_applicant and org_applicant)
         """
-        # return Approval.objects.filter(proxy_applicant=self.request.user)
         user = self.request.user
 
         # get all orgs associated with user
@@ -180,27 +170,8 @@ class ApprovalPaymentFilterViewSet(generics.ListAPIView):
         )  # get lastest licence, ignore the amended
         return approval_qs
 
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def _list(self, request, *args, **kwargs):
-        data = []
-        for approval in self.get_queryset():
-            data.append(
-                dict(
-                    lodgement_number=approval.lodgement_number,
-                    current_proposal=approval.current_proposal_id,
-                )
-            )
-        return Response(data)
-        # return Response(self.get_queryset().values_list('lodgement_number','current_proposal_id'))
 
-
-class ApprovalViewSet(viewsets.ModelViewSet):
-    # queryset = Approval.objects.all()
+class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Approval.objects.none()
     serializer_class = ApprovalSerializer
 
@@ -214,23 +185,6 @@ class ApprovalViewSet(viewsets.ModelViewSet):
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
-
-    def list(self, request, *args, **kwargs):
-        # queryset = self.get_queryset()
-        queryset = (
-            self.get_queryset()
-            .order_by("lodgement_number", "-issue_date")
-            .distinct("lodgement_number")
-        )
-        # Filter by org
-        org_id = request.GET.get("org_id", None)
-        if org_id:
-            queryset = queryset.filter(org_applicant_id=org_id)
-        submitter_id = request.GET.get("submitter_id", None)
-        if submitter_id:
-            qs = qs.filter(submitter_id=submitter_id)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(
         methods=[

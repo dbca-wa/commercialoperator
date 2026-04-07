@@ -59,7 +59,6 @@ export default {
     },
     data() {
         return {
-            empty_list: '/api/empty_list',
             proposals_url: api_endpoints.proposals_paginated_external,
             approvals_url: api_endpoints.approvals_paginated_external,
             compliances_url: api_endpoints.compliances_paginated_external,

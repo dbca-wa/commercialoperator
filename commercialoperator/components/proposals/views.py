@@ -154,7 +154,7 @@ class PreviewDistrictLicencePDFView(View):
 
 from commercialoperator.components.proposals.utils import test_proposal_emails
 
-
+#TODO secure or remove
 class TestEmailView(View):
     def get(self, request, *args, **kwargs):
         test_proposal_emails(request)

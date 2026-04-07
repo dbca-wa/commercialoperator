@@ -36,9 +36,6 @@ router.register(r"organisations", org_api.OrganisationViewSet, "organisations")
 router.register(r"proposal", proposal_api.ProposalViewSet, "proposal")
 router.register(r"proposal_park", proposal_api.ProposalParkViewSet, "proposal_park")
 router.register(
-    r"proposal_submit", proposal_api.ProposalSubmitViewSet, "proposal_submit"
-)
-router.register(
     r"proposal_paginated", proposal_api.ProposalPaginatedViewSet, "proposal_paginated"
 )
 router.register(
@@ -59,8 +56,6 @@ router.register(
 )
 router.register(r"referrals", proposal_api.ReferralViewSet, "referrals")
 router.register(r"approvals", approval_api.ApprovalViewSet, "approvals")
-router.register(r"bookings", booking_api.BookingViewSet, "bookings")
-router.register(r"park_bookings", booking_api.ParkBookingViewSet, "park_bookings")
 router.register(
     r"overdue_invoices", booking_api.OverdueBookingInvoiceViewSet, "overdue_invoices"
 )
@@ -126,7 +121,6 @@ router.register(
     r"required_documents", main_api.RequiredDocumentViewSet, "required_documents"
 )
 router.register(r"questions", main_api.QuestionViewSet, "questions")
-router.register(r"payment", main_api.PaymentViewSet, "payment")
 router.register(
     r"event_trail_container", main_api.TrailTabViewSet, basename="event_trail_container"
 )
@@ -213,9 +207,6 @@ api_patterns = [
         name="get-proposal-type",
     ),
     url(
-        r"^api/empty_list$", proposal_api.GetEmptyList.as_view(), name="get-empty-list"
-    ),
-    url(
         r"^api/organisation_access_group_members",
         org_api.OrganisationAccessGroupMembersView.as_view(),
         name="organisation-access-group-members",
@@ -256,7 +247,6 @@ api_patterns = [
         proposal_api.FilmingLicenceChargeView.as_view(),
         name="filming_licence_charge_choices ",
     ),
-    url(r"^api/oracle_job$", main_api.OracleJob.as_view(), name="get-oracle"),
     # Filming
     url(
         r"^api/filming_activity_tab",
