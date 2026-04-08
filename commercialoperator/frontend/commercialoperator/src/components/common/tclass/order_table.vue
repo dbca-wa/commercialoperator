@@ -221,7 +221,7 @@
 <script>
 import { helpers } from '@/utils/hooks';
 import _ from 'lodash';
-
+import $ from 'jquery'
 export default {
     components: {},
     filters: {

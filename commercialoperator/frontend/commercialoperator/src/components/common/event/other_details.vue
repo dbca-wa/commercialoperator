@@ -442,7 +442,7 @@ import PreEventParksTable from './pre_event_parks_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     components: {
         FormSection,

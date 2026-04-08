@@ -323,6 +323,7 @@ import ActivitiesMarine from '@/components/common/tclass/activities_marine.vue';
 import OtherDetails from '@/components/common/tclass/other_details.vue';
 import OnlineTraining from '@/components/common/tclass/online_training.vue';
 import Confirmation from '@/components/common/tclass/confirmation.vue';
+import $ from 'jquery';
 export default {
     components: {
         Account,

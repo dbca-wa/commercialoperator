@@ -194,7 +194,7 @@ import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
-
+import $ from 'jquery'
 export default {
     name: 'OrganisationComponent',
     components: {

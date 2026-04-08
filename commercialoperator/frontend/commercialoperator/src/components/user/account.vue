@@ -430,7 +430,7 @@ import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import alert from '@vue-utils/alert.vue';
 import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
-
+import $ from 'jquery'
 export default {
     name: 'AccountComponent',
     components: {

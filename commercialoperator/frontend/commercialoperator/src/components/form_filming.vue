@@ -220,6 +220,7 @@ import Access from '@/components/common/filming/access.vue';
 import Equipment from '@/components/common/filming/equipment.vue';
 import OtherDetails from '@/components/common/filming/other_details.vue';
 import Confirmation from '@/components/common/filming/confirmation.vue';
+import $ from 'jquery';
 export default {
     components: {
         Account,

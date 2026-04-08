@@ -459,7 +459,7 @@
 import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     name: 'ApplicantComponent',
     components: { FormSection },

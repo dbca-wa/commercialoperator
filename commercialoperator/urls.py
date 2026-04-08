@@ -261,7 +261,6 @@ urlpatterns = (
         url(r"^admin/", admin.site.urls, name="admin"),
         url(r"", include(api_patterns)),
         url(r"^$", views.CommercialOperatorRoutingView.as_view(), name="home"),
-        url(r"^$", views.CommercialOperatorRoutingView.as_view(), name="ds_home"),
         url(
             r"^contact/",
             views.CommercialOperatorContactView.as_view(),
@@ -279,7 +278,6 @@ urlpatterns = (
             name="internal-referral-detail",
         ),
         url(r"^external/", views.ExternalView.as_view(), name="external"),
-        # url(r"^account/", views.AccountView.as_view(), name="manage-account"), # Commented out in favor of ledger-ui/accounts
         url(r"^profiles/", views.ExternalView.as_view(), name="manage-profiles"),
         url(
             r"^help/(?P<application_type>[^/]+)/(?P<help_type>[^/]+)/$",

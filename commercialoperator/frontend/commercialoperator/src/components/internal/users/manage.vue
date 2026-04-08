@@ -589,7 +589,7 @@ import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
 import utils from '../utils';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'User',

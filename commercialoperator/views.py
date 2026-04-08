@@ -34,10 +34,6 @@ class InternalView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(InternalView, self).get_context_data(**kwargs)
-        # context["dev"] = settings.DEV_STATIC
-        # context["dev_url"] = settings.DEV_STATIC_URL
-        # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-        #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
 
 
@@ -46,14 +42,7 @@ class ExternalView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(ExternalView, self).get_context_data(**kwargs)
-        # context["dev"] = settings.DEV_STATIC
-        # context["dev_url"] = settings.DEV_STATIC_URL
-        # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-        #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
-
-class AccountView(LoginRequiredMixin, TemplateView):
-    template_name = "commercialoperator/dash/index.html"
 
 
 class ReferralView(ReferralOwnerMixin, DetailView):
@@ -102,21 +91,16 @@ class CommercialOperatorFurtherInformationView(TemplateView):
 
 
 class InternalProposalView(DetailView):
-    # template_name = 'commercialoperator/index.html'
     model = Proposal
     template_name = "commercialoperator/dash/index.html"
 
     def get(self, *args, **kwargs):
         if self.request.user.is_authenticated:
             if is_internal(self.request):
-                # return redirect('internal-proposal-detail')
                 return super(InternalProposalView, self).get(*args, **kwargs)
-            return redirect("external-proposal-detail")
-        kwargs["form"] = LoginForm
-        return super(CommercialOperatorRoutingDetailView, self).get(*args, **kwargs)
 
 
-@login_required(login_url="ds_home")
+@login_required(login_url="home")
 def first_time(request):
     context = {}
     if request.method == "POST":

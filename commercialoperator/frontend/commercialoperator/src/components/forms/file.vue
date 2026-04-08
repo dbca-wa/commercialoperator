@@ -121,7 +121,7 @@ import { helpers } from '@/utils/hooks';
 import Comment from './comment.vue';
 import HelpText from './help_text.vue';
 import HelpTextUrl from './help_text_url.vue';
-
+import $ from 'jquery'
 export default {
     name: 'FileComponent',
     components: { Comment, HelpText, HelpTextUrl },

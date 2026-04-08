@@ -149,7 +149,7 @@ import OrderTable from './order_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import BootstrapAlert from '@/components/vue2-components/BootstrapAlert.vue';
-
+import $ from 'jquery'
 export default {
     name: 'PaymentOrder',
     components: {

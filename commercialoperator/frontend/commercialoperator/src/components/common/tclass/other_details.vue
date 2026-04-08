@@ -613,7 +613,7 @@ import Accreditation from './accreditation_type.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     components: {
         FormSection,

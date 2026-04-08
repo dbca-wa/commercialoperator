@@ -19,7 +19,7 @@
 
 <script>
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     name: 'Select2SearchOrganisation',
     props: {

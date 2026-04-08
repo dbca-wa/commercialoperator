@@ -75,7 +75,7 @@
 
 <script>
 import { helpers } from '@/utils/hooks';
-
+import $ from 'jquery'
 export default {
     props: {
         // eslint-disable-next-line vue/prop-name-casing, vue/require-default-prop

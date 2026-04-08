@@ -81,7 +81,7 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import '@/../../../static/commercialoperator/css/extra.css';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
-
+import $ from 'jquery'
 export default {
     name: 'InternalProposalRequirements',
     components: {

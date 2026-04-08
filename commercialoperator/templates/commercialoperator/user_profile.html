@@ -182,6 +182,7 @@
 {% block custom_js %}
     {{ super }}
     <script type="text/javascript">
+        import $ from 'jquery'
         $('a[data-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {

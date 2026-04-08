@@ -161,7 +161,6 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
-            // if ($(vm.form).valid()) {
             if (helpers.validateForm(vm.form)) {
                 vm.sendData();
             }

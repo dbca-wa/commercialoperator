@@ -329,7 +329,7 @@ import TrailsActivityTable from './trails_activity_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     name: 'EventActivities',
     components: {
