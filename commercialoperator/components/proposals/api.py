@@ -130,28 +130,13 @@ from django.core.files.storage import default_storage
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
+from commercialoperator.components.permission.permission import InternalPermission
+
 from reversion.models import Version
 
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-class GetProposalType(views.APIView):
-    renderer_classes = [
-        JSONRenderer,
-    ]
-
-    def get(self, request, format=None):
-        _type = ProposalType.objects.first()
-        if _type:
-            serializer = ProposalTypeSerializer(_type)
-            return Response(serializer.data)
-        else:
-            return Response(
-                {"error": "There is currently no application type."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
 
 
 def proposal_search_filter(qs, search_value):
@@ -451,6 +436,7 @@ class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def proposals_internal(self, request, *args, **kwargs):
         """
@@ -476,6 +462,7 @@ class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def referrals_internal(self, request, *args, **kwargs):
         """
@@ -486,7 +473,6 @@ class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
         self.serializer_class = ReferralSerializer
 
         request_user_id = request.user.id
-        # request_user_id = 70348 # This is an existing user id for testing
         # Query the through-table on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
         request_user_referralrecipientgroup_set = retrieve_user_groups(
             "ReferralRecipientGroup", request_user_id
@@ -509,6 +495,7 @@ class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def qaofficer_info(self, request, *args, **kwargs):
         """
@@ -535,6 +522,7 @@ class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def qaofficer_internal(self, request, *args, **kwargs):
         """

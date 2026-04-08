@@ -145,6 +145,7 @@ class Compliance(RevisionedMixin):
         # return 'C{0:06d}'.format(self.id)
         return self.lodgement_number
 
+    #TODO provided id and name only
     @property
     def allowed_assessors(self):
         return self.proposal.compliance_assessors

@@ -45,8 +45,7 @@ logger = logging.getLogger("payment_checkout")
 
 class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = District.objects.none()
-    #TODO potentially refactor - this serializer has it so ALL parks are included
-    # it is a (mostly) exhaustive list but those NOT visible_to_external parks are included even for external users
+
     serializer_class = DistrictSerializer 
     def get_queryset(self):
         user = self.request.user

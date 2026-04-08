@@ -1552,6 +1552,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def permit(self):
         return self.approval.licence_document._file.url if self.approval else None
 
+    #TODO provided id and name only
     @property
     def allowed_assessors(self):
         if self.processing_status == "with_approver":
@@ -4790,6 +4791,7 @@ class Referral(RevisionedMixin):
         else:
             return None
 
+    #TODO refactor or remove this (always returns True)
     @property
     def can_be_completed(self):
         return True

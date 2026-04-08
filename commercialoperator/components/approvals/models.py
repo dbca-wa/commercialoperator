@@ -420,6 +420,7 @@ class Approval(RevisionedMixin):
             or self.status == "surrendered"
         ) and self.can_action
 
+    #TODO provided id and name only
     @property
     def allowed_assessors(self):
         # return self.current_proposal.allowed_assessors

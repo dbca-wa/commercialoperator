@@ -196,11 +196,6 @@ api_patterns = [
         name="filtered_payments",
     ),
     url(
-        r"^api/proposal_type$",
-        proposal_api.GetProposalType.as_view(),
-        name="get-proposal-type",
-    ),
-    url(
         r"^api/organisation_access_group_members",
         org_api.OrganisationAccessGroupMembersView.as_view(),
         name="organisation-access-group-members",
