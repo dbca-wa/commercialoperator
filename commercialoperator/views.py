@@ -13,7 +13,7 @@ from django.db import transaction
 
 from datetime import datetime, timedelta
 
-from commercialoperator.helpers import is_internal
+from commercialoperator.helpers import is_commercialoperator_admin, is_internal
 from commercialoperator.forms import *
 from commercialoperator.components.proposals.models import Referral, Proposal, HelpPage, DistrictProposal
 from commercialoperator.components.compliances.models import Compliance
@@ -159,8 +159,11 @@ class HelpView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ManagementCommandsView(LoginRequiredMixin, TemplateView):
+class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateView):
     template_name = 'commercialoperator/mgt-commands.html'
+
+    def test_func(self):
+        return is_commercialoperator_admin(self.request)
 
     def post(self, request):
         data = {}
