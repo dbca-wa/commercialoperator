@@ -420,7 +420,6 @@
             </div>
         </div>
     </div>
-    <BootstrapSpinner v-else class="text-primary" />
 </template>
 
 <script>
