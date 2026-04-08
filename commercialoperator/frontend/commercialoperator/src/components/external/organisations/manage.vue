@@ -17,13 +17,13 @@
                           <div class="form-group">
                             <label for="" class="col-sm-3 control-label">Organisation Name</label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" name="first_name" placeholder="" v-model="org.name">
+                                <input type="text" disabled class="form-control" name="first_name" placeholder="" v-model="org.name">
                             </div>
                           </div>
                           <div class="form-group">
                             <label for="" class="col-sm-3 control-label" >Trading Name</label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" name="trading_name" placeholder="" v-model="org.trading_name">
+                                <input type="text" class="form-control" :disabled="tradingNameDisabled" name="trading_name" placeholder="" v-model="org.trading_name">
                             </div>
                           </div>
                           <div class="form-group">
@@ -501,6 +501,9 @@ export default {
         classCompute:function(){
           return this.isApplication? 'row' : 'container';
         },
+        tradingNameDisabled: function(){
+            return this.org && (this.org.trading_name != null || this.org.trading_name != '');
+        }
     },
     beforeRouteEnter: function(to, from, next){
         let initialisers = [
@@ -515,7 +518,6 @@ export default {
                 vm.myorgperms = data[2];
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
-               
             });
         });
     },
