@@ -1,4 +1,3 @@
-import json
 import traceback
 from django.conf import settings
 from django.core.cache import cache
@@ -7,22 +6,18 @@ from django.db.models.functions import Concat
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
-from rest_framework import status
-from rest_framework import viewsets, serializers, generics, views, mixins
+from rest_framework import viewsets, serializers, generics, views, mixins, filters
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-from ledger_api_client.ledger_models import Address, EmailUserRO as EmailUser
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.api import get_account_details
 from commercialoperator.components.organisations.models import OrganisationRequest
 from commercialoperator.components.segregation.decorators import basic_exception_handler
-from commercialoperator.components.segregation.models import EmailUserAction
 
 from commercialoperator.components.users.serializers import (
     UserSerializer,
     UserFilterSerializer,
-    UserAddressSerializer,
-    ContactSerializer,
     EmailUserActionSerializer,
     EmailUserCommsSerializer,
     EmailUserLogEntrySerializer,
@@ -33,6 +28,8 @@ from commercialoperator.components.organisations.serializers import (
 )
 from commercialoperator.components.main.models import UserSystemSettings
 from commercialoperator.helpers import is_internal
+
+from commercialoperator.components.permission.permission import InternalPermission
 
 import logging
 
@@ -68,9 +65,6 @@ class GetProfile(views.APIView):
         return Response(serializer.data)
 
 
-from rest_framework import filters
-
-
 class UserListFilterBackend(filters.SearchFilter):
     def filter_queryset(self, request, queryset, view):
         search_fields = view.search_fields
@@ -94,6 +88,7 @@ class UserListFilterBackend(filters.SearchFilter):
 
 
 class UserListFilterView(generics.ListAPIView):
+
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
@@ -118,6 +113,7 @@ class UserListFilterView(generics.ListAPIView):
     serializer_class = UserFilterSerializer
     filter_backends = (UserListFilterBackend,)
     search_fields = ("email", "first_name", "last_name")
+    permission_classes = [InternalPermission]
 
 
 class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
@@ -132,6 +128,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             qs = EmailUser.objects.filter(Q(id=user.id))
             return qs
 
+    #TODO is this supposed to be internal only? (current template appears to indicate that)
     @action(
         methods=[
             "POST",
@@ -148,30 +145,6 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         instance = self.get_object()
         serializer = UserSerializer(instance, context={"request": request})
         return Response(serializer.data)
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-    )
-    def upload_id(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.upload_identification(request)
-            with transaction.atomic():
-                instance.save()
-            serializer = UserSerializer(instance, partial=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[
@@ -207,6 +180,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -229,6 +203,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -251,6 +226,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
@@ -289,15 +265,11 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def get_department_users(self, request, *args, **kwargs):
         try:
             search_term = request.GET.get("term", "")
-            # serializer = UserSerializer(
-            #        staff,
-            #        many=True
-            #        )
-            # return Response(serializer.data)
             data = (
                 self.get_queryset()
                 .filter(is_staff=True)

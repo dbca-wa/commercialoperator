@@ -818,61 +818,6 @@ export default {
             }
             vm.uploadedID = _file;
         },
-        uploadID: function () {
-            let vm = this;
-            console.log('uploading id');
-            vm.uploadingID = true;
-            let data = new FormData();
-            data.append('identification', vm.uploadedID);
-            console.log(data);
-            if (vm.uploadedID == null) {
-                vm.uploadingID = false;
-                swal.fire({
-                    title: 'Upload ID',
-                    html: 'Please select a file to upload.',
-                    icon: 'error',
-                });
-            } else {
-                helpers
-                    .fetchUrl(
-                        helpers.add_endpoint_json(
-                            api_endpoints.users,
-                            vm.user.id + '/upload_id'
-                        ),
-                        {
-                            method: 'POST',
-                            body: data,
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            },
-                        }
-                    )
-                    .then(
-                        () => {
-                            vm.uploadingID = false;
-                            vm.uploadedID = null;
-                            swal.fire({
-                                title: 'Upload ID',
-                                html: 'The user ID has been successfully uploaded.',
-                                icon: 'success',
-                            }).then(() => {
-                                window.location.reload(true);
-                            });
-                        },
-                        (error) => {
-                            console.log(error);
-                            vm.uploadingID = false;
-                            swal.fire({
-                                title: 'Upload ID',
-                                html:
-                                    'There was an error uploading the user ID.<br/>' +
-                                    error,
-                                icon: 'error',
-                            });
-                        }
-                    );
-            }
-        },
     },
 };
 </script>
