@@ -10,7 +10,6 @@ export default {
     organisation_requests: '/api/organisation_requests',
     organisation_requests_datatable:
         '/api/organisation_requests/datatable_list/?format=datatables',
-    organisation_contacts: '/api/organisation_contacts.json',
     organisation_access_group_members: '/api/organisation_access_group_members',
     organisation_lookup: '/api/organisations/organisation_lookup',
     users: '/api/users.json',

@@ -75,12 +75,6 @@ router.register(
     org_api.OrganisationRequestsViewSet,
     "organisation_requests",
 )
-router.register(
-    r"organisation_contacts",
-    org_api.OrganisationContactViewSet,
-    "organisation_contacts",
-)
-router.register(r"my_organisations", org_api.MyOrganisationsViewSet, "my_organisations")
 router.register(r"users", users_api.UserViewSet)
 router.register(
     r"amendment_request", proposal_api.AmendmentRequestViewSet, "amendment_request"

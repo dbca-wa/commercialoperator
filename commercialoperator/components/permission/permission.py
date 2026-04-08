@@ -2,7 +2,7 @@ from django.db.models import Q
 from commercialoperator.components.organisations.models import Organisation
 
 from rest_framework.permissions import BasePermission
-from commercialoperator.helpers import is_internal
+from commercialoperator.helpers import is_internal, is_organisation_access_approver
 
 import logging
 logger = logging.getLogger(__name__)
@@ -12,6 +12,10 @@ class InternalPermission(BasePermission):
     def has_permission(self, request, view):
         return is_internal(request)
 
+class OrganisationRequestPermission(BasePermission):
+
+    def has_permission(self, request, view):
+        return is_organisation_access_approver(request)
 
 def organisation_permissions(request, ledger_organisation_id):
     try:
