@@ -1,8 +1,6 @@
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
-from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 
 
@@ -16,7 +14,6 @@ from commercialoperator.components.proposals.models import (
 )
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.mixins import ReferralOwnerMixin
-
 
 from django.core.management import call_command
 

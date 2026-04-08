@@ -292,8 +292,6 @@ urlpatterns = (
         url(
             r"test-emails/$", proposal_views.TestEmailView.as_view(), name="test-emails"
         ),
-        # following url is used to include url path when sending Proposal amendment request to user.
-        url(r"^proposal/$", proposal_views.ProposalView.as_view(), name="proposal"),
         url(
             r"^preview/licence-pdf/(?P<proposal_pk>\d+)",
             proposal_views.PreviewLicencePDFView.as_view(),

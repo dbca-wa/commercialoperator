@@ -2209,7 +2209,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 )
 
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save()
             return Response(serializer.data)
         except Exception as e:
             print(traceback.print_exc())
@@ -2225,7 +2225,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 partial=True,
             )
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save()
             return Response(serializer.data, status=http_status)
         except Exception as e:
             print(traceback.print_exc())

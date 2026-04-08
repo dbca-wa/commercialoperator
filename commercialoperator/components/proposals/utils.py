@@ -1219,7 +1219,7 @@ def save_proponent_data_filming(instance, request, viewset, parks=None, trails=N
     ProposalFilmingOtherDetails.objects.update_or_create(proposal=instance)
     serializer = SaveProposalSerializer(instance, data, partial=True)
     serializer.is_valid(raise_exception=True)
-    viewset.perform_update(serializer)
+    serializer.save()
 
 
 @transaction.atomic
@@ -1285,7 +1285,7 @@ def save_proponent_data_event(instance, request, viewset, parks=None, trails=Non
 
     serializer = SaveProposalSerializer(instance, data, partial=True)
     serializer.is_valid(raise_exception=True)
-    viewset.perform_update(serializer)
+    serializer.save()
 
 
 @transaction.atomic
@@ -1335,7 +1335,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
     ProposalOtherDetails.objects.update_or_create(proposal=instance)
     serializer = SaveProposalSerializer(instance, data, partial=True)
     serializer.is_valid(raise_exception=True)
-    viewset.perform_update(serializer)
+    serializer.save()
     if "accreditations" in other_details_data:
         accreditation_types = instance.other_details.accreditations.values_list(
             "accreditation_type", flat=True
@@ -1558,7 +1558,7 @@ def save_assessor_data_filming(instance, request, viewset):
 
     serializer = SaveInternalFilmingProposalSerializer(instance, sc, partial=True)
     serializer.is_valid(raise_exception=True)
-    viewset.perform_update(serializer)
+    serializer.save()
 
     for f in request.FILES:
         try:
@@ -1643,7 +1643,7 @@ def save_assessor_data_event(instance, request, viewset):
 
     serializer = SaveInternalEventProposalSerializer(instance, sc, partial=True)
     serializer.is_valid(raise_exception=True)
-    viewset.perform_update(serializer)
+    serializer.save()
 
     for f in request.FILES:
         try:
@@ -1663,7 +1663,7 @@ def save_assessor_data_tclass(instance, request, viewset):
     data = {}
     serializer = SaveProposalSerializer(instance, data, partial=True)
     serializer.is_valid(raise_exception=True)
-    viewset.perform_update(serializer)
+    serializer.save()
     # Save activities
     import json
 

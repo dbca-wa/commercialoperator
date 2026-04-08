@@ -43,16 +43,13 @@ from commercialoperator.components.bookings.utils import (
     create_compliance_fee_lines,
     get_session_application_invoice,
     set_session_application_invoice,
-    delete_session_application_invoice,
     get_session_compliance_invoice,
     set_session_compliance_invoice,
-    delete_session_compliance_invoice,
     get_session_filming_invoice,
     set_session_filming_invoice,
     create_bpay_invoice,
     create_other_invoice,
     create_monthly_confirmation,
-    redirect_to_zero_payment_view,
 )
 from commercialoperator.components.bookings.models import (
     Booking,
@@ -66,13 +63,9 @@ from commercialoperator.components.bookings.models import (
     FilmingFeeInvoice,
 )
 
-from commercialoperator.components.segregation.utils import update_payments
 from commercialoperator.components.proposals.utils import proposal_submit
 
-from commercialoperator.components.segregation.classes import CreateInvoiceBasket
-
-from ledger_api_client.ledger_models import Basket, Invoice
-from ledger_api_client.utils import Order
+from ledger_api_client.ledger_models import Invoice
 
 from commercialoperator.helpers import is_internal, is_in_organisation_contacts
 from ledger_api_client.helpers import is_payment_admin
@@ -94,6 +87,18 @@ class ApplicationFeeView(TemplateView):
 
         try:
             proposal = self.get_object()
+
+            user = request.user
+            try:
+                user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+                if not (
+                    is_internal(self.request) or
+                    proposal.org_applicant in user_orgs or proposal.submitter == user
+                ):
+                    raise PermissionDenied
+            except:
+                raise
+
             proposal.submitter = request.user
             proposal.save()
             
@@ -147,6 +152,18 @@ class ComplianceFeeView(TemplateView):
     def post(self, request, *args, **kwargs):
 
         compliance = self.get_object()
+
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                compliance.proposal.org_applicant in user_orgs or compliance.proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+        
         compliance_fee = ComplianceFee.objects.create(
             compliance=compliance,
             created_by=request.user,
@@ -208,6 +225,18 @@ class FilmingFeeView(TemplateView):
     @transaction.atomic
     def get(self, request, *args, **kwargs):
         proposal = self.get_object()
+
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+        
         filming_fee = proposal.filming_fees.order_by("-id").first()
         inv_ref = (
             filming_fee.filming_fee_invoices.order_by("-id").first().invoice_reference
@@ -255,6 +284,18 @@ class DeferredInvoicingPreviewView(TemplateView):
         context = template_context(self.request)
         proposal_id = int(kwargs["proposal_pk"])
         proposal = Proposal.objects.get(id=proposal_id)
+
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+
         try:
             submitter = proposal.applicant
         except:
@@ -302,6 +343,18 @@ class DeferredInvoicingView(TemplateView):
         context = template_context(self.request)
         proposal_id = int(kwargs["proposal_pk"])
         proposal = Proposal.objects.get(id=proposal_id)
+
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+
         try:
             submitter = proposal.applicant
         except:
@@ -386,6 +439,18 @@ class MakePaymentView(TemplateView):
 
         proposal_id = int(kwargs["proposal_pk"])
         proposal = Proposal.objects.get(id=proposal_id)
+
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+        
         booking = None
 
         try:
@@ -504,6 +569,17 @@ class ComplianceFeeSuccessView(TemplateView):
             compliance = Compliance.objects.get(lodgement_number=lodgement_number)
         except:
             raise serializers.ValidationError("Compliance does not exist")
+        
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                compliance.proposal.org_applicant in user_orgs or compliance.proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
 
         compliance_fee = get_session_compliance_invoice(request.session)
         fee_inv = compliance_fee.compliance_fee_invoices.order_by("-id").first()
@@ -574,7 +650,6 @@ class FilmingFeeSuccessViewPreload(views.APIView):
 class FilmingFeeSuccessView(TemplateView):
     template_name = "commercialoperator/booking/success_fee.html"
 
-    #TODO add auth permissions
     def get(self, request, *args, **kwargs):
         print("FilmingFeeSuccessView")
         lodgement_number = kwargs.get("reference")
@@ -584,15 +659,28 @@ class FilmingFeeSuccessView(TemplateView):
         except:
             raise serializers.ValidationError("Proposal does not exist")
         
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+
         filming_fee = get_session_filming_invoice(request.session)
         fee_inv = filming_fee.filming_fee_invoices.order_by("-id").first()
         invoice_ref = fee_inv.invoice_reference
 
+        #TODO review all instances of fee success "submitter" being set - 
+        # check the template and check if the information is accurate RE emails sent and to where
         applicant = proposal.applicant_obj
         try:
-            submitter = applicant
+            submitter = applicant.email
         except:
-            submitter = proposal.submitter if proposal else None
+            submitter = proposal.submitter.email if proposal and proposal.submitter else None
 
         try:
             inv = Invoice.objects.get(reference=invoice_ref)
@@ -683,17 +771,30 @@ class ApplicationFeeSuccessView(TemplateView):
             proposal = Proposal.objects.get(lodgement_number=lodgement_number)
         except:
             raise serializers.ValidationError("Proposal does not exist")
+
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
         
         application_fee = get_session_application_invoice(request.session)
 
         fee_inv = application_fee.application_fee_invoices.order_by("-id").first()
         invoice_ref = fee_inv.invoice_reference
 
+        #TODO review all instances of fee success "submitter" being set - 
+        # check the template and check if the information is accurate RE emails sent and to where
         applicant = proposal.applicant_obj
         try:
-            submitter = applicant
+            submitter = applicant.email
         except:
-            submitter = proposal.submitter if proposal else None
+            submitter = proposal.submitter.email if proposal and proposal.submitter else None
 
         try:
             inv = Invoice.objects.get(reference=invoice_ref)
@@ -799,16 +900,30 @@ class BookingSuccessView(TemplateView):
         except:
             raise serializers.ValidationError("Proposal does not exist")
         
+        user = request.user
+        try:
+            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            if not (
+                is_internal(self.request) or
+                proposal.org_applicant in user_orgs or proposal.submitter == user
+            ):
+                raise PermissionDenied
+        except:
+            raise
+
         booking = Booking.objects.filter(proposal=proposal).order_by("created").last()
         session_booking = get_session_booking(request.session)
 
         if booking != session_booking:
             logger.warning("Latest booking record and booking in session do not match")
 
+        #TODO review all instances of fee success "submitter" being set - 
+        # check the template and check if the information is accurate RE emails sent and to where
+        applicant = proposal.applicant_obj
         try:
-            submitter = proposal.applicant
+            submitter = applicant.email
         except:
-            submitter = proposal.submitter
+            submitter = proposal.submitter.email if proposal and proposal.submitter else None
 
         fee_inv = booking.invoices.order_by("-id").first()
         invoice_ref = fee_inv.invoice_reference
