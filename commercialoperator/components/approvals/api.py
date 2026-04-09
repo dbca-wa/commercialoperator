@@ -3,9 +3,7 @@ import datetime
 import re
 from django.db.models import Q
 from django.db import transaction
-from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
-from django.conf import settings
 from rest_framework import viewsets, serializers, generics
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
