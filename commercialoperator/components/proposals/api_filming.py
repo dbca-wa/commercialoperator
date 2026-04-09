@@ -11,6 +11,8 @@ from commercialoperator.components.proposals.models import ProposalUserAction
 from commercialoperator.components.proposals.models import (
     ProposalFilmingActivity,
     ProposalFilmingParks,
+    Proposal,
+    FilmingParkDocument,
 )
 from commercialoperator.components.proposals.serializers_filming import (
     ProposalFilmingParksSerializer,
@@ -18,10 +20,12 @@ from commercialoperator.components.proposals.serializers_filming import (
 )
 
 from commercialoperator.helpers import is_internal
-import logging
+from django.core.exceptions import PermissionDenied
 
+import logging
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.proposals.api import user_can_edit
 
 class ProposalFilmingParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalFilmingParks.objects.none()
@@ -42,6 +46,10 @@ class ProposalFilmingParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
+
             serializer = SaveProposalFilmingParksSerializer(
                 instance, data=json.loads(request.data.get("data"))
             )
@@ -67,7 +75,10 @@ class ProposalFilmingParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
 
     def create(self, request, *args, **kwargs):
         try:
-            # instance = self.get_object()
+            proposal = Proposal.objects.get(id=json.loads(request.data.get("data"))["proposal"])
+            if not proposal or not user_can_edit(request, proposal):
+                raise PermissionDenied
+            
             serializer = SaveProposalFilmingParksSerializer(
                 data=json.loads(request.data.get("data"))
             )
@@ -102,6 +113,8 @@ class ProposalFilmingParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
     def delete_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
             FilmingParkDocument.objects.get(id=request.data.get("id")).delete()
             return Response(
                 [

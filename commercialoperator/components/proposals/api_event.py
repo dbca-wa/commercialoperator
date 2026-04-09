@@ -14,6 +14,7 @@ from commercialoperator.components.proposals.models import (
     PreEventsParkDocument,
     ProposalPreEventsParks,
     ProposalEventsTrails,
+    Proposal,
 )
 from commercialoperator.components.proposals.serializers_event import (
     ProposalEventsParksSerializer,
@@ -27,11 +28,13 @@ from commercialoperator.components.proposals.serializers_event import (
 
 from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
 from commercialoperator.helpers import is_internal
+from django.core.exceptions import PermissionDenied
 
 import logging
 
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.proposals.api import user_can_edit
 
 class ProposalEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalEventsParks.objects.none()
@@ -52,6 +55,10 @@ class ProposalEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMi
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
+            
             serializer = SaveProposalEventsParksSerializer(
                 instance, data=json.loads(request.data.get("data"))
             )
@@ -77,7 +84,10 @@ class ProposalEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMi
 
     def create(self, request, *args, **kwargs):
         try:
-            # instance = self.get_object()
+            proposal = Proposal.objects.get(id=json.loads(request.data.get("data"))["proposal"])
+            if not proposal or not user_can_edit(request, proposal):
+                raise PermissionDenied
+            
             serializer = SaveProposalEventsParksSerializer(
                 data=json.loads(request.data.get("data"))
             )
@@ -111,6 +121,8 @@ class ProposalEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMi
     def delete_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
             EventsParkDocument.objects.get(id=request.data.get("id")).delete()
             return Response(
                 [
@@ -148,6 +160,9 @@ class AbseilingClimbingActivityViewSet(viewsets.GenericViewSet, mixins.RetrieveM
     def edit_abseiling_climbing(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
+            
             serializer = AbseilingClimbingActivitySerializer(
                 instance, data=request.data
             )
@@ -193,6 +208,8 @@ class ProposalPreEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveMode
     def edit_park(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
             serializer = SaveProposalPreEventsParksSerializer(
                 instance, data=json.loads(request.data.get("data"))
             )
@@ -219,7 +236,10 @@ class ProposalPreEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveMode
 
     def create(self, request, *args, **kwargs):
         try:
-            # instance = self.get_object()
+            proposal = Proposal.objects.get(id=json.loads(request.data.get("data"))["proposal"])
+            if not proposal or not user_can_edit(request, proposal):
+                raise PermissionDenied
+            
             serializer = SaveProposalPreEventsParksSerializer(
                 data=json.loads(request.data.get("data"))
             )
@@ -254,6 +274,9 @@ class ProposalPreEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveMode
     def delete_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
+            
             PreEventsParkDocument.objects.get(id=request.data.get("id")).delete()
             return Response(
                 [
@@ -291,6 +314,9 @@ class ProposalEventsTrailsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
     def edit_trail(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
+            
             serializer = SaveProposalEventsTrailsSerializer(
                 instance, data=json.loads(request.data.get("data"))
             )
@@ -316,7 +342,10 @@ class ProposalEventsTrailsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
 
     def create(self, request, *args, **kwargs):
         try:
-            # instance = self.get_object()
+            proposal = Proposal.objects.get(id=json.loads(request.data.get("data"))["proposal"])
+            if not proposal or not user_can_edit(request, proposal):
+                raise PermissionDenied
+            
             serializer = SaveProposalEventsTrailsSerializer(
                 data=json.loads(request.data.get("data"))
             )
