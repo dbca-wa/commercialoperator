@@ -253,6 +253,7 @@ import VehiclesVessels from '@/components/common/event/vehicles_vessels.vue';
 import OtherDetails from '@/components/common/event/other_details.vue';
 import OnlineTraining from '@/components/common/event/online_training.vue';
 import Confirmation from '@/components/common/event/confirmation.vue';
+import $ from 'jquery';
 export default {
     components: {
         Account,

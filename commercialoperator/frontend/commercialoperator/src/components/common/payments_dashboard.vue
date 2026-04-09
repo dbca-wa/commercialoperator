@@ -186,7 +186,7 @@ import datatable from '@/utils/vue/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
-
+import $ from 'jquery'
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -233,7 +233,6 @@ export default {
                 { name: 'Monthly Invoicing', value: '2' },
                 { name: 'Other', value: '3' },
             ],
-            proposal_submitters: [],
             proposal_headers: [
                 'Number',
                 'Licence',
@@ -266,8 +265,6 @@ export default {
                     [10, 25, 50, 100, 'All'],
                 ],
                 ajax: {
-                    //"url": vm.url,
-                    //"url": '/api/booking_paginated/bookings_external/?format=datatables',
                     url: api_endpoints.booking_paginated_internal,
                     dataSrc: 'data',
 
@@ -550,7 +547,6 @@ export default {
     },
     mounted: function () {
         this.fetchOverdueInvoices();
-        this.fetchFilterLists();
         this.fetchProfile();
         let vm = this;
         $('a[data-toggle="collapse"]').on('click', function () {
@@ -567,24 +563,12 @@ export default {
         });
     },
     methods: {
-        fetchFilterLists: function () {
-            let vm = this;
-
-            helpers.fetchUrl(api_endpoints.filter_list_approvals).then(
-                (response) => {
-                    vm.proposal_submitters = response.submitters;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
-        },
         fetchOverdueInvoices: function () {
             let vm = this;
 
             helpers.fetchUrl(api_endpoints.overdue_invoices).then(
                 (response) => {
-                    vm.overdue_invoices = response;
+                    vm.overdue_invoices = response.results;
                 },
                 (error) => {
                     console.log(error);

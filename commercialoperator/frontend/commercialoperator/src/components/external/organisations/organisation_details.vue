@@ -234,7 +234,7 @@
 import utils from '../utils';
 import FormSection from '@/components/forms/section_toggle.vue';
 import _ from 'lodash';
-
+import $ from 'jquery'
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Organisation',

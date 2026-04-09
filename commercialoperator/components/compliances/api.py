@@ -4,7 +4,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.core.cache import cache
 from django.conf import settings
-from rest_framework import viewsets, serializers, views
+from rest_framework import viewsets, serializers, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -28,27 +28,54 @@ from commercialoperator.components.segregation.utils import (
     retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_delegate_organisation_ids,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal, is_assessor
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
+from commercialoperator.components.permission.permission import InternalPermission, ProposalAssessorPermission
+from django.core.exceptions import PermissionDenied
+
+def user_can_edit(request, instance):
+    """
+    Return True or False based on whether or not the user is authorised to edit
+    """
+    if not request.user or not instance.proposal:
+        return False
+    
+    user = request.user 
+    user_orgs = retrieve_delegate_organisation_ids(user)
+
+    #if in draft check if the user if either an allowed org member or an assessor, return True if so
+    if (
+        (instance.proposal.org_applicant_id in user_orgs or instance.proposal.submitter_id == user.id) and 
+        instance.processing_status == "due"
+    ):
+        return True
+
+    #if under assessment stages only assessors can edit
+    if (
+        is_assessor(request) and 
+        (instance.processing_status == "with_assessor" or instance.processing_status == "due")
+    ):
+        return True
+
+    #otherwise return False
+    return False
 
 
-class CompliancePaginatedViewSet(viewsets.ModelViewSet):
+class CompliancePaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-    # renderer_classes = (ProposalRenderer,)
     page_size = 10
     queryset = Compliance.objects.none()
     serializer_class = ComplianceSerializer
 
     def get_queryset(self):
         if is_internal(self.request):
-            # return Compliance.objects.all()
             return Compliance.objects.all().exclude(
                 Q(processing_status="discarded")
                 | Q(requirement__notification_only=True)
             )
-        elif is_customer(self.request):
+        else:
             user = self.request.user
 
             commercialoperator_organisations = (
@@ -65,7 +92,6 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
                 | Q(requirement__notification_only=True)
             )
             return queryset
-        return Compliance.objects.none()
 
     @action(
         methods=[
@@ -76,9 +102,6 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
     def compliances_external(self, request, *args, **kwargs):
         """
         Paginated serializer for datatables - used by the external dashboard
-
-        To test:
-            http://localhost:8000/api/compliance_paginated/compliances_external/?format=datatables&draw=1&length=2
         """
 
         qs = self.get_queryset().exclude(processing_status="future")
@@ -102,6 +125,7 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def compliances_internal(self, request, *args, **kwargs):
         """Same as external compliance endpoint but including future compliances"""
@@ -122,15 +146,14 @@ class CompliancePaginatedViewSet(viewsets.ModelViewSet):
         return self.paginator.get_paginated_response(serializer.data)
 
 
-class ComplianceViewSet(viewsets.ModelViewSet):
+class ComplianceViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = ComplianceSerializer
-    # queryset = Compliance.objects.all()
     queryset = Compliance.objects.none()
 
     def get_queryset(self):
         if is_internal(self.request):
             return Compliance.objects.all().exclude(processing_status="discarded")
-        elif is_customer(self.request):
+        else:
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Compliance.objects.filter(
@@ -138,19 +161,6 @@ class ComplianceViewSet(viewsets.ModelViewSet):
                 | Q(proposal__submitter_id=user.id)
             ).exclude(processing_status="discarded")
             return queryset
-        return Compliance.objects.none()
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        # Filter by org
-        org_id = request.GET.get("org_id", None)
-        if org_id:
-            queryset = queryset.filter(proposal__org_applicant_id=org_id)
-        submitter_id = request.GET.get("submitter_id", None)
-        if submitter_id:
-            qs = qs.filter(proposal__submitter_id=submitter_id)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(
         methods=[
@@ -172,6 +182,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def internal_compliance(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -191,6 +202,10 @@ class ComplianceViewSet(viewsets.ModelViewSet):
         try:
             with transaction.atomic():
                 instance = self.get_object()
+
+                if not user_can_edit(request, instance):
+                    raise PermissionDenied
+                
                 data = {
                     "text": request.data.get("detail"),
                     "num_participants": request.data.get("num_participants"),
@@ -241,6 +256,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
@@ -267,6 +283,8 @@ class ComplianceViewSet(viewsets.ModelViewSet):
     def delete_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if not user_can_edit(request, instance):
+                raise PermissionDenied
             doc = request.data.get("document")
             instance.delete_document(request, doc)
             serializer = ComplianceSerializer(instance)
@@ -287,6 +305,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -319,6 +338,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     def unassign(self, request, *args, **kwargs):
         try:
@@ -341,6 +361,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     def accept(self, request, *args, **kwargs):
         try:
@@ -386,6 +407,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -408,6 +430,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -430,6 +453,7 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
@@ -464,22 +488,10 @@ class ComplianceViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ComplianceAmendmentRequestViewSet(viewsets.ModelViewSet):
+class ComplianceAmendmentRequestViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ComplianceAmendmentRequest.objects.none()
     serializer_class = ComplianceAmendmentRequestSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        if is_internal(self.request):
-            return ComplianceAmendmentRequest.objects.all()
-        elif is_customer(self.request):
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
-            qs = ComplianceAmendmentRequest.objects.filter(
-                Q(compliance_id__proposal_id__org_applicant_id__in=user_orgs)
-                | Q(compliance_id__proposal_id__submitter_id=user.id)
-            )
-            return qs
-        return ComplianceAmendmentRequest.objects.none()
+    permission_classes=[ProposalAssessorPermission]
 
     def create(self, request, *args, **kwargs):
         try:

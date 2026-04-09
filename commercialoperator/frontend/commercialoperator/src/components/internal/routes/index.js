@@ -14,6 +14,7 @@ import Approval from '../approvals/approval.vue';
 import PaymentOrder from '@/components/common/tclass/payment_order.vue';
 import ParkEntryFeesDashboard from '../park_entry_fees_dashboard.vue';
 import DistrictProposal from '../district_proposals/district_proposal.vue';
+import User from '../users/manage.vue'
 
 export default {
     path: '/internal',
@@ -71,6 +72,17 @@ export default {
                     name: 'org-access',
                 },
             ],
+        },
+        {
+            path: 'users',
+            component: RouterView,
+            children: [
+                {
+                    path: ':user_id',
+                    component: User,
+                    name:"internal-user-detail"
+                },
+            ]
         },
         {
             path: 'proposal',

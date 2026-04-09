@@ -2,12 +2,8 @@ import traceback
 import datetime
 import re
 from django.db.models import Q
-from typing import Optional
-from django.db.models import QuerySet
 from django.db import transaction
-from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
-from django.conf import settings
 from rest_framework import viewsets, serializers, generics
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
@@ -15,6 +11,7 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import datetime
+from commercialoperator.components.permission.permission import InternalPermission
 from commercialoperator.components.proposals.models import (
     Proposal,
     ApplicationType,
@@ -38,11 +35,11 @@ from commercialoperator.components.segregation.decorators import basic_exception
 from rest_framework_datatables.filters import DatatablesFilterBackend
 from commercialoperator.components.segregation.utils import (
     retrieve_delegate_organisation_ids,
-    expand_organisation_fields,
-    expand_emailuser_fields,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
+from rest_framework import filters, mixins
+
 
 import logging
 
@@ -99,7 +96,7 @@ class ApprovalFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
+class ApprovalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ApprovalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
     page_size = 10
@@ -109,14 +106,13 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if is_internal(self.request):
             return Approval.objects.all()
-        elif is_customer(self.request):
+        else:
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
-        return Approval.objects.none()
 
     @action(
         methods=[
@@ -127,9 +123,6 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
     def approvals_external(self, request, *args, **kwargs):
         """
         Paginated serializer for datatables - used by the internal and external dashboard (filtered by the get_queryset method)
-
-        To test:
-            http://localhost:8000/api/approval_paginated/approvals_external/?format=datatables&draw=1&length=2
         """
 
         qs = self.get_queryset()
@@ -142,23 +135,17 @@ class ApprovalPaginatedViewSet(viewsets.ModelViewSet):
         return self.paginator.get_paginated_response(serializer.data)
 
 
-from rest_framework import filters
-
-
 class ApprovalPaymentFilterViewSet(generics.ListAPIView):
-    """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
 
     queryset = Approval.objects.none()
     serializer_class = ApprovalPaymentSerializer
     filter_backends = (filters.SearchFilter,)
-    # search_fields = ('applicant', 'applicant_id',)
     search_fields = ("id",)
 
     def get_queryset(self):
         """
         Return All approvals associated with user (proxy_applicant and org_applicant)
         """
-        # return Approval.objects.filter(proxy_applicant=self.request.user)
         user = self.request.user
 
         # get all orgs associated with user
@@ -181,58 +168,21 @@ class ApprovalPaymentFilterViewSet(generics.ListAPIView):
         )  # get lastest licence, ignore the amended
         return approval_qs
 
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def _list(self, request, *args, **kwargs):
-        data = []
-        for approval in self.get_queryset():
-            data.append(
-                dict(
-                    lodgement_number=approval.lodgement_number,
-                    current_proposal=approval.current_proposal_id,
-                )
-            )
-        return Response(data)
-        # return Response(self.get_queryset().values_list('lodgement_number','current_proposal_id'))
 
-
-class ApprovalViewSet(viewsets.ModelViewSet):
-    # queryset = Approval.objects.all()
+class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Approval.objects.none()
     serializer_class = ApprovalSerializer
 
     def get_queryset(self):
         if is_internal(self.request):
             return Approval.objects.all()
-        elif is_customer(self.request):
+        else:
             user = self.request.user
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             queryset = Approval.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
             )
             return queryset
-        return Approval.objects.none()
-
-    def list(self, request, *args, **kwargs):
-        # queryset = self.get_queryset()
-        queryset = (
-            self.get_queryset()
-            .order_by("lodgement_number", "-issue_date")
-            .distinct("lodgement_number")
-        )
-        # Filter by org
-        org_id = request.GET.get("org_id", None)
-        if org_id:
-            queryset = queryset.filter(org_applicant_id=org_id)
-        submitter_id = request.GET.get("submitter_id", None)
-        if submitter_id:
-            qs = qs.filter(submitter_id=submitter_id)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
     @action(
         methods=[
@@ -250,74 +200,12 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @action(methods=["POST"], detail=True)
-    @renderer_classes((JSONRenderer,))
-    def process_document(self, request, *args, **kwargs):
-        instance = self.get_object()
-        action = request.POST.get("action")
-        section = request.POST.get("input_name")
-        if action == "list" and "input_name" in request.POST:
-            pass
-
-        elif action == "delete" and "document_id" in request.POST:
-            document_id = request.POST.get("document_id")
-            document = instance.qaofficer_documents.get(id=document_id)
-
-            document.visible = False
-            document.save()
-            instance.save(
-                version_comment="Licence ({}): {}".format(section, document.name)
-            )  # to allow revision to be added to reversion history
-
-        elif (
-            action == "save"
-            and "input_name" in request.POST
-            and "filename" in request.POST
-        ):
-            proposal_id = request.POST.get("proposal_id")
-            filename = request.POST.get("filename")
-            _file = request.POST.get("_file")
-            if not _file:
-                _file = request.FILES.get("_file")
-
-            document = instance.qaofficer_documents.get_or_create(
-                input_name=section, name=filename
-            )[0]
-            path = default_storage.save(
-                "{}/proposals/{}/approvals/{}".format(
-                    settings.MEDIA_APP_DIR, proposal_id, filename
-                ),
-                ContentFile(_file.read()),
-            )
-
-            document._file = path
-            document.save()
-            instance.save(
-                version_comment="Licence ({}): {}".format(section, filename)
-            )  # to allow revision to be added to reversion history
-            # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
-
-        return Response(
-            [
-                dict(
-                    input_name=d.input_name,
-                    name=d.name,
-                    file=d._file.url,
-                    id=d.id,
-                    can_delete=d.can_delete,
-                )
-                for d in instance.qaofficer_documents.filter(
-                    input_name=section, visible=True
-                )
-                if d._file
-            ]
-        )
-
     @action(
         methods=[
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     @renderer_classes((JSONRenderer,))
     @basic_exception_handler
@@ -330,11 +218,6 @@ class ApprovalViewSet(viewsets.ModelViewSet):
         org_applicant = None
         proxy_applicant = None
 
-        # _file = (
-        #     request.data.get("file-upload-0")
-        #     if request.data.get("file-upload-0")
-        #     else raiser("Licence File is required")
-        # )
         _file = (
             request.data.get("file")
             if request.data.get("file")
@@ -429,6 +312,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_extend(self, request, *args, **kwargs):
         try:
@@ -456,6 +340,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_cancellation(self, request, *args, **kwargs):
         try:
@@ -483,6 +368,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_suspension(self, request, *args, **kwargs):
         try:
@@ -510,6 +396,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_reinstate(self, request, *args, **kwargs):
         try:
@@ -535,6 +422,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_surrender(self, request, *args, **kwargs):
         try:
@@ -562,6 +450,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -584,6 +473,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -606,6 +496,7 @@ class ApprovalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):

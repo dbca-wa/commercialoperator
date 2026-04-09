@@ -1552,6 +1552,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def permit(self):
         return self.approval.licence_document._file.url if self.approval else None
 
+    #TODO provided id and name only
     @property
     def allowed_assessors(self):
         if self.processing_status == "with_approver":
@@ -2367,7 +2368,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
-    def assing_approval_level_document(self, request):
+    def passing_approval_level_document(self, request):
         with transaction.atomic():
             try:
                 approval_level_document = request.data["approval_level_document"]
@@ -2382,9 +2383,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             name=str(approval_level_document),
                         )[0]
                     document.name = str(approval_level_document)
-                    # commenting out below tow lines - we want to retain all past attachments - reversion can use them
-                    # if document._file and os.path.isfile(document._file.path):
-                    #    os.remove(document._file.path)
                     document._file = approval_level_document
                     document.save()
                     d = ProposalDocument.objects.get(id=document.id)
@@ -2395,7 +2393,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     comment = "Approval Level Document Deleted: {}".format(
                         request.data["approval_level_document_name"]
                     )
-                # self.save()
+
                 self.save(
                     version_comment=comment
                 )  # to allow revision to be added to reversion history
@@ -2949,7 +2947,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @transaction.atomic
     def final_approval(self, request=None, details=None):
         from commercialoperator.components.approvals.models import Approval
-        from commercialoperator.helpers import is_departmentUser
+        from commercialoperator.helpers import is_internal
 
         try:
             self.proposed_decline_status = False
@@ -2978,7 +2976,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "cc_email": details.get("cc_email"),
                 }
 
-                if is_departmentUser(request):
+                if is_internal(request):
                     # needed because external users come through this workflow following 'awaiting_payment; status
                     self.approved_by = request.user
 
@@ -3371,19 +3369,22 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "previous_application": previous_proposal,
                     "customer_status": "with_assessor",
                 }
-                # proposal=Proposal.objects.get(previous_application = previous_proposal)
                 proposal = Proposal.objects.get(**renew_conditions)
-                # if proposal.customer_status=='with_assessor':
                 if proposal:
                     raise ValidationError(
                         "A renewal/ amendment for this licence has already been lodged and is awaiting review."
                     )
             except Proposal.DoesNotExist:
+
+                if not (self.approval and self.approval.renewal_document and self.approval.renewal_sent and self.approval.can_renew):
+                    raise ValidationError(
+                        "The licence cannot be renewed yet."
+                    )
+
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = "renewal"
                 proposal.training_completed = False
-                # proposal.schema = ProposalType.objects.first().schema
                 ptype = ProposalType.objects.filter(
                     name=proposal.application_type
                 ).latest("version")
@@ -3517,6 +3518,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         "An amendment for this licence has already been lodged and is awaiting review."
                     )
             except Proposal.DoesNotExist:
+
+                if not (self.approval and self.approval.can_amend):
+                    raise ValidationError(
+                        "The licence cannot be amended at this time."
+                    )
+                
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = "amendment"
@@ -4790,6 +4797,7 @@ class Referral(RevisionedMixin):
         else:
             return None
 
+    #TODO refactor or remove this (always returns True)
     @property
     def can_be_completed(self):
         return True

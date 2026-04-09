@@ -1074,7 +1074,7 @@ import WithQAOfficer from './proposal_qaofficer.vue';
 import FilmingDistrictProposalsTable from '@common-utils/filming_district_proposals_table.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     name: 'InternalProposal',
     components: {

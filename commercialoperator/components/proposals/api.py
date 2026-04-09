@@ -1,18 +1,13 @@
 import traceback
 import os
 import json
-from django.db import models, connection
-from django.db.models import Q, Value
-from django.db.models.functions import Concat, Coalesce
+from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from django.utils.dateparse import parse_date
-from django.db.models import QuerySet
-from typing import Optional
 from django.core.cache import cache
 from django.conf import settings
 from django.utils import timezone
-from rest_framework import viewsets, serializers, status, views
+from rest_framework import viewsets, serializers, status, views, mixins
 from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -26,20 +21,13 @@ from commercialoperator.components.proposals.utils import (
     get_proposal_processing_status,
     paginate_chained_list,
     searchKeyWords,
-    _get_params,
-    _is_datetime_field,
     search_in_emailuser_fields,
-    request_has_filters,
 )
 from commercialoperator.components.proposals.models import (
-    ProposalParkActivity,
     search_reference,
     ProposalUserAction,
 )
-from commercialoperator.components.main.utils import check_db_connection
 
-from django.urls import reverse
-from django.shortcuts import redirect, get_object_or_404
 from commercialoperator.components.main.models import (
     Region,
     District,
@@ -60,7 +48,6 @@ from commercialoperator.components.proposals.models import (
     Vehicle,
     Vessel,
     ProposalAccreditation,
-    ChecklistQuestion,
     ProposalAssessment,
     ProposalAssessmentAnswer,
     RequirementDocument,
@@ -68,7 +55,6 @@ from commercialoperator.components.proposals.models import (
 )
 from commercialoperator.components.proposals.serializers import (
     SendReferralSerializer,
-    ProposalTypeSerializer,
     ProposalSerializer,
     InternalProposalSerializer,
     SaveProposalSerializer,
@@ -90,7 +76,6 @@ from commercialoperator.components.proposals.serializers import (
     VesselSerializer,
     SaveProposalOtherDetailsSerializer,
     ProposalParkSerializer,
-    ChecklistQuestionSerializer,
     ProposalAssessmentSerializer,
     ProposalAssessmentAnswerSerializer,
     ParksAndTrailSerializer,
@@ -125,7 +110,6 @@ from commercialoperator.components.bookings.models import (
     ParkBooking,
     BookingInvoice,
 )
-from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.compliances.models import Compliance
 
 from commercialoperator.components.segregation.decorators import basic_exception_handler
@@ -134,48 +118,25 @@ from commercialoperator.components.segregation.utils import (
     retrieve_delegate_organisation_ids,
     retrieve_group_members,
     retrieve_user_groups,
-    expand_emailuser_fields,
 )
-from commercialoperator.helpers import is_customer, is_internal
+from commercialoperator.helpers import is_internal, is_assessor
 from django.core.files.base import ContentFile
 
 from django.core.files.storage import default_storage
-from rest_framework.pagination import PageNumberPagination
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
-from reversion.models import Version
+from commercialoperator.components.permission.permission import (
+    InternalPermission, ProposalAssessorPermission, 
+    QAOfficerPermission, ProposalApproverPermission, 
+    ReferrerPermission,
+    DistrictProposalAssessorPermission, DistrictProposalApproverPermission
+)
+from django.core.exceptions import PermissionDenied
 
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-
-class GetProposalType(views.APIView):
-    renderer_classes = [
-        JSONRenderer,
-    ]
-
-    def get(self, request, format=None):
-        _type = ProposalType.objects.first()
-        if _type:
-            serializer = ProposalTypeSerializer(_type)
-            return Response(serializer.data)
-        else:
-            return Response(
-                {"error": "There is currently no application type."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-
-class GetEmptyList(views.APIView):
-    renderer_classes = [
-        JSONRenderer,
-    ]
-
-    def get(self, request, format=None):
-        return Response([])
 
 
 def proposal_search_filter(qs, search_value):
@@ -234,19 +195,43 @@ def compliance_search_filter(qs, search_value):
 
     return qs, matching_ids
 
-def get_expanded_queryset(request, queryset):
-    emailuser_fk_fields = [
-        field.name
-        for field in queryset.model._meta.get_fields()
-        if field.is_relation and field.many_to_one and field.related_model.__name__ == "EmailUser"
-    ]
 
-    emailuser_properties = ["email", "first_name", "last_name"]
+def user_can_edit(request, instance):
+    """
+    Return True or False based on whether or not the user is authorised to edit
+    """
+    if not request.user:
+        return False
+    
+    user = request.user 
+    user_orgs = retrieve_delegate_organisation_ids(user)
 
-    # Expand for each FK field
-    for fk_field in emailuser_fk_fields:
-        queryset = expand_emailuser_fields(queryset, fk_field, emailuser_properties)
-    return queryset
+    #if in draft check if the user if either an allowed org member or an assessor, return True if so
+    if (
+        (instance.org_applicant_id in user_orgs or instance.submitter_id == user.id) and 
+        instance.processing_status == Proposal.PROCESSING_STATUS_DRAFT
+    ):
+        return True
+
+    #if under assessment stages (including with referrers and similar statuses) only assessors can edit
+    #(referrer operations should not use this test function)
+    if (
+        is_assessor(request) and 
+        instance.processing_status in [
+            Proposal.PROCESSING_STATUS_DRAFT,
+            Proposal.PROCESSING_STATUS_WITH_ASSESSOR,
+            Proposal.PROCESSING_STATUS_WITH_DISTRICT_ASSESSOR,
+            Proposal.PROCESSING_STATUS_ONHOLD,
+            Proposal.PROCESSING_STATUS_WITH_QA_OFFICER,
+            Proposal.PROCESSING_STATUS_WITH_REFERRAL,
+            Proposal.PROCESSING_STATUS_WITH_ASSESSOR_REQUIREMENTS,
+        ]
+    ):
+        return True
+
+    #otherwise return False (approver operations should also not use this test function)
+    return False
+
 
 class ProposalFilterBackend(DatatablesFilterBackend):
     """
@@ -298,7 +283,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
 
             if search_text and super_queryset:
                 search_queryset = proposal_search_filter(queryset, search_text)
-                if results_found:
+                if search_queryset.exists():
                     queryset = search_queryset.distinct() | super_queryset   
                 else:
                     queryset = queryset.distinct() & super_queryset   
@@ -365,10 +350,21 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             payment_status = request.GET.get("payment_status")
 
             if payment_method:
-                queryset = queryset.filter(
-                    Q(invoices__payment_method=payment_method)
-                    | Q(booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING)
-                )
+                if payment_method == str(
+                    BookingInvoice.PAYMENT_METHOD_MONTHLY_INVOICING
+                ):
+                    # for deferred payment where invoice not yet created (monthly invoicing), append the following qs
+                    queryset = queryset.filter(
+                        Q(invoices__payment_method=payment_method)
+                        | Q(
+                            booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING
+                        )
+                    )
+                else:
+                    queryset = queryset.filter(
+                        Q(invoices__payment_method=payment_method)
+                    )
+
 
             if payment_status and payment_status.lower() != "all":
                 queryset = queryset.filter(invoices__property_cache__payment_status__iexact=payment_status.lower())
@@ -439,7 +435,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
         return queryset
 
 
-class ProposalPaginatedViewSet(viewsets.ModelViewSet):
+class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
     queryset = Proposal.objects.none()
@@ -458,7 +454,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             user_id = user.id
             queryset = Proposal.objects.filter(
@@ -467,20 +463,16 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
 
             return queryset.exclude(application_type=self.excluded_type)
 
-        return Proposal.objects.none()
-
     @action(
         methods=[
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def proposals_internal(self, request, *args, **kwargs):
         """
         Internal dashboard endpoint (DataTables server-side).
-
-        Example:
-        /api/proposal_paginated/proposal_paginated_internal/?format=datatables&draw=1&start=0&length=10
         """
         if not is_internal(request):
             return Response([])
@@ -499,17 +491,15 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def referrals_internal(self, request, *args, **kwargs):
         """
         Used by the internal dashboard
-
-        http://localhost:8499/api/proposal_paginated/referrals_internal/?format=datatables&draw=1&length=2
         """
         self.serializer_class = ReferralSerializer
 
         request_user_id = request.user.id
-        # request_user_id = 70348 # This is an existing user id for testing
         # Query the through-table on the existing m2m field with `emailuser`, rather than using the set with (now) `emailuserro`
         request_user_referralrecipientgroup_set = retrieve_user_groups(
             "ReferralRecipientGroup", request_user_id
@@ -532,6 +522,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def qaofficer_info(self, request, *args, **kwargs):
         """
@@ -558,6 +549,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=False,
+        permission_classes=[InternalPermission]
     )
     def qaofficer_internal(self, request, *args, **kwargs):
         """
@@ -603,8 +595,6 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
     def proposals_external(self, request, *args, **kwargs):
         """
         Used by the external dashboard
-
-        http://localhost:8499/api/proposal_paginated/proposal_paginated_external/?format=datatables&draw=1&length=2
         """
         qs = self.get_queryset().exclude(processing_status="discarded")
         qs = self.filter_queryset(qs)
@@ -624,54 +614,7 @@ class ProposalPaginatedViewSet(viewsets.ModelViewSet):
         return self.paginator.get_paginated_response(serializer.data)
 
 
-class VersionableModelViewSetMixin(viewsets.ModelViewSet):
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=True,
-    )
-    def history(self, request, *args, **kwargs):
-        _object = self.get_object()
-        # _versions = reversion.get_for_object(_object)
-        _versions = Version.objects.get_for_object(_object)
-
-        _context = {"request": request}
-
-        # _version_serializer = VersionSerializer(_versions, many=True, context=_context)
-        _version_serializer = ProposalSerializer(
-            [v.object for v in _versions], many=True, context=_context
-        )
-
-        return Response(_version_serializer.data)
-
-
-class ProposalSubmitViewSet(viewsets.ModelViewSet):
-    queryset = Proposal.objects.none()
-    serializer_class = ProposalSerializer
-    lookup_field = "id"
-
-    @property
-    def excluded_type(self):
-        try:
-            return ApplicationType.objects.get(name="E Class")
-        except:
-            return ApplicationType.objects.none()
-
-    def get_queryset(self):
-        user = self.request.user
-        if is_internal(self.request):
-            return Proposal.objects.all().exclude(application_type=self.excluded_type)
-        elif is_customer(self.request):
-            user_orgs = retrieve_delegate_organisation_ids(user)
-            queryset = Proposal.objects.filter(
-                Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            )
-            return queryset.exclude(application_type=self.excluded_type)
-        return Proposal.objects.none()
-    
-
-class ProposalParkViewSet(viewsets.ModelViewSet):
+class ProposalParkViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     """
     Similar to ProposalViewSet, except get_queryset include migrated_licences
     """
@@ -694,14 +637,13 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
-            return qs  # .exclude(migrated=True)
-        elif is_customer(self.request):
+            return qs
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             queryset = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user.id)
-            )  # .exclude(migrated=True)
+            )
             return queryset.exclude(application_type=self.excluded_type)
-        return Proposal.objects.none()
 
     @action(
         methods=[
@@ -715,7 +657,7 @@ class ProposalParkViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ProposalViewSet(viewsets.ModelViewSet):
+class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Proposal.objects.none()
     serializer_class = ProposalSerializer
     lookup_field = "id"
@@ -733,30 +675,14 @@ class ProposalViewSet(viewsets.ModelViewSet):
         if is_internal(self.request):
             qs = Proposal.objects.all().exclude(application_type=self.excluded_type)
             return qs.exclude(migrated=True)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
-            # user_orgs = [1] # This is an existing org id for testing
             user_id = user.id
-            # user_id = 394315 # This is an existing user id for testing
             queryset = Proposal.objects.filter(
                 Q(org_applicant_id__in=user_orgs) | Q(submitter_id=user_id)
             ).exclude(migrated=True)
 
             return queryset.exclude(application_type=self.excluded_type)
-
-        return Proposal.objects.none()
-
-    def get_object(self):
-
-        check_db_connection()
-        try:
-            obj = super(ProposalViewSet, self).get_object()
-        except Exception as e:
-            # because current queryset excludes migrated licences
-            obj = get_object_or_404(Proposal, id=self.kwargs["id"])
-            if self.request.user.id != obj.submitter_id:
-                raise
-        return obj
 
     def get_serializer_class(self):
         try:
@@ -821,96 +747,69 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(data)
 
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=True,
-    )
-    def compare_list(self, request, *args, **kwargs):
-        """Returns the reversion-compare urls --> list"""
-        current_revision_id = (
-            Version.objects.get_for_object(self.get_object()).first().revision_id
-        )
-        versions = (
-            Version.objects.get_for_object(self.get_object())
-            .select_related("revision__user")
-            .filter(
-                Q(revision__comment__icontains="status")
-                | Q(revision_id=current_revision_id)
-            )
-        )
-        version_ids = [i.id for i in versions]
-        urls = [
-            "?version_id2={}&version_id1={}".format(version_ids[0], version_ids[i + 1])
-            for i in range(len(version_ids) - 1)
-        ]
-        return Response(urls)
 
     @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
             action = request.POST.get("action")
             section = request.POST.get("input_name")
-            if action == "list" and "input_name" in request.POST:
-                pass
+            
+            if user_can_edit(request,instance):
+                if action == "delete" and "document_id" in request.POST:
+                    document_id = request.POST.get("document_id")
+                    document = instance.documents.get(id=document_id)
 
-            elif action == "delete" and "document_id" in request.POST:
-                document_id = request.POST.get("document_id")
-                document = instance.documents.get(id=document_id)
+                    if (
+                        document._file
+                        and os.path.isfile(document._file.path)
+                        and document.can_delete
+                    ):
+                        os.remove(document._file.path)
 
-                if (
-                    document._file
-                    and os.path.isfile(document._file.path)
-                    and document.can_delete
+                    document.delete()
+                    instance.save(
+                        version_comment="Approval File Deleted: {}".format(document.name)
+                    )  # to allow revision to be added to reversion history
+
+                elif action == "hide" and "document_id" in request.POST:
+                    document_id = request.POST.get("document_id")
+                    document = instance.documents.get(id=document_id)
+
+                    document.hidden = True
+                    document.save()
+                    instance.save(
+                        version_comment="File hidden: {}".format(document.name)
+                    )  # to allow revision to be added to reversion history
+
+                elif (
+                    action == "save"
+                    and "input_name" in request.POST
+                    and "filename" in request.POST
                 ):
-                    os.remove(document._file.path)
+                    proposal_id = request.POST.get("proposal_id")
+                    filename = request.POST.get("filename")
+                    _file = request.POST.get("_file")
+                    if not _file:
+                        _file = request.FILES.get("_file")
 
-                document.delete()
-                instance.save(
-                    version_comment="Approval File Deleted: {}".format(document.name)
-                )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Deleted: {}'.format(document.name)) # to allow revision to be added to reversion history
+                    document = instance.documents.get_or_create(
+                        input_name=section, name=filename
+                    )[0]
+                    path = default_storage.save(
+                        "{}/proposals/{}/documents/{}".format(
+                            settings.MEDIA_APP_DIR, proposal_id, filename
+                        ),
+                        ContentFile(_file.read()),
+                    )
 
-            elif action == "hide" and "document_id" in request.POST:
-                document_id = request.POST.get("document_id")
-                document = instance.documents.get(id=document_id)
-
-                document.hidden = True
-                document.save()
-                instance.save(
-                    version_comment="File hidden: {}".format(document.name)
-                )  # to allow revision to be added to reversion history
-
-            elif (
-                action == "save"
-                and "input_name" in request.POST
-                and "filename" in request.POST
-            ):
-                proposal_id = request.POST.get("proposal_id")
-                filename = request.POST.get("filename")
-                _file = request.POST.get("_file")
-                if not _file:
-                    _file = request.FILES.get("_file")
-
-                document = instance.documents.get_or_create(
-                    input_name=section, name=filename
-                )[0]
-                path = default_storage.save(
-                    "{}/proposals/{}/documents/{}".format(
-                        settings.MEDIA_APP_DIR, proposal_id, filename
-                    ),
-                    ContentFile(_file.read()),
-                )
-
-                document._file = path
-                document.save()
-                instance.save(
-                    version_comment="File Added: {}".format(filename)
-                )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
+                    document._file = path
+                    document.save()
+                    instance.save(
+                        version_comment="File Added: {}".format(filename)
+                    )  # to allow revision to be added to reversion history
 
             return Response(
                 [
@@ -940,28 +839,15 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @action(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True, permission_classes=[ProposalAssessorPermission])
     @renderer_classes((JSONRenderer,))
     def process_onhold_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             action = request.POST.get("action")
             section = request.POST.get("input_name")
-            if action == "list" and "input_name" in request.POST:
-                pass
 
-            #            elif action == 'delete' and 'document_id' in request.POST:
-            #                document_id = request.POST.get('document_id')
-            #                document = instance.onhold_documents.get(id=document_id)
-            #
-            #                if document._file and os.path.isfile(document._file.path) and document.can_delete:
-            #                    os.remove(document._file.path)
-            #
-            #                document.delete()
-            #                instance.save(version_comment='OnHold File Deleted: {}'.format(document.name)) # to allow revision to be added to reversion history
-            #                #instance.current_proposal.save(version_comment='File Deleted: {}'.format(document.name)) # to allow revision to be added to reversion history
-
-            elif action == "delete" and "document_id" in request.POST:
+            if action == "delete" and "document_id" in request.POST:
                 document_id = request.POST.get("document_id")
                 document = instance.onhold_documents.get(id=document_id)
 
@@ -970,7 +856,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 instance.save(
                     version_comment="OnHold File Hidden: {}".format(document.name)
                 )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Deleted: {}'.format(document.name)) # to allow revision to be added to reversion history
 
             elif (
                 action == "save"
@@ -998,7 +883,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 instance.save(
                     version_comment="On Hold File Added: {}".format(filename)
                 )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
 
             return Response(
                 [
@@ -1029,7 +913,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @action(methods=["POST"], detail=True)
+    @action(methods=["POST"], detail=True, permission_classes=[QAOfficerPermission])
     @renderer_classes((JSONRenderer,))
     def process_qaofficer_document(self, request, *args, **kwargs):
         try:
@@ -1106,38 +990,12 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    #    def list(self, request, *args, **kwargs):
-    #        #queryset = self.get_queryset()
-    #        #serializer = DTProposalSerializer(queryset, many=True)
-    #        #serializer = DTProposalSerializer(self.get_queryset(), many=True)
-    #        serializer = ListProposalSerializer(self.get_queryset(), context={'request':request}, many=True)
-    #        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def list_paginated(self, request, *args, **kwargs):
-        """
-        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-        """
-        proposals = self.get_queryset()
-        paginator = PageNumberPagination()
-        # paginator = LimitOffsetPagination()
-        paginator.page_size = 5
-        result_page = paginator.paginate_queryset(proposals, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return paginator.get_paginated_response(serializer.data)
-
     @action(
         methods=[
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -1160,6 +1018,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -1182,6 +1041,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
@@ -1220,11 +1080,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def requirements(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            # qs = instance.requirements.all()
             qs = instance.requirements.all().exclude(is_deleted=True)
             qs = qs.order_by("order")
             serializer = ProposalRequirementSerializer(
@@ -1274,7 +1134,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.vehicles
-            # qs = qs.filter(status = 'requested')
             serializer = VehicleSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1297,7 +1156,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.vessels
-            # qs = qs.filter(status = 'requested')
             serializer = VesselSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1320,7 +1178,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.filming_parks
-            # qs = qs.filter(status = 'requested')
             serializer = ProposalFilmingParksSerializer(
                 qs, many=True, context={"request": request}
             )
@@ -1345,7 +1202,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.events_parks
-            # qs = qs.filter(status = 'requested')
             serializer = ProposalEventsParksSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1368,7 +1224,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.events_trails
-            # qs = qs.filter(status = 'requested')
             serializer = ProposalEventsTrailsSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1391,7 +1246,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.pre_event_parks
-            # qs = qs.filter(status = 'requested')
             serializer = ProposalPreEventsParksSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1414,7 +1268,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         try:
             instance = self.get_object()
             qs = instance.event_abseiling_climbing_activity.all()
-            # qs = qs.filter(status = 'requested')
             serializer = AbseilingClimbingActivitySerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1432,6 +1285,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     @basic_exception_handler
     def district_proposals(self, request, *args, **kwargs):
@@ -1442,134 +1296,81 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def user_list(self, request, *args, **kwargs):
-        qs = self.get_queryset().exclude(processing_status="discarded")
-        # serializer = DTProposalSerializer(qs, many=True)
-        serializer = ListProposalSerializer(qs, context={"request": request}, many=True)
-        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def user_list_paginated(self, request, *args, **kwargs):
-        """
-        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
-        otherwise all serializers will use the default pagination class
-
-        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-        """
-        proposals = self.get_queryset().exclude(processing_status="discarded")
-        paginator = DatatablesPageNumberPagination()
-        paginator.page_size = proposals.count()
-        result_page = paginator.paginate_queryset(proposals, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return paginator.get_paginated_response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def list_paginated(self, request, *args, **kwargs):
-        """
-        Placing Paginator class here (instead of settings.py) allows specific method for desired behaviour),
-        otherwise all serializers will use the default pagination class
-
-        https://stackoverflow.com/questions/29128225/django-rest-framework-3-1-breaks-pagination-paginationserializer
-        """
-        proposals = self.get_queryset()
-        paginator = DatatablesPageNumberPagination()
-        paginator.page_size = proposals.count()
-        result_page = paginator.paginate_queryset(proposals, request)
-        serializer = ListProposalSerializer(
-            result_page, context={"request": request}, many=True
-        )
-        return paginator.get_paginated_response(serializer.data)
 
     # Documents on Activities(land)and Activities(Marine) tab for T-Class related to required document questions
     @action(methods=["POST"], detail=True)
     @renderer_classes((JSONRenderer,))
     def process_required_document(self, request, *args, **kwargs):
         try:
+
+            instance = self.get_object()
+            
             instance = self.get_object()
             action = request.POST.get("action")
             section = request.POST.get("input_name")
             required_doc_id = request.POST.get("required_doc_id")
-            if action == "list" and "required_doc_id" in request.POST:
-                pass
 
-            elif action == "delete" and "document_id" in request.POST:
-                document_id = request.POST.get("document_id")
-                document = instance.required_documents.get(id=document_id)
+            if user_can_edit(request,instance):
+                if action == "delete" and "document_id" in request.POST:
+                    document_id = request.POST.get("document_id")
+                    document = instance.required_documents.get(id=document_id)
 
-                if (
-                    document._file
-                    and os.path.isfile(document._file.path)
-                    and document.can_delete
+                    if (
+                        document._file
+                        and os.path.isfile(document._file.path)
+                        and document.can_delete
+                    ):
+                        os.remove(document._file.path)
+
+                    document.delete()
+                    instance.save(
+                        version_comment="Required document File Deleted: {}".format(
+                            document.name
+                        )
+                    )  # to allow revision to be added to reversion history
+                    # instance.current_proposal.save(version_comment='File Deleted: {}'.format(document.name)) # to allow revision to be added to reversion history
+
+                elif action == "hide" and "document_id" in request.POST:
+                    document_id = request.POST.get("document_id")
+                    document = instance.required_documents.get(id=document_id)
+
+                    document.hidden = True
+                    document.save()
+                    instance.save(
+                        version_comment="File hidden: {}".format(document.name)
+                    )  # to allow revision to be added to reversion history
+
+                elif (
+                    action == "save"
+                    and "input_name"
+                    and "required_doc_id" in request.POST
+                    and "filename" in request.POST
                 ):
-                    os.remove(document._file.path)
+                    proposal_id = request.POST.get("proposal_id")
+                    filename = request.POST.get("filename")
+                    _file = request.POST.get("_file")
+                    if not _file:
+                        _file = request.FILES.get("_file")
 
-                document.delete()
-                instance.save(
-                    version_comment="Required document File Deleted: {}".format(
-                        document.name
+                    required_doc_instance = RequiredDocument.objects.get(id=required_doc_id)
+                    document = instance.required_documents.get_or_create(
+                        input_name=section,
+                        name=filename,
+                        required_doc=required_doc_instance,
+                    )[0]
+                    path = default_storage.save(
+                        "{}/proposals/{}/required_documents/{}".format(
+                            settings.MEDIA_APP_DIR, proposal_id, filename
+                        ),
+                        ContentFile(_file.read()),
                     )
-                )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Deleted: {}'.format(document.name)) # to allow revision to be added to reversion history
 
-            elif action == "hide" and "document_id" in request.POST:
-                document_id = request.POST.get("document_id")
-                document = instance.required_documents.get(id=document_id)
-
-                document.hidden = True
-                document.save()
-                instance.save(
-                    version_comment="File hidden: {}".format(document.name)
-                )  # to allow revision to be added to reversion history
-
-            elif (
-                action == "save"
-                and "input_name"
-                and "required_doc_id" in request.POST
-                and "filename" in request.POST
-            ):
-                proposal_id = request.POST.get("proposal_id")
-                filename = request.POST.get("filename")
-                _file = request.POST.get("_file")
-                if not _file:
-                    _file = request.FILES.get("_file")
-
-                required_doc_instance = RequiredDocument.objects.get(id=required_doc_id)
-                document = instance.required_documents.get_or_create(
-                    input_name=section,
-                    name=filename,
-                    required_doc=required_doc_instance,
-                )[0]
-                path = default_storage.save(
-                    "{}/proposals/{}/required_documents/{}".format(
-                        settings.MEDIA_APP_DIR, proposal_id, filename
-                    ),
-                    ContentFile(_file.read()),
-                )
-
-                document._file = path
-                document.save()
-                instance.save(
-                    version_comment="File Added: {}".format(filename)
-                )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
+                    document._file = path
+                    document.save()
+                    instance.save(
+                        version_comment="File Added: {}".format(filename)
+                    )  # to allow revision to be added to reversion history
+                    # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
 
             return Response(
                 [
@@ -1618,6 +1419,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def internal_proposal(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -1631,6 +1433,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @renderer_classes((JSONRenderer,))
     def submit(self, request, *args, **kwargs):
         instance = self.get_object()
+        if not user_can_edit(request,instance):
+            raise PermissionDenied
         proposal_submit(instance, request)
         instance.save()
         serializer = self.get_serializer(instance)
@@ -1641,12 +1445,12 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission, ProposalApproverPermission]
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.assign_officer(request, request.user)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1665,6 +1469,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission, ProposalApproverPermission]
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -1680,7 +1485,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
                     "A user with the id passed in does not exist"
                 )
             instance.assign_officer(request, user)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1699,12 +1503,12 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission, ProposalApproverPermission]
     )
     def unassign(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.unassign(request)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1723,6 +1527,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #auth group membership changing status handled by model func
     )
     def switch_status(self, request, *args, **kwargs):
         try:
@@ -1741,15 +1546,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
                         "The status provided is not allowed"
                     )
             instance.move_to_status(request, status, approver_comment)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
-            # if instance.application_type.name==ApplicationType.TCLASS:
-            #     serializer = InternalProposalSerializer(instance,context={'request':request})
-            # elif instance.application_type.name==ApplicationType.FILMING:
-            #     serializer = InternalFilmingProposalSerializer(instance,context={'request':request})
-            # elif instance.application_type.name==ApplicationType.EVENT:
-            #     serializer = InternalProposalSerializer(instance,context={'request':request})
             return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())
@@ -1769,6 +1567,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission] 
     )
     def reissue_approval(self, request, *args, **kwargs):
         try:
@@ -1844,6 +1643,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     def proposed_approval(self, request, *args, **kwargs):
         try:
@@ -1851,7 +1651,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
             serializer = ProposedApprovalSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             instance.proposed_approval(request, serializer.validated_data)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1868,16 +1667,18 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
+    #TODO it is unclear if this endpoint is used or not - consider removal (has been set internal for now)
     @action(
         methods=[
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def approval_level_document(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            instance = instance.assing_approval_level_document(request)
+            instance = instance.passing_approval_level_document(request)
             serializer = InternalProposalSerializer(
                 instance, context={"request": request}
             )
@@ -1900,6 +1701,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalApproverPermission]
     )
     def final_approval(self, request, *args, **kwargs):
         try:
@@ -1907,7 +1709,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
             serializer = ProposedApprovalSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             instance.final_approval(request, serializer.validated_data)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1929,6 +1730,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     def proposed_decline(self, request, *args, **kwargs):
         try:
@@ -1936,7 +1738,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
             serializer = PropedDeclineSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             instance.proposed_decline(request, serializer.validated_data)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1958,6 +1759,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalApproverPermission]
     )
     def final_decline(self, request, *args, **kwargs):
         try:
@@ -1965,7 +1767,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
             serializer = PropedDeclineSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             instance.final_decline(request, serializer.validated_data)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -1987,6 +1788,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @renderer_classes((JSONRenderer,))
     def on_hold(self, request, *args, **kwargs):
@@ -2044,6 +1846,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission, QAOfficerPermission]
     )
     @renderer_classes((JSONRenderer,))
     def with_qaofficer(self, request, *args, **kwargs):
@@ -2104,7 +1907,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=[ProposalAssessorPermission])
     @basic_exception_handler
     def assesor_send_referral(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -2123,6 +1926,10 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @basic_exception_handler
     def draft(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        if not user_can_edit(request, instance):
+            raise PermissionDenied
+
         save_proponent_data(instance, request, self)
 
         serializer = get_proposal_serializer_by_application_type(
@@ -2130,6 +1937,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
+    #TODO the training is entirely assessed client-side and endpoint can be used to bypass it - lower priority security item but must be addressed eventually
     @action(methods=["post"], detail=True)
     def update_training_flag(self, request, *args, **kwargs):
         try:
@@ -2171,12 +1979,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
         raise serializers.ValidationError(str(e))
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=[ProposalAssessorPermission])
     def send_to_districts(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.send_to_districts(request)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -2190,12 +1997,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=[ProposalAssessorPermission])
     def send_to_kensington(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.send_to_kensington(request)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = self.internal_serializer_class()
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -2209,7 +2015,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=[ProposalAssessorPermission])
     @renderer_classes((JSONRenderer,))
     def assessor_save(self, request, *args, **kwargs):
         try:
@@ -2229,11 +2035,9 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            http_status = status.HTTP_200_OK
             application_type = request.data.get("application")
             region = request.data.get("region")
             district = request.data.get("district")
-            # tenure = request.data.get('tenure')
             activity = request.data.get("activity")
             sub_activity1 = request.data.get("sub_activity1")
             sub_activity2 = request.data.get("sub_activity2")
@@ -2254,7 +2058,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
             else:
                 data = {
-                    #'schema': qs_proposal_type.order_by('-version').first().schema,
                     "schema": proposal_type.schema,
                     "submitter": request.user.id,
                     "org_applicant": request.data.get("org_applicant"),
@@ -2263,8 +2066,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
                     "district": district,
                     "activity": activity,
                     "approval_level": approval_level,
-                    #'other_details': {},
-                    #'tenure': tenure,
                     "data": [
                         {
                             "regionActivitySection": [
@@ -2292,7 +2093,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 }
                 serializer = SaveProposalSerializer(data=data)
                 serializer.is_valid(raise_exception=True)
-                # serializer.save()
                 instance = serializer.save()
                 # Create ProposalOtherDetails instance for T Class/Filming/Event licence
                 if application_name == ApplicationType.TCLASS:
@@ -2357,54 +2157,35 @@ class ProposalViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-    def update(self, request, *args, **kwargs):
-        try:
-            http_status = status.HTTP_200_OK
-            instance = self.get_object()
-            if application_name == ApplicationType.TCLASS:
-                serializer = SaveProposalSerializer(instance, data=request.data)
-            elif application_name == ApplicationType.FILMING:
-                serializer = ProposalFilmingOtherDetailsSerializer(
-                    data=other_details_data
-                )
-            elif application_name == ApplicationType.EVENT:
-                serializer = ProposalEventOtherDetailsSerializer(
-                    data=other_details_data
-                )
-
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            return Response(serializer.data)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-
     def destroy(self, request, *args, **kwargs):
         try:
-            http_status = status.HTTP_200_OK
             instance = self.get_object()
+            
+            if not user_can_edit(request, instance):
+                raise PermissionDenied
+            
+            http_status = status.HTTP_200_OK
             serializer = SaveProposalSerializer(
                 instance,
                 {"processing_status": "discarded", "previous_application": None},
                 partial=True,
             )
             serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            serializer.save()
             return Response(serializer.data, status=http_status)
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
 
-class ReferralViewSet(viewsets.ModelViewSet):
-    # queryset = Referral.objects.all()
+class ReferralViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Referral.objects.none()
     serializer_class = ReferralSerializer
+    permission_classes=[InternalPermission]
 
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated and is_internal(self.request):
-            # queryset =  Referral.objects.filter(referral=user)
             queryset = Referral.objects.all()
             return queryset
         return Referral.objects.none()
@@ -2435,18 +2216,6 @@ class ReferralViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, context={"request": request})
-        return Response(serializer.data)
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=False,
-    )
-    def user_list(self, request, *args, **kwargs):
-        qs = self.get_queryset().filter(referral=request.user)
-        serializer = DTReferralSerializer(qs, many=True)
-        # serializer = DTReferralSerializer(self.get_queryset(), many=True)
         return Response(serializer.data)
 
     @action(
@@ -2496,7 +2265,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(methods=["GET", "POST"], detail=True)
+    @action(methods=["GET", "POST"], detail=True, permission_classes=[ReferrerPermission])
     @basic_exception_handler
     def complete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -2527,6 +2296,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @basic_exception_handler
     def remind(self, request, *args, **kwargs):
@@ -2542,6 +2312,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @basic_exception_handler
     def recall(self, request, *args, **kwargs):
@@ -2557,6 +2328,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @basic_exception_handler
     def resend(self, request, *args, **kwargs):
@@ -2567,43 +2339,17 @@ class ReferralViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    @action(methods=["post"], detail=True)
-    def send_referral(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            serializer = SendReferralSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            instance.send_referral(
-                request,
-                serializer.validated_data["email"],
-                serializer.validated_data["text"],
-            )
-            serializer = self.get_serializer(instance, context={"request": request})
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            if hasattr(e, "error_dict"):
-                raise serializers.ValidationError(repr(e.error_dict))
-            else:
-                if hasattr(e, "message"):
-                    raise serializers.ValidationError(e.message)
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-
     @action(
         methods=[
             "GET",
         ],
         detail=True,
+        permission_classes=[ReferrerPermission]
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.assign_officer(request, request.user)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer = self.get_serializer(instance, context={"request": request})
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -2621,6 +2367,7 @@ class ReferralViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ReferrerPermission]
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -2636,7 +2383,6 @@ class ReferralViewSet(viewsets.ModelViewSet):
                     "A user with the id passed in does not exist"
                 )
             instance.assign_officer(request, user)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer = self.get_serializer(instance, context={"request": request})
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -2654,12 +2400,12 @@ class ReferralViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ReferrerPermission]
     )
     def unassign(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.unassign(request)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer = self.get_serializer(instance, context={"request": request})
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -2673,28 +2419,29 @@ class ReferralViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class ProposalRequirementViewSet(viewsets.ModelViewSet):
+class ProposalRequirementViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalRequirement.objects.none()
     serializer_class = ProposalRequirementSerializer
+    permission_classes=[InternalPermission]
 
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
             return ProposalRequirement.objects.exclude(is_deleted=True)
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = ProposalRequirement.objects.exclude(is_deleted=True).filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             )
             return qs
-        return ProposalRequirement.objects.none()
 
     @action(
         methods=[
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @basic_exception_handler
     def move_up(self, request, *args, **kwargs):
@@ -2719,6 +2466,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @basic_exception_handler
     def move_down(self, request, *args, **kwargs):
@@ -2743,6 +2491,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @basic_exception_handler
     def discard(self, request, *args, **kwargs):
@@ -2767,6 +2516,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[ProposalAssessorPermission]
     )
     @renderer_classes((JSONRenderer,))
     @basic_exception_handler
@@ -2793,14 +2543,17 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     @basic_exception_handler
     def update(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
-            serializer = self.get_serializer(
-                instance, data=json.loads(request.data.get("data"))
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            instance.add_documents(request)
-            return Response(serializer.data)
+            if is_assessor(request):
+                instance = self.get_object()
+                serializer = self.get_serializer(
+                    instance, data=json.loads(request.data.get("data"))
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                instance.add_documents(request)
+                return Response(serializer.data)
+            else:
+                raise PermissionDenied
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
@@ -2808,23 +2561,14 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
     @basic_exception_handler
     def create(self, request, *args, **kwargs):
         try:
-            #            data = {
-            #                'due_date': request.data.get('due_date'),
-            #                'standard': request.data.get('standard'),
-            #                'recurrence': reqeust.data.get('recurrence'),
-            #                'recurrence_pattern': request.data.get('recurrence_pattern'),
-            #                'proposal': request.data.get('proposal'),
-            #                'referral_group': request.data.get('referral_group'),
-            #            }
-
-            # serializer = self.get_serializer(data= request.data)
-            serializer = self.get_serializer(data=json.loads(request.data.get("data")))
-            # serializer = self.get_serializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            instance = serializer.save()
-            instance.add_documents(request)
-            # serializer = self.get_serializer(instance)
-            return Response(serializer.data)
+            if is_assessor(request):
+                serializer = self.get_serializer(data=json.loads(request.data.get("data")))
+                serializer.is_valid(raise_exception=True)
+                instance = serializer.save()
+                instance.add_documents(request)
+                return Response(serializer.data)
+            else:
+                raise PermissionDenied
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
@@ -2842,6 +2586,7 @@ class ProposalRequirementViewSet(viewsets.ModelViewSet):
 class ProposalStandardRequirementViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProposalStandardRequirement.objects.none()
     serializer_class = ProposalStandardRequirementSerializer
+    permission_classes=[InternalPermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -2858,36 +2603,19 @@ class ProposalStandardRequirementViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class AmendmentRequestViewSet(viewsets.ModelViewSet):
+class AmendmentRequestViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = AmendmentRequest.objects.none()
     serializer_class = AmendmentRequestSerializer
+    permission_classes = [ProposalAssessorPermission]
 
     def get_queryset(self):
-        user = self.request.user
         if is_internal(self.request):
             return AmendmentRequest.objects.all()
-        elif is_customer(self.request):
-            user_orgs = retrieve_delegate_organisation_ids(user)
-            qs = AmendmentRequest.objects.filter(
-                Q(proposal_id__org_applicant_id__in=user_orgs)
-                | Q(proposal_id__submitter_id=user.id)
-            )
-            return qs
         return AmendmentRequest.objects.none()
 
     def create(self, request, *args, **kwargs):
         try:
-            reason_id = request.data.get("reason")
-            data = {
-                #'schema': qs_proposal_type.order_by('-version').first().schema,
-                "text": request.data.get("text"),
-                "proposal": request.data.get("proposal"),
-                "reason": (
-                    AmendmentReason.objects.get(id=reason_id) if reason_id else None
-                ),
-            }
             serializer = self.get_serializer(data=request.data)
-            # serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
             instance.generate_amendment(request)
@@ -3010,6 +2738,7 @@ class SearchKeywordsView(views.APIView):
     renderer_classes = [
         JSONRenderer,
     ]
+    permission_classes=[InternalPermission]
 
     def post(self, request, format=None):
         qs = []
@@ -3055,12 +2784,13 @@ class SearchProposalsFilterBackend(DatatablesFilterBackend):
         return chained_qs
 
 
-class SearchProposalsViewSet(viewsets.ModelViewSet):
+class SearchProposalsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Proposal.objects.none()
     serializer_class = SearchKeywordSerializer
     filter_backends = (SearchProposalsFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
-
+    permission_classes=[InternalPermission]
+    
     def get_queryset(self):
         qs = super().get_queryset()
 
@@ -3087,6 +2817,7 @@ class SearchReferenceView(views.APIView):
     renderer_classes = [
         JSONRenderer,
     ]
+    permission_classes=[InternalPermission]
 
     def post(self, request, format=None):
         try:
@@ -3112,7 +2843,7 @@ class SearchReferenceView(views.APIView):
             raise serializers.ValidationError(str(e))
 
 
-class VehicleViewSet(viewsets.ModelViewSet):
+class VehicleViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Vehicle.objects.none()
     serializer_class = VehicleSerializer
 
@@ -3120,19 +2851,22 @@ class VehicleViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return Vehicle.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = Vehicle.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
             return qs
-        return Vehicle.objects.none()
 
     @action(methods=["post"], detail=True)
     @basic_exception_handler
     def edit_vehicle(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+
         serializer = SaveVehicleSerializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -3143,6 +2877,11 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
     @basic_exception_handler
     def create(self, request, *args, **kwargs):
+        
+        proposal = Proposal.objects.get(id=request.data["proposal"])
+        if not proposal or not user_can_edit(request, proposal):
+            raise PermissionDenied
+
         serializer = SaveVehicleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -3152,7 +2891,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class VesselViewSet(viewsets.ModelViewSet):
+class VesselViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Vessel.objects.none()
     serializer_class = VesselSerializer
 
@@ -3160,19 +2899,22 @@ class VesselViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if is_internal(self.request):
             return Vessel.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = Vessel.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
             return qs
-        return Vessel.objects.none()
 
     @action(methods=["post"], detail=True)
     def edit_vessel(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+
+            if not instance.proposal or not user_can_edit(request, instance.proposal):
+                raise PermissionDenied
+            
             serializer = VesselSerializer(instance, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -3195,7 +2937,9 @@ class VesselViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         try:
-            # instance = self.get_object()
+            proposal = Proposal.objects.get(id=request.data["proposal"])
+            if not proposal or not user_can_edit(request, proposal):
+                raise PermissionDenied
             serializer = VesselSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             instance = serializer.save()
@@ -3216,36 +2960,25 @@ class VesselViewSet(viewsets.ModelViewSet):
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
 
-
-class AssessorChecklistViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ChecklistQuestion.objects.none()
-    serializer_class = ChecklistQuestionSerializer
-
-    def get_queryset(self):
-        qs = ChecklistQuestion.objects.filter(
-            Q(list_type="assessor_list") & Q(obsolete=False)
-        )
-        return qs
-
-
-class ProposalAssessmentViewSet(viewsets.ModelViewSet):
+#TODO this does not actually appear to be in use - permissions set in case needed but this may just need to be removed
+class ProposalAssessmentViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = ProposalAssessment.objects.none()
     serializer_class = ProposalAssessmentSerializer
+    permission_classes=[InternalPermission]
 
     def get_queryset(self):
         user = self.request.user
         if is_internal(self.request):
             return ProposalAssessment.objects.all().order_by("id")
-        elif is_customer(self.request):
+        else:
             user_orgs = retrieve_delegate_organisation_ids(user)
             qs = ProposalAssessment.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter_id=user.id)
             ).order_by("id")
             return qs
-        return ProposalAssessment.objects.none()
 
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=[ProposalAssessorPermission])
     def update_assessment(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -3282,10 +3015,10 @@ class ProposalAssessmentViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class DistrictProposalViewSet(viewsets.ModelViewSet):
-    # queryset = Referral.objects.all()
+class DistrictProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = DistrictProposal.objects.none()
     serializer_class = DistrictProposalSerializer
+    permission_classes=[InternalPermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -3300,12 +3033,12 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[DistrictProposalAssessorPermission, DistrictProposalApproverPermission]
     )
     def assign_request_user(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.assign_officer(request, request.user)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = DistrictProposalSerializer
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -3324,6 +3057,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[DistrictProposalAssessorPermission, DistrictProposalApproverPermission]
     )
     def assign_to(self, request, *args, **kwargs):
         try:
@@ -3339,7 +3073,6 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
                     "A user with the id passed in does not exist"
                 )
             instance.assign_officer(request, user)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = DistrictProposalSerializer
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -3358,12 +3091,12 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "GET",
         ],
         detail=True,
+        permission_classes=[DistrictProposalAssessorPermission, DistrictProposalApproverPermission]
     )
     def unassign(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
             instance.unassign(request)
-            # serializer = InternalProposalSerializer(instance,context={'request':request})
             serializer_class = DistrictProposalSerializer
             serializer = serializer_class(instance, context={"request": request})
             return Response(serializer.data)
@@ -3382,6 +3115,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def switch_status(self, request, *args, **kwargs):
         try:
@@ -3421,6 +3155,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[DistrictProposalAssessorPermission]
     )
     def proposed_decline(self, request, *args, **kwargs):
         try:
@@ -3450,6 +3185,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[DistrictProposalApproverPermission]
     )
     def final_decline(self, request, *args, **kwargs):
         try:
@@ -3496,6 +3232,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[DistrictProposalAssessorPermission]
     )
     def proposed_approval(self, request, *args, **kwargs):
         try:
@@ -3525,6 +3262,7 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             "POST",
         ],
         detail=True,
+        permission_classes=[DistrictProposalApproverPermission]
     )
     def final_approval(self, request, *args, **kwargs):
         try:
@@ -3550,12 +3288,13 @@ class DistrictProposalViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(str(e))
 
 
-class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
+class DistrictProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (ProposalFilterBackend,)
     pagination_class = DatatablesPageNumberPagination
     queryset = DistrictProposal.objects.none()
     serializer_class = ListDistrictProposalSerializer
     page_size = 10
+    permission_classes=[InternalPermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -3563,21 +3302,19 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
 
             #TODO review and adjust this so it can work securely without the manager classes
             user_id = user.id
-            user_assessor_groups = retrieve_user_groups(
+            user_assessor_groups = list(retrieve_user_groups(
                 "districtproposalassessorgroup", user_id
-            )
-            user_approver_groups = retrieve_user_groups(
+            ).values_list("district",flat=True))
+
+            user_approver_groups = list(retrieve_user_groups(
                 "districtproposalapprovergroup", user_id
-            )
+            ).values_list("district",flat=True))
+
             return (
-                DistrictProposal.objects.all()
-                #TODO remove manager dependency while retaining auth
-                #.with_approver_group_id()
-                #.with_assessor_group_id()
-                #.filter(
-                #    Q(approver_group_id__in=user_approver_groups)
-                #    | Q(assessor_group_id__in=user_assessor_groups)
-                #)
+                DistrictProposal.objects.filter(
+                    Q(district_id__in=user_approver_groups)
+                    | Q(district_id__in=user_assessor_groups)
+                )
             )
 
         return DistrictProposal.objects.none()
@@ -3591,8 +3328,6 @@ class DistrictProposalPaginatedViewSet(viewsets.ModelViewSet):
     def district_proposals_internal(self, request, *args, **kwargs):
         """
         Used by the internal dashboard
-
-        http://localhost:8499/api/district_proposal_paginated/district_proposal_paginated_internal/?format=datatables&draw=1&length=2
         """
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)

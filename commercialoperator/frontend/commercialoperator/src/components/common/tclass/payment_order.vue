@@ -101,98 +101,40 @@
                             />
 
                             <div
-                                v-if="selected_licence.org_applicant == null"
+                                v-if="selected_licence.org_applicant == null || (!selected_licence.bpay_allowed && !selected_licence.monthly_invoicing_allowed && !selected_licence.other_allowed)"
                                 style="float: right"
                             >
                                 <!-- Individual applicants must pay using Credit Card -->
                                 <button
                                     :disabled="!parks_available"
-                                    class="btn btn-primary pull-right"
+                                    class="btn btn-primary float-end"
                                     type="submit"
                                     style="margin-top: 5px"
                                 >
                                     Proceed to Payment
                                 </button>
                             </div>
-                            <div v-else class="dropdown" style="float: right">
-                                <button
-                                    id="dropdownMenuButton"
-                                    :disabled="!parks_available"
-                                    class="btn btn-primary dropdown-toggle"
-                                    type="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="false"
-                                    name="payment_method"
-                                    value="credit_card"
-                                >
-                                    Proceed
-                                </button>
-
-                                <ul
-                                    class="dropdown-menu"
-                                    aria-labelledby="dropdownMenuButton"
-                                >
-                                    <li>
+                            <div v-else class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <select name="payment_method" class="form-control float-end" style="width: 50%" required>
+                                            <option value="" disabled selected>Select Payment Method...</option>
+                                            <option value="credit_card">Pay by Credit Card</option>
+                                            <option v-if="selected_licence.bpay_allowed" value="bpay">Pay by BPAY</option>
+                                            <option v-if="selected_licence.monthly_invoicing_allowed || selected_licence.other_allowed" value="monthly_invoicing">Monthly Invoicing</option>
+                                            <option v-if="selected_licence.other_allowed" value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
                                         <button
-                                            class="dropdown-item"
-                                            type="submit"
+                                            :disabled="!parks_available"
+                                            class="btn btn-primary float-end"
+                                            style="margin-top: 5px"
                                         >
-                                            Pay by Credit Card
+                                            Proceed to Payment
                                         </button>
-                                    </li>
-                                    <li
-                                        v-if="
-                                            selected_licence.bpay_allowed ||
-                                            selected_licence.monthly_invoicing_allowed ||
-                                            selected_licence.other_allowed
-                                        "
-                                    >
-                                        <hr class="dropdown-divider" />
-                                    </li>
-                                    <li v-if="selected_licence.bpay_allowed">
-                                        <button
-                                            class="dropdown-item"
-                                            type="submit"
-                                            @click="payment_method = 'bpay'"
-                                        >
-                                            Pay by BPAY
-                                        </button>
-                                    </li>
-                                    <li
-                                        v-if="
-                                            selected_licence.monthly_invoicing_allowed ||
-                                            selected_licence.other_allowed
-                                        "
-                                    >
-                                        <hr class="dropdown-divider" />
-                                    </li>
-                                    <li
-                                        v-if="
-                                            selected_licence.monthly_invoicing_allowed
-                                        "
-                                    >
-                                        <button
-                                            type="submit"
-                                            class="dropdown-item"
-                                            @click="
-                                                payment_method =
-                                                    'monthly_invoicing'
-                                            "
-                                        >
-                                            Monthly Invoicing
-                                        </button>
-                                    </li>
-                                    <li v-if="selected_licence.other_allowed">
-                                        <button
-                                            type="submit"
-                                            class="dropdown-item"
-                                            @click="payment_method = 'other'"
-                                        >
-                                            Record Payment
-                                        </button>
-                                    </li>
-                                </ul>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </FormSection>
@@ -207,20 +149,13 @@ import OrderTable from './order_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import BootstrapAlert from '@/components/vue2-components/BootstrapAlert.vue';
-
+import $ from 'jquery'
 export default {
     name: 'PaymentOrder',
     components: {
         OrderTable,
         FormSection,
         BootstrapAlert,
-    },
-    props: {
-        // I commented this out because a proposal is not passed in as a property
-        //     proposal: {
-        //         type: Object,
-        //         required: true,
-        //     },
     },
     data: function () {
         return {
@@ -527,7 +462,7 @@ export default {
             let vm = this;
             helpers.fetchUrl('/api/filtered_payments').then(
                 (res) => {
-                    var licences = res;
+                    var licences = res.results;
                     for (var i in licences) {
                         vm.licences.push({
                             value: licences[i].current_proposal,

@@ -458,7 +458,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
             "lodgement_number",
             "lodgement_sequence",
             "can_officer_process",
-            "allowed_assessors",
+            #"allowed_assessors",
             "proposal_type",
             "is_qa_officer",
             "qaofficer_referrals",
@@ -558,7 +558,6 @@ class BaseProposalSerializer(serializers.ModelSerializer):
             else False
         )
     
-
 class ListProposalSerializer(serializers.ModelSerializer):
     submitter = EmailUserSerializer(source="submitter_id")
     applicant = serializers.SerializerMethodField(read_only=True)
@@ -723,17 +722,6 @@ class ProposalSerializer(BaseProposalSerializer):
 
     def get_readonly(self, obj):
         return obj.can_user_view
-
-
-# class ProposalApplicantDetailsSerializer(serializers.ModelSerializer):
-#
-#    class Meta:
-#        model = ProposalApplicantDetails
-#        fields = (
-#                'id',
-#                'first_name',
-#                )
-
 
 class SaveProposalSerializer(BaseProposalSerializer):
     assessor_data = serializers.JSONField(required=False)

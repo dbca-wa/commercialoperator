@@ -37,7 +37,6 @@ from commercialoperator.components.segregation.utils import (
     retrieve_organisation_delegate_ids,
 )
 from commercialoperator.utils import search_keys, search_multiple_keys
-from commercialoperator.helpers import is_customer
 
 # from commercialoperator.components.approvals.email import send_referral_email_notification
 
@@ -421,6 +420,7 @@ class Approval(RevisionedMixin):
             or self.status == "surrendered"
         ) and self.can_action
 
+    #TODO provided id and name only
     @property
     def allowed_assessors(self):
         # return self.current_proposal.allowed_assessors
@@ -458,11 +458,6 @@ class Approval(RevisionedMixin):
     @property
     def can_renew(self):
         try:
-            #            if self.current_proposal.application_type.name == 'E Class':
-            #                #return (self.current_proposal.application_type.max_renewals is not None and self.current_proposal.application_type.max_renewals > self.renewal_count)
-            #                return self.current_proposal.application_type.max_renewals > self.renewal_count
-            #                #pass
-            #            else:
             renew_conditions = {
                 "previous_application": self.current_proposal,
                 "proposal_type": "renewal",
@@ -841,13 +836,10 @@ class Approval(RevisionedMixin):
             .first()
         )
 
-        if not retrieve_organisation_delegate_ids(organisation_pk).filter(
-            user_id=request.user.id
-        ):
-            if request.user not in self.allowed_assessors and not is_customer(request):
-                raise ValidationError(
-                    "You do not have access to surrender this approval"
-                )
+        if not retrieve_organisation_delegate_ids(organisation_pk).filter(user_id=request.user.id) and request.user not in self.allowed_assessors:
+            raise ValidationError(
+                "You do not have access to surrender this approval"
+            )
         if not self.can_reissue and self.can_action:
             raise ValidationError(
                 "You cannot surrender approval if it is not current or suspended"

@@ -223,7 +223,7 @@ import ProposalFilming from '../form_filming.vue';
 import ProposalEvent from '../form_event.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
-
+import $ from 'jquery'
 export default {
     name: 'ExternalProposal',
     components: {

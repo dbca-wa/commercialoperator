@@ -255,7 +255,7 @@ class Organisation(models.Model):
 
     @staticmethod
     @basic_exception_handler
-    def existance(name, abn):
+    def existence(name, abn):
         exists = True
         org = None
 
@@ -286,10 +286,6 @@ class Organisation(models.Model):
 
     @transaction.atomic
     def accept_user(self, user, request):
-        # try:
-        #     UserDelegation.objects.get(organisation=self,user=user)
-        #     raise ValidationError('This user has already been linked to {}'.format(str(self.organisation)))
-        # except UserDelegation.DoesNotExist:
         delegate = UserDelegation.objects.create(organisation=self, user=user)
 
         try:

@@ -2,7 +2,7 @@ import 'vite/modulepreload-polyfill';
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 
-import $ from 'jquery';
+//import $ from 'jquery';
 import moment from 'moment';
 import swal from 'sweetalert2';
 import jsZip from 'jszip';

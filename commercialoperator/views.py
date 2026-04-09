@@ -1,12 +1,10 @@
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
-from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 
 
-from commercialoperator.helpers import is_internal
+from commercialoperator.helpers import is_internal, is_commercialoperator_admin
 from commercialoperator.forms import *
 from commercialoperator.components.proposals.models import (
     Referral,
@@ -16,7 +14,6 @@ from commercialoperator.components.proposals.models import (
 )
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.mixins import ReferralOwnerMixin
-
 
 from django.core.management import call_command
 
@@ -34,10 +31,6 @@ class InternalView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(InternalView, self).get_context_data(**kwargs)
-        # context["dev"] = settings.DEV_STATIC
-        # context["dev_url"] = settings.DEV_STATIC_URL
-        # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-        #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
 
 
@@ -46,14 +39,7 @@ class ExternalView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(ExternalView, self).get_context_data(**kwargs)
-        # context["dev"] = settings.DEV_STATIC
-        # context["dev_url"] = settings.DEV_STATIC_URL
-        # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-        #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
         return context
-
-class AccountView(LoginRequiredMixin, TemplateView):
-    template_name = "commercialoperator/dash/index.html"
 
 
 class ReferralView(ReferralOwnerMixin, DetailView):
@@ -102,51 +88,15 @@ class CommercialOperatorFurtherInformationView(TemplateView):
 
 
 class InternalProposalView(DetailView):
-    # template_name = 'commercialoperator/index.html'
     model = Proposal
     template_name = "commercialoperator/dash/index.html"
 
     def get(self, *args, **kwargs):
         if self.request.user.is_authenticated:
             if is_internal(self.request):
-                # return redirect('internal-proposal-detail')
                 return super(InternalProposalView, self).get(*args, **kwargs)
-            return redirect("external-proposal-detail")
-        kwargs["form"] = LoginForm
-        return super(CommercialOperatorRoutingDetailView, self).get(*args, **kwargs)
 
-
-@login_required(login_url="ds_home")
-def first_time(request):
-    context = {}
-    if request.method == "POST":
-        form = FirstTimeForm(request.POST)
-        redirect_url = form.data["redirect_url"]
-        if not redirect_url:
-            redirect_url = "/"
-        if form.is_valid():
-            # set user attributes
-            request.user.first_name = form.cleaned_data["first_name"]
-            request.user.last_name = form.cleaned_data["last_name"]
-            request.user.dob = form.cleaned_data["dob"]
-            request.user.save()
-            return redirect(redirect_url)
-        context["form"] = form
-        context["redirect_url"] = redirect_url
-        return render(request, "commercialoperator/user_profile.html", context)
-    # GET default
-    if "next" in request.GET:
-        context["redirect_url"] = request.GET["next"]
-    else:
-        context["redirect_url"] = "/"
-    # context["dev"] = settings.DEV_STATIC
-    # context["dev_url"] = settings.DEV_STATIC_URL
-    # if hasattr(settings, "DEV_APP_BUILD_URL") and settings.DEV_APP_BUILD_URL:
-    #     context["app_build_url"] = settings.DEV_APP_BUILD_URL
-    # return render(request, 'commercialoperator/user_profile.html', context)
-    return render(request, "commercialoperator/dash/index.html", context)
-
-
+#TODO unclear if this is used anymore - investigate and remove/refactor
 class HelpView(LoginRequiredMixin, TemplateView):
     template_name = "commercialoperator/help.html"
 
@@ -173,9 +123,12 @@ class HelpView(LoginRequiredMixin, TemplateView):
                 context["help"] = qs.first()
         return context
 
-
-class ManagementCommandsView(LoginRequiredMixin, TemplateView):
+#TODO we may need to lock this behind an env var so this is not accessible on prod
+class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateView):
     template_name = "commercialoperator/mgt-commands.html"
+
+    def test_func(self):
+        return is_commercialoperator_admin(self.request) #TODO check if admin appropriate auth (sys admin may be needed)
 
     def post(self, request):
         data = {}

@@ -442,7 +442,7 @@
 import FormSection from '@/components/forms/section_toggle.vue';
 import { helpers } from '@/utils/hooks.js';
 import { v4 as uuid } from 'uuid';
-
+import $ from 'jquery'
 export default {
     name: 'FilmingActivity',
     components: {
