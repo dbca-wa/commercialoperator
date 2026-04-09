@@ -13,6 +13,7 @@ from rest_framework.renderers import JSONRenderer
 from datetime import datetime
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from datetime import datetime
+from commercialoperator.components.permission.permission import InternalPermission
 from commercialoperator.components.proposals.models import (
     Proposal,
     ApplicationType,
@@ -137,7 +138,6 @@ class ApprovalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ApprovalPaymentFilterViewSet(generics.ListAPIView):
-    """https://cop-internal.dbca.wa.gov.au/api/filtered_organisations?search=Org1"""
 
     queryset = Approval.objects.none()
     serializer_class = ApprovalPaymentSerializer
@@ -202,74 +202,12 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         )
         return Response(data)
 
-    @action(methods=["POST"], detail=True)
-    @renderer_classes((JSONRenderer,))
-    def process_document(self, request, *args, **kwargs):
-        instance = self.get_object()
-        action = request.POST.get("action")
-        section = request.POST.get("input_name")
-        if action == "list" and "input_name" in request.POST:
-            pass
-
-        elif action == "delete" and "document_id" in request.POST:
-            document_id = request.POST.get("document_id")
-            document = instance.qaofficer_documents.get(id=document_id)
-
-            document.visible = False
-            document.save()
-            instance.save(
-                version_comment="Licence ({}): {}".format(section, document.name)
-            )  # to allow revision to be added to reversion history
-
-        elif (
-            action == "save"
-            and "input_name" in request.POST
-            and "filename" in request.POST
-        ):
-            proposal_id = request.POST.get("proposal_id")
-            filename = request.POST.get("filename")
-            _file = request.POST.get("_file")
-            if not _file:
-                _file = request.FILES.get("_file")
-
-            document = instance.qaofficer_documents.get_or_create(
-                input_name=section, name=filename
-            )[0]
-            path = default_storage.save(
-                "{}/proposals/{}/approvals/{}".format(
-                    settings.MEDIA_APP_DIR, proposal_id, filename
-                ),
-                ContentFile(_file.read()),
-            )
-
-            document._file = path
-            document.save()
-            instance.save(
-                version_comment="Licence ({}): {}".format(section, filename)
-            )  # to allow revision to be added to reversion history
-            # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
-
-        return Response(
-            [
-                dict(
-                    input_name=d.input_name,
-                    name=d.name,
-                    file=d._file.url,
-                    id=d.id,
-                    can_delete=d.can_delete,
-                )
-                for d in instance.qaofficer_documents.filter(
-                    input_name=section, visible=True
-                )
-                if d._file
-            ]
-        )
-
     @action(
         methods=[
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     @renderer_classes((JSONRenderer,))
     @basic_exception_handler
@@ -282,11 +220,6 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         org_applicant = None
         proxy_applicant = None
 
-        # _file = (
-        #     request.data.get("file-upload-0")
-        #     if request.data.get("file-upload-0")
-        #     else raiser("Licence File is required")
-        # )
         _file = (
             request.data.get("file")
             if request.data.get("file")
@@ -381,6 +314,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_extend(self, request, *args, **kwargs):
         try:
@@ -408,6 +342,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_cancellation(self, request, *args, **kwargs):
         try:
@@ -435,6 +370,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_suspension(self, request, *args, **kwargs):
         try:
@@ -462,6 +398,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_reinstate(self, request, *args, **kwargs):
         try:
@@ -487,6 +424,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission] #TODO not apparent if higher permission required, keeping to internal for now
     )
     def approval_surrender(self, request, *args, **kwargs):
         try:
@@ -514,6 +452,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def action_log(self, request, *args, **kwargs):
         try:
@@ -536,6 +475,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "GET",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     def comms_log(self, request, *args, **kwargs):
         try:
@@ -558,6 +498,7 @@ class ApprovalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             "POST",
         ],
         detail=True,
+        permission_classes=[InternalPermission]
     )
     @renderer_classes((JSONRenderer,))
     def add_comms_log(self, request, *args, **kwargs):
