@@ -93,7 +93,7 @@ class ApplicationFeeView(TemplateView):
                 user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
                 if not (
                     is_internal(self.request) or
-                    proposal.org_applicant in user_orgs or proposal.submitter == user
+                    proposal.org_applicant_id in user_orgs or proposal.submitter == user
                 ):
                     raise PermissionDenied
             except:
@@ -933,7 +933,7 @@ class BookingSuccessView(TemplateView):
         except:
             inv = None
 
-        context = {"booking_id": booking.id, "submitter": submitter, "payer": request.user, "invoice_reference": inv.reference}
+        context = {"booking_id": booking.id, "submitter": submitter, "payer": request.user, "invoice_reference": inv.reference if inv else None}
         return render(request, self.template_name, context)
 
 

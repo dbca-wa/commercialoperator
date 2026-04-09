@@ -1310,7 +1310,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             section = request.POST.get("input_name")
             required_doc_id = request.POST.get("required_doc_id")
 
-            if not user_can_edit(request,instance):
+            if user_can_edit(request,instance):
                 if action == "delete" and "document_id" in request.POST:
                     document_id = request.POST.get("document_id")
                     document = instance.required_documents.get(id=document_id)
