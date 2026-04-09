@@ -2368,7 +2368,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             except:
                 raise
 
-    def assing_approval_level_document(self, request):
+    def passing_approval_level_document(self, request):
         with transaction.atomic():
             try:
                 approval_level_document = request.data["approval_level_document"]
@@ -2383,9 +2383,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             name=str(approval_level_document),
                         )[0]
                     document.name = str(approval_level_document)
-                    # commenting out below tow lines - we want to retain all past attachments - reversion can use them
-                    # if document._file and os.path.isfile(document._file.path):
-                    #    os.remove(document._file.path)
                     document._file = approval_level_document
                     document.save()
                     d = ProposalDocument.objects.get(id=document.id)
@@ -2396,7 +2393,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     comment = "Approval Level Document Deleted: {}".format(
                         request.data["approval_level_document_name"]
                     )
-                # self.save()
+
                 self.save(
                     version_comment=comment
                 )  # to allow revision to be added to reversion history
@@ -3372,19 +3369,22 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "previous_application": previous_proposal,
                     "customer_status": "with_assessor",
                 }
-                # proposal=Proposal.objects.get(previous_application = previous_proposal)
                 proposal = Proposal.objects.get(**renew_conditions)
-                # if proposal.customer_status=='with_assessor':
                 if proposal:
                     raise ValidationError(
                         "A renewal/ amendment for this licence has already been lodged and is awaiting review."
                     )
             except Proposal.DoesNotExist:
+
+                if not (self.approval and self.approval.renewal_document and self.approval.renewal_sent and self.approval.can_renew):
+                    raise ValidationError(
+                        "The licence cannot be renewed yet."
+                    )
+
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = "renewal"
                 proposal.training_completed = False
-                # proposal.schema = ProposalType.objects.first().schema
                 ptype = ProposalType.objects.filter(
                     name=proposal.application_type
                 ).latest("version")
@@ -3518,6 +3518,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         "An amendment for this licence has already been lodged and is awaiting review."
                     )
             except Proposal.DoesNotExist:
+
+                if not (self.approval and self.approval.can_amend):
+                    raise ValidationError(
+                        "The licence cannot be amended at this time."
+                    )
+                
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = "amendment"

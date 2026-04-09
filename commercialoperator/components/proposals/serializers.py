@@ -458,7 +458,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
             "lodgement_number",
             "lodgement_sequence",
             "can_officer_process",
-            "allowed_assessors",
+            #"allowed_assessors",
             "proposal_type",
             "is_qa_officer",
             "qaofficer_referrals",

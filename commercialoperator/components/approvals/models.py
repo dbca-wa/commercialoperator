@@ -458,11 +458,6 @@ class Approval(RevisionedMixin):
     @property
     def can_renew(self):
         try:
-            #            if self.current_proposal.application_type.name == 'E Class':
-            #                #return (self.current_proposal.application_type.max_renewals is not None and self.current_proposal.application_type.max_renewals > self.renewal_count)
-            #                return self.current_proposal.application_type.max_renewals > self.renewal_count
-            #                #pass
-            #            else:
             renew_conditions = {
                 "previous_application": self.current_proposal,
                 "proposal_type": "renewal",
