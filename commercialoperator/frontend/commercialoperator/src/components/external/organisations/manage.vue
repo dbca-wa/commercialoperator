@@ -246,6 +246,7 @@ export default {
             updatingDetails: false,
             updatingAddress: false,
             updatingContact: false,
+            tradingNameLocked: false,
             logsTable: null,
             myorgperms: null,
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
@@ -502,7 +503,7 @@ export default {
           return this.isApplication? 'row' : 'container';
         },
         tradingNameDisabled: function(){
-            return this.org && (this.org.trading_name != null || this.org.trading_name != '');
+                        return this.tradingNameLocked;
         }
     },
     beforeRouteEnter: function(to, from, next){
@@ -518,6 +519,7 @@ export default {
                 vm.myorgperms = data[2];
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
+                vm.tradingNameLocked = vm.hasTradingNameValue(vm.org.trading_name);
             });
         });
     },
@@ -532,11 +534,15 @@ export default {
                 vm.myorgperms = data[1];
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
+                vm.tradingNameLocked = vm.hasTradingNameValue(vm.org.trading_name);
              
             });
         });
     },
     methods: {
+        hasTradingNameValue: function(value){
+            return typeof value === 'string' && value.trim().length > 0;
+        },
         addContact: function(){
             this.$refs.add_contact.isModalOpen = true;
         },
@@ -970,6 +976,7 @@ export default {
             }).then((response) => {
                 vm.updatingDetails = false;
                 vm.org = response.body;
+                vm.tradingNameLocked = vm.hasTradingNameValue(vm.org.trading_name);
                 if (vm.org.address == null){ vm.org.address = {}; }
                 if(!vm.isApplication){
                 swal(
@@ -1093,6 +1100,7 @@ export default {
                 vm.myorgperms = data[2];
                 vm.org.address = vm.org.address != null ? vm.org.address : {};
                 vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
+            vm.tradingNameLocked = vm.hasTradingNameValue(vm.org.trading_name);
         });
 
     },
