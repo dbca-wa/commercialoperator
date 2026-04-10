@@ -789,23 +789,22 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                     and "filename" in request.POST
                 ):
                     proposal_id = request.POST.get("proposal_id")
-                    filename = request.POST.get("filename")
-                    _file = request.POST.get("_file")
-                    if not _file:
-                        _file = request.FILES.get("_file")
+
+                    filename = request.data.get('filename')
+                    _file = request.data.get('_file')
 
                     document = instance.documents.get_or_create(
                         input_name=section, name=filename
                     )[0]
-                    path = private_storage.save(
-                        "{}/proposals/{}/documents/{}".format(
-                            settings.MEDIA_APP_DIR, proposal_id, filename
+
+                    document.save(
+                        path_to_file="{}/proposals/{}/documents/".format(
+                            settings.MEDIA_APP_DIR, proposal_id
                         ),
-                        ContentFile(_file.read()),
+                        storage=private_storage,
+                        file_content=_file
                     )
 
-                    document._file = path
-                    document.save()
                     instance.save(
                         version_comment="File Added: {}".format(filename)
                     )  # to allow revision to be added to reversion history
@@ -864,21 +863,18 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 proposal_id = request.POST.get("proposal_id")
                 filename = request.POST.get("filename")
                 _file = request.POST.get("_file")
-                if not _file:
-                    _file = request.FILES.get("_file")
 
                 document = instance.onhold_documents.get_or_create(
                     input_name=section, name=filename
                 )[0]
-                path = private_storage.save(
-                    "{}/proposals/{}/onhold/{}".format(
-                        settings.MEDIA_APP_DIR, proposal_id, filename
+                document.save(
+                    path_to_file="{}/proposals/{}/onhold/".format(
+                        settings.MEDIA_APP_DIR, proposal_id
                     ),
-                    ContentFile(_file.read()),
+                    storage=private_storage,
+                    file_content=_file
                 )
 
-                document._file = path
-                document.save()
                 instance.save(
                     version_comment="On Hold File Added: {}".format(filename)
                 )  # to allow revision to be added to reversion history
@@ -946,19 +942,18 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 document = instance.qaofficer_documents.get_or_create(
                     input_name=section, name=filename
                 )[0]
-                path = private_storage.save(
-                    "{}/proposals/{}/qaofficer/{}".format(
-                        settings.MEDIA_APP_DIR, proposal_id, filename
+
+                document.save(
+                    path_to_file="{}/proposals/{}/qaofficer/".format(
+                        settings.MEDIA_APP_DIR, proposal_id
                     ),
-                    ContentFile(_file.read()),
+                    storage=private_storage,
+                    file_content=_file
                 )
 
-                document._file = path
-                document.save()
                 instance.save(
                     version_comment="QA Officer File Added: {}".format(filename)
                 )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
 
             return Response(
                 [
@@ -1057,10 +1052,10 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 comms = serializer.save()
                 # Save the files
                 for f in request.FILES:
-                    document = comms.documents.create()
-                    document.name = str(request.FILES[f])
-                    document._file = request.FILES[f]
-                    document.save()
+                    comms.documents.create(
+                        name = str(request.FILES[f]),
+                        _file = request.FILES[f]
+                    )
                 # End Save Documents
 
                 return Response(serializer.data)
@@ -1357,15 +1352,15 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                         name=filename,
                         required_doc=required_doc_instance,
                     )[0]
-                    path = private_storage.save(
-                        "{}/proposals/{}/required_documents/{}".format(
-                            settings.MEDIA_APP_DIR, proposal_id, filename
-                        ),
-                        ContentFile(_file.read()),
-                    )
 
-                    document._file = path
-                    document.save()
+                    document.save(
+                        path_to_file="{}/proposals/{}/required_documents/".format(
+                            settings.MEDIA_APP_DIR, proposal_id
+                        ),
+                        storage=private_storage,
+                        file_content=_file
+                    )
+                    
                     instance.save(
                         version_comment="File Added: {}".format(filename)
                     )  # to allow revision to be added to reversion history

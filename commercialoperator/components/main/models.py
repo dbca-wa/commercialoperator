@@ -4,6 +4,7 @@ from django.core.cache import cache
 from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.apps import apps
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
@@ -13,10 +14,48 @@ from commercialoperator.components.segregation.utils import retrieve_email_user
 
 from django.core.files.storage import FileSystemStorage
 
+from commercialoperator.components.main.mixins import SanitiseFileMixin
+
 private_storage = FileSystemStorage(
     location=settings.PRIVATE_MEDIA_STORAGE_LOCATION,
     base_url=settings.PRIVATE_MEDIA_BASE_URL,
 )
+
+class FileExtensionWhitelist(models.Model):
+
+    name = models.CharField(
+        max_length=16,
+        help_text="The file extension without the dot, e.g. jpg, pdf, docx, etc",
+    )
+    model = models.CharField(max_length=255, default="all")
+
+    class Meta:
+        app_label = "commercialoperator"
+        unique_together = ("name", "model")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._meta.get_field("model").choices = (
+            (
+                "all",
+                "all",
+            ),
+        ) + tuple(
+            map(
+                lambda m: (m, m),
+                filter(
+                    lambda m: Document
+                    in apps.get_app_config("commercialoperator").models[m].__bases__,
+                    apps.get_app_config("commercialoperator").models,
+                ),
+            )
+        )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        cache.delete(settings.CACHE_KEY_FILE_EXTENSION_WHITELIST)
+
+
 
 class Region(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -575,7 +614,7 @@ class CommunicationsLogEntry(models.Model):
         app_label = "commercialoperator"
 
 
-class Document(models.Model):
+class Document(SanitiseFileMixin):
     name = models.CharField(
         max_length=255, blank=True, verbose_name="name", help_text=""
     )

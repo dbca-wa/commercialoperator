@@ -42,6 +42,7 @@ from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )
+from commercialoperator.components.main.mixins import SanitiseFileMixin
 
 import logging
 
@@ -936,7 +937,7 @@ class OrganisationLogEntry(CommunicationsLogEntry):
         app_label = "commercialoperator"
 
 
-class OrganisationRequest(models.Model):
+class OrganisationRequest(SanitiseFileMixin):
 
     STATUS_CHOICES = (
         ("with_assessor", "With Assessor"),

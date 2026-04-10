@@ -163,6 +163,11 @@ else:
             "OPTIONS": {"MAX_ENTRIES": 10000},
         }
     }
+
+CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2
+CACHE_KEY_FILE_EXTENSION_WHITELIST = "file-extension-whitelist"
+FILE_SIZE_LIMIT_BYTES = env('FILE_SIZE_LIMIT_BYTES' ,128000000)
+
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

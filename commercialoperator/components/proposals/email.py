@@ -1098,12 +1098,18 @@ def _log_proposal_email(
     email_entry = ProposalLogEntry.objects.create(**kwargs)
 
     if file_bytes and filename:
-        # attach the file to the comms_log also
-        path_to_file = "{}/proposals/{}/communications/{}".format(
-            settings.MEDIA_APP_DIR, proposal.id, filename
+        # attach the file to the comms_log also        
+        document = email_entry.documents.get_or_create(
+            name=filename
         )
-        path = private_storage.save(path_to_file, ContentFile(file_bytes))
-        email_entry.documents.get_or_create(_file=path_to_file, name=filename)
+
+        document.save(
+            path_to_file="{}/proposals/{}/communications/".format(
+                settings.MEDIA_APP_DIR, proposal.id
+            ),
+            storage=private_storage,
+            file_content=file_bytes
+        )
 
     return email_entry
 

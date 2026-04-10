@@ -546,10 +546,10 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         comms = serializer.save()
         # Save the files
         for f in request.FILES:
-            document = comms.documents.create()
-            document.name = str(request.FILES[f])
-            document._file = request.FILES[f]
-            document.save()
+            comms.documents.create(
+                name = str(request.FILES[f]),
+                _file = request.FILES[f]
+            )
         # End Save Documents
 
         return Response(serializer.data)
@@ -976,10 +976,10 @@ class OrganisationRequestsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
         comms = serializer.save()
         # Save the files
         for f in request.FILES:
-            document = comms.documents.create()
-            document.name = str(request.FILES[f])
-            document._file = request.FILES[f]
-            document.save()
+            comms.documents.create(
+                name = str(request.FILES[f]),
+                _file = request.FILES[f]
+            )
         # End Save Documents
 
         return Response(serializer.data)
