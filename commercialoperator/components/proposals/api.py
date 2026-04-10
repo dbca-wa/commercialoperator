@@ -122,7 +122,6 @@ from commercialoperator.components.segregation.utils import (
 from commercialoperator.helpers import is_internal, is_assessor
 from django.core.files.base import ContentFile
 
-from django.core.files.storage import default_storage
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -135,9 +134,9 @@ from commercialoperator.components.permission.permission import (
 from django.core.exceptions import PermissionDenied
 
 import logging
-
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
 
 def proposal_search_filter(qs, search_value):
 
@@ -798,7 +797,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                     document = instance.documents.get_or_create(
                         input_name=section, name=filename
                     )[0]
-                    path = default_storage.save(
+                    path = private_storage.save(
                         "{}/proposals/{}/documents/{}".format(
                             settings.MEDIA_APP_DIR, proposal_id, filename
                         ),
@@ -871,7 +870,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 document = instance.onhold_documents.get_or_create(
                     input_name=section, name=filename
                 )[0]
-                path = default_storage.save(
+                path = private_storage.save(
                     "{}/proposals/{}/onhold/{}".format(
                         settings.MEDIA_APP_DIR, proposal_id, filename
                     ),
@@ -947,7 +946,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 document = instance.qaofficer_documents.get_or_create(
                     input_name=section, name=filename
                 )[0]
-                path = default_storage.save(
+                path = private_storage.save(
                     "{}/proposals/{}/qaofficer/{}".format(
                         settings.MEDIA_APP_DIR, proposal_id, filename
                     ),
@@ -1358,7 +1357,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                         name=filename,
                         required_doc=required_doc_instance,
                     )[0]
-                    path = default_storage.save(
+                    path = private_storage.save(
                         "{}/proposals/{}/required_documents/{}".format(
                             settings.MEDIA_APP_DIR, proposal_id, filename
                         ),
