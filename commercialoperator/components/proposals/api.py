@@ -863,6 +863,9 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 proposal_id = request.POST.get("proposal_id")
                 filename = request.POST.get("filename")
                 _file = request.POST.get("_file")
+                if not _file:
+                    _file = request.FILES.get("_file")
+
 
                 document = instance.onhold_documents.get_or_create(
                     input_name=section, name=filename
