@@ -42,7 +42,7 @@ from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )
-from commercialoperator.components.main.mixins import SanitiseFileMixin
+from commercialoperator.components.main.mixins import SanitiseFileMixin, SanitiseMixin
 
 import logging
 
@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 from commercialoperator.components.main.models import private_storage
 
-class Organisation(models.Model):
+class Organisation(SanitiseMixin):
     organisation_id = models.IntegerField(
         unique=True, verbose_name="Ledger Organisation ID"
     )
@@ -747,7 +747,7 @@ class Organisation(models.Model):
         return [user.email for user in delegates_all if can_admin_org(self, user.id)]
 
 
-class OrganisationContact(models.Model):
+class OrganisationContact(SanitiseMixin):
     USER_STATUS_CHOICES = (
         ("draft", "Draft"),
         ("pending", "Pending"),
@@ -831,7 +831,6 @@ class OrganisationContact(models.Model):
 class OrganisationContactDeclinedDetails(models.Model):
     request = models.ForeignKey(OrganisationContact, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
-    # reason = models.TextField(blank=True)
 
     class Meta:
         app_label = "commercialoperator"
@@ -1137,7 +1136,7 @@ class OrganisationRequestUserAction(UserAction):
         app_label = "commercialoperator"
 
 
-class OrganisationRequestDeclinedDetails(models.Model):
+class OrganisationRequestDeclinedDetails(SanitiseMixin):
     request = models.ForeignKey(OrganisationRequest, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)

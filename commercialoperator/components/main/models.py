@@ -14,7 +14,7 @@ from commercialoperator.components.segregation.utils import retrieve_email_user
 
 from django.core.files.storage import FileSystemStorage
 
-from commercialoperator.components.main.mixins import SanitiseFileMixin
+from commercialoperator.components.main.mixins import SanitiseFileMixin, SanitiseMixin
 
 private_storage = FileSystemStorage(
     location=settings.PRIVATE_MEDIA_STORAGE_LOCATION,
@@ -162,7 +162,6 @@ class NotificationMonth(models.Model):
 
     class Meta:
         app_label = "commercialoperator"
-        # unique_together = ('licence_period', 'month')
 
     def __str__(self):
         return str(self.month)
@@ -556,7 +555,7 @@ class Question(models.Model):
         return getattr(self, self.correct_answer)
 
 
-class UserAction(models.Model):
+class UserAction(SanitiseMixin):
     who = models.ForeignKey(
         EmailUser, null=False, blank=False, on_delete=models.CASCADE
     )
@@ -574,7 +573,7 @@ class UserAction(models.Model):
         app_label = "commercialoperator"
 
 
-class CommunicationsLogEntry(models.Model):
+class CommunicationsLogEntry(SanitiseMixin):
     TYPE_CHOICES = [
         ("email", "Email"),
         ("phone", "Phone Call"),
