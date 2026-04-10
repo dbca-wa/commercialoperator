@@ -2874,6 +2874,13 @@ class VehicleViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request.user
         )
         return Response(serializer.data)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @basic_exception_handler
     def create(self, request, *args, **kwargs):
@@ -2934,6 +2941,13 @@ class VesselViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         try:
