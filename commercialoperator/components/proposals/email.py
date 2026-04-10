@@ -1098,6 +1098,11 @@ def _log_proposal_email(
     email_entry = ProposalLogEntry.objects.create(**kwargs)
 
     if file_bytes and filename:
+        import io
+        
+        file_obj = io.BytesIO(file_bytes)
+        file_obj.name = filename
+
         # attach the file to the comms_log also        
         document, _ = email_entry.documents.get_or_create(
             name=filename
