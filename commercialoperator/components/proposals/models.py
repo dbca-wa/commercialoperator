@@ -16,12 +16,12 @@ from django.db.models import JSONField
 from django.utils import timezone
 from django.conf import settings
 from taggit.models import TaggedItemBase
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Basket, Invoice
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
 from ledger_api_client.utils import (
     create_basket_session,
     process_create_future_invoice,
 )
-from commercialoperator.components.main.mixins import RevisionedMixin
+from commercialoperator.components.main.mixins import RevisionedMixin, SanitiseMixin
 
 from commercialoperator import exceptions
 from commercialoperator.components.organisations.models import Organisation
@@ -76,17 +76,17 @@ from commercialoperator.components.proposals.email import (
 )
 import copy
 import subprocess
-from django.db.models import Q, F, When, Case
+from django.db.models import Q
 from reversion.models import Version
 from dirtyfields import DirtyFieldsMixin
 from decimal import Decimal as D
 from multiselectfield import MultiSelectField
 
-
 import logging
 
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
 
 def update_proposal_doc_filename(instance, filename):
     return "{}/proposals/{}/documents/{}".format(
@@ -164,10 +164,8 @@ def default_proposaltype_schema():
 
 
 class ProposalType(models.Model):
-    # name = models.CharField(verbose_name='Application name (eg. commercialoperator, Apiary)', max_length=24)
-    # application_type = models.ForeignKey(ApplicationType, related_name='aplication_types')
+
     description = models.CharField(max_length=256, blank=True, null=True)
-    # name = models.CharField(verbose_name='Application name (eg. commercialoperator, Apiary)', max_length=24, choices=application_type_choicelist(), default=application_type_choicelist()[0][0])
     name = models.CharField(
         verbose_name="Application name (eg. T Class, Filming, Event, E Class)",
         max_length=64,
@@ -175,12 +173,9 @@ class ProposalType(models.Model):
         default="T Class",
     )
     schema = JSONField(default=default_proposaltype_schema)
-    # activities = TaggableManager(verbose_name="Activities",help_text="A comma-separated list of activities.")
-    # site = models.OneToOneField(Site, default='1')
     replaced_by = models.ForeignKey(
         "self", on_delete=models.PROTECT, blank=True, null=True
     )
-    # replaced_by = models.ForeignKey('self', blank=True, null=True)
     version = models.SmallIntegerField(default=1, blank=False, null=False)
 
     def __str__(self):
@@ -363,7 +358,7 @@ class ProposalDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -384,7 +379,7 @@ class OnHoldDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="onhold_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -404,7 +399,7 @@ class ProposalRequiredDocument(Document):
         "Proposal", related_name="required_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_required_doc_filename, max_length=512
+        upload_to=update_proposal_required_doc_filename, max_length=512, storage=private_storage
     )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
@@ -437,7 +432,7 @@ class QAOfficerDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="qaofficer_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -463,7 +458,7 @@ class ReferralDocument(Document):
     referral = models.ForeignKey(
         "Referral", related_name="referral_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -488,7 +483,7 @@ class RequirementDocument(Document):
         related_name="requirement_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -502,7 +497,7 @@ class RequirementDocument(Document):
             return super(RequirementDocument, self).delete()
 
 
-class ProposalApplicantDetails(models.Model):
+class ProposalApplicantDetails(SanitiseMixin):
     first_name = models.CharField(max_length=24, blank=True, default="")
 
     class Meta:
@@ -3936,7 +3931,7 @@ class ProposalLogDocument(Document):
         "ProposalLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_comms_log_filename, max_length=512
+        upload_to=update_proposal_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:
@@ -3965,7 +3960,7 @@ def default_proposalotherdetails_mooring():
     return [""]
 
 
-class ProposalOtherDetails(models.Model):
+class ProposalOtherDetails(SanitiseMixin):
     preferred_licence_period = models.CharField(
         "Preferred licence period",
         max_length=40,
@@ -4046,8 +4041,8 @@ class ProposalOtherDetails(models.Model):
         ).notification_months_tolist
 
 
-class ProposalAccreditation(models.Model):
-    # activities_land = models.CharField(max_length=24, blank=True, default='')
+class ProposalAccreditation(SanitiseMixin):
+
     ACCREDITATION_TYPE_CHOICES = (
         ("no", "None"),
         ("atap", "QTA"),
@@ -4163,7 +4158,7 @@ class ProposalParkAccess(models.Model):
 
 
 # To store Park zones related to Proposal T class marine parks
-class ProposalParkZone(models.Model):
+class ProposalParkZone(SanitiseMixin):
     proposal_park = models.ForeignKey(
         ProposalPark,
         blank=True,
@@ -4199,7 +4194,6 @@ class ProposalParkZoneActivity(models.Model):
     activity = models.ForeignKey(
         Activity, blank=True, null=True, on_delete=models.CASCADE
     )
-    # section=models.ForeignKey(Section, blank=True, null= True)
 
     def __str__(self):
         return "{} - {}".format(self.activity.name, self.park_zone.zone.name)
@@ -4264,7 +4258,6 @@ class ProposalTrailSectionActivity(models.Model):
     activity = models.ForeignKey(
         Activity, blank=True, null=True, on_delete=models.CASCADE
     )
-    # section=models.ForeignKey(Section, blank=True, null= True)
 
     def __str__(self):
         return "{} - {}".format(self.trail_section, self.activity.name)
@@ -4278,7 +4271,7 @@ class ProposalTrailSectionActivity(models.Model):
         return self.activity.name
 
 
-class Vehicle(models.Model):
+class Vehicle(SanitiseMixin):
     capacity = models.CharField(max_length=200, blank=True)
     rego = models.CharField(max_length=200, blank=True)
     license = models.CharField(max_length=200, blank=True)
@@ -4300,7 +4293,7 @@ class Vehicle(models.Model):
         return self.rego
 
 
-class Vessel(models.Model):
+class Vessel(SanitiseMixin):
     nominated_vessel = models.CharField(max_length=200, blank=True)
     spv_no = models.CharField(max_length=200, blank=True)
     hire_rego = models.CharField(max_length=200, blank=True)
@@ -4321,7 +4314,7 @@ class Vessel(models.Model):
         return self.nominated_vessel
 
 
-class ProposalRequest(models.Model):
+class ProposalRequest(SanitiseMixin):
     proposal = models.ForeignKey(
         Proposal, related_name="proposalrequest_set", on_delete=models.CASCADE
     )
@@ -4352,7 +4345,7 @@ class ComplianceRequest(ProposalRequest):
         app_label = "commercialoperator"
 
 
-class AmendmentReason(models.Model):
+class AmendmentReason(SanitiseMixin):
     reason = models.CharField("Reason", max_length=125)
 
     class Meta:
@@ -4370,20 +4363,6 @@ class AmendmentReason(models.Model):
 
 class AmendmentRequest(ProposalRequest):
     STATUS_CHOICES = (("requested", "Requested"), ("amended", "Amended"))
-    # REASON_CHOICES = (('insufficient_detail', 'The information provided was insufficient'),
-    #                  ('missing_information', 'There was missing information'),
-    #                  ('other', 'Other'))
-    # try:
-    #     # model requires some choices if AmendmentReason does not yet exist or is empty
-    #     REASON_CHOICES = list(AmendmentReason.objects.values_list('id', 'reason'))
-    #     if not REASON_CHOICES:
-    #         REASON_CHOICES = ((0, 'The information provided was insufficient'),
-    #                           (1, 'There was missing information'),
-    #                           (2, 'Other'))
-    # except:
-    #     REASON_CHOICES = ((0, 'The information provided was insufficient'),
-    #                       (1, 'There was missing information'),
-    #                       (2, 'Other'))
 
     status = models.CharField(
         "Status", max_length=30, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0]
@@ -4450,8 +4429,7 @@ class Assessment(ProposalRequest):
         app_label = "commercialoperator"
 
 
-class ProposalDeclinedDetails(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='declined_details')
+class ProposalDeclinedDetails(SanitiseMixin):
     proposal = models.OneToOneField(Proposal, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)
@@ -4461,8 +4439,7 @@ class ProposalDeclinedDetails(models.Model):
         app_label = "commercialoperator"
 
 
-class ProposalOnHold(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='onhold')
+class ProposalOnHold(SanitiseMixin):
     proposal = models.OneToOneField(Proposal, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     comment = models.TextField(blank=True)
@@ -4478,7 +4455,6 @@ class ProposalOnHold(models.Model):
         app_label = "commercialoperator"
 
 
-# class ProposalStandardRequirement(models.Model):
 class ProposalStandardRequirement(RevisionedMixin):
     text = models.TextField()
     code = models.CharField(max_length=10, unique=True)
@@ -4497,18 +4473,6 @@ class ProposalStandardRequirement(RevisionedMixin):
         app_label = "commercialoperator"
         verbose_name = "Application Standard Requirement"
         verbose_name_plural = "Application Standard Requirements"
-
-    # def clean(self):
-    #     if self.application_type:
-    #         try:
-    #             default = ProposalStandardRequirement.objects.get(default=True, application_type=self.application_type)
-    #         except ProposalStandardRequirement.DoesNotExist:
-    #             default = None
-
-    #     if not self.pk:
-    #         if default and self.default:
-    #             raise ValidationError('There can only be one default Standard requirement per Application type')
-
 
 class ProposalUserAction(UserAction):
     ACTION_CREATE_CUSTOMER_ = "Create customer {}"
@@ -5271,7 +5235,6 @@ class ProposalRequirement(OrderedModel):
         return
 
 
-# class ProposalStandardRequirement(models.Model):
 class ChecklistQuestion(RevisionedMixin):
     TYPE_CHOICES = (
         ("assessor_list", "Assessor Checklist"),
@@ -6110,7 +6073,7 @@ def search_reference(reference_number):
 from django_ckeditor_5.fields import CKEditor5Field as RichTextField
 
 
-class HelpPage(models.Model):
+class HelpPage(SanitiseMixin):
     HELP_TEXT_EXTERNAL = 1
     HELP_TEXT_INTERNAL = 2
     HELP_TYPE_CHOICES = (
@@ -6134,7 +6097,7 @@ class HelpPage(models.Model):
 # --------------------------------------------------------------------------------------
 # Filming Models Start
 # --------------------------------------------------------------------------------------
-class ProposalFilmingActivity(models.Model):
+class ProposalFilmingActivity(SanitiseMixin):
     MOTION_FILM = "motion_film"
     PHOTOGRAPHY = "photography"
     EDUCATION = "education"
@@ -6237,7 +6200,7 @@ class ProposalFilmingActivity(models.Model):
         return (self.completion_date - self.commencement_date).days + 1
 
 
-class ProposalFilmingAccess(models.Model):
+class ProposalFilmingAccess(SanitiseMixin):
     proposal = models.OneToOneField(
         Proposal, related_name="filming_access", null=True, on_delete=models.CASCADE
     )
@@ -6276,7 +6239,7 @@ class ProposalFilmingAccess(models.Model):
         app_label = "commercialoperator"
 
 
-class ProposalFilmingEquipment(models.Model):
+class ProposalFilmingEquipment(SanitiseMixin):
     vehicle_owned = models.BooleanField("Vehicle Hired on owned", default=False)
     rps_used = models.BooleanField("Use of RPS for filming", default=False)
     rps_used_details = models.TextField("RPA used details", blank=True, null=True)
@@ -6302,7 +6265,7 @@ class ProposalFilmingEquipment(models.Model):
         app_label = "commercialoperator"
 
 
-class ProposalFilmingOtherDetails(models.Model):
+class ProposalFilmingOtherDetails(SanitiseMixin):
     safety_details = models.TextField(
         "Steps taken to ensure safety of others", blank=True, null=True
     )
@@ -6326,8 +6289,8 @@ class ProposalFilmingOtherDetails(models.Model):
         app_label = "commercialoperator"
 
 
-class ProposalFilmingParks(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
+class ProposalFilmingParks(SanitiseMixin):
+
     proposal = models.ForeignKey(
         Proposal, related_name="filming_parks", null=True, on_delete=models.CASCADE
     )
@@ -6459,7 +6422,7 @@ class FilmingParkDocument(Document):
         related_name="filming_park_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -6546,45 +6509,7 @@ class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
                 )
 
 
-#class DistrictProposalQuerySet(EmailUserQuerySet):
-#    def with_approver_group_id(self):
-#        try:
-#            default_group = DistrictProposalApproverGroup.objects.get(default=True)
-#        except DistrictProposalApproverGroup.DoesNotExist:
-#            default_group_id = None
-#        else:
-#            default_group_id = default_group.id
-#
-#        return self.annotate(
-#            approver_group_id=Case(
-#                When(
-#                    district__isnull=False,
-#                    then=F("district__districtproposalapprovergroup"),
-#                ),
-#                default=default_group_id,
-#            )
-#        )
-#
-#    def with_assessor_group_id(self):
-#        try:
-#            default_group = DistrictProposalAssessorGroup.objects.get(default=True)
-#        except DistrictProposalAssessorGroup.DoesNotExist:
-#            default_group_id = None
-#        else:
-#            default_group_id = default_group.id
-#
-#        return self.annotate(
-#            assessor_group_id=Case(
-#                When(
-#                    district__isnull=False,
-#                    then=F("district__districtproposalassessorgroup"),
-#                ),
-#                default=default_group_id,
-#            )
-#        )
-
-
-class DistrictProposal(models.Model):
+class DistrictProposal(SanitiseMixin):
 
     PROCESSING_STATUS_WITH_ASSESSOR = "with_assessor"
     PROCESSING_STATUS_WITH_REFERRAL = "with_referral"
@@ -7505,8 +7430,7 @@ class DistrictProposal(models.Model):
                 raise
 
 
-class DistrictProposalDeclinedDetails(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='declined_details')
+class DistrictProposalDeclinedDetails(SanitiseMixin):
     district_proposal = models.OneToOneField(DistrictProposal, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)
@@ -7526,7 +7450,7 @@ class DistrictProposalDeclinedDetails(models.Model):
 # --------------------------------------------------------------------------------------
 
 
-class ProposalEventActivities(models.Model):
+class ProposalEventActivities(SanitiseMixin):
     event_name = models.CharField("Event name", max_length=100, blank=True, null=True)
     proposal = models.OneToOneField(
         Proposal, related_name="event_activity", null=True, on_delete=models.CASCADE
@@ -7559,7 +7483,7 @@ class ProposalEventActivities(models.Model):
         return False
 
 
-class ProposalEventManagement(models.Model):
+class ProposalEventManagement(SanitiseMixin):
     num_participants = models.SmallIntegerField(
         "Number of participants expected", blank=True, null=True
     )
@@ -7603,7 +7527,6 @@ class ProposalEventManagement(models.Model):
 
 
 class ProposalEventVehiclesVessels(models.Model):
-    # hired_or_owned = models.NullBooleanField(null=True)
     hired_or_owned = models.BooleanField(null=True, blank=True)
     proposal = models.OneToOneField(
         Proposal,
@@ -7619,7 +7542,7 @@ class ProposalEventVehiclesVessels(models.Model):
         app_label = "commercialoperator"
 
 
-class ProposalEventOtherDetails(models.Model):
+class ProposalEventOtherDetails(SanitiseMixin):
     training_date = models.DateField(blank=True, null=True)
     insurance_expiry = models.DateField(blank=True, null=True)
     proposal = models.OneToOneField(
@@ -7640,8 +7563,8 @@ class ProposalEventOtherDetails(models.Model):
         app_label = "commercialoperator"
 
 
-class ProposalEventsParks(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
+class ProposalEventsParks(SanitiseMixin):
+
     proposal = models.ForeignKey(
         Proposal, related_name="events_parks", null=True, on_delete=models.CASCADE
     )
@@ -7657,9 +7580,6 @@ class ProposalEventsParks(models.Model):
     class Meta:
         app_label = "commercialoperator"
 
-    # @property
-    # def activities_names(self):
-    #     return [a.name for a in self.activities.all()]
     @property
     def activities_assessor_names(self):
         """Return the names of activities that are allowed in the park."""
@@ -7698,7 +7618,7 @@ class ProposalEventsParks(models.Model):
         return
 
 
-class AbseilingClimbingActivity(models.Model):
+class AbseilingClimbingActivity(SanitiseMixin):
     proposal = models.ForeignKey(
         Proposal,
         related_name="event_abseiling_climbing_activity",
@@ -7724,7 +7644,7 @@ class EventsParkDocument(Document):
         related_name="events_park_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -7741,8 +7661,8 @@ class EventsParkDocument(Document):
             return super(EventsParkDocument, self).delete()
 
 
-class ProposalPreEventsParks(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
+class ProposalPreEventsParks(SanitiseMixin):
+    
     proposal = models.ForeignKey(
         Proposal, related_name="pre_event_parks", null=True, on_delete=models.CASCADE
     )
@@ -7756,10 +7676,6 @@ class ProposalPreEventsParks(models.Model):
 
     class Meta:
         app_label = "commercialoperator"
-
-    # @property
-    # def activities_names(self):
-    #     return [a.name for a in self.activities.all()]
 
     def add_documents(self, request):
         with transaction.atomic():
@@ -7793,7 +7709,7 @@ class PreEventsParkDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_pre_event_park_doc_filename, max_length=512
+        upload_to=update_pre_event_park_doc_filename, max_length=512, storage=private_storage
     )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
@@ -7811,8 +7727,8 @@ class PreEventsParkDocument(Document):
             return super(PreEventsParkDocument, self).delete()
 
 
-class ProposalEventsTrails(models.Model):
-    # proposal = models.OneToOneField(Proposal, related_name='filming_parks', null=True)
+class ProposalEventsTrails(SanitiseMixin):
+
     proposal = models.ForeignKey(
         Proposal, related_name="events_trails", null=True, on_delete=models.CASCADE
     )

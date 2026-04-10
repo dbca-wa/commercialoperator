@@ -38,10 +38,10 @@ from commercialoperator.components.segregation.utils import (
 )
 from commercialoperator.utils import search_keys, search_multiple_keys
 
-# from commercialoperator.components.approvals.email import send_referral_email_notification
-
 import logging
 logger = logging.getLogger(__name__)
+
+from commercialoperator.components.main.models import private_storage
 
 
 def update_approval_doc_filename(instance, filename):
@@ -62,7 +62,7 @@ class ApprovalDocument(Document):
     approval = models.ForeignKey(
         "Approval", related_name="documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512, storage=private_storage)
     can_delete = models.BooleanField(
         default=True
     )  # after initial submit prevent document from being deleted
@@ -96,7 +96,6 @@ class NotificationPeriod(RevisionedMixin):
         unique_together = ("approval", "notification_date")
 
 
-# class Approval(models.Model):
 class Approval(RevisionedMixin):
 
     APPROVAL_STATUS_CURRENT = "current"
@@ -137,14 +136,9 @@ class Approval(RevisionedMixin):
     replaced_by = models.ForeignKey(
         "self", blank=True, null=True, on_delete=models.CASCADE
     )
-    # current_proposal = models.ForeignKey(Proposal,related_name = '+')
     current_proposal = models.ForeignKey(
         Proposal, related_name="approvals", null=True, on_delete=models.CASCADE
     )
-    #    activity = models.CharField(max_length=255)
-    #    region = models.CharField(max_length=255)
-    #    tenure = models.CharField(max_length=255,null=True)
-    #    title = models.CharField(max_length=255)
     renewal_document = models.ForeignKey(
         ApprovalDocument,
         blank=True,
@@ -188,7 +182,6 @@ class Approval(RevisionedMixin):
     set_to_suspend = models.BooleanField(default=False)
     set_to_surrender = models.BooleanField(default=False)
 
-    # application_type = models.ForeignKey(ApplicationType, null=True, blank=True)
     renewal_count = models.PositiveSmallIntegerField(
         "Number of times an Approval has been renewed", default=0
     )
@@ -204,7 +197,6 @@ class Approval(RevisionedMixin):
 
     def _notification_dates(self, _date):
         notification_dates = []
-        # _date = datetime.datetime.now().date()
         preferred_licence_period = (
             self.current_proposal.other_details.preferred_licence_period
         )
@@ -879,7 +871,6 @@ class Approval(RevisionedMixin):
 class PreviewTempApproval(Approval):
     class Meta:
         app_label = "commercialoperator"
-        # unique_together= ('lodgement_number', 'issue_date')
 
 
 class ApprovalLogEntry(CommunicationsLogEntry):
@@ -905,7 +896,7 @@ class ApprovalLogDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_approval_comms_log_filename, null=True, max_length=512
+        upload_to=update_approval_comms_log_filename, null=True, max_length=512, storage=private_storage
     )
 
     class Meta:
@@ -1010,13 +1001,6 @@ class DistrictApproval(RevisionedMixin):
         app_label = "commercialoperator"
         unique_together = ("lodgement_number", "issue_date")
 
-
-# import reversion
-# reversion.register(Approval, follow=['documents', 'approval_set', 'action_logs'])
-# reversion.register(ApprovalDocument)
-# reversion.register(ApprovalLogDocument, follow=['documents'])
-# reversion.register(ApprovalLogEntry)
-# reversion.register(ApprovalUserAction)
 
 import reversion
 

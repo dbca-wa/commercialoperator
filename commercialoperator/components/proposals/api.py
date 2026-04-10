@@ -122,7 +122,6 @@ from commercialoperator.components.segregation.utils import (
 from commercialoperator.helpers import is_internal, is_assessor
 from django.core.files.base import ContentFile
 
-from django.core.files.storage import default_storage
 from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from rest_framework_datatables.filters import DatatablesFilterBackend
 
@@ -135,9 +134,9 @@ from commercialoperator.components.permission.permission import (
 from django.core.exceptions import PermissionDenied
 
 import logging
-
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
 
 def proposal_search_filter(qs, search_value):
 
@@ -790,23 +789,22 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                     and "filename" in request.POST
                 ):
                     proposal_id = request.POST.get("proposal_id")
-                    filename = request.POST.get("filename")
-                    _file = request.POST.get("_file")
-                    if not _file:
-                        _file = request.FILES.get("_file")
+
+                    filename = request.data.get('filename')
+                    _file = request.data.get('_file')
 
                     document = instance.documents.get_or_create(
                         input_name=section, name=filename
                     )[0]
-                    path = default_storage.save(
-                        "{}/proposals/{}/documents/{}".format(
-                            settings.MEDIA_APP_DIR, proposal_id, filename
+
+                    document.save(
+                        path_to_file="{}/proposals/{}/documents/".format(
+                            settings.MEDIA_APP_DIR, proposal_id
                         ),
-                        ContentFile(_file.read()),
+                        storage=private_storage,
+                        file_content=_file
                     )
 
-                    document._file = path
-                    document.save()
                     instance.save(
                         version_comment="File Added: {}".format(filename)
                     )  # to allow revision to be added to reversion history
@@ -868,18 +866,18 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 if not _file:
                     _file = request.FILES.get("_file")
 
+
                 document = instance.onhold_documents.get_or_create(
                     input_name=section, name=filename
                 )[0]
-                path = default_storage.save(
-                    "{}/proposals/{}/onhold/{}".format(
-                        settings.MEDIA_APP_DIR, proposal_id, filename
+                document.save(
+                    path_to_file="{}/proposals/{}/onhold/".format(
+                        settings.MEDIA_APP_DIR, proposal_id
                     ),
-                    ContentFile(_file.read()),
+                    storage=private_storage,
+                    file_content=_file
                 )
 
-                document._file = path
-                document.save()
                 instance.save(
                     version_comment="On Hold File Added: {}".format(filename)
                 )  # to allow revision to be added to reversion history
@@ -947,19 +945,18 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 document = instance.qaofficer_documents.get_or_create(
                     input_name=section, name=filename
                 )[0]
-                path = default_storage.save(
-                    "{}/proposals/{}/qaofficer/{}".format(
-                        settings.MEDIA_APP_DIR, proposal_id, filename
+
+                document.save(
+                    path_to_file="{}/proposals/{}/qaofficer/".format(
+                        settings.MEDIA_APP_DIR, proposal_id
                     ),
-                    ContentFile(_file.read()),
+                    storage=private_storage,
+                    file_content=_file
                 )
 
-                document._file = path
-                document.save()
                 instance.save(
                     version_comment="QA Officer File Added: {}".format(filename)
                 )  # to allow revision to be added to reversion history
-                # instance.current_proposal.save(version_comment='File Added: {}'.format(filename)) # to allow revision to be added to reversion history
 
             return Response(
                 [
@@ -1058,10 +1055,10 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 comms = serializer.save()
                 # Save the files
                 for f in request.FILES:
-                    document = comms.documents.create()
-                    document.name = str(request.FILES[f])
-                    document._file = request.FILES[f]
-                    document.save()
+                    comms.documents.create(
+                        name = str(request.FILES[f]),
+                        _file = request.FILES[f]
+                    )
                 # End Save Documents
 
                 return Response(serializer.data)
@@ -1358,15 +1355,15 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                         name=filename,
                         required_doc=required_doc_instance,
                     )[0]
-                    path = default_storage.save(
-                        "{}/proposals/{}/required_documents/{}".format(
-                            settings.MEDIA_APP_DIR, proposal_id, filename
-                        ),
-                        ContentFile(_file.read()),
-                    )
 
-                    document._file = path
-                    document.save()
+                    document.save(
+                        path_to_file="{}/proposals/{}/required_documents/".format(
+                            settings.MEDIA_APP_DIR, proposal_id
+                        ),
+                        storage=private_storage,
+                        file_content=_file
+                    )
+                    
                     instance.save(
                         version_comment="File Added: {}".format(filename)
                     )  # to allow revision to be added to reversion history
@@ -2874,6 +2871,13 @@ class VehicleViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             ProposalUserAction.ACTION_EDIT_VEHICLE.format(instance.id), request.user
         )
         return Response(serializer.data)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @basic_exception_handler
     def create(self, request, *args, **kwargs):
@@ -2934,6 +2938,13 @@ class VesselViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         try:

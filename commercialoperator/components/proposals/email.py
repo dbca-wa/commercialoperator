@@ -4,7 +4,6 @@ from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.utils.encoding import smart_str as smart_text
 from django.urls import reverse
 from django.conf import settings
-from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
@@ -15,6 +14,7 @@ from datetime import datetime
 
 from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
+from commercialoperator.components.main.models import private_storage
 
 logger = logging.getLogger(__name__)
 
@@ -1098,12 +1098,23 @@ def _log_proposal_email(
     email_entry = ProposalLogEntry.objects.create(**kwargs)
 
     if file_bytes and filename:
-        # attach the file to the comms_log also
-        path_to_file = "{}/proposals/{}/communications/{}".format(
-            settings.MEDIA_APP_DIR, proposal.id, filename
+        import io
+
+        file_obj = io.BytesIO(file_bytes)
+        file_obj.name = filename
+
+        # attach the file to the comms_log also        
+        document, _ = email_entry.documents.get_or_create(
+            name=filename
         )
-        path = default_storage.save(path_to_file, ContentFile(file_bytes))
-        email_entry.documents.get_or_create(_file=path_to_file, name=filename)
+
+        document.save(
+            path_to_file="{}/proposals/{}/communications/".format(
+                settings.MEDIA_APP_DIR, proposal.id
+            ),
+            storage=private_storage,
+            file_content=file_obj
+        )
 
     return email_entry
 

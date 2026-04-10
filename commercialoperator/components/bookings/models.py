@@ -25,7 +25,6 @@ class Payment(RevisionedMixin):
     send_invoice = models.BooleanField(default=False)
     confirmation_sent = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
-    # expiry_time = models.DateTimeField(default=timezone.now() + timedelta(minutes=30), blank=True, null=True)
     expiry_time = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
@@ -116,8 +115,6 @@ class Booking(Payment):
         (BOOKING_TYPE_BLACK, "Black booking"),
         (BOOKING_TYPE_TEMPORARY, "Temporary reservation"),
         (BOOKING_TYPE_MONTHLY_INVOICING, "Monthly invoicing"),
-        #        (4, 'Cancelled Booking'),
-        #        (5, 'Changed Booking')
     )
 
     proposal = models.ForeignKey(
@@ -548,8 +545,6 @@ class ApplicationFee(Payment):
         (PAYMENT_TYPE_BLACK, "Black booking"),
         (PAYMENT_TYPE_TEMPORARY, "Temporary reservation"),
         (PAYMENT_TYPE_ZERO, "No payment"),  # 100% Discount
-        #        (4, 'Cancelled Booking'),
-        #        (5, 'Changed Booking')
     )
 
     proposal = models.ForeignKey(
@@ -701,8 +696,6 @@ class FilmingFee(Payment):
         (PAYMENT_TYPE_RECEPTION, "Reception booking"),
         (PAYMENT_TYPE_BLACK, "Black booking"),
         (PAYMENT_TYPE_TEMPORARY, "Temporary reservation"),
-        #        (4, 'Cancelled Booking'),
-        #        (5, 'Changed Booking')
     )
 
     proposal = models.ForeignKey(
@@ -772,4 +765,3 @@ reversion.register(ComplianceFee, follow=["compliance_fee_invoices"])
 reversion.register(ComplianceFeeInvoice)
 reversion.register(FilmingFee, follow=["filming_fee_invoices"])
 reversion.register(FilmingFeeInvoice)
-# reversion.register(ApplicationFeeInvoice, follow=['application_fee_discounts'])

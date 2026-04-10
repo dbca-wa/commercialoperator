@@ -81,6 +81,13 @@ class ProposalEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMi
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+        
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         try:
@@ -187,6 +194,13 @@ class AbseilingClimbingActivityViewSet(viewsets.GenericViewSet, mixins.RetrieveM
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+        
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ProposalPreEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
@@ -233,6 +247,13 @@ class ProposalPreEventsParksViewSet(viewsets.GenericViewSet, mixins.RetrieveMode
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         try:
@@ -339,6 +360,13 @@ class ProposalEventsTrailsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
         except Exception as e:
             print(traceback.print_exc())
             raise serializers.ValidationError(str(e))
+        
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance.proposal or not user_can_edit(request, instance.proposal):
+            raise PermissionDenied
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         try:

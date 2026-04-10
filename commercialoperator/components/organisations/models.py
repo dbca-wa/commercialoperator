@@ -42,13 +42,15 @@ from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
     retrieve_organisation_delegate_ids,
 )
+from commercialoperator.components.main.mixins import SanitiseFileMixin, SanitiseMixin
 
 import logging
 
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
 
-class Organisation(models.Model):
+class Organisation(SanitiseMixin):
     organisation_id = models.IntegerField(
         unique=True, verbose_name="Ledger Organisation ID"
     )
@@ -745,7 +747,7 @@ class Organisation(models.Model):
         return [user.email for user in delegates_all if can_admin_org(self, user.id)]
 
 
-class OrganisationContact(models.Model):
+class OrganisationContact(SanitiseMixin):
     USER_STATUS_CHOICES = (
         ("draft", "Draft"),
         ("pending", "Pending"),
@@ -829,7 +831,6 @@ class OrganisationContact(models.Model):
 class OrganisationContactDeclinedDetails(models.Model):
     request = models.ForeignKey(OrganisationContact, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
-    # reason = models.TextField(blank=True)
 
     class Meta:
         app_label = "commercialoperator"
@@ -913,7 +914,7 @@ class OrganisationLogDocument(Document):
         "OrganisationLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_organisation_comms_log_filename, max_length=512
+        upload_to=update_organisation_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:
@@ -935,7 +936,7 @@ class OrganisationLogEntry(CommunicationsLogEntry):
         app_label = "commercialoperator"
 
 
-class OrganisationRequest(models.Model):
+class OrganisationRequest(SanitiseFileMixin):
 
     STATUS_CHOICES = (
         ("with_assessor", "With Assessor"),
@@ -958,6 +959,7 @@ class OrganisationRequest(models.Model):
         max_length=512,
         null=True,
         blank=True,
+        storage=private_storage
     )
     status = models.CharField(
         max_length=100, choices=STATUS_CHOICES, default="with_assessor"
@@ -1134,7 +1136,7 @@ class OrganisationRequestUserAction(UserAction):
         app_label = "commercialoperator"
 
 
-class OrganisationRequestDeclinedDetails(models.Model):
+class OrganisationRequestDeclinedDetails(SanitiseMixin):
     request = models.ForeignKey(OrganisationRequest, on_delete=models.CASCADE)
     officer = models.ForeignKey(EmailUser, null=False, on_delete=models.CASCADE)
     reason = models.TextField(blank=True)
@@ -1156,7 +1158,7 @@ class OrganisationRequestLogDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_organisation_request_comms_log_filename, max_length=512
+        upload_to=update_organisation_request_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:

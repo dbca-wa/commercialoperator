@@ -21,6 +21,11 @@ DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
 SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
 SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
+
+PRIVATE_MEDIA_DIR_NAME = env('PRIVATE_MEDIA_DIR_NAME', 'private-media')
+PRIVATE_MEDIA_STORAGE_LOCATION = os.path.join(BASE_DIR, PRIVATE_MEDIA_DIR_NAME)
+PRIVATE_MEDIA_BASE_URL = f'/{PRIVATE_MEDIA_DIR_NAME}/'
+
 BUILD_TAG = env(
     "BUILD_TAG", hashlib.md5(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
@@ -158,6 +163,11 @@ else:
             "OPTIONS": {"MAX_ENTRIES": 10000},
         }
     }
+
+CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2
+CACHE_KEY_FILE_EXTENSION_WHITELIST = "file-extension-whitelist"
+FILE_SIZE_LIMIT_BYTES = env('FILE_SIZE_LIMIT_BYTES' ,128000000)
+
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
