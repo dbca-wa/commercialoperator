@@ -47,6 +47,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
 
 class Organisation(models.Model):
     organisation_id = models.IntegerField(
@@ -913,7 +914,7 @@ class OrganisationLogDocument(Document):
         "OrganisationLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_organisation_comms_log_filename, max_length=512
+        upload_to=update_organisation_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:
@@ -958,6 +959,7 @@ class OrganisationRequest(models.Model):
         max_length=512,
         null=True,
         blank=True,
+        storage=private_storage
     )
     status = models.CharField(
         max_length=100, choices=STATUS_CHOICES, default="with_assessor"
@@ -1156,7 +1158,7 @@ class OrganisationRequestLogDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_organisation_request_comms_log_filename, max_length=512
+        upload_to=update_organisation_request_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:

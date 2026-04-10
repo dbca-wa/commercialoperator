@@ -16,7 +16,7 @@ from django.db.models import JSONField
 from django.utils import timezone
 from django.conf import settings
 from taggit.models import TaggedItemBase
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Basket, Invoice
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
 from ledger_api_client.utils import (
     create_basket_session,
     process_create_future_invoice,
@@ -76,17 +76,17 @@ from commercialoperator.components.proposals.email import (
 )
 import copy
 import subprocess
-from django.db.models import Q, F, When, Case
+from django.db.models import Q
 from reversion.models import Version
 from dirtyfields import DirtyFieldsMixin
 from decimal import Decimal as D
 from multiselectfield import MultiSelectField
 
-
 import logging
 
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
 
 def update_proposal_doc_filename(instance, filename):
     return "{}/proposals/{}/documents/{}".format(
@@ -363,7 +363,7 @@ class ProposalDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -384,7 +384,7 @@ class OnHoldDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="onhold_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -404,7 +404,7 @@ class ProposalRequiredDocument(Document):
         "Proposal", related_name="required_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_required_doc_filename, max_length=512
+        upload_to=update_proposal_required_doc_filename, max_length=512, storage=private_storage
     )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
@@ -437,7 +437,7 @@ class QAOfficerDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="qaofficer_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -463,7 +463,7 @@ class ReferralDocument(Document):
     referral = models.ForeignKey(
         "Referral", related_name="referral_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -488,7 +488,7 @@ class RequirementDocument(Document):
         related_name="requirement_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -3936,7 +3936,7 @@ class ProposalLogDocument(Document):
         "ProposalLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_comms_log_filename, max_length=512
+        upload_to=update_proposal_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:
@@ -6459,7 +6459,7 @@ class FilmingParkDocument(Document):
         related_name="filming_park_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -7724,7 +7724,7 @@ class EventsParkDocument(Document):
         related_name="events_park_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512, storage=private_storage)
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -7793,7 +7793,7 @@ class PreEventsParkDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_pre_event_park_doc_filename, max_length=512
+        upload_to=update_pre_event_park_doc_filename, max_length=512, storage=private_storage
     )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(

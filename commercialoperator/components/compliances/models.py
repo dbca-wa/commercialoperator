@@ -32,6 +32,8 @@ from commercialoperator.components.compliances.email import (
 import logging
 logger = logging.getLogger(__name__)
 
+from commercialoperator.components.main.models import private_storage
+
 class Compliance(RevisionedMixin):
 
     PROCESSING_STATUS_CHOICES = (
@@ -382,7 +384,7 @@ class ComplianceDocument(Document):
         "Compliance", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_complaince_filename, max_length=512
+        upload_to=update_proposal_complaince_filename, max_length=512, storage=private_storage
     )
     can_delete = models.BooleanField(
         default=True
@@ -454,7 +456,7 @@ class ComplianceLogDocument(Document):
         "ComplianceLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_compliance_comms_log_filename, max_length=512
+        upload_to=update_compliance_comms_log_filename, max_length=512, storage=private_storage
     )
 
     class Meta:

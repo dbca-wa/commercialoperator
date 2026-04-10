@@ -38,10 +38,10 @@ from commercialoperator.components.segregation.utils import (
 )
 from commercialoperator.utils import search_keys, search_multiple_keys
 
-# from commercialoperator.components.approvals.email import send_referral_email_notification
-
 import logging
 logger = logging.getLogger(__name__)
+
+from commercialoperator.components.main.models import private_storage
 
 
 def update_approval_doc_filename(instance, filename):
@@ -62,7 +62,7 @@ class ApprovalDocument(Document):
     approval = models.ForeignKey(
         "Approval", related_name="documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512)
+    _file = models.FileField(upload_to=update_approval_doc_filename, max_length=512, storage=private_storage)
     can_delete = models.BooleanField(
         default=True
     )  # after initial submit prevent document from being deleted
@@ -905,7 +905,7 @@ class ApprovalLogDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_approval_comms_log_filename, null=True, max_length=512
+        upload_to=update_approval_comms_log_filename, null=True, max_length=512, storage=private_storage
     )
 
     class Meta:

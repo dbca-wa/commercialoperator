@@ -11,6 +11,12 @@ from django.db.models import JSONField
 
 from commercialoperator.components.segregation.utils import retrieve_email_user
 
+from django.core.files.storage import FileSystemStorage
+
+private_storage = FileSystemStorage(
+    location=settings.PRIVATE_MEDIA_STORAGE_LOCATION,
+    base_url=settings.PRIVATE_MEDIA_BASE_URL,
+)
 
 class Region(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -22,10 +28,6 @@ class Region(models.Model):
 
     def __str__(self):
         return self.name
-
-    # @property
-    # def districts(self):
-    #     return District.objects.filter(region=self)
 
 
 class District(models.Model):
@@ -586,9 +588,6 @@ class Document(models.Model):
 
     @property
     def path(self):
-        # return self.file.path
-        # return self._file.path
-        # comment above line to fix the error "The '_file' attribute has no file associated with it." when adding comms log entry.
         if self._file:
             return self._file.path
         else:

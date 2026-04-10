@@ -476,6 +476,7 @@ urlpatterns = (
             booking_views.SessionAbortRedirectView.as_view(),
             name="booking-session-abort-redirect",
         ),
+        url(r'^private-media/', views.getPrivateFile, name='view_private_file'),
     ]
     + ledger_patterns
     + media_serv_patterns
