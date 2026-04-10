@@ -1099,7 +1099,7 @@ def _log_proposal_email(
 
     if file_bytes and filename:
         # attach the file to the comms_log also        
-        document = email_entry.documents.get_or_create(
+        document, _ = email_entry.documents.get_or_create(
             name=filename
         )
 
