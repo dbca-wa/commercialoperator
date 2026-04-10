@@ -1099,7 +1099,7 @@ def _log_proposal_email(
 
     if file_bytes and filename:
         import io
-        
+
         file_obj = io.BytesIO(file_bytes)
         file_obj.name = filename
 
@@ -1113,7 +1113,7 @@ def _log_proposal_email(
                 settings.MEDIA_APP_DIR, proposal.id
             ),
             storage=private_storage,
-            file_content=file_bytes
+            file_content=file_obj
         )
 
     return email_entry
