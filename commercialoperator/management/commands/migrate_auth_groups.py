@@ -28,9 +28,10 @@ class Command(BaseCommand):
                 system_group = system_group_qs.first()
             
             #get ledger group member ids
-            group = Group.objects.filter(name=settings.ADMIN_GROUP)
-            user_ids = UsersInGroup.objects.filter(group_id=group.first().id).values_list('emailuser_id', flat=True)
+            group = Group.objects.filter(name=group_name)
+            if group.exists():
+                user_ids = UsersInGroup.objects.filter(group_id=group.first().id).values_list('emailuser_id', flat=True)
 
-            #add member ids to system group    
-            for user_id in user_ids:
-                SystemGroupPermission.objects.create(system_group=system_group, emailuser_id=user_id)
+                #add member ids to system group    
+                for user_id in user_ids:
+                    SystemGroupPermission.objects.create(system_group=system_group, emailuser_id=user_id)
