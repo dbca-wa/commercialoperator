@@ -98,7 +98,7 @@ def is_internal(request):
     """Any users in an internal user group"""
     return (
         request.user.is_superuser or
-        belongs_to(request.user, settings.ADMIN_GROUP) or
+        is_commercialoperator_admin(request) or
         is_payment_admin(request.user) or
         is_commercialoperator_admin(request) or
         is_finance_officer(request) or 

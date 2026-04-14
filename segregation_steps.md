@@ -85,3 +85,9 @@ f).   Apply the rest of the migrations
 ```
 python manage.py migrate
 ```
+
+**Step 5 Migrate Auth Admin Group**
+
+```
+python manage.py migrate_auth_groups
+```
