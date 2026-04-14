@@ -54,8 +54,6 @@ def is_commercialoperator_admin(request):
 def is_finance_officer(request):
     return belongs_to(request.user, settings.GROUP_FINANCE)
 
-def is_organisation_access_officer(request):
-    return belongs_to(request.user, settings.GROUP_NAME_ORGANISATION_ACCESS)
 
 #NOTE: this is now used only in the UserSerializer for information - it should not be used to determine internal group membership
 def in_dbca_domain(request):
@@ -104,7 +102,7 @@ def is_internal(request):
         is_payment_admin(request.user) or
         is_commercialoperator_admin(request) or
         is_finance_officer(request) or 
-        is_organisation_access_officer(request) or
+        is_organisation_access_approver(request) or
         is_qa_officer(request)
     )
 
