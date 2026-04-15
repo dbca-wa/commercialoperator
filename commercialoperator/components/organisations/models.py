@@ -993,12 +993,14 @@ class OrganisationRequest(SanitiseFileMixin):
             create_organisation(self.name, self.abn)
             organisation_response = get_search_organisation(self.name, self.abn)
             ledger_org = None
-            for organisation in organisation_response.get("data", {}):
-                if organisation["organisation_abn"] == self.abn:
-                    ledger_org = organisation
-                    break
+            response_status = organisation_response.get("status", None)
+            if response_status == status.HTTP_200_OK:
+                for organisation in organisation_response.get("data", {}):
+                    if organisation["organisation_abn"] == self.abn:
+                        ledger_org = organisation
+                        break
 
-        else:
+        elif response_status == status.HTTP_200_OK:
             ledger_org = None
             for organisation in organisation_response.get("data", {}):
                 if organisation["organisation_abn"] == self.abn:
@@ -1008,10 +1010,12 @@ class OrganisationRequest(SanitiseFileMixin):
             if not ledger_org:
                 create_organisation(self.name, self.abn)
                 organisation_response = get_search_organisation(self.name, self.abn)
-                for organisation in organisation_response.get("data", {}):
-                    if organisation["organisation_abn"] == self.abn:
-                        ledger_org = organisation
-                        break
+                response_status = organisation_response.get("status", None)
+                if response_status == status.HTTP_200_OK:
+                    for organisation in organisation_response.get("data", {}):
+                        if organisation["organisation_abn"] == self.abn:
+                            ledger_org = organisation
+                            break
 
         if not ledger_org:
             raise ValidationError("Unable to create or retrieve organisation.")
