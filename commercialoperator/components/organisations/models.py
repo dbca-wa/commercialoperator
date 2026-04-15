@@ -955,7 +955,7 @@ class OrganisationRequest(SanitiseFileMixin):
         on_delete=models.CASCADE,
     )
     identification = models.FileField(
-        upload_to="organisation/requests/%Y/%m/%d",
+        upload_to="organisation/requests",
         max_length=512,
         null=True,
         blank=True,
