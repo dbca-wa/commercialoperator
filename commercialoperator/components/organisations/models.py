@@ -936,7 +936,7 @@ class OrganisationLogEntry(CommunicationsLogEntry):
         app_label = "commercialoperator"
 
 
-class OrganisationRequest(SanitiseMixin):
+class OrganisationRequest(SanitiseFileMixin):
 
     STATUS_CHOICES = (
         ("with_assessor", "With Assessor"),
