@@ -860,7 +860,6 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
     from commercialoperator.components.organisations.models import Organisation
 
     user_id = user.id
-    # user_id = 163998  # An existing user id for testing
     user_ledger_org_ids = retrieve_delegate_organisation_ids(user_id)
 
     commercialoperator_organisations = []
