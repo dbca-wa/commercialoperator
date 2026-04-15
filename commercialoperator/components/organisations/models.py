@@ -1007,6 +1007,7 @@ class OrganisationRequest(SanitiseFileMixin):
 
             if not ledger_org:
                 create_organisation(self.name, self.abn)
+                organisation_response = get_search_organisation(self.name, self.abn)
                 for organisation in organisation_response.get("data", {}):
                     if organisation["organisation_abn"] == self.abn:
                         ledger_org = organisation
