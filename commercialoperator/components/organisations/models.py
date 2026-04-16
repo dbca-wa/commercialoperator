@@ -955,7 +955,7 @@ class OrganisationRequest(SanitiseFileMixin):
         on_delete=models.CASCADE,
     )
     identification = models.FileField(
-        upload_to="organisation/requests/%Y/%m/%d",
+        upload_to="organisation/requests",
         max_length=512,
         null=True,
         blank=True,
@@ -972,7 +972,6 @@ class OrganisationRequest(SanitiseFileMixin):
         ordering = ["name"]
 
     def accept(self, request):
-        # I moved the __accept method to the top of the method to allow it to gracefully error out
         self.__accept(request)
         # Continue with remaining logic
         self.status = "approved"
@@ -993,16 +992,33 @@ class OrganisationRequest(SanitiseFileMixin):
             # Create a new organisation in ledger
             create_organisation(self.name, self.abn)
             organisation_response = get_search_organisation(self.name, self.abn)
+            ledger_org = None
             response_status = organisation_response.get("status", None)
             if response_status == status.HTTP_200_OK:
-                logger.info(f"Organisation created in ledger: {self.name} ({self.abn})")
+                for organisation in organisation_response.get("data", {}):
+                    if organisation["organisation_abn"] == self.abn:
+                        ledger_org = organisation
+                        break
 
-        if response_status != status.HTTP_200_OK:
-            raise ValidationError(
-                "Failed to retrieve organisation details from the ledger."
-            )
+        elif response_status == status.HTTP_200_OK:
+            ledger_org = None
+            for organisation in organisation_response.get("data", {}):
+                if organisation["organisation_abn"] == self.abn:
+                    ledger_org = organisation
+                    break
 
-        ledger_org = organisation_response.get("data", {})[0]
+            if not ledger_org:
+                create_organisation(self.name, self.abn)
+                organisation_response = get_search_organisation(self.name, self.abn)
+                response_status = organisation_response.get("status", None)
+                if response_status == status.HTTP_200_OK:
+                    for organisation in organisation_response.get("data", {}):
+                        if organisation["organisation_abn"] == self.abn:
+                            ledger_org = organisation
+                            break
+
+        if not ledger_org:
+            raise ValidationError("Unable to create or retrieve organisation.")
 
         # Create Organisation in commercialoperator
         org, created = Organisation.objects.get_or_create(
