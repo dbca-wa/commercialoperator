@@ -1013,14 +1013,18 @@ class InvoiceCompliancePDFView(View):
 
         compliance = cfi.compliance_fee.compliance
 
-        organisation = (
-            compliance.proposal.org_applicant.organisation.organisation_set.all()[0]
-        )
+        organisation = compliance.proposal.org_applicant if compliance.proposal else None
         if self.check_owner(organisation):
             response = HttpResponse(content_type="application/pdf")
-            response.write(
-                create_invoice_compliance_pdf_bytes("invoice.pdf", invoice, compliance)
-            )
+
+            invoice_pdf = get_invoice_pdf(invoice.reference)
+            if invoice_pdf.status_code == status.HTTP_200_OK:
+                response.write(invoice_pdf.content)
+                return response
+            else:
+                logger.error(
+                    f"Error getting PDF for invoice {invoice.reference}: {invoice_pdf.reason}"
+                )
             return response
         raise PermissionDenied
 
