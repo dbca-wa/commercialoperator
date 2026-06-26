@@ -470,6 +470,7 @@ urlpatterns = (
             name="booking-session-abort-redirect",
         ),
         url(r'^private-media/', views.getPrivateFile, name='view_private_file'),
+        url(r'^email-exports/$', views.EmailExportsView.as_view(), name='email-exports'),
     ]
     + ledger_patterns
     + media_serv_patterns

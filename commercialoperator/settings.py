@@ -317,6 +317,9 @@ if DEBUG:
         "level": "WARNING",
     }
 
+# Reporting limits
+MAX_NUM_ROWS_MODEL_EXPORT = 100000
+NUMBER_OF_QUEUE_JOBS = 5
 
 # Cache timeouts
 CACHE_TIMEOUT_5_SECONDS = 5
