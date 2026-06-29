@@ -22,8 +22,9 @@ export default {
                             (data && data.message) ||
                             (data && data.detail) ||
                             response.statusText;
-                        console.error(error);
-                        reject(error);
+                        const resolved = error || data;
+                        console.error(resolved);
+                        reject(resolved);
                     }
                     resolve(data);
                 },
@@ -58,6 +59,41 @@ export default {
     apiVueResourceError: function (resp) {
         var error_str = '';
         var text = null;
+
+        // Handle fetch-style rejected payloads (array/string/object) directly.
+        if (Array.isArray(resp)) {
+            text = resp[0] || '';
+            return String(text).replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+        }
+
+        if (typeof resp === 'string') {
+            return resp.replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+        }
+
+        if (resp instanceof Error) {
+            return (resp.message || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+        }
+
+        if (resp && typeof resp === 'object' && typeof resp.status === 'undefined') {
+            if (Object.prototype.hasOwnProperty.call(resp, 'non_field_errors') && Array.isArray(resp.non_field_errors)) {
+                return String(resp.non_field_errors[0] || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+            }
+            if (Object.prototype.hasOwnProperty.call(resp, 'message')) {
+                return String(resp.message || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+            }
+            if (Object.prototype.hasOwnProperty.call(resp, 'detail')) {
+                return String(resp.detail || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+            }
+            for (const key in resp) {
+                const element = resp[key];
+                if (Array.isArray(element) && element.length > 0) {
+                    return String(element[0]).replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+                }
+                if (element !== null && typeof element !== 'undefined') {
+                    return String(element).replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+                }
+            }
+        }
 
         if (resp.status === 404) {
             return 'The resource you are looking for does not exist.';
