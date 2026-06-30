@@ -20,6 +20,20 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = "Change the status of Approvals to Surrender/ Cancelled/ suspended."
 
+    def _parse_date(self, value):
+        if isinstance(value, datetime.datetime):
+            return value.date()
+        if isinstance(value, datetime.date):
+            return value
+
+        for fmt in ("%d/%m/%Y", "%Y-%m-%d"):
+            try:
+                return datetime.datetime.strptime(value, fmt).date()
+            except (TypeError, ValueError):
+                continue
+
+        raise ValueError("Unsupported date format: {!r}".format(value))
+
     def handle(self, *args, **options):
         try:
             user = EmailUser.objects.get(email=settings.CRON_EMAIL)
@@ -32,10 +46,7 @@ class Command(BaseCommand):
         logger.info("Running command {}".format(__name__))
         for a in Approval.objects.filter(status="current"):
             if a.suspension_details and a.set_to_suspend:
-                from_date = datetime.datetime.strptime(
-                    a.suspension_details["from_date"], "%d/%m/%Y"
-                )
-                from_date = from_date.date()
+                from_date = self._parse_date(a.suspension_details["from_date"])
                 if from_date <= today:
                     try:
                         a.status = "suspended"
@@ -98,10 +109,9 @@ class Command(BaseCommand):
                         errors.append(err_msg)
 
             if a.surrender_details and a.set_to_surrender:
-                surrender_date = datetime.datetime.strptime(
-                    a.surrender_details["surrender_date"], "%d/%m/%Y"
+                surrender_date = self._parse_date(
+                    a.surrender_details["surrender_date"]
                 )
-                surrender_date = surrender_date.date()
                 if surrender_date <= today:
                     try:
                         a.status = "surrendered"
@@ -134,10 +144,7 @@ class Command(BaseCommand):
 
         for a in Approval.objects.filter(status="suspended"):
             if a.suspension_details and a.suspension_details["to_date"]:
-                to_date = datetime.datetime.strptime(
-                    a.suspension_details["to_date"], "%d/%m/%Y"
-                )
-                to_date = to_date.date()
+                to_date = self._parse_date(a.suspension_details["to_date"])
                 if to_date <= today and today < a.expiry_date:
                     try:
                         a.status = "current"
@@ -198,10 +205,9 @@ class Command(BaseCommand):
                         errors.append(err_msg)
 
             if a.surrender_details and a.set_to_surrender:
-                surrender_date = datetime.datetime.strptime(
-                    a.surrender_details["surrender_date"], "%d/%m/%Y"
+                surrender_date = self._parse_date(
+                    a.surrender_details["surrender_date"]
                 )
-                surrender_date = surrender_date.date()
                 if surrender_date <= today:
                     try:
                         a.status = "surrendered"
