@@ -169,7 +169,7 @@ class ProposalType(models.Model):
     name = models.CharField(
         verbose_name="Application name (eg. T Class, Filming, Event, E Class)",
         max_length=64,
-        choices=application_type_choicelist(),
+        choices=application_type_choicelist,
         default="T Class",
     )
     schema = JSONField(default=default_proposaltype_schema)

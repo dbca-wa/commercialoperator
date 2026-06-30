@@ -18,7 +18,7 @@ import User from '../users/manage.vue'
 
 export default {
     path: '/internal',
-    compontent: RouterView,
+    component: RouterView,
     children: [
         {
             path: '',
