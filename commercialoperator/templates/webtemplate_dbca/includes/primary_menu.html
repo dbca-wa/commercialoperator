@@ -6,7 +6,7 @@
 
 {% if is_internal_login %}
     <li class="nav-item">
-        <a class="nav-link{% if 'proposals' in request.path %} active{% endif %}" href="/internal/">
+        <a class="nav-link{% if request.path == '/internal/' or 'internal/proposal' in request.path or 'internal/proposal_compare' in request.path %} active{% endif %}" href="/internal/">
             Applications
         </a>
     </li>
