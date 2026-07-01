@@ -216,7 +216,7 @@ export default {
             .then(
                 (response) => {
                     next((vm) => {
-                        vm.compliance = response;
+                        vm.compliance = Object.assign({}, response);
                         vm.members = vm.compliance.allowed_assessors;
                     });
                 },
@@ -264,9 +264,18 @@ export default {
     },
     watch: {},
     mounted: function () {
-        const assignTo = this.assignTo;
         this.fetchProfile();
         this.$nextTick(() => {
+            this.initialiseComplianceAssessorSelect();
+        });
+    },
+    methods: {
+        commaToNewline(s) {
+            return s.replace(/[,;]/g, '\n');
+        },
+
+        initialiseComplianceAssessorSelect: function () {
+            const assignTo = this.assignTo;
             helpers.initialiseSelect2
                 .bind(this)(
                     'select_compliance_assigned_to',
@@ -280,11 +289,21 @@ export default {
                 .on('select2:select', function () {
                     assignTo();
                 });
-        });
-    },
-    methods: {
-        commaToNewline(s) {
-            return s.replace(/[,;]/g, '\n');
+        },
+
+        setAssignedToCurrentUser: function () {
+            let vm = this;
+            if (!vm.profile || !vm.profile.id) {
+                return;
+            }
+            vm.compliance.assigned_to = vm.profile.id;
+            vm.$nextTick(() => {
+                if (window.$ && vm.$refs.select_compliance_assigned_to) {
+                    window.$(vm.$refs.select_compliance_assigned_to)
+                        .val(String(vm.profile.id))
+                        .trigger('change.select2');
+                }
+            });
         },
 
         assignMyself: function () {
@@ -298,7 +317,11 @@ export default {
                 )
                 .then(
                     (response) => {
-                        vm.compliance = response;
+                        vm.compliance = Object.assign({}, response);
+                        vm.setAssignedToCurrentUser();
+                        vm.$nextTick(() => {
+                            vm.initialiseComplianceAssessorSelect();
+                        });
                     },
                     (error) => {
                         console.log(error);
@@ -325,7 +348,7 @@ export default {
                     )
                     .then(
                         (response) => {
-                            vm.compliance = response;
+                            vm.compliance = Object.assign({}, response);
                         },
                         (error) => {
                             console.log(error);
@@ -342,7 +365,7 @@ export default {
                     .then(
                         (response) => {
                             console.log(response);
-                            vm.compliance = response;
+                            vm.compliance = Object.assign({}, response);
                         },
                         (error) => {
                             console.log(error);
