@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from commercialoperator.helpers import is_internal, is_commercialoperator_admin
 from commercialoperator.forms import *
@@ -21,13 +21,19 @@ from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.mixins import ReferralOwnerMixin
 
 from django.core.management import call_command
+from django.core.cache import cache
 from django.conf import settings
+from django.utils import timezone
 
 import logging
 logger = logging.getLogger("payment_checkout")
 
 import os
 import mimetypes
+import shlex
+import subprocess
+import sys
+import uuid
 
 class InternalView(UserPassesTestMixin, TemplateView):
     template_name = "commercialoperator/dash/index.html"
@@ -106,6 +112,124 @@ class InternalProposalView(DetailView):
 #TODO we may need to lock this behind an env var so this is not accessible on prod
 class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateView):
     template_name = "commercialoperator/mgt-commands.html"
+    UPDATE_CACHE_STATE_KEY = 'update_cache_background_state'
+    UPDATE_CACHE_LOCK_KEY = 'update_cache_background_lock'
+    UPDATE_CACHE_ACTIVE_STATUSES = {'starting', 'running'}
+
+    @staticmethod
+    def _is_pid_running(pid):
+        if not pid:
+            return False
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+
+    @classmethod
+    def _refresh_update_cache_state(cls):
+        state = cache.get(cls.UPDATE_CACHE_STATE_KEY)
+        if not state:
+            return None
+
+        if state.get('status') in cls.UPDATE_CACHE_ACTIVE_STATUSES:
+            pid = state.get('pid')
+            if cls._is_pid_running(pid):
+                return state
+
+            exit_code = None
+            exit_path = state.get('exit_path')
+            if exit_path and os.path.exists(exit_path):
+                try:
+                    with open(exit_path, 'r', encoding='utf-8') as exit_file:
+                        exit_code = int((exit_file.read() or '').strip())
+                except (TypeError, ValueError):
+                    exit_code = None
+
+            state['finished_at'] = timezone.now().isoformat()
+            if exit_code == 0:
+                state['status'] = 'completed'
+                state['error'] = ''
+            else:
+                state['status'] = 'failed'
+                state['error'] = 'update_cache exited with non-zero status'
+
+            cache.set(cls.UPDATE_CACHE_STATE_KEY, state, timeout=None)
+
+        return state
+
+    @classmethod
+    def _start_update_cache_job(cls, requested_by=''):
+        state = cls._refresh_update_cache_state()
+        if state and state.get('status') in cls.UPDATE_CACHE_ACTIVE_STATUSES:
+            return state, False
+
+        if not cache.add(cls.UPDATE_CACHE_LOCK_KEY, True, timeout=15):
+            state = cls._refresh_update_cache_state()
+            return state, False
+
+        try:
+            state = cls._refresh_update_cache_state()
+            if state and state.get('status') in cls.UPDATE_CACHE_ACTIVE_STATUSES:
+                return state, False
+
+            job_id = uuid.uuid4().hex
+            log_dir = os.path.join(settings.BASE_DIR, 'logs')
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = os.path.join(log_dir, 'update_cache.log')
+            exit_path = os.path.join(log_dir, 'update_cache.exit')
+
+            if os.path.exists(exit_path):
+                os.remove(exit_path)
+
+            command = (
+                f"{shlex.quote(sys.executable)} "
+                f"{shlex.quote(os.path.join(settings.BASE_DIR, 'manage.py'))} "
+                f"update_cache > {shlex.quote(log_path)} 2>&1; "
+                f"echo $? > {shlex.quote(exit_path)}"
+            )
+            proc = subprocess.Popen(
+                ['bash', '-lc', command],
+                cwd=settings.BASE_DIR,
+                start_new_session=True,
+            )
+
+            state = {
+                'id': job_id,
+                'command': 'update_cache',
+                'status': 'running',
+                'started_at': timezone.now().isoformat(),
+                'requested_by': requested_by,
+                'log_path': log_path,
+                'exit_path': exit_path,
+                'pid': proc.pid,
+                'error': '',
+            }
+            cache.set(cls.UPDATE_CACHE_STATE_KEY, state, timeout=None)
+            return state, True
+        finally:
+            cache.delete(cls.UPDATE_CACHE_LOCK_KEY)
+
+    @classmethod
+    def get_update_cache_status(cls):
+        latest_job = cls._refresh_update_cache_state()
+        active = bool(latest_job and latest_job.get('status') in cls.UPDATE_CACHE_ACTIVE_STATUSES)
+        return {
+            'active': active,
+            'job': latest_job if active else None,
+            'status': latest_job.get('status') if latest_job else None,
+            'latest_job': latest_job,
+        }
+
+    def get(self, request, *args, **kwargs):
+        if request.GET.get('update_cache_status') == '1':
+            return JsonResponse(self.get_update_cache_status())
+        return super(ManagementCommandsView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault('update_cache_active_job', self.get_update_cache_status()['job'])
+        return context
 
     def test_func(self):
         return is_commercialoperator_admin(self.request) #TODO check if admin appropriate auth (sys admin may be needed)
@@ -115,8 +239,34 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
         command_script = request.POST.get("script", None)
         if command_script:
             print("running {}".format(command_script))
-            call_command(command_script)
-            data.update({command_script: "true"})
+            if command_script == 'update_cache':
+                requested_by = request.user.email if request.user and request.user.is_authenticated else ''
+                job, created = self._start_update_cache_job(requested_by=requested_by)
+                if created:
+                    data.update(
+                        {
+                            'ret': 'Started update_cache job {}'.format(job['id']),
+                            'update_cache': job['status'],
+                        }
+                    )
+                else:
+                    data.update(
+                        {
+                            'ret': 'update_cache is already {} as job {}'.format(
+                                job['status'], job['id']
+                            ),
+                            'update_cache': job['status'],
+                        }
+                    )
+            else:
+                call_command(command_script)
+                data.update({command_script: "true"})
+
+        data.update(
+            {
+                'update_cache_active_job': self.get_update_cache_status()['job'],
+            }
+        )
 
         return render(request, self.template_name, data)
 
