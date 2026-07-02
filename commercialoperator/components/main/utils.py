@@ -307,6 +307,70 @@ def getProposalExport(filters, num):
 
     return qs[:num]
 
+
+def getApprovalExport(filters, num):
+    from commercialoperator.components.approvals.models import Approval
+
+    qs = Approval.objects.order_by("-start_date")
+
+    if filters:
+        if "start_date_from" in filters and filters["start_date_from"]:
+            qs = qs.filter(start_date__gte=filters["start_date_from"])
+
+        if "start_date_to" in filters and filters["start_date_to"]:
+            qs = qs.filter(start_date__lte=filters["start_date_to"])
+
+    return qs[:num]
+
+
+
+def getComplianceExport(filters, num):
+    from commercialoperator.components.compliances.models import Compliance
+
+    qs = Compliance.objects.order_by("-due_date")
+
+    if filters:
+        if "due_date_from" in filters and filters["due_date_from"]:
+            qs = qs.filter(due_date__gte=filters["due_date_from"])
+
+        if "due_date_to" in filters and filters["due_date_to"]:
+            qs = qs.filter(due_date__lte=filters["due_date_to"])
+
+    return qs[:num]
+
+
+
+def getOrganisationRequestExport(filters, num):
+    from commercialoperator.components.organisations.models import OrganisationRequest
+
+    qs = OrganisationRequest.objects.order_by("-lodgement_date")
+
+    if filters:
+        if "lodged_on_from" in filters and filters["lodged_on_from"]:
+            qs = qs.filter(lodgement_date__gte=filters["lodged_on_from"])
+
+        if "lodged_on_to" in filters and filters["lodged_on_to"]:
+            qs = qs.filter(lodgement_date__lte=filters["lodged_on_to"])
+
+    return qs[:num]
+
+
+
+def getBookingExport(filters, num):
+    from commercialoperator.components.bookings.models import ParkBooking
+
+    qs = ParkBooking.objects.order_by("-arrival")
+
+    if filters:
+        if "arrival_date_from" in filters and filters["arrival_date_from"]:
+            qs = qs.filter(arrival__gte=filters["arrival_date_from"])
+
+        if "arrival_date_to" in filters and filters["arrival_date_to"]:
+            qs = qs.filter(arrival__lte=filters["arrival_date_to"])
+
+    return qs[:num]
+
+
 def exportModelData(model, filters, num_records):
 
     if not num_records:
@@ -316,8 +380,17 @@ def exportModelData(model, filters, num_records):
 
     if model == "proposal":
         return getProposalExport(filters, num_records)
+    elif model == "approval":
+        return getApprovalExport(filters, num_records)
+    elif model == "compliance":
+        return getComplianceExport(filters, num_records)
+    elif model == "organisationrequest":
+        return getOrganisationRequestExport(filters, num_records)
+    elif model == "booking":
+        return getBookingExport(filters, num_records)
     else:
         return
+
 
 def getProposalExportFields(data):
 
@@ -364,12 +437,70 @@ def getProposalExportFields(data):
 
     return header, columns
 
+def getApprovalExportFields(data):
+    
+    header = ["Number"]
+              
+    columns = list(
+        data.values_list(
+            "lodgement_number",
+        )
+    )
+
+    return header, columns
+
+def getComplianceExportFields(data):
+    
+    header = ["Number"]
+              
+    columns = list(
+        data.values_list(
+            "lodgement_number",
+        )
+    )
+
+    return header, columns
+
+def getOrganisationRequestExportFields(data):
+
+    header = ["Number"]
+              
+    columns = list(
+        data.values_list(
+            "id",
+        )
+    )
+
+    return header, columns
+
+def getBookingExportFields(data):
+    
+    header = ["Number"]
+              
+    columns = list(
+        data.values_list(
+            "id",
+        )
+    )
+
+    return header, columns
+
 def formatExportData(model, data, format):
+    
     
     if model == "proposal":
         header, columns = getProposalExportFields(data)
+    elif model == "approval":
+        header, columns = getApprovalExportFields(data)
+    elif model == "compliance":
+        header, columns = getComplianceExportFields(data)
+    elif model == "organisationrequest":
+        header, columns = getOrganisationRequestExportFields(data)
+    elif model == "booking":
+        header, columns = getBookingExportFields(data)
     else:
         return
+
 
     if os.path.isdir(str(settings.BASE_DIR)+'/tmp/') is False:
         os.makedirs(str(settings.BASE_DIR)+'/tmp/')
