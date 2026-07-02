@@ -133,6 +133,7 @@ MIDDLEWARE_CLASSES += [
     "commercialoperator.middleware.FirstTimeNagScreenMiddleware",
     "commercialoperator.middleware.PaymentSessionMiddleware",
     "commercialoperator.middleware.RevisionOverrideMiddleware",
+    "commercialoperator.middleware.ManagementCommandQueueMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 MIDDLEWARE = MIDDLEWARE_CLASSES

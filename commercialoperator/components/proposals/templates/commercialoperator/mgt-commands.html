@@ -80,10 +80,21 @@
             <br>
             <br>
             <button type="submit"
+                    id="update-cache-button"
                     name="script"
                     value="update_cache"
+                    {% if update_cache_active_job %}disabled{% endif %}
                     {% if update_cache == 'true' %}style="color:green"{% endif %}
-                    title="Run the update_cache script">Run Script 'update_cache'</button>
+                    title="Run the update_cache script">
+                <span id="update-cache-button-label">
+                    {% if update_cache_active_job %}
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                        Running 'update_cache'
+                    {% else %}
+                        Run Script 'update_cache'
+                    {% endif %}
+                </span>
+            </button>
             <br>
             <br>
         </form>
@@ -92,4 +103,68 @@
     <br />
     {{ ret }}
     {{ block.super }}
+    <script>
+        (function() {
+            var button = document.getElementById('update-cache-button');
+            var label = document.getElementById('update-cache-button-label');
+            var pollHandle = null;
+            var wasActive = button.disabled;
+
+            if (!button || !label) {
+                return;
+            }
+
+            function setButtonState(isActive, latestJob) {
+                if (isActive) {
+                    button.disabled = true;
+                    button.style.color = '';
+                    label.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Running \'update_cache\'';
+                    wasActive = true;
+                    return;
+                }
+
+                button.disabled = false;
+
+                if (wasActive && latestJob && latestJob.status === 'completed' && !latestJob.error) {
+                    button.style.color = 'green';
+                } else {
+                    button.style.color = '';
+                }
+
+                label.textContent = "Run Script 'update_cache'";
+                wasActive = false;
+
+                if (pollHandle) {
+                    window.clearInterval(pollHandle);
+                    pollHandle = null;
+                }
+            }
+
+            function pollStatus() {
+                fetch("{% url 'mgt-commands' %}?update_cache_status=1", {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch update_cache status');
+                        }
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        setButtonState(Boolean(data.active), data.latest_job);
+                    })
+                    .catch(function() {
+                        // Leave the current state unchanged if polling fails.
+                    });
+            }
+
+            if (button.disabled) {
+                pollHandle = window.setInterval(pollStatus, 5000);
+                pollStatus();
+            }
+        })();
+    </script>
 {% endblock content %}
