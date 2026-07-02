@@ -439,13 +439,47 @@ def getProposalExportFields(data):
 
 def getApprovalExportFields(data):
     
-    header = ["Number"]
+    header = ["Number", "Application", "Licence Type", "Holder", "Status", "Start Date", "Expiry Date", "Event Name"]
               
     columns = list(
         data.values_list(
             "lodgement_number",
+            "current_proposal__lodgement_number",
+            "current_proposal__proposal_type",
+            "submitter_id",
+            "org_applicant__property_cache__name",
+            "proxy_applicant_id",
+            "status",
+            "start_date",
+            "expiry_date",
+            "current_proposal__event_activity__event_name",
         )
     )
+
+    user_ids = {
+        proposal[i]
+        for proposal in columns
+        for i in (3, 5)
+        if proposal[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda proposal: (
+        proposal[0],
+        proposal[1],
+        proposal[2].replace("_"," "),
+        proposal[4] if proposal[4] else user_map.get(proposal[5]) if user_map.get(proposal[5]) else user_map.get(proposal[3]),
+        proposal[6].replace("_"," "),
+        proposal[7],
+        proposal[8],
+        proposal[9],
+    ),columns))
 
     return header, columns
 
