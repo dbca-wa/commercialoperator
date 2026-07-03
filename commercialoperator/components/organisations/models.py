@@ -356,6 +356,8 @@ class Organisation(models.Model):
 
     def unlink_user(self,user,request):
         with transaction.atomic():
+            if not self.is_org_admin(request.user):
+                    raise ValidationError('You do not have permission to perform this action on {}'.format(str(self.organisation)))
             try:
                 delegate = UserDelegation.objects.get(organisation=self,user=user)
             except UserDelegation.DoesNotExist:
