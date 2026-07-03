@@ -28,6 +28,7 @@ from commercialoperator.components.organisations.emails import (
                         send_organisation_request_link_email_notification,
 
             )
+from commercialoperator.helpers import is_commercialoperator_admin
 
 @python_2_unicode_compatible
 class Organisation(models.Model):
@@ -356,7 +357,7 @@ class Organisation(models.Model):
 
     def unlink_user(self,user,request):
         with transaction.atomic():
-            if not self.is_org_admin(request.user):
+            if (not self.is_org_admin(request.user) and not is_commercialoperator_admin(request)):
                     raise ValidationError('You do not have permission to perform this action on {}'.format(str(self.organisation)))
             try:
                 delegate = UserDelegation.objects.get(organisation=self,user=user)
@@ -391,7 +392,7 @@ class Organisation(models.Model):
 
     def make_admin_user(self,user,request):
         with transaction.atomic():
-            if not self.is_org_admin(request.user):
+            if (not self.is_org_admin(request.user) and not is_commercialoperator_admin(request)):
                     raise ValidationError('You do not have permission to perform this action on {}'.format(str(self.organisation)))
             try:
                 delegate = UserDelegation.objects.get(organisation=self,user=user)
