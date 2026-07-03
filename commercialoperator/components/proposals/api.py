@@ -12,6 +12,7 @@ from rest_framework.decorators import renderer_classes, action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.ledger_models import Invoice
 from commercialoperator.components.proposals.utils import (
     get_chained_list,
     get_proposal_serializer_by_application_type,
@@ -384,6 +385,25 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                         Q(invoices__payment_method=payment_method)
                     )
 
+                    # Ensure rows in filtered results point to real Ledger invoices.
+                    references = set(
+                        queryset.values_list(
+                            "invoices__invoice_reference", flat=True
+                        )
+                    )
+                    references.discard(None)
+                    references.discard("")
+
+                    valid_references = set(
+                        Invoice.objects.filter(reference__in=references).values_list(
+                            "reference", flat=True
+                        )
+                    )
+
+                    queryset = queryset.filter(
+                        invoices__invoice_reference__in=valid_references
+                    )
+
 
             if payment_status:
                 payment_status_filter = payment_status.replace("_", " ")
@@ -423,6 +443,25 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                 else:
                     queryset = queryset.filter(
                         Q(booking__invoices__payment_method=payment_method)
+                    )
+
+                    # Ensure rows in filtered results point to real Ledger invoices.
+                    references = set(
+                        queryset.values_list(
+                            "booking__invoices__invoice_reference", flat=True
+                        )
+                    )
+                    references.discard(None)
+                    references.discard("")
+
+                    valid_references = set(
+                        Invoice.objects.filter(reference__in=references).values_list(
+                            "reference", flat=True
+                        )
+                    )
+
+                    queryset = queryset.filter(
+                        booking__invoices__invoice_reference__in=valid_references
                     )
 
             if payment_status:
