@@ -249,7 +249,7 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         @detail_route(methods=['POST',])
         def unlink_user(self, request, *args, **kwargs):
                 try:
-                        self.allow_external = True
+                        #self.allow_external = True
                         instance = self.get_object()
                         serializer = OrgUserAcceptSerializer(data=request.data)
                         serializer.is_valid(raise_exception=True)

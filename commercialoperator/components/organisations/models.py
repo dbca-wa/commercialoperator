@@ -9,7 +9,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.postgres.fields.jsonb import JSONField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from ledger.accounts.models import Organisation as ledger_organisation
-from ledger.accounts.models import EmailUser,RevisionedMixin #,Document
+from ledger.accounts.models import EmailUser,RevisionedMixin
+from django.db.models import Exists, OuterRef
 from commercialoperator.components.main.models import UserAction,CommunicationsLogEntry, Document
 from commercialoperator.components.organisations.utils import random_generator, can_admin_org, has_atleast_one_admin
 from commercialoperator.components.organisations.emails import (
@@ -201,6 +202,29 @@ class Organisation(models.Model):
         except:
             raise
 
+    def is_org_admin(self, user):
+        try:
+            contact = OrganisationContact.objects.filter(
+                user_role='organisation_admin',
+                is_admin=True,
+                user_status='active',
+                organisation=self,
+                email=user.email
+            ).annotate(
+                has_delegation=Exists(
+                    UserDelegation.objects.filter(
+                        organisation=self,
+                        user__email=OuterRef('email')
+                    )
+                )
+            ).filter(has_delegation=True)
+            if contact.exists():
+                return True
+            else:
+                return False
+        except OrganisationContact.DoesNotExist:
+            return False
+
 
     def accept_user(self, user,request):
         with transaction.atomic():
@@ -332,6 +356,8 @@ class Organisation(models.Model):
 
     def unlink_user(self,user,request):
         with transaction.atomic():
+            if not self.is_org_admin(request.user):
+                    raise ValidationError('You do not have permission to perform this action on {}'.format(str(self.organisation)))
             try:
                 delegate = UserDelegation.objects.get(organisation=self,user=user)
             except UserDelegation.DoesNotExist:
@@ -365,6 +391,8 @@ class Organisation(models.Model):
 
     def make_admin_user(self,user,request):
         with transaction.atomic():
+            if not self.is_org_admin(request.user):
+                    raise ValidationError('You do not have permission to perform this action on {}'.format(str(self.organisation)))
             try:
                 delegate = UserDelegation.objects.get(organisation=self,user=user)
             except UserDelegation.DoesNotExist:
