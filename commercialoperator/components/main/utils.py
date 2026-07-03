@@ -470,28 +470,54 @@ def getApprovalExportFields(data):
         for user in email_users
     }
 
-    columns = list(map(lambda proposal: (
-        proposal[0],
-        proposal[1],
-        proposal[2].replace("_"," "),
-        proposal[4] if proposal[4] else user_map.get(proposal[5]) if user_map.get(proposal[5]) else user_map.get(proposal[3]),
-        proposal[6].replace("_"," "),
-        proposal[7],
-        proposal[8],
-        proposal[9],
+    columns = list(map(lambda approval: (
+        approval[0],
+        approval[1],
+        approval[2].replace("_"," "),
+        approval[4] if approval[4] else user_map.get(approval[5]) if user_map.get(approval[5]) else user_map.get(approval[3]),
+        approval[6].replace("_"," "),
+        approval[7],
+        approval[8],
+        approval[9],
     ),columns))
 
     return header, columns
 
 def getComplianceExportFields(data):
     
-    header = ["Number"]
+    header = ["Number", "Licence", "Licence Type", "Holder", "Status", "Due Date", "Assigned To", "Event Name"]
               
     columns = list(
         data.values_list(
             "lodgement_number",
+            "approval__lodgement_number",
+            "proposal__proposal_type",
+            "proposal__submitter_id",
+            "proposal__org_applicant__property_cache__name",
+            "proposal__proxy_applicant_id",
+            "processing_status",
+            "due_date",
+            "assigned_to",
         )
     )
+
+    user_ids = {
+        proposal[i]
+        for proposal in columns
+        for i in (3, 5, 8)
+        if proposal[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda compliance: (
+        
+    ),columns))
 
     return header, columns
 
