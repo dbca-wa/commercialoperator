@@ -1825,7 +1825,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         try:
             with transaction.atomic():
                 instance = self.get_object()
-                is_onhold = eval(request.data.get("onhold"))
+                is_onhold = request.data.get('onhold').lower()=='true'
                 data = {}
                 if is_onhold:
                     data["type"] = "onhold"
@@ -1883,7 +1883,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         try:
             with transaction.atomic():
                 instance = self.get_object()
-                is_with_qaofficer = eval(request.data.get("with_qaofficer"))
+                is_with_qaofficer =  request.data.get('with_qaofficer').lower()=='true'
                 data = {}
                 if is_with_qaofficer:
                     data["type"] = "with_qaofficer"
