@@ -1164,11 +1164,12 @@ class AwaitingPaymentInvoicePDFView(View):
 
 class InvoicePaymentView(View):
     def get(self, request, *args, **kwargs):
+        invoice = get_object_or_404(Invoice, reference=self.kwargs["reference"])
+
         if is_payment_admin(request.user):
-            reference = self.kwargs["reference"]
             ledger_invoice_url = urljoin(
                 settings.LEDGER_UI_URL,
-                f"ledger/payments/invoice/payment?invoice={reference}",
+                f"ledger/payments/oracle/payments?invoice_no={invoice.reference}",
             )
             return HttpResponseRedirect(ledger_invoice_url)
 
