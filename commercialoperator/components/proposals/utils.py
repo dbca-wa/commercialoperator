@@ -2167,7 +2167,8 @@ def get_chained_list(
             # there is a lot here but a lot of time is saved not having to iterate every record every time
             proposal_list = (
                 proposal_list.filter(
-                    (
+                    (Q(lodgement_number__iregex=search_words_regex))
+                    | (
                         Q(application_type__name=ApplicationType.TCLASS)
                         & (Q(parks__park__name__iregex=search_words_regex))
                         | (Q(parks__activities__activity__in=activities))
@@ -2208,14 +2209,17 @@ def get_chained_list(
 
         if searchApproval:
             approval_list = approval_list.filter(
-                Q(surrender_details__iregex=filter_regex)
+                Q(lodgement_number__iregex=search_words_regex)
+                | Q(surrender_details__iregex=filter_regex)
                 | Q(suspension_details__iregex=filter_regex)
                 | Q(cancellation_details__iregex=search_words_regex)
             )
 
         if searchCompliance:
             compliance_list = compliance_list.filter(
-                Q(text__iregex=search_words_regex)
+                Q(lodgement_number__iregex=search_words_regex)
+                | Q(approval__lodgement_number__iregex=search_words_regex)
+                | Q(text__iregex=search_words_regex)
                 | Q(requirement__free_requirement__iregex=search_words_regex)
                 | Q(requirement__standard_requirement__text__iregex=search_words_regex)
             )
@@ -2236,29 +2240,33 @@ def paginate_chained_list(context, request, chained_list, searchWords):
     chained_list_paginated = paginator.paginate_queryset(chained_list, request)
 
     return_list = []
+    has_search_words = bool(searchWords)
+    search_words_lower = [str(word).lower() for word in (searchWords or []) if word]
+
+    def matches_search(value):
+        candidate = str(value or "").lower()
+        return any(word in candidate for word in search_words_lower)
+
     for entry in chained_list_paginated:
         if isinstance(entry, Proposal):
-            if not entry.search_data:
-                continue
+            final_results = ""
+            pid = entry.id
+            lodgement_number = entry.lodgement_number
 
-            search_results = search(entry.search_data, searchWords)
-            if not len(search_results):
-                continue
-            search_results = json.dumps(search(entry.search_data, searchWords))
+            if has_search_words:
+                number_match = matches_search(lodgement_number)
+                search_results = []
+                if entry.search_data:
+                    search_results = search(entry.search_data, searchWords)
 
-            search_result_tuple = (
-                entry.id,
-                entry.lodgement_number,
-                json.loads(search_results),
-            )
+                if not number_match and not len(search_results):
+                    continue
 
-            final_results = {}
-            pid = search_result_tuple[0]
-            lodgement_number = search_result_tuple[1]
-
-            for result in search_result_tuple[2]:
-                for key, value in result.items():
-                    final_results.update({"key": key, "value": value})
+                if len(search_results):
+                    final_results = {}
+                    for result in search_results:
+                        for key, value in result.items():
+                            final_results.update({"key": key, "value": value})
 
             cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
                 id=pid, lodgement_number=lodgement_number
@@ -2295,12 +2303,56 @@ def paginate_chained_list(context, request, chained_list, searchWords):
         elif isinstance(entry, Approval):
             try:
                 results = search_approval(entry, searchWords)
+                if not has_search_words and not results:
+                    results = [
+                        {
+                            "number": entry.lodgement_number,
+                            "id": entry.id,
+                            "type": "Approval",
+                            "applicant": entry.applicant,
+                            "text": "",
+                        }
+                    ]
+                if has_search_words and not results and matches_search(entry.lodgement_number):
+                    results = [
+                        {
+                            "number": entry.lodgement_number,
+                            "id": entry.id,
+                            "type": "Approval",
+                            "applicant": entry.applicant,
+                            "text": "",
+                        }
+                    ]
                 return_list.extend(results)
             except:
                 pass
         elif isinstance(entry, Compliance):
             try:
                 results = search_compliance(entry, searchWords)
+                if not has_search_words and not results:
+                    results = [
+                        {
+                            "number": entry.lodgement_number,
+                            "id": entry.id,
+                            "type": "Compliance",
+                            "applicant": entry.proposal.applicant_obj,
+                            "text": "",
+                        }
+                    ]
+                compliance_number_match = matches_search(entry.lodgement_number)
+                approval_number_match = matches_search(entry.approval.lodgement_number)
+                if has_search_words and not results and (
+                    compliance_number_match or approval_number_match
+                ):
+                    results = [
+                        {
+                            "number": entry.lodgement_number,
+                            "id": entry.id,
+                            "type": "Compliance",
+                            "applicant": entry.proposal.applicant_obj,
+                            "text": "",
+                        }
+                    ]
                 return_list.extend(results)
             except:
                 pass

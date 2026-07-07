@@ -364,7 +364,19 @@ export default {
                     url: vm.proposalSearchKeywordsUrl,
                     dataSrc: 'data',
                     data: function (d) {
-                        d.searchKeywords = JSON.stringify(vm.searchKeywords);
+                        const typedKeyword = (vm.keyWord || '').trim();
+                        const combinedKeywords = [...vm.searchKeywords];
+
+                        // Include the currently typed keyword even if Add was not clicked.
+                        if (
+                            typedKeyword &&
+                            !combinedKeywords.includes(typedKeyword)
+                        ) {
+                            combinedKeywords.push(typedKeyword);
+                        }
+
+                        d.searchKeywords = JSON.stringify(combinedKeywords);
+                        d['search[value]'] = typedKeyword;
                         d.searchProposal = vm.searchProposal;
                         d.searchApproval = vm.searchApproval;
                         d.searchCompliance = vm.searchCompliance;
@@ -528,6 +540,7 @@ export default {
             vm.messages = false;
             vm.messageString = '';
             vm.$refs.proposal_datatable.vmDataTable.clear();
+            vm.$refs.proposal_datatable.vmDataTable.search('');
             vm.$refs.proposal_datatable.vmDataTable.draw();
         },
 
@@ -535,6 +548,9 @@ export default {
             let vm = this;
             console.log('Calling search');
             vm.$refs.proposal_datatable.vmDataTable.clear();
+            vm.$refs.proposal_datatable.vmDataTable.search(
+                (vm.keyWord || '').trim()
+            );
             vm.$refs.proposal_datatable.vmDataTable.draw();
 
             return;
