@@ -111,18 +111,24 @@ class Organisation(SanitiseMixin):
         app_label = "commercialoperator"
 
     def __str__(self):
+        cache = self.property_cache or {}
+        cached_name = cache.get("name")
+        cached_abn = cache.get("abn")
 
-        return_str = ""
+        name = cached_name if cached_name is not None else self.name
+        abn = cached_abn if cached_abn is not None else self.abn
 
-        if 'name' in self.property_cache:
-            return_str = self.property_cache["name"]
-        if 'abn' in self.property_cache:
-            return_str += f" (ABN: {self.property_cache["abn"]})"
-        
-        if not return_str:
-            return str(f"{self.name} (ABN: {self.abn})")
-        
-        return return_str
+        name_str = str(name or "").strip()
+        abn_str = str(abn or "").strip()
+
+        if name_str and abn_str:
+            return f"{name_str} (ABN: {abn_str})"
+        if name_str:
+            return name_str
+        if abn_str:
+            return f"ABN: {abn_str}"
+
+        return f"Organisation {self.organisation_id}"
 
     def update_property_cache(self, save=True):
 
