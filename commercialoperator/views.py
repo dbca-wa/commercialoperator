@@ -244,22 +244,7 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
             if command_script == 'update_cache':
                 requested_by = request.user.email if request.user and request.user.is_authenticated else ''
                 job, created = self._start_update_cache_job(requested_by=requested_by)
-                if created:
-                    data.update(
-                        {
-                            'ret': 'Started update_cache job {}'.format(job['id']),
-                            'update_cache': job['status'],
-                        }
-                    )
-                else:
-                    data.update(
-                        {
-                            'ret': 'update_cache is already {} as job {}'.format(
-                                job['status'], job['id']
-                            ),
-                            'update_cache': job['status'],
-                        }
-                    )
+                data.update({'update_cache': job['status']})
             else:
                 call_command(command_script)
                 data.update({command_script: "true"})
