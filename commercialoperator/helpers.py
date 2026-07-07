@@ -100,10 +100,21 @@ def is_internal(request):
         request.user.is_superuser or
         is_commercialoperator_admin(request) or
         is_payment_admin(request.user) or
-        is_commercialoperator_admin(request) or
         is_finance_officer(request) or 
         is_organisation_access_approver(request) or
         is_qa_officer(request)
     )
 
+def is_internal_user(user):
 
+    payment_group = Group.objects.filter(name=settings.PAYMENT_OFFICERS_GROUP)
+    return (
+        user and hasattr(user,'id') and (
+            user.is_superuser or
+            belongs_to(user, settings.ADMIN_GROUP) or
+            user.id in list(UsersInGroup.objects.filter(group_id=payment_group.first().id).values_list('emailuser_id', flat=True)) or
+            belongs_to(user, settings.GROUP_FINANCE) or 
+            retrieve_user_groups("organisationaccessgroup", user.id).exists() or
+            retrieve_user_groups("qaofficergroup", user.id)
+        )
+    )
