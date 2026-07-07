@@ -35,6 +35,8 @@ import subprocess
 import sys
 import uuid
 
+from commercialoperator.components.main.models import JobQueue
+
 class InternalView(UserPassesTestMixin, TemplateView):
     template_name = "commercialoperator/dash/index.html"
 
@@ -356,3 +358,44 @@ def getPrivateFile(request):
                 return HttpResponse(status=500)
        
     return HttpResponse(status=403)
+
+class EmailExportsView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'commercialoperator/email_exports.html'
+
+    def test_func(self):
+        return is_internal(self.request)
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+    def post(self, request):
+        context = self.get_context_data()
+        export_model = request.POST.get('export_model', None)
+        filters = request.POST.get('filters', None)
+        format = request.POST.get('format', 'csv')
+        num_records = request.POST.get('num_records', settings.MAX_NUM_ROWS_MODEL_EXPORT)
+
+        try:
+            num_records = min(int(num_records), settings.MAX_NUM_ROWS_MODEL_EXPORT)
+        except:
+            num_records = settings.MAX_NUM_ROWS_MODEL_EXPORT
+
+        if export_model:
+            parameters = {"model":export_model, "filters":filters, "format":format, "num_records": num_records}
+            parameters_json = parameters
+            #check if job with same params that is not completed/failed already exists - prevent needless duplicates
+            if not JobQueue.objects.filter(job_cmd="email_exports", status__lt=2, parameters_json=parameters_json, user=request.user.id):
+                JobQueue.objects.create(
+                    job_cmd="email_exports",
+                    status=0,
+                    parameters_json=parameters_json,
+                    user=request.user.id
+                )
+                context.update({"message": "{} data export shall be emailed to {} when ready.".format(export_model,request.user.email).capitalize()})
+            else:
+                context.update({"message": "{} data export for {} already in progress.".format(export_model,request.user.email).capitalize()})
+        else:
+            context.update({"message": "Export request failed."})
+
+        return self.render_to_response(context)

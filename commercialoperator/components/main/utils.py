@@ -3,12 +3,19 @@ import pytz
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
+
 from rest_framework import serializers
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
+from datetime import datetime
 import re
 import os
+import csv
+import xlsxwriter
+import uuid
+
+from commercialoperator.settings import MAX_NUM_ROWS_MODEL_EXPORT
 
 def remove_html_tags(text):
 
@@ -244,3 +251,391 @@ def check_db_connection():
             connection.connect()
     except Exception as e:
         connection.connect()
+
+def csvExportData(model, header, columns):
+    
+    csv_file = str(settings.BASE_DIR)+'/tmp/{}_{}_{}.csv'.format(model,uuid.uuid4(),int(datetime.now().timestamp()*100000))
+    with open(csv_file, 'w', newline='') as new_file:
+        writer = csv.writer(new_file)
+        writer.writerow(header)
+        for i in columns:
+            writer.writerow(i)
+    return csv_file
+
+def excelExportData(model, header, columns):
+    excel_file = str(settings.BASE_DIR)+'/tmp/{}_{}_{}.xlsx'.format(model,uuid.uuid4(),int(datetime.now().timestamp()*100000))
+    workbook = xlsxwriter.Workbook(excel_file) 
+    worksheet = workbook.add_worksheet("{} Report".format(model.capitalize()))
+    format = workbook.add_format()
+
+    col = 0 
+    row = 0
+
+    col_lens = [0]*len(header)
+
+    for i in header:
+        worksheet.write(row, col, str(i), format)
+        col_lens[col] = len(str(i))+2
+        worksheet.set_column(col, col, col_lens[col])
+        col += 1
+    col = 0 
+    row += 1
+    for i in columns:
+        for j in i:
+            worksheet.write(row, col, str(j), format)
+            if len(str(j)) > col_lens[col]:
+                col_lens[col] = len(str(j))+2
+                worksheet.set_column(col, col, col_lens[col])
+            col += 1
+        col = 0
+        row += 1
+
+    workbook.close() 
+
+    return excel_file
+
+def getProposalExport(filters, num):
+    from commercialoperator.components.proposals.models import Proposal
+
+    qs = Proposal.objects.order_by("-lodgement_date")
+    if filters:
+        #lodged_on_from
+        if "lodged_on_from" in filters and filters["lodged_on_from"]:
+            qs = qs.filter(lodgement_date__gte=filters["lodged_on_from"])
+        #lodged_on_to
+        if "lodged_on_to" in filters and filters["lodged_on_to"]:
+            qs = qs.filter(lodgement_date__lte=filters["lodged_on_to"])
+
+    return qs[:num]
+
+
+def getApprovalExport(filters, num):
+    from commercialoperator.components.approvals.models import Approval
+
+    qs = Approval.objects.order_by("-start_date")
+
+    if filters:
+        if "start_date_from" in filters and filters["start_date_from"]:
+            qs = qs.filter(start_date__gte=filters["start_date_from"])
+
+        if "start_date_to" in filters and filters["start_date_to"]:
+            qs = qs.filter(start_date__lte=filters["start_date_to"])
+
+    return qs[:num]
+
+
+
+def getComplianceExport(filters, num):
+    from commercialoperator.components.compliances.models import Compliance
+
+    qs = Compliance.objects.order_by("-due_date")
+
+    if filters:
+        if "due_date_from" in filters and filters["due_date_from"]:
+            qs = qs.filter(due_date__gte=filters["due_date_from"])
+
+        if "due_date_to" in filters and filters["due_date_to"]:
+            qs = qs.filter(due_date__lte=filters["due_date_to"])
+
+    return qs[:num]
+
+
+
+def getOrganisationRequestExport(filters, num):
+    from commercialoperator.components.organisations.models import OrganisationRequest
+
+    qs = OrganisationRequest.objects.order_by("-lodgement_date")
+
+    if filters:
+        if "lodged_on_from" in filters and filters["lodged_on_from"]:
+            qs = qs.filter(lodgement_date__gte=filters["lodged_on_from"])
+
+        if "lodged_on_to" in filters and filters["lodged_on_to"]:
+            qs = qs.filter(lodgement_date__lte=filters["lodged_on_to"])
+
+    return qs[:num]
+
+
+
+def getBookingExport(filters, num):
+    from commercialoperator.components.bookings.models import ParkBooking
+
+    qs = ParkBooking.objects.order_by("-arrival")
+
+    if filters:
+        if "arrival_date_from" in filters and filters["arrival_date_from"]:
+            qs = qs.filter(arrival__gte=filters["arrival_date_from"])
+
+        if "arrival_date_to" in filters and filters["arrival_date_to"]:
+            qs = qs.filter(arrival__lte=filters["arrival_date_to"])
+
+    return qs[:num]
+
+
+def exportModelData(model, filters, num_records):
+
+    if not num_records:
+        num_records = MAX_NUM_ROWS_MODEL_EXPORT
+    else:
+        num_records = min(num_records, MAX_NUM_ROWS_MODEL_EXPORT)
+
+    if model == "proposal":
+        return getProposalExport(filters, num_records)
+    elif model == "approval":
+        return getApprovalExport(filters, num_records)
+    elif model == "compliance":
+        return getComplianceExport(filters, num_records)
+    elif model == "organisationrequest":
+        return getOrganisationRequestExport(filters, num_records)
+    elif model == "booking":
+        return getBookingExport(filters, num_records)
+    else:
+        return
+
+
+def getProposalExportFields(data):
+
+    header = ["Number", "Licence Type", "Submitter", "Applicant", "Status", "Lodged On", "Assigned Officer", "Event Name", "Invoice Reference"]
+
+    columns = list(
+        data.values_list(
+            "lodgement_number",
+            "proposal_type",
+            "submitter_id",
+            "org_applicant__property_cache__name",
+            "proxy_applicant_id",
+            "processing_status",
+            "lodgement_date",
+            "assigned_officer_id",
+            "fee_invoice_reference"
+        )
+    )
+
+    user_ids = {
+        proposal[i]
+        for proposal in columns
+        for i in (2, 4, 7)
+        if proposal[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda proposal: (
+        proposal[0],
+        proposal[1].replace("_"," "),
+        user_map.get(proposal[2]),
+        proposal[3] if proposal[3] else user_map.get(proposal[4]) if user_map.get(proposal[4]) else user_map.get(proposal[2]),
+        proposal[5].replace("_"," "),
+        proposal[6] if proposal[6] else "",
+        user_map.get(proposal[7]) if user_map.get(proposal[7]) else "",
+        proposal[8] if proposal[8] else "",
+    ),columns))
+
+    return header, columns
+
+def getApprovalExportFields(data):
+    
+    header = ["Number", "Application", "Licence Type", "Holder", "Status", "Start Date", "Expiry Date", "Event Name"]
+              
+    columns = list(
+        data.values_list(
+            "lodgement_number",
+            "current_proposal__lodgement_number",
+            "current_proposal__proposal_type",
+            "submitter_id",
+            "org_applicant__property_cache__name",
+            "proxy_applicant_id",
+            "status",
+            "start_date",
+            "expiry_date",
+            "current_proposal__event_activity__event_name",
+        )
+    )
+
+    user_ids = {
+        approval[i]
+        for approval in columns
+        for i in (3, 5)
+        if approval[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda approval: (
+        approval[0],
+        approval[1],
+        approval[2].replace("_"," "),
+        approval[4] if approval[4] else user_map.get(approval[5]) if user_map.get(approval[5]) else user_map.get(approval[3]),
+        approval[6].replace("_"," "),
+        approval[7],
+        approval[8],
+        approval[9],
+    ),columns))
+
+    return header, columns
+
+def getComplianceExportFields(data):
+    
+    header = ["Number", "Licence", "Licence Type", "Holder", "Status", "Due Date", "Assigned To", "Event Name"]
+              
+    columns = list(
+        data.values_list(
+            "lodgement_number",
+            "approval__lodgement_number",
+            "proposal__proposal_type",
+            "proposal__submitter_id",
+            "proposal__org_applicant__property_cache__name",
+            "proposal__proxy_applicant_id",
+            "processing_status",
+            "due_date",
+            "assigned_to",
+        )
+    )
+
+    user_ids = {
+        compliance[i]
+        for compliance in columns
+        for i in (3, 5, 8)
+        if compliance[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda compliance: (
+        compliance[0],
+        compliance[1],
+        compliance[2].replace("_"," "),
+        compliance[4] if compliance[4] else user_map.get(compliance[5]) if user_map.get(compliance[5]) else user_map.get(compliance[3]),
+        compliance[6].replace("_"," "),
+        compliance[7],
+        user_map.get(compliance[8]) if user_map.get(compliance[8]) else "",
+    ),columns))
+
+    return header, columns
+
+def getOrganisationRequestExportFields(data):
+
+    header = ["Request Number", "Organisation Name", "ABN", "Applicant ID", "Applicant Role", "Status", "Lodged On"]
+
+    columns = list(
+        data.values_list(
+            "id",
+            "name",
+            "abn",
+            "requester_id",
+            "role",
+            "status",
+            "lodgement_date"
+        )
+    )
+    
+    return header, columns
+
+def getBookingExportFields(data):
+    from commercialoperator.components.bookings.models import BookingInvoice
+
+    header = ["Booking ID", "Booking Number", "Licence", "Trading Name", "Arrival", "Park", "Adult Visitors", "Child Visitors", "Free of Charge Visitors", "Holder", "Status"]
+    
+    latest_invoice_status = (
+        BookingInvoice.objects
+        .filter(booking=OuterRef("booking_id"))
+        .order_by("-id")
+        .values("property_cache__payment_status")[:1]
+    )
+
+    columns = list(
+        data.annotate(
+            payment_status=Subquery(latest_invoice_status)
+        ).values_list(
+            "booking__admission_number",
+            "booking__proposal__approval__lodgement_number", 
+            "booking__proposal__org_applicant__property_cache__name",
+            "arrival",
+            "park__name",
+            "no_adults",
+            "no_children",
+            "no_free_of_charge",
+            "booking__proposal__submitter_id",
+            "booking__proposal__proxy_applicant_id",
+            "payment_status",
+            "booking__id",
+        )
+    )
+
+    user_ids = {
+        booking[i]
+        for booking in columns
+        for i in (8, 9)
+        if booking[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda booking: (
+        booking[11],
+        booking[0] if booking[0] else booking[11],
+        booking[1],
+        booking[2],
+        booking[3],
+        booking[4],
+        booking[5],
+        booking[6],
+        booking[7],
+        booking[2] if booking[2] else user_map.get(booking[9]) if user_map.get(booking[9]) else user_map.get(booking[8]),
+        booking[10],
+    ),columns))
+
+    return header, columns
+
+def formatExportData(model, data, format):
+    
+    
+    if model == "proposal":
+        header, columns = getProposalExportFields(data)
+    elif model == "approval":
+        header, columns = getApprovalExportFields(data)
+    elif model == "compliance":
+        header, columns = getComplianceExportFields(data)
+    elif model == "organisationrequest":
+        header, columns = getOrganisationRequestExportFields(data)
+    elif model == "booking":
+        header, columns = getBookingExportFields(data)
+    else:
+        return
+
+
+    if os.path.isdir(str(settings.BASE_DIR)+'/tmp/') is False:
+        os.makedirs(str(settings.BASE_DIR)+'/tmp/')
+
+    if format == "excel":
+        file_name = excelExportData(model, header, columns)
+        file_buffer = None
+        with open(file_name, 'rb') as f:
+            file_buffer = f.read()    
+        return ('Commercial Operator - {} Report.xlsx'.format(model.capitalize()), file_buffer, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    else:
+        file_name =  csvExportData(model, header, columns)
+        file_buffer = None
+        with open(file_name, 'rb') as f:
+            file_buffer = f.read()    
+        return ('Commercial Operator - {} Report.csv'.format(model.capitalize()), file_buffer, 'application/csv')
