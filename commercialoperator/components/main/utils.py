@@ -3,7 +3,8 @@ import pytz
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
+
 from rest_framework import serializers
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
@@ -457,10 +458,10 @@ def getApprovalExportFields(data):
     )
 
     user_ids = {
-        proposal[i]
-        for proposal in columns
+        approval[i]
+        for approval in columns
         for i in (3, 5)
-        if proposal[i] is not None
+        if approval[i] is not None
     }
 
     email_users = EmailUser.objects.filter(id__in=user_ids)
@@ -502,10 +503,10 @@ def getComplianceExportFields(data):
     )
 
     user_ids = {
-        proposal[i]
-        for proposal in columns
+        compliance[i]
+        for compliance in columns
         for i in (3, 5, 8)
-        if proposal[i] is not None
+        if compliance[i] is not None
     }
 
     email_users = EmailUser.objects.filter(id__in=user_ids)
@@ -516,32 +517,93 @@ def getComplianceExportFields(data):
     }
 
     columns = list(map(lambda compliance: (
-        
+        compliance[0],
+        compliance[1],
+        compliance[2].replace("_"," "),
+        compliance[4] if compliance[4] else user_map.get(compliance[5]) if user_map.get(compliance[5]) else user_map.get(compliance[3]),
+        compliance[6].replace("_"," "),
+        compliance[7],
+        user_map.get(compliance[8]) if user_map.get(compliance[8]) else "",
     ),columns))
 
     return header, columns
 
 def getOrganisationRequestExportFields(data):
 
-    header = ["Number"]
-              
+    header = ["Request Number", "Organisation Name", "ABN", "Applicant ID", "Applicant Role", "Status", "Lodged On"]
+
     columns = list(
         data.values_list(
             "id",
+            "name",
+            "abn",
+            "requester_id",
+            "role",
+            "status",
+            "lodgement_date"
         )
     )
-
+    
     return header, columns
 
 def getBookingExportFields(data):
+    from commercialoperator.components.bookings.models import BookingInvoice
+
+    header = ["Booking ID", "Booking Number", "Licence", "Trading Name", "Arrival", "Park", "Adult Visitors", "Child Visitors", "Free of Charge Visitors", "Holder", "Status"]
     
-    header = ["Number"]
-              
+    latest_invoice_status = (
+        BookingInvoice.objects
+        .filter(booking=OuterRef("booking_id"))
+        .order_by("-id")
+        .values("property_cache__payment_status")[:1]
+    )
+
     columns = list(
-        data.values_list(
-            "id",
+        data.annotate(
+            payment_status=Subquery(latest_invoice_status)
+        ).values_list(
+            "booking__admission_number",
+            "booking__proposal__approval__lodgement_number", 
+            "booking__proposal__org_applicant__property_cache__name",
+            "arrival",
+            "park__name",
+            "no_adults",
+            "no_children",
+            "no_free_of_charge",
+            "booking__proposal__submitter_id",
+            "booking__proposal__proxy_applicant_id",
+            "payment_status",
+            "booking__id",
         )
     )
+
+    user_ids = {
+        booking[i]
+        for booking in columns
+        for i in (8, 9)
+        if booking[i] is not None
+    }
+
+    email_users = EmailUser.objects.filter(id__in=user_ids)
+    
+    user_map = {
+        user.id: f"{user.first_name} {user.last_name}".strip()
+        for user in email_users
+    }
+
+    columns = list(map(lambda booking: (
+        booking[11],
+        booking[0] if booking[0] else booking[11],
+        booking[1],
+        booking[2],
+        booking[3],
+        booking[4],
+        booking[5],
+        booking[6],
+        booking[7],
+        booking[2] if booking[2] else user_map.get(booking[9]) if user_map.get(booking[9]) else user_map.get(booking[8]),
+        booking[10],
+    ),columns))
 
     return header, columns
 
