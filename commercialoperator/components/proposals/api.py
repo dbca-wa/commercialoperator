@@ -2856,6 +2856,7 @@ class SearchProposalsFilterBackend(DatatablesFilterBackend):
         searchProposal = json.loads(request.GET.get("searchProposal"))
         searchApproval = json.loads(request.GET.get("searchApproval"))
         searchCompliance = json.loads(request.GET.get("searchCompliance"))
+        search_text = (request.GET.get("search[value]") or "").strip()
 
         fields = self.get_fields(request)
         ordering = self.get_ordering(request, view, fields)
@@ -2868,10 +2869,40 @@ class SearchProposalsFilterBackend(DatatablesFilterBackend):
             searchCompliance,
             is_internal=True,
         )
+
+        total_chained_qs = QuerySetChain(proposal_list, approval_list, compliance_list)
+        total_chained_qs.order_by(*ordering)
+        setattr(view, "_datatables_total_count", total_chained_qs.count())
+
+        if search_text:
+            matching_ids = search_in_emailuser_fields(search_text)
+            org_matching_ids = search_organisation_properties(search_text, False)
+
+            if searchProposal:
+                proposal_search_q = Q(lodgement_number__icontains=search_text)
+                proposal_search_q |= Q(submitter_id__in=matching_ids)
+                proposal_search_q |= Q(proxy_applicant_id__in=matching_ids)
+                proposal_search_q |= Q(assigned_officer_id__in=matching_ids)
+                proposal_search_q |= Q(org_applicant_id__in=org_matching_ids)
+                proposal_list = proposal_list.filter(proposal_search_q).distinct()
+
+            if searchApproval:
+                approval_search_q = Q(lodgement_number__icontains=search_text)
+                approval_search_q |= Q(submitter_id__in=matching_ids)
+                approval_search_q |= Q(proxy_applicant_id__in=matching_ids)
+                approval_search_q |= Q(org_applicant_id__in=org_matching_ids)
+                approval_list = approval_list.filter(approval_search_q).distinct()
+
+            if searchCompliance:
+                compliance_search_q = Q(lodgement_number__icontains=search_text)
+                compliance_search_q |= Q(approval__lodgement_number__icontains=search_text)
+                compliance_search_q |= Q(proposal__submitter_id__in=matching_ids)
+                compliance_search_q |= Q(proposal__proxy_applicant_id__in=matching_ids)
+                compliance_search_q |= Q(proposal__org_applicant_id__in=org_matching_ids)
+                compliance_list = compliance_list.filter(compliance_search_q).distinct()
+
         chained_qs = QuerySetChain(proposal_list, approval_list, compliance_list)
         chained_qs.order_by(*ordering)
-
-        setattr(view, "_datatables_total_count", chained_qs.count())
         return chained_qs
 
 
