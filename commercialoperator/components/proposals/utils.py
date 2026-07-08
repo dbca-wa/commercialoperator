@@ -2128,6 +2128,15 @@ def get_chained_list(
         compliance_list = Compliance.objects.all()
 
     if searchWords:
+        matched_emailuser_ids = []
+        matched_org_ids = []
+        for search_word in searchWords:
+            matched_emailuser_ids.extend(search_in_emailuser_fields(search_word))
+            matched_org_ids.extend(search_organisation_properties(search_word, False))
+
+        matched_emailuser_ids = list(set(matched_emailuser_ids))
+        matched_org_ids = list(set(matched_org_ids))
+
         # convert the search words in to two regex values - one for text one for json values
         search_words_regex = "(?:" + "|".join(searchWords) + ")"
         filter_regex = (
@@ -2168,6 +2177,9 @@ def get_chained_list(
             proposal_list = (
                 proposal_list.filter(
                     (Q(lodgement_number__iregex=search_words_regex))
+                    | Q(proxy_applicant_id__in=matched_emailuser_ids)
+                    | Q(org_applicant_id__in=matched_org_ids)
+                    | Q(submitter_id__in=matched_emailuser_ids)
                     | (
                         Q(application_type__name=ApplicationType.TCLASS)
                         & (Q(parks__park__name__iregex=search_words_regex))
@@ -2210,6 +2222,8 @@ def get_chained_list(
         if searchApproval:
             approval_list = approval_list.filter(
                 Q(lodgement_number__iregex=search_words_regex)
+                | Q(proxy_applicant_id__in=matched_emailuser_ids)
+                | Q(org_applicant_id__in=matched_org_ids)
                 | Q(surrender_details__iregex=filter_regex)
                 | Q(suspension_details__iregex=filter_regex)
                 | Q(cancellation_details__iregex=search_words_regex)
@@ -2219,6 +2233,9 @@ def get_chained_list(
             compliance_list = compliance_list.filter(
                 Q(lodgement_number__iregex=search_words_regex)
                 | Q(approval__lodgement_number__iregex=search_words_regex)
+                | Q(proposal__submitter_id__in=matched_emailuser_ids)
+                | Q(proposal__proxy_applicant_id__in=matched_emailuser_ids)
+                | Q(proposal__org_applicant_id__in=matched_org_ids)
                 | Q(text__iregex=search_words_regex)
                 | Q(requirement__free_requirement__iregex=search_words_regex)
                 | Q(requirement__standard_requirement__text__iregex=search_words_regex)
@@ -2255,11 +2272,12 @@ def paginate_chained_list(context, request, chained_list, searchWords):
 
             if has_search_words:
                 number_match = matches_search(lodgement_number)
+                proponent_match = matches_search(entry.applicant)
                 search_results = []
                 if entry.search_data:
                     search_results = search(entry.search_data, searchWords)
 
-                if not number_match and not len(search_results):
+                if not number_match and not proponent_match and not len(search_results):
                     continue
 
                 if len(search_results):
@@ -2323,6 +2341,16 @@ def paginate_chained_list(context, request, chained_list, searchWords):
                             "text": "",
                         }
                     ]
+                if has_search_words and not results and matches_search(entry.applicant):
+                    results = [
+                        {
+                            "number": entry.lodgement_number,
+                            "id": entry.id,
+                            "type": "Approval",
+                            "applicant": entry.applicant,
+                            "text": "",
+                        }
+                    ]
                 return_list.extend(results)
             except:
                 pass
@@ -2341,8 +2369,9 @@ def paginate_chained_list(context, request, chained_list, searchWords):
                     ]
                 compliance_number_match = matches_search(entry.lodgement_number)
                 approval_number_match = matches_search(entry.approval.lodgement_number)
+                proponent_match = matches_search(entry.proposal.applicant)
                 if has_search_words and not results and (
-                    compliance_number_match or approval_number_match
+                    compliance_number_match or approval_number_match or proponent_match
                 ):
                     results = [
                         {

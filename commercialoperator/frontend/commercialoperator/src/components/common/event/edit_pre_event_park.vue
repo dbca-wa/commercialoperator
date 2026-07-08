@@ -348,6 +348,7 @@ export default {
                                 title: 'Created',
                                 text: 'New park record has been created.',
                                 icon: 'success',
+                                allowOutsideClick: false,
                             });
                             vm.$emit('refreshFromResponse', response);
                         },

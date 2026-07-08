@@ -123,9 +123,15 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
         if not pid:
             return False
         try:
+            proc_stat_path = f'/proc/{pid}/stat'
+            if os.path.exists(proc_stat_path):
+                with open(proc_stat_path, 'r', encoding='utf-8') as proc_stat_file:
+                    proc_state = proc_stat_file.read().split()[2]
+                if proc_state == 'Z':
+                    return False
             os.kill(pid, 0)
             return True
-        except OSError:
+        except (OSError, IndexError, FileNotFoundError):
             return False
 
     @classmethod
@@ -135,10 +141,6 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
             return None
 
         if state.get('status') in cls.UPDATE_CACHE_ACTIVE_STATUSES:
-            pid = state.get('pid')
-            if cls._is_pid_running(pid):
-                return state
-
             exit_code = None
             exit_path = state.get('exit_path')
             if exit_path and os.path.exists(exit_path):
@@ -147,6 +149,10 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
                         exit_code = int((exit_file.read() or '').strip())
                 except (TypeError, ValueError):
                     exit_code = None
+
+            pid = state.get('pid')
+            if exit_code is None and cls._is_pid_running(pid):
+                return state
 
             state['finished_at'] = timezone.now().isoformat()
             if exit_code == 0:
@@ -244,22 +250,7 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
             if command_script == 'update_cache':
                 requested_by = request.user.email if request.user and request.user.is_authenticated else ''
                 job, created = self._start_update_cache_job(requested_by=requested_by)
-                if created:
-                    data.update(
-                        {
-                            'ret': 'Started update_cache job {}'.format(job['id']),
-                            'update_cache': job['status'],
-                        }
-                    )
-                else:
-                    data.update(
-                        {
-                            'ret': 'update_cache is already {} as job {}'.format(
-                                job['status'], job['id']
-                            ),
-                            'update_cache': job['status'],
-                        }
-                    )
+                data.update({'update_cache': job['status']})
             else:
                 call_command(command_script)
                 data.update({command_script: "true"})
