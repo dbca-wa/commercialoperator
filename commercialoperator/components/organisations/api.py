@@ -545,11 +545,12 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         serializer.is_valid(raise_exception=True)
         comms = serializer.save()
         # Save the files
-        for f in request.FILES:
-            comms.documents.create(
-                name = str(request.FILES[f]),
-                _file = request.FILES[f]
-            )
+        for _, uploaded_files in request.FILES.lists():
+            for uploaded_file in uploaded_files:
+                comms.documents.create(
+                    name=str(uploaded_file),
+                    _file=uploaded_file,
+                )
         # End Save Documents
 
         return Response(serializer.data)
@@ -980,11 +981,12 @@ class OrganisationRequestsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
         serializer.is_valid(raise_exception=True)
         comms = serializer.save()
         # Save the files
-        for f in request.FILES:
-            comms.documents.create(
-                name = str(request.FILES[f]),
-                _file = request.FILES[f]
-            )
+        for _, uploaded_files in request.FILES.lists():
+            for uploaded_file in uploaded_files:
+                comms.documents.create(
+                    name=str(uploaded_file),
+                    _file=uploaded_file,
+                )
         # End Save Documents
 
         return Response(serializer.data)

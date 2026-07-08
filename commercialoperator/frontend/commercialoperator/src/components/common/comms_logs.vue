@@ -291,7 +291,7 @@ export default {
                             return row.documents || row.document || [];
                         },
                         render: function (values) {
-                            var result = '';
+                            var links = [];
                             if (!values || !Array.isArray(values) || values.length === 0) {
                                 return '';
                             }
@@ -314,14 +314,15 @@ export default {
                                         separator: ' ',
                                     });
                                 }
-                                result +=
+                                links.push(
                                     '<a href="' +
-                                    url +
-                                    '" target="_blank"><p>' +
-                                    docName +
-                                    '</p></a><br>';
+                                        url +
+                                        '" target="_blank">' +
+                                        docName +
+                                        '</a>'
+                                );
                             });
-                            return result;
+                            return links.join('<br>');
                         },
                     },
                     {
