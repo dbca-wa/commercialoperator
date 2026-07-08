@@ -364,19 +364,7 @@ export default {
                     url: vm.proposalSearchKeywordsUrl,
                     dataSrc: 'data',
                     data: function (d) {
-                        const typedKeyword = (vm.keyWord || '').trim();
-                        const combinedKeywords = [...vm.searchKeywords];
-
-                        // Include the currently typed keyword even if Add was not clicked.
-                        if (
-                            typedKeyword &&
-                            !combinedKeywords.includes(typedKeyword)
-                        ) {
-                            combinedKeywords.push(typedKeyword);
-                        }
-
-                        d.searchKeywords = JSON.stringify(combinedKeywords);
-                        d['search[value]'] = typedKeyword;
+                        d.searchKeywords = JSON.stringify(vm.searchKeywords);
                         d.searchProposal = vm.searchProposal;
                         d.searchApproval = vm.searchApproval;
                         d.searchCompliance = vm.searchCompliance;
@@ -520,9 +508,11 @@ export default {
 
         add: function () {
             let vm = this;
-            if (vm.keyWord != null) {
-                vm.searchKeywords.push(vm.keyWord);
+            const typedKeyword = (vm.keyWord || '').trim();
+            if (typedKeyword && !vm.searchKeywords.includes(typedKeyword)) {
+                vm.searchKeywords.push(typedKeyword);
             }
+            vm.keyWord = '';
         },
         removeKeyword: function (index) {
             let vm = this;
@@ -532,9 +522,7 @@ export default {
         },
         reset: function () {
             let vm = this;
-            if (vm.keyWord != null) {
-                vm.searchKeywords = [];
-            }
+            vm.searchKeywords = [];
             vm.keyWord = null;
             vm.results = [];
             vm.messages = false;
@@ -548,9 +536,7 @@ export default {
             let vm = this;
             console.log('Calling search');
             vm.$refs.proposal_datatable.vmDataTable.clear();
-            vm.$refs.proposal_datatable.vmDataTable.search(
-                (vm.keyWord || '').trim()
-            );
+            vm.$refs.proposal_datatable.vmDataTable.search('');
             vm.$refs.proposal_datatable.vmDataTable.draw();
 
             return;
