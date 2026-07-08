@@ -123,9 +123,15 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
         if not pid:
             return False
         try:
+            proc_stat_path = f'/proc/{pid}/stat'
+            if os.path.exists(proc_stat_path):
+                with open(proc_stat_path, 'r', encoding='utf-8') as proc_stat_file:
+                    proc_state = proc_stat_file.read().split()[2]
+                if proc_state == 'Z':
+                    return False
             os.kill(pid, 0)
             return True
-        except OSError:
+        except (OSError, IndexError, FileNotFoundError):
             return False
 
     @classmethod
@@ -135,10 +141,6 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
             return None
 
         if state.get('status') in cls.UPDATE_CACHE_ACTIVE_STATUSES:
-            pid = state.get('pid')
-            if cls._is_pid_running(pid):
-                return state
-
             exit_code = None
             exit_path = state.get('exit_path')
             if exit_path and os.path.exists(exit_path):
@@ -147,6 +149,10 @@ class ManagementCommandsView(UserPassesTestMixin, LoginRequiredMixin, TemplateVi
                         exit_code = int((exit_file.read() or '').strip())
                 except (TypeError, ValueError):
                     exit_code = None
+
+            pid = state.get('pid')
+            if exit_code is None and cls._is_pid_running(pid):
+                return state
 
             state['finished_at'] = timezone.now().isoformat()
             if exit_code == 0:
