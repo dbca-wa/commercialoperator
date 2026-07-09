@@ -536,7 +536,10 @@ export default {
             let vm = this;
             console.log('Calling search');
             vm.$refs.proposal_datatable.vmDataTable.clear();
-            vm.$refs.proposal_datatable.vmDataTable.search('');
+            if(vm.searchKeywords.length == 0 && vm.keyWord) {
+               vm.searchKeywords.push(vm.keyWord);
+            }
+            vm.keyWord = '';
             vm.$refs.proposal_datatable.vmDataTable.draw();
 
             return;

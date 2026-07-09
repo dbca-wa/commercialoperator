@@ -2254,7 +2254,6 @@ def paginate_chained_list(context, request, chained_list, searchWords):
 
     paginator = context.paginator
     paginator.page_size = 10
-    chained_list_paginated = paginator.paginate_queryset(chained_list, request)
 
     return_list = []
     has_search_words = bool(searchWords)
@@ -2264,14 +2263,80 @@ def paginate_chained_list(context, request, chained_list, searchWords):
         candidate = str(value or "").lower()
         return any(word in candidate for word in search_words_lower)
 
-    for entry in chained_list_paginated:
+    def serialize_proposal_entry(entry, text_value=""):
+        pid = entry.id
+        lodgement_number = entry.lodgement_number
+        cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
+            id=pid, lodgement_number=lodgement_number
+        )
+        res = cache.get(cache_key)
+
+        if res is None:
+            try:
+                applicant = entry.applicant_obj
+            except Proposal.DoesNotExist:
+                applicant = None
+
+            res = {
+                "number": lodgement_number,
+                "id": pid,
+                "type": "Proposal",
+                "applicant": applicant,
+            }
+
+            cache.set(
+                cache_key,
+                res,
+                settings.CACHE_TIMEOUT_24_HOURS,
+            )
+        else:
+            logger.info(
+                "Search Keywords cache hit for proposal {}".format(res["number"])
+            )
+
+        res["text"] = text_value
+        return res
+
+    # Fast path: no keyword filtering requested. Paginate DB-backed queryset first.
+    if not has_search_words:
+        chained_list_paginated = paginator.paginate_queryset(chained_list, request, context)
+
+        for entry in chained_list_paginated:
+            if isinstance(entry, Proposal):
+                return_list.append(serialize_proposal_entry(entry, ""))
+            elif isinstance(entry, Approval):
+                return_list.append(
+                    {
+                        "number": entry.lodgement_number,
+                        "id": entry.id,
+                        "type": "Approval",
+                        "applicant": entry.applicant,
+                        "text": "",
+                    }
+                )
+            elif isinstance(entry, Compliance):
+                return_list.append(
+                    {
+                        "number": entry.lodgement_number,
+                        "id": entry.id,
+                        "type": "Compliance",
+                        "applicant": entry.proposal.applicant_obj,
+                        "text": "",
+                    }
+                )
+            else:
+                raise ValueError(
+                    f"Unknown entry type {type(entry)} in search results {entry}"
+                )
+
+        return return_list
+
+    for entry in chained_list:
         if isinstance(entry, Proposal):
             final_results = ""
-            pid = entry.id
-            lodgement_number = entry.lodgement_number
 
             if has_search_words:
-                number_match = matches_search(lodgement_number)
+                number_match = matches_search(entry.lodgement_number)
                 proponent_match = matches_search(entry.applicant)
                 search_results = []
                 if entry.search_data:
@@ -2286,37 +2351,7 @@ def paginate_chained_list(context, request, chained_list, searchWords):
                         for key, value in result.items():
                             final_results.update({"key": key, "value": value})
 
-            cache_key = settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
-                id=pid, lodgement_number=lodgement_number
-            )
-            res = cache.get(cache_key)
-
-            if res is None:
-                try:
-                    applicant = entry.applicant_obj
-                except Proposal.DoesNotExist:
-                    applicant = None
-
-                res = {
-                    "number": lodgement_number,
-                    "id": pid,  # id,
-                    "type": "Proposal",
-                    "applicant": applicant,
-                }
-
-                cache.set(
-                    cache_key,
-                    res,
-                    settings.CACHE_TIMEOUT_24_HOURS,
-                )
-            else:
-                logger.info(
-                    "Search Keywords cache hit for proposal {}".format(res["number"])
-                )
-
-            res["text"] = final_results
-
-            return_list.append(res)
+            return_list.append(serialize_proposal_entry(entry, final_results))
 
         elif isinstance(entry, Approval):
             try:
@@ -2390,7 +2425,12 @@ def paginate_chained_list(context, request, chained_list, searchWords):
                 f"Unknown entry type {type(entry)} in search results {entry}"
             )
 
-    return return_list
+    # Apply pagination after secondary filtering so page size and counts stay aligned.
+    # DataTables paginator needs count hints on the view when paginating a plain list.
+    setattr(context, "_datatables_filtered_count", len(return_list))
+    if not hasattr(context, "_datatables_total_count"):
+        setattr(context, "_datatables_total_count", len(return_list))
+    return paginator.paginate_queryset(return_list, request, context)
 
 
 def searchKeyWords(
