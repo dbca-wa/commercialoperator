@@ -6079,7 +6079,7 @@ def search_reference(reference_number):
     from commercialoperator.components.approvals.models import Approval
     from commercialoperator.components.compliances.models import Compliance
 
-    proposal_list = Proposal.objects.all().exclude(processing_status__in=["discarded"])
+    proposal_list = (Proposal.objects.all().exclude(application_type__name="E Class").exclude(migrated=True).exclude(processing_status__in=["discarded"]))
     approval_list = (
         Approval.objects.all()
         .order_by("lodgement_number", "-issue_date")

@@ -2942,15 +2942,31 @@ class SearchReferenceView(views.APIView):
     ]
     permission_classes=[InternalPermission]
 
+    def _search_reference(self, request):
+        reference_number = (
+            request.data.get("reference_number")
+            or request.GET.get("reference_number")
+        )
+        reference_number = (reference_number or "").strip()
+        if not reference_number:
+            raise serializers.ValidationError("reference_number is required")
+
+        try:
+            qs = search_reference(reference_number)
+        except ValidationError as e:
+            if hasattr(e, "error_dict"):
+                raise serializers.ValidationError(repr(e.error_dict))
+            raise serializers.ValidationError(str(e))
+
+        serializer = SearchReferenceSerializer(qs)
+        return Response(serializer.data)
+
+    def get(self, request, format=None):
+        return self._search_reference(request)
+
     def post(self, request, format=None):
         try:
-            qs = []
-            reference_number = request.data.get("reference_number")
-            if reference_number:
-                qs = search_reference(reference_number)
-            # queryset = list(set(qs))
-            serializer = SearchReferenceSerializer(qs)
-            return Response(serializer.data)
+            return self._search_reference(request)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise

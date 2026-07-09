@@ -548,24 +548,31 @@ export default {
         search_reference: function () {
             let vm = this;
             console.log('Calling search_reference');
-            if (vm.referenceWord) {
+            const referenceWord = (vm.referenceWord || '').trim();
+            if (referenceWord) {
                 helpers
-                    .fetchUrl('/api/search_reference.json', {
-                        reference_number: vm.referenceWord,
-                        method: 'POST',
-                    })
+                    .fetchUrl(
+                        '/api/search_reference.json?reference_number=' +
+                            encodeURIComponent(referenceWord)
+                    )
                     .then(
                         (res) => {
                             console.log(res);
+                            const payload = res && res.body ? res.body : res;
                             vm.hasErrors = false;
                             vm.errorString = '';
-                            vm.$router.push({
-                                path:
-                                    '/internal/' +
-                                    res.body.type +
-                                    '/' +
-                                    res.body.id,
-                            });
+                            if (payload && payload.type && payload.id) {
+                                vm.$router.push({
+                                    path:
+                                        '/internal/' +
+                                        payload.type +
+                                        '/' +
+                                        payload.id,
+                                });
+                            } else {
+                                vm.hasErrors = true;
+                                vm.errorString = 'Unexpected search response format';
+                            }
                         },
                         (error) => {
                             console.log(error);
