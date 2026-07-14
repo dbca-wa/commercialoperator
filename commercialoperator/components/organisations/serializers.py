@@ -603,3 +603,34 @@ class OrgUserAcceptSerializer(serializers.Serializer):
                     "User must have an associated phone number or mobile number."
                 )
         return data
+
+
+class OrgUserUpdateSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField()
+    phone_number = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True
+    )
+    mobile_number = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True
+    )
+    fax_number = serializers.CharField(
+        required=False, allow_null=True, allow_blank=True
+    )
+
+    def validate(self, data):
+        domain = None
+        if data["email"]:
+            domain = data["email"].split("@")[1]
+
+        if domain in settings.DEPT_DOMAINS:
+            return data
+
+        if not (data.get("mobile_number", None) or data.get("phone_number", None)):
+            raise serializers.ValidationError(
+                "User must have an associated phone number or mobile number."
+            )
+
+        return data
