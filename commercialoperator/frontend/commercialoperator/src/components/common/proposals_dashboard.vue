@@ -164,6 +164,10 @@ export default {
             type: String,
             required: true,
         },
+        orgId: {
+            type: Number,
+            default: null,
+        },
     },
     data() {
         let vm = this;
@@ -242,6 +246,7 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     data: function (d) {
+                        d.org_id = vm.orgId || '';
                         d.date_from =
                             vm.filterProposalLodgedFrom != '' &&
                             vm.filterProposalLodgedFrom != null
@@ -421,6 +426,7 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     data: function (d) {
+                        d.org_id = vm.orgId || '';
                         d.date_from =
                             vm.filterProposalLodgedFrom != '' &&
                             vm.filterProposalLodgedFrom != null

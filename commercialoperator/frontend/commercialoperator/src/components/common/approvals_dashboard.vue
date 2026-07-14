@@ -239,6 +239,10 @@ export default {
             type: String,
             required: true,
         },
+        orgId: {
+            type: Number,
+            default: null,
+        },
         disabled: {
             type: Boolean,
             default: false,
@@ -297,6 +301,7 @@ export default {
 
                     // adding extra GET params for Custom filtering
                     data: function (d) {
+                        d.org_id = vm.orgId || '';
                         d.start_date_from =
                             vm.filterStartFrom != '' &&
                             vm.filterStartFrom != null

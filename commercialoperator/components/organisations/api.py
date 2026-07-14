@@ -52,6 +52,7 @@ from commercialoperator.components.organisations.serializers import (
     LedgerOrganisationFilterSerializer,
     OrganisationLogEntrySerializer,
     OrganisationRequestLogEntrySerializer,
+    OrgUserUpdateSerializer,
 )
 
 class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
@@ -475,6 +476,49 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         instance.relink_user(user_obj, request)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    @action(
+        methods=[
+            "POST",
+        ],
+        detail=True,
+    )
+    @basic_exception_handler
+    def update_contact(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not organisation_permissions(request, instance.organisation_id) and not is_commercialoperator_admin(request):
+            raise PermissionDenied
+
+        serializer = OrgUserUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        try:
+            org_contact = instance.contacts.get(id=data["id"])
+        except instance.contacts.model.DoesNotExist:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"message": "Contact not found for this organisation."},
+            )
+
+        if (
+            data["email"].lower() != org_contact.email.lower()
+            and instance.contacts.filter(email__iexact=data["email"]).exclude(id=org_contact.id).exists()
+        ):
+            raise serializers.ValidationError(
+                {"email": "A contact with this email already exists for this organisation."}
+            )
+
+        org_contact.first_name = data["first_name"]
+        org_contact.last_name = data["last_name"]
+        org_contact.phone_number = data.get("phone_number")
+        org_contact.mobile_number = data.get("mobile_number")
+        org_contact.fax_number = data.get("fax_number")
+        org_contact.email = data["email"].lower()
+        org_contact.save()
+
+        updated_contact = OrganisationContactSerializer(org_contact)
+        return Response(updated_contact.data)
 
     #TODO remove or refactor action and comms log funcs
     @action(

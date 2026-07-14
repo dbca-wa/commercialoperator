@@ -21,11 +21,8 @@ window._ = _;
 import { createApp, configureCompat } from 'vue';
 import router from './router';
 import App from './App.vue';
+import OrganisationOther from '@/components/common/organisation_other.vue';
 import VueSelect from 'vue-select';
-const app = createApp({
-    router,
-    ...App,
-});
 
 import helpers from '@/utils/helpers';
 import { extendMoment } from 'moment-range';
@@ -123,8 +120,24 @@ configureCompat({
 });
 
 // eslint-disable-next-line vue/component-definition-name-casing
-app.component('v-select', VueSelect).use(router);
-router.isReady().then(() => app.mount('#app'));
+const routerMountEl = document.getElementById('app-details') || document.getElementById('app');
+if (routerMountEl) {
+    const routerApp = createApp({
+        router,
+        ...App,
+    });
+    routerApp.component('v-select', VueSelect).use(router);
+    router.isReady().then(() => routerApp.mount(routerMountEl));
+}
+
+const otherMountEl = document.getElementById('app-other');
+if (otherMountEl) {
+    const parsedOrgId = Number(otherMountEl.dataset.orgId);
+    const orgId = Number.isFinite(parsedOrgId) ? parsedOrgId : null;
+    const otherApp = createApp(OrganisationOther, { orgId });
+    otherApp.component('v-select', VueSelect).use(router);
+    router.isReady().then(() => otherApp.mount(otherMountEl));
+}
 
 queueMicrotask(() => {
   const btn = document.getElementById('navbarScrollingDropdown');

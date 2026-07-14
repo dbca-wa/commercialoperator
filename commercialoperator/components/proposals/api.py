@@ -142,17 +142,56 @@ import logging
 logger = logging.getLogger(__name__)
 
 from commercialoperator.components.main.models import private_storage
+from commercialoperator.components.organisations.models import Organisation
+from ledger_api_client.utils import get_search_organisation
+
+
+def _get_matching_organisation_ids(search_value):
+    """Resolve local Organisation ids from cache, then fallback to ledger org name search."""
+    org_matching_ids = set(search_organisation_properties(search_value, False))
+
+    if org_matching_ids:
+        return list(org_matching_ids)
+
+    ledger_organisation_response = get_search_organisation(search_value, None)
+    if ledger_organisation_response.get("status") != 200:
+        return []
+
+    ledger_org_ids = [
+        org.get("organisation_id")
+        for org in ledger_organisation_response.get("data", [])
+        if org.get("organisation_id")
+    ]
+
+    if not ledger_org_ids:
+        return []
+
+    local_org_ids = Organisation.objects.filter(
+        organisation_id__in=ledger_org_ids
+    ).values_list("id", flat=True)
+    org_matching_ids.update(local_org_ids)
+    return list(org_matching_ids)
 
 def proposal_search_filter(qs, search_value):
 
     if search_value:
-        matching_ids = search_in_emailuser_fields(search_value)
-        org_matching_ids = search_organisation_properties(search_value, False)
-
-        # Apply both filters only if we found any matching submitters
-        qs = qs.filter(
-            Q(submitter_id__in=matching_ids) | Q(proxy_applicant_id__in=matching_ids) | Q(assigned_officer_id__in=matching_ids) | Q(org_applicant_id__in=org_matching_ids)
+        search_value = search_value.strip()
+        search_q = (
+            Q(lodgement_number__icontains=search_value)
+            | Q(event_activity__event_name__icontains=search_value)
         )
+
+        if len(search_value) >= 3:
+            matching_ids = search_in_emailuser_fields(search_value)
+            org_matching_ids = _get_matching_organisation_ids(search_value)
+            search_q = search_q | (
+                Q(submitter_id__in=matching_ids)
+                | Q(proxy_applicant_id__in=matching_ids)
+                | Q(assigned_officer_id__in=matching_ids)
+                | Q(org_applicant_id__in=org_matching_ids)
+            )
+
+        qs = qs.filter(search_q)
 
     return qs
 
@@ -300,12 +339,14 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             if application_type and application_type.lower() != "all":
                 queryset = queryset.filter(application_type__name=application_type)
 
-            if search_text and super_queryset != None:
-                search_queryset = proposal_search_filter(queryset, search_text)
-                if search_queryset.exists():
-                    queryset = search_queryset.distinct() | super_queryset   
+            if search_text:
+                search_queryset = proposal_search_filter(queryset, search_text).distinct()
+                if super_queryset != None:
+                    queryset = (search_queryset | super_queryset).distinct()
                 else:
-                    queryset = queryset.distinct() & super_queryset   
+                    queryset = search_queryset
+            elif super_queryset != None:
+                queryset = queryset.distinct() & super_queryset
 
         elif queryset.model is Compliance:
 

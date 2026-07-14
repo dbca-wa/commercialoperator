@@ -1,27 +1,140 @@
 <template>
     <!-- <div v-if="email_user" class="card"> -->
-    <div v-if="org" id="organisationLinkedUser" class="container">
-        <div class="row">
-            <div class="card">
-                <div class="card-header fw-bold h4" style="padding: 30px">
-                    <div class="row">
-                        <div class="col-6">Organisations</div>
-                        <div class="col-6 text-end">
-                            <i
-                                class="bi fw-bold chevron-toggle down-chevron-open"
-                                data-bs-target="#organisations-tab-body"
-                                onclick=""
-                            ></i>
-                        </div>
+    <div id="organisationLinkedUser" class="container">
+        <FormSection
+            :form-collapse="false"
+            label="Contact Details"
+            index="contact_details"
+        >
+            <div v-if="isContactDetailsLoading" class="py-3">
+                <div class="d-flex justify-content-center align-items-center mt-2">
+                    <div class="spinner-grow text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <div id="organisations-tab-body" class="card-body">
-                    <FormSection
-                        :form-collapse="false"
-                        label="Linked User Accounts"
-                        index="linked_user_accounts"
-                        subtitle="Manage the user accounts linked to the organisation"
-                    >
+                <div class="d-flex justify-content-center align-items-center mt-2">
+                    <strong>Loading</strong>
+                </div>
+            </div>
+            <div v-show="!isContactDetailsLoading">
+                <datatable
+                    v-if="isContactDetailsTableReady"
+                    id="organisation_contact_details_datatable_ref"
+                    ref="contacts_datatable_details"
+                    :dt-options="contact_details_options_ref"
+                    :dt-headers="contact_details_headers_ref"
+                />
+            </div>
+        </FormSection>
+
+        <modal
+            transition="modal fade"
+            title="Update Contact"
+            large
+            @ok="submitContactEdit"
+            @cancel="close"
+        >
+            <div class="container-fluid">
+                <div class="row">
+                    <form class="form-horizontal" @submit.prevent="submitContactEdit">
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Given Name(s):</label>
+                            <div class="col-sm-9">
+                                <input
+                                    v-model="editContact.first_name"
+                                    type="text"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Surname:</label>
+                            <div class="col-sm-9">
+                                <input
+                                    v-model="editContact.last_name"
+                                    type="text"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Phone:</label>
+                            <div class="col-sm-9">
+                                <input
+                                    v-model="editContact.phone_number"
+                                    type="text"
+                                    class="form-control"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Mobile:</label>
+                            <div class="col-sm-9">
+                                <input
+                                    v-model="editContact.mobile_number"
+                                    type="text"
+                                    class="form-control"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Fax:</label>
+                            <div class="col-sm-9">
+                                <input
+                                    v-model="editContact.fax_number"
+                                    type="text"
+                                    class="form-control"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Email:</label>
+                            <div class="col-sm-9">
+                                <input
+                                    v-model="editContact.email"
+                                    type="email"
+                                    class="form-control"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <template #footer>
+                <button type="button" class="btn btn-primary" @click="submitContactEdit">
+                    Ok
+                </button>
+                <button type="button" class="btn btn-secondary" @click="close">
+                    Cancel
+                </button>
+            </template>
+        </modal>
+
+        <FormSection
+            :form-collapse="false"
+            label="Linked User Accounts"
+            index="linked_user_accounts"
+            subtitle="Manage the user accounts linked to the organisation"
+        >
+                                    <div v-if="isLinkedUsersLoading" class="py-3">
+                                        <div class="d-flex justify-content-center align-items-center mt-2">
+                                            <div class="spinner-grow text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-center align-items-center mt-2">
+                                            <strong>Loading</strong>
+                                        </div>
+                                    </div>
+                                    <div v-show="!isLinkedUsersLoading">
                                     <div class="row">
                                         <div class="col-sm-12">
                                             <div v-if="org" class="row">
@@ -164,20 +277,8 @@
                                             :dt-headers="contacts_headers_ref"
                                         />
                                     </div>
-                    </FormSection>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div v-else>
-        <div class="d-flex justify-content-center align-items-center mt-5">
-            <div class="spinner-grow text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-        <div class="d-flex justify-content-center align-items-center mb-5">
-            <strong>Loading</strong>
-        </div>
+                                    </div>
+        </FormSection>
     </div>
 </template>
 
@@ -187,6 +288,7 @@ import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
+import modal from '@vue-utils/bootstrap-modal.vue';
 import $ from 'jquery';
 export default {
     name: 'OrganisationComponent',
@@ -195,6 +297,7 @@ export default {
         datatable,
         AddCommLog,
         FormSection,
+        modal,
     },
     data() {
         const vm = this;
@@ -217,6 +320,53 @@ export default {
             helpers: helpers,
             org: null,
             is_org_admin: false,
+            contact_details_headers_ref: [
+                'Name',
+                'Phone',
+                'Mobile',
+                'Fax',
+                'Email',
+                'Action',
+            ],
+            contact_details_options_ref: {
+                language: {
+                    processing: constants.DATATABLE_PROCESSING_HTML,
+                },
+                responsive: true,
+                ajax: {
+                    url: helpers.add_endpoint_json(
+                        api_endpoints.organisations,
+                        vm.$route.params.org_id + '/contacts_exclude'
+                    ),
+                    dataSrc: '',
+                },
+                columns: [
+                    {
+                        data: 'id',
+                        mRender: function (data, type, full) {
+                            return `${full.first_name || ''} ${full.last_name || ''}`.trim();
+                        },
+                    },
+                    { data: 'phone_number' },
+                    { data: 'mobile_number' },
+                    { data: 'fax_number' },
+                    { data: 'email' },
+                    {
+                        data: 'id',
+                        mRender: function (data, type, full) {
+                            if (
+                                vm.is_commercialoperator_admin ||
+                                vm.is_org_admin ||
+                                vm.is_org_access_member
+                            ) {
+                                return `<a href='#' class='edit_contact' data-id='${full.id}' data-firstname='${full.first_name || ''}' data-lastname='${full.last_name || ''}' data-phone='${full.phone_number || ''}' data-mobile='${full.mobile_number || ''}' data-fax='${full.fax_number || ''}' data-email='${full.email || ''}'>Edit</a>`;
+                            }
+                            return '';
+                        },
+                    },
+                ],
+                processing: true,
+            },
             contacts_headers_ref: ['Name', 'Role', 'Email', 'Status', 'Action'],
             contacts_options_ref: {
                 language: {
@@ -305,6 +455,7 @@ export default {
             },
             filterOrgContactStatus: null,
             is_commercialoperator_admin: false,
+            is_org_access_member: false,
             contact_user: {
                 first_name: null,
                 last_name: null,
@@ -312,7 +463,20 @@ export default {
                 mobile_number: null,
                 phone_number: null,
             },
+            isContactDetailsLoading: true,
+            isLinkedUsersLoading: true,
             user_action: 'unlink',
+            isContactDetailsTableReady: false,
+            isModalOpen: false,
+            editContact: {
+                id: null,
+                first_name: '',
+                last_name: '',
+                phone_number: '',
+                mobile_number: '',
+                fax_number: '',
+                email: '',
+            },
         };
     },
     computed: {
@@ -338,12 +502,94 @@ export default {
     mounted: function () {
         console.log('organisation.vue mounted');
         this.$nextTick(() => {
+            this.initialiseSectionLoaders();
             if (this.$refs.contacts_datatable_user) {
                 this.eventListeners();
             }
         });
     },
     methods: {
+        close: function () {
+            this.isModalOpen = false;
+        },
+        bindContactDetailsEditListener: function () {
+            const vm = this;
+            vm.$refs.contacts_datatable_details.vmDataTable.on(
+                'click',
+                '.edit_contact',
+                function (e) {
+                    e.preventDefault();
+                    const rowData = {
+                        id: $(this).data('id'),
+                        first_name: $(this).data('firstname') || '',
+                        last_name: $(this).data('lastname') || '',
+                        phone_number: $(this).data('phone') || '',
+                        mobile_number: $(this).data('mobile') || '',
+                        fax_number: $(this).data('fax') || '',
+                        email: $(this).data('email') || '',
+                    };
+
+                    vm.editContact = { ...rowData };
+                    vm.isModalOpen = true;
+                }
+            );
+        },
+        submitContactEdit: function () {
+            const vm = this;
+            helpers
+                .fetchUrl(
+                    helpers.add_endpoint_json(
+                        api_endpoints.organisations,
+                        vm.org.id + '/update_contact'
+                    ),
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(vm.editContact),
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                )
+                .then(
+                    () => {
+                        vm.close();
+                        vm.$refs.contacts_datatable_details.vmDataTable.ajax.reload();
+                        vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
+                        swal.fire({
+                            title: 'Update Contact',
+                            text: 'Contact details were updated successfully.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                        });
+                    },
+                    (error) => {
+                        swal.fire({
+                            title: 'Update Contact',
+                            text: helpers.apiVueResourceError(error),
+                            icon: 'error',
+                        });
+                    }
+                );
+        },
+        initialiseSectionLoaders: function () {
+            const vm = this;
+
+            if (vm.isContactDetailsTableReady && vm.$refs.contacts_datatable_details?.vmDataTable) {
+                vm.$refs.contacts_datatable_details.vmDataTable.one('xhr', function () {
+                    vm.isContactDetailsLoading = false;
+                });
+            } else if (vm.isContactDetailsTableReady) {
+                vm.isContactDetailsLoading = false;
+            }
+
+            if (vm.$refs.contacts_datatable_user?.vmDataTable) {
+                vm.$refs.contacts_datatable_user.vmDataTable.one('xhr', function () {
+                    vm.isLinkedUsersLoading = false;
+                });
+            } else {
+                vm.isLinkedUsersLoading = false;
+            }
+        },
         orgAction: function (action) {
             let vm = this;
             if (action) {
@@ -1057,18 +1303,6 @@ export default {
                     );
                 }
             );
-            // Fix the table responsiveness when tab is shown
-            $('a[href="#' + vm.oTab + '"]').on('shown.bs.tab', function () {
-                vm.$refs.proposals_table.$refs.proposal_datatable.vmDataTable.columns
-                    .adjust()
-                    .responsive.recalc();
-                vm.$refs.approvals_table.$refs.proposal_datatable.vmDataTable.columns
-                    .adjust()
-                    .responsive.recalc();
-                vm.$refs.compliances_table.$refs.proposal_datatable.vmDataTable.columns
-                    .adjust()
-                    .responsive.recalc();
-            });
         },
         fetchInitialData: function () {
             const vm = this;
@@ -1129,6 +1363,17 @@ export default {
                 }
 
                 if (
+                    vm.contact_details_options_ref &&
+                    vm.contact_details_options_ref.ajax &&
+                    vm.contact_details_options_ref.ajax.url
+                ) {
+                    vm.contact_details_options_ref.ajax.url = helpers.add_endpoint_json(
+                        api_endpoints.organisations,
+                        orgId + '/contacts_exclude'
+                    );
+                }
+
+                if (
                     vm.contacts_options_ref &&
                     vm.contacts_options_ref.ajax &&
                     vm.contacts_options_ref.ajax.url
@@ -1137,6 +1382,16 @@ export default {
                         api_endpoints.organisations,
                         orgId + '/contacts_exclude'
                     );
+                }
+
+                vm.isContactDetailsTableReady = true;
+                vm.$nextTick(() => {
+                    vm.initialiseSectionLoaders();
+                    vm.bindContactDetailsEditListener();
+                });
+
+                if (vm.$refs.contacts_datatable_user?.vmDataTable) {
+                    vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
                 }
 
                 return { success: true };

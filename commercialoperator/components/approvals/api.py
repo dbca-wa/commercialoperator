@@ -166,6 +166,10 @@ class ApprovalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
         qs = self.get_queryset()
         qs = self.filter_queryset(qs)
 
+        applicant_id = request.GET.get("org_id")
+        if applicant_id:
+            qs = qs.filter(org_applicant_id=applicant_id)
+
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = ApprovalSerializer(
             result_page, context={"request": request}, many=True
