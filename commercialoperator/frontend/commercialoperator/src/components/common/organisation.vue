@@ -1,6 +1,7 @@
 <template>
     <!-- <div v-if="email_user" class="card"> -->
     <div id="organisationLinkedUser" class="container">
+        <teleport to="#contacts-teleport-target">
         <FormSection
             :form-collapse="false"
             label="Contact Details"
@@ -117,7 +118,9 @@
                 </button>
             </template>
         </modal>
+        </teleport>
 
+        <teleport to="#linkedusers-teleport-target">
         <FormSection
             :form-collapse="false"
             label="Linked User Accounts"
@@ -279,6 +282,7 @@
                                     </div>
                                     </div>
         </FormSection>
+        </teleport>
     </div>
 </template>
 
