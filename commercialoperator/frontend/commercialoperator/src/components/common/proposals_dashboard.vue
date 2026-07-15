@@ -110,15 +110,14 @@
                     class="col-md-3"
                 >
                     <div class="form-group mt-auto mb-0 align-self-end">
-                        <router-link
-                            type="button"
+                        <a
+                            href="/external/proposal"
                             class="btn btn-primary float-end"
-                            :to="{ name: 'apply_proposal' }"
-                            >New Application</router-link
+                            >New Application</a
                         >
                     </div>
                 </div>  
-            </div>
+            </div> 
             
             <div class="row">
                 <div class="col-lg-12">
