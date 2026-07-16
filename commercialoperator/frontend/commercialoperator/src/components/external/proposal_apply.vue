@@ -757,6 +757,20 @@ export default {
         submit: function () {
             let vm = this;
             console.log(vm.org_applicant);
+            if (
+                vm.selected_application_name == vm.application_type_tclass &&
+                vm.has_active_proposals()
+            ) {
+                swal.fire({
+                    title: 'Application Not Allowed',
+                    html:
+                        'A Commercial operations application or licence already exists for this organisation.<br/>' +
+                        'Existing reference(s): ' +
+                        vm.active_proposals().join(', '),
+                    icon: 'error',
+                });
+                return;
+            }
             swal.fire({
                 title: 'Create ' + vm.selected_application_name,
                 text:
@@ -827,6 +841,53 @@ export default {
                     },
                     (err) => {
                         console.log(err);
+                        let message = helpers.apiVueResourceError(err);
+                        if (!message && err && err.detail) {
+                            if (err.detail.org_applicant) {
+                                message = err.detail.org_applicant;
+                            } else if (err.detail.non_field_errors) {
+                                message = err.detail.non_field_errors;
+                            } else if (typeof err.detail === 'string') {
+                                message = err.detail;
+                            }
+                        }
+                        if (!message && err && err.org_applicant) {
+                            message = err.org_applicant;
+                        }
+                        if (!message && err && err.non_field_errors) {
+                            message = err.non_field_errors;
+                        }
+                        if (!message && err && err.message) {
+                            message = err.message;
+                        }
+                        if (!message && typeof err === 'string') {
+                            message = err;
+                        }
+
+                        if (!message) {
+                            message =
+                                'Unable to create application. Please review your selection and try again.';
+                        }
+
+                        if (Array.isArray(message)) {
+                            message = message.join(', ');
+                        } else if (typeof message === 'object') {
+                            message = message.string || JSON.stringify(message);
+                        }
+                        if (typeof message === 'string') {
+                            const detailMatch = message.match(
+                                /ErrorDetail\(string=['\"](.+?)['\"],\s*code=/
+                            );
+                            if (detailMatch && detailMatch[1]) {
+                                message = detailMatch[1];
+                            }
+                        }
+                        swal.fire({
+                            title: 'Application Not Allowed',
+                            text: message,
+                            icon: 'error',
+                        });
+                        vm.creatingProposal = false;
                     }
                 );
         },
