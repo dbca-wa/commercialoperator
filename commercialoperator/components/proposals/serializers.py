@@ -706,7 +706,7 @@ class ListProposalSerializer(serializers.ModelSerializer):
             if obj.assigned_officer_id:
                 if obj.assigned_officer_id == user.id:
                     return True
-            elif user.id in obj.allowed_assessors:
+            if user.id in obj.allowed_assessors:
                 return True
         return False
 

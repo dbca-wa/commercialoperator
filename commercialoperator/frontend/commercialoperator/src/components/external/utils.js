@@ -52,4 +52,32 @@ export default {
                 );
         });
     },
+    updateOrganisationTradingName: function (id, tradingName) {
+        return new Promise((resolve, reject) => {
+            helpers
+                .fetchUrl(
+                    helpers.add_endpoint_json(
+                        api.organisations,
+                        id + '/update_trading_name'
+                    ),
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            organisation_trading_name: tradingName,
+                        }),
+                    }
+                )
+                .then(
+                    (response) => {
+                        resolve(response);
+                    },
+                    (error) => {
+                        reject(error);
+                    }
+                );
+        });
+    },
 };

@@ -1,4 +1,4 @@
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -1046,6 +1046,18 @@ class OrganisationRequest(SanitiseFileMixin):
                     ledger_org = organisation
                     break
 
+            if ledger_org:
+                requested_name = (self.name or "").strip().lower()
+                existing_name = (
+                    ledger_org.get("organisation_name", "") or ""
+                ).strip().lower()
+                if requested_name and existing_name and requested_name != existing_name:
+                    raise ValidationError(
+                        "ABN {} already exists as organisation '{}'. "
+                        "Use the existing organisation instead of creating a new one."
+                        .format(self.abn, ledger_org.get("organisation_name", ""))
+                    )
+
             if not ledger_org:
                 create_organisation(self.name, self.abn)
                 organisation_response = get_search_organisation(self.name, self.abn)
@@ -1059,6 +1071,12 @@ class OrganisationRequest(SanitiseFileMixin):
         if not ledger_org:
             raise ValidationError("Unable to create or retrieve organisation.")
 
+        ledger_org_response = get_organisation(ledger_org["organisation_id"])
+        if ledger_org_response.get("status") != status.HTTP_200_OK:
+            raise ValidationError(
+                "Unable to confirm organisation. Please retry."
+            )
+
         # Create Organisation in commercialoperator
         org, created = Organisation.objects.get_or_create(
             organisation_id=ledger_org["organisation_id"]
@@ -1066,23 +1084,31 @@ class OrganisationRequest(SanitiseFileMixin):
         if created:
             logger.info(f"Organisation created in COLS: {org}")
 
-        # Link requester to organisation
-        delegate = UserDelegation.objects.create(user=self.requester, organisation=org)
+        # Link requester to organisation (idempotent for repeated accept calls).
+        try:
+            delegate, delegate_created = UserDelegation.objects.get_or_create(
+                user=self.requester, organisation=org
+            )
+        except IntegrityError:
+            # Handle race conditions where another transaction created it first.
+            delegate = UserDelegation.objects.get(user=self.requester, organisation=org)
+            delegate_created = False
         # log who approved the request
         org.log_user_action(
             OrganisationAction.ACTION_REQUEST_APPROVED.format(self.id), request.user
         )
         # log who created the link
-        org.log_user_action(
-            OrganisationAction.ACTION_LINK.format(
-                "{} {}({})".format(
-                    delegate.user.first_name,
-                    delegate.user.last_name,
-                    delegate.user.email,
-                )
-            ),
-            request.user,
-        )
+        if delegate_created:
+            org.log_user_action(
+                OrganisationAction.ACTION_LINK.format(
+                    "{} {}({})".format(
+                        delegate.user.first_name,
+                        delegate.user.last_name,
+                        delegate.user.email,
+                    )
+                ),
+                request.user,
+            )
         # Create contact person
         if self.role == "consultant":
             role = "consultant"
@@ -1090,18 +1116,31 @@ class OrganisationRequest(SanitiseFileMixin):
             role = "organisation_admin"
         # Create contact person
 
-        OrganisationContact.objects.create(
+        contact_defaults = {
+            "first_name": self.requester.first_name,
+            "last_name": self.requester.last_name,
+            "mobile_number": self.requester.mobile_number,
+            "phone_number": self.requester.phone_number,
+            "fax_number": self.requester.fax_number,
+            "user_role": role,
+            "user_status": "active",
+            "is_admin": True,
+        }
+        contact, contact_created = OrganisationContact.objects.get_or_create(
             organisation=org,
-            first_name=self.requester.first_name,
-            last_name=self.requester.last_name,
-            mobile_number=self.requester.mobile_number,
-            phone_number=self.requester.phone_number,
-            fax_number=self.requester.fax_number,
             email=self.requester.email,
-            user_role=role,
-            user_status="active",
-            is_admin=True,
+            defaults=contact_defaults,
         )
+        if not contact_created:
+            contact.first_name = self.requester.first_name
+            contact.last_name = self.requester.last_name
+            contact.mobile_number = self.requester.mobile_number
+            contact.phone_number = self.requester.phone_number
+            contact.fax_number = self.requester.fax_number
+            contact.user_role = role
+            contact.user_status = "active"
+            contact.is_admin = True
+            contact.save()
         # send email to requester
         send_organisation_request_accept_email_notification(self, org, request)
 

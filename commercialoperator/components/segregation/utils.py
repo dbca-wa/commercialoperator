@@ -891,7 +891,13 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
 
             cache.set(cache_key, ledger_organisation, cache_timeout)
         else:
-            raise ValueError(f"Error retrieving organisations for user {user_id}")
+            logger.warning(
+                "Skipping organisation %s for user %s because ledger returned status %s",
+                org_id,
+                user_id,
+                organisations_response.get("status"),
+            )
+            continue
         logger.info(
             f"Retrieved organisations for user {user_id}: {commercialoperator_organisations}"
         )

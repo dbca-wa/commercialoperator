@@ -1,4 +1,7 @@
+import json
 import traceback
+import requests
+from django.conf import settings
 from django.db.models import Q
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -519,6 +522,52 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
         updated_contact = OrganisationContactSerializer(org_contact)
         return Response(updated_contact.data)
+
+    @action(
+        methods=[
+            "POST",
+        ],
+        detail=True,
+    )
+    @basic_exception_handler
+    def update_trading_name(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not organisation_permissions(request, instance.organisation_id) and not is_commercialoperator_admin(request):
+            raise PermissionDenied
+
+        if instance.trading_name and not is_commercialoperator_admin(request):
+            raise serializers.ValidationError(
+                "The trading name has already been set and cannot be changed."
+            )
+
+        new_trading_name = request.data.get("organisation_trading_name", "")
+        new_trading_name = new_trading_name.strip() if new_trading_name else ""
+        if not new_trading_name:
+            raise serializers.ValidationError(
+                {"organisation_trading_name": "This field may not be blank."}
+            )
+
+        api_key = settings.LEDGER_API_KEY
+        url = f"{settings.LEDGER_API_URL}/ledgergw/remote/update_organisation/{api_key}/"
+        post_data = {
+            "organisation_id": instance.organisation_id,
+            "organisation_trading_name": new_trading_name,
+        }
+        resp = requests.post(url, data={"data": json.dumps(post_data)})
+        try:
+            resp_json = resp.json()
+        except ValueError:
+            resp_json = {}
+
+        if resp_json.get("status") != status.HTTP_200_OK:
+            raise serializers.ValidationError(
+                resp_json.get("message", "Unable to update the trading name.")
+            )
+
+        instance.update_organisation(request)
+
+        serializer = OrganisationSerializer(instance, context={"request": request})
+        return Response(serializer.data)
 
     #TODO remove or refactor action and comms log funcs
     @action(
