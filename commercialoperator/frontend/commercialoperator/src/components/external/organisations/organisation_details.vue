@@ -3,9 +3,9 @@
         <!-- <PrivacyNotice /> -->
 
         <div id="userInfo" class="row">
-        <div class="col-sm-12">
-            <div class="row">
-                <div class="col-sm-12">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12">
                         <FormSection
                             :form-collapse="false"
                             label="Organisation Details"
@@ -46,7 +46,7 @@
                                                     org.organisation_trading_name
                                                 "
                                                 type="text"
-                                                disabled
+                                                :disabled="tradingNameSaved"
                                                 class="form-control"
                                                 name="trading_name"
                                                 placeholder=""
@@ -89,17 +89,49 @@
                                     </div>
 
                                     <div class="form-group row">
-                                        <div class="col-sm-12">
-                                            <strong>Update Organisation Details <a :href="`/ledger-ui/organisation/`+org.organisation_id" target="_blank">here</a>.</strong>
+                                        <div
+                                            class="col-sm-12 d-flex justify-content-between align-items-center"
+                                        >
+                                            <strong
+                                                >Update Organisation Details
+                                                <a
+                                                    :href="
+                                                        `/ledger-ui/organisation/` +
+                                                        org.organisation_id
+                                                    "
+                                                    target="_blank"
+                                                    >here</a
+                                                >.</strong
+                                            >
+                                            <button
+                                                v-if="!tradingNameSaved"
+                                                type="button"
+                                                class="btn btn-primary"
+                                                :disabled="
+                                                    savingTradingName ||
+                                                    !org.organisation_trading_name
+                                                "
+                                                @click.prevent="
+                                                    updateOrganisation
+                                                "
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                        <div
+                                            v-if="tradingNameError"
+                                            class="col-sm-12 text-danger mt-1"
+                                        >
+                                            {{ tradingNameError }}
                                         </div>
                                     </div>
                                 </div>
                             </form>
                         </FormSection>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12">
                         <FormSection
                             :form-collapse="false"
                             label="Address Details"
@@ -223,11 +255,11 @@
                                 </div>
                             </form>
                         </FormSection>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -235,12 +267,12 @@ import utils from '../utils';
 import FormSection from '@/components/forms/section_toggle.vue';
 // import PrivacyNotice from '@/components/common/privacy_notice.vue';
 import _ from 'lodash';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/multi-word-component-names
     name: 'Organisation',
     components: {
-        FormSection
+        FormSection,
         // PrivacyNotice,
     },
     beforeRouteEnter: function (to, from, next) {
@@ -256,13 +288,15 @@ export default {
                     vm.org.organisation_address != null
                         ? vm.org.organisation_address
                         : {};
+                vm.tradingNameSaved = !!(
+                    vm.org.organisation_trading_name &&
+                    vm.org.organisation_trading_name.trim()
+                );
             });
         });
     },
     beforeRouteUpdate: function (to, from, next) {
-        let initialisers = [
-            utils.fetchOrganisation(to.params.org_id),
-        ];
+        let initialisers = [utils.fetchOrganisation(to.params.org_id)];
         Promise.all(initialisers).then((data) => {
             next((vm) => {
                 vm.org = data[0];
@@ -270,6 +304,10 @@ export default {
                     vm.org.organisation_address != null
                         ? vm.org.organisation_address
                         : {};
+                vm.tradingNameSaved = !!(
+                    vm.org.organisation_trading_name &&
+                    vm.org.organisation_trading_name.trim()
+                );
             });
         });
     },
@@ -287,6 +325,9 @@ export default {
                 organisation_address: {},
             },
             countries: [],
+            tradingNameSaved: false,
+            savingTradingName: false,
+            tradingNameError: null,
         };
     },
     mounted: function () {
@@ -309,20 +350,55 @@ export default {
                     ? vm.org.organisation_address
                     : {};
             vm.org.pins = vm.org.pins != null ? vm.org.pins : {};
+            vm.tradingNameSaved = !!(
+                vm.org.organisation_trading_name &&
+                vm.org.organisation_trading_name.trim()
+            );
         });
     },
     updated: function () {
         $('.panelClicker[data-bs-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'fa-chevron-down fa-chevron-up'
-                );
+                $(chev).toggleClass('fa-chevron-down fa-chevron-up');
             }, 100);
         });
         this.$nextTick(() => {
             this.eventListeners();
         });
+    },
+    methods: {
+        updateOrganisation: function () {
+            let vm = this;
+            let tradingName = (vm.org.organisation_trading_name || '').trim();
+            if (!tradingName) {
+                vm.tradingNameError = 'Please enter a trading name.';
+                return;
+            }
+            vm.savingTradingName = true;
+            vm.tradingNameError = null;
+            utils.updateOrganisationTradingName(vm.org_id, tradingName).then(
+                (response) => {
+                    vm.org = response;
+                    vm.org.organisation_address =
+                        vm.org.organisation_address != null
+                            ? vm.org.organisation_address
+                            : {};
+                    vm.tradingNameSaved = !!(
+                        vm.org.organisation_trading_name &&
+                        vm.org.organisation_trading_name.trim()
+                    );
+                    vm.savingTradingName = false;
+                },
+                (error) => {
+                    vm.tradingNameError =
+                        (error && error.organisation_trading_name) ||
+                        (error && error.message) ||
+                        'Unable to save the trading name. Please try again.';
+                    vm.savingTradingName = false;
+                }
+            );
+        },
     },
 };
 </script>
