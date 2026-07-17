@@ -2196,9 +2196,8 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                     raise serializers.ValidationError(
                         {
                             "org_applicant": (
-                                "A Commercial operations application or licence already exists for this organisation. "
-                                "You cannot submit another one. Existing reference(s): {}"
-                            ).format(existing_refs)
+                                "This organisation has a current commercial operations application or licence. You can apply to attend a licence from the licences table on the home dashboard. [" + existing_refs + "]"
+                            )
                         }
                     )
 
