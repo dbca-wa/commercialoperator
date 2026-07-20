@@ -17,12 +17,20 @@ export default {
                     }
                     const data = await response.json();
                     if (!response.ok) {
-                        let error =
-                            (data.constructor.name === 'Array' && data) ||
-                            (data && data.message) ||
-                            (data && data.detail) ||
-                            response.statusText;
-                        const resolved = error || data;
+                        let resolved = data;
+                        if (data && data.constructor.name === 'Array') {
+                            resolved = data;
+                        } else if (data && data.message) {
+                            resolved = data.message;
+                        } else if (data && data.detail) {
+                            resolved = data.detail;
+                        } else if (
+                            !data ||
+                            (typeof data === 'object' &&
+                                Object.keys(data).length === 0)
+                        ) {
+                            resolved = response.statusText;
+                        }
                         console.error(resolved);
                         reject(resolved);
                     }

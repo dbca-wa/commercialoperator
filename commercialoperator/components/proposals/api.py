@@ -2147,6 +2147,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     def create(self, request, *args, **kwargs):
         try:
             application_type = request.data.get("application")
+            org_applicant = request.data.get("org_applicant")
             region = request.data.get("region")
             district = request.data.get("district")
             activity = request.data.get("activity")
@@ -2162,6 +2163,43 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 ProposalType.objects.all().order_by("name", "-version").distinct("name")
             )
             proposal_type = qs_proposal_type.get(name=application_name)
+
+            if (
+                application_name == ApplicationType.TCLASS
+                and org_applicant
+                and str(org_applicant).strip() != ""
+            ):
+                today = timezone.localtime(timezone.now()).date()
+                existing_tclass_qs = (
+                    Proposal.objects.filter(
+                        application_type__name=ApplicationType.TCLASS,
+                        org_applicant=org_applicant,
+                    )
+                    .exclude(
+                        Q(
+                            processing_status__in=[
+                                "approved",
+                                "declined",
+                                "discarded",
+                            ]
+                        )
+                        & ~Q(
+                            approval__status__in=["current", "suspended"],
+                            approval__expiry_date__gt=today,
+                        )
+                    )
+                    .values_list("lodgement_number", flat=True)
+                )
+
+                if existing_tclass_qs.exists():
+                    existing_refs = ", ".join(existing_tclass_qs)
+                    raise serializers.ValidationError(
+                        {
+                            "org_applicant": (
+                                "This organisation has a current commercial operations application or licence. You can apply to attend a licence from the licences table on the home dashboard. [" + existing_refs + "]"
+                            )
+                        }
+                    )
 
             if application_name == ApplicationType.EVENT and selected_copy_from:
                 copy_from_proposal = Proposal.objects.get(id=selected_copy_from)
