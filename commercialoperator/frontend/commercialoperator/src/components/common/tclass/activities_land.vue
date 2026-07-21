@@ -327,11 +327,14 @@ export default {
         selected_trail_ids: {
             handler: function () {
                 let vm = this;
+                const selectedTrailIds = vm.normalizeIdArray(
+                    vm.selected_trail_ids
+                );
 
                 vm.selected_trails = [];
-                for (var i = 0; i < vm.selected_trail_ids.length; i++) {
+                for (var i = 0; i < selectedTrailIds.length; i++) {
                     var data = vm.get_selected_trail_data(
-                        vm.selected_trail_ids[i]
+                        selectedTrailIds[i]
                     );
                     if (data !== null) {
                         vm.selected_trails.push(data);
@@ -340,22 +343,22 @@ export default {
 
                 try {
                     var removed_trail_id = $(vm.selected_trail_ids_before)
-                        .not(vm.selected_trail_ids)
+                        .not(selectedTrailIds)
                         .get();
                 } catch (error) {
                     console.log('removed_trail: ' + error);
                 }
 
                 try {
-                    var added_trail_id = $(vm.selected_trail_ids)
+                    var added_trail_id = $(selectedTrailIds)
                         .not(vm.selected_trail_ids_before)
                         .get();
                 } catch (error) {
                     console.log('added_trail: ' + error);
                 }
-                vm.selected_trail_ids_before = vm.selected_trail_ids;
+                vm.selected_trail_ids_before = [...selectedTrailIds];
 
-                var current_activities = vm.trail_activities;
+                var current_activities = vm.normalizeIdArray(vm.trail_activities);
 
                 if (vm.selected_trails_activities.length == 0) {
                     for (let i = 0; i < vm.selected_trails.length; i++) {
@@ -370,7 +373,7 @@ export default {
                         ) {
                             var section_data = {
                                 section: vm.selected_trails[i].sections[j],
-                                activities: current_activities,
+                                activities: [...current_activities],
                             };
                             section_activities.push(section_data);
                         }
@@ -412,7 +415,7 @@ export default {
                                         // eslint-disable-next-line no-redeclare
                                         var section_data = {
                                             section: trail_data.sections[k],
-                                            activities: current_activities,
+                                            activities: [...current_activities],
                                         };
                                         section_activities.push(section_data);
                                     }
@@ -445,7 +448,9 @@ export default {
                 if (vm.proposal) {
                     vm.proposal.trails = vm.selected_trails;
                     vm.proposal.selected_trails_activities =
-                        vm.selected_trails_activities;
+                        vm.normalizeTrailActivitiesPayload(
+                            vm.selected_trails_activities
+                        );
                 }
             },
             deep: true,
@@ -460,7 +465,7 @@ export default {
                 var added_park = $(vm.selected_parks)
                     .not(vm.selected_parks_before)
                     .get();
-                vm.selected_parks_before = vm.selected_parks;
+                vm.selected_parks_before = [...vm.selected_parks];
 
                 var current_activities = vm.selected_activities;
                 var current_access = vm.selected_access;
@@ -535,7 +540,7 @@ export default {
                 } else {
                     vm.selected_activities_initialised = true;
                 }
-                vm.selected_activities_before = vm.selected_activities;
+                vm.selected_activities_before = [...vm.selected_activities];
                 if (vm.selected_parks_activities.length == 0) {
                     for (var i = 0; i < vm.selected_parks.length; i++) {
                         var data = null;
@@ -598,7 +603,7 @@ export default {
                 } else {
                     vm.selected_access_initialised = true;
                 }
-                vm.selected_access_before = vm.selected_access;
+                vm.selected_access_before = [...vm.selected_access];
                 if (vm.selected_parks_activities.length == 0) {
                     for (var i = 0; i < vm.selected_parks.length; i++) {
                         var data = null;
@@ -667,7 +672,9 @@ export default {
                 vm.checkAllowedActivities();
                 if (vm.proposal) {
                     vm.proposal.selected_trails_activities =
-                        vm.selected_trails_activities;
+                        vm.normalizeTrailActivitiesPayload(
+                            vm.selected_trails_activities
+                        );
                 }
             },
             deep: true,
@@ -675,19 +682,22 @@ export default {
         trail_activities: {
             handler: function () {
                 let vm = this;
+                const currentTrailActivities = vm.normalizeIdArray(
+                    vm.trail_activities
+                );
                 var removed = $(vm.trail_activities_before)
-                    .not(vm.trail_activities)
+                    .not(currentTrailActivities)
                     .get();
-                var added = $(vm.trail_activities)
+                var added = $(currentTrailActivities)
                     .not(vm.trail_activities_before)
                     .get();
-                vm.trail_activities_before = vm.trail_activities;
+                vm.trail_activities_before = [...currentTrailActivities];
                 if (vm.selected_trails_activities.length == 0) {
                     for (var i = 0; i < vm.selected_trail_ids.length; i++) {
                         var data = null;
                         data = {
                             trail: vm.selected_trail_ids[i],
-                            activities: vm.trail_activities,
+                            activities: [...currentTrailActivities],
                         };
                         vm.selected_trails_activities.push(data);
                     }
@@ -731,6 +741,12 @@ export default {
                                         .length;
                                     k++
                                 ) {
+                                    vm.selected_trails_activities[i].activities[
+                                        k
+                                    ].activities = vm.normalizeIdArray(
+                                        vm.selected_trails_activities[i]
+                                            .activities[k].activities
+                                    );
                                     var index = vm.selected_trails_activities[
                                         i
                                     ].activities[k].activities.indexOf(
@@ -826,7 +842,7 @@ export default {
         vm.store_trails(vm.proposal_parks.trails);
 
         vm.selected_trail_ids = vm.get_selected_trail_ids();
-        vm.selected_trail_ids_before = vm.selected_trail_ids;
+        vm.selected_trail_ids_before = [...vm.selected_trail_ids];
 
         $('a[data-bs-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
@@ -842,15 +858,16 @@ export default {
     methods: {
         get_selected_trail_data: function (trail_id) {
             let vm = this;
+            const targetTrailId = vm.normalizeId(trail_id);
             if (!vm.trails) {
                 // trails may be null if the API call has not returned yet
                 return null;
             }
             for (var i = 0; i < vm.trails.length; i++) {
-                if (vm.trails[i].id == trail_id) {
+                if (vm.normalizeId(vm.trails[i].id) == targetTrailId) {
                     return {
-                        trail: trail_id,
-                        sections: vm.trails[i].section_ids,
+                        trail: targetTrailId,
+                        sections: vm.normalizeIdArray(vm.trails[i].section_ids),
                     };
                 }
             }
@@ -861,8 +878,9 @@ export default {
 
             var ids = [];
             for (var i = 0; i < vm.selected_trails.length; i++) {
-                ids.push(vm.selected_trails[i].trail);
+                ids.push(vm.normalizeId(vm.selected_trails[i].trail));
             }
+            ids = ids.filter((item) => Number.isInteger(item));
             return ids.filter(function (item, pos) {
                 return ids.indexOf(item) == pos;
             }); // returns unique array ids
@@ -1310,13 +1328,68 @@ export default {
         },
         refreshTrailFromResponse: function (trail_id, new_activities) {
             let vm = this;
+            const normalisedTrailId = vm.normalizeId(trail_id);
+            const normalisedActivities = vm.normalizeTrailActivitiesPayload([
+                {
+                    trail: normalisedTrailId,
+                    activities: new_activities,
+                },
+            ]);
             for (var j = 0; j < vm.selected_trails_activities.length; j++) {
-                if (vm.selected_trails_activities[j].trail == trail_id) {
+                if (vm.selected_trails_activities[j].trail == normalisedTrailId) {
                     vm.selected_trails_activities[j].activities =
-                        new_activities;
+                        normalisedActivities.length > 0
+                            ? normalisedActivities[0].activities
+                            : [];
                 }
             }
             vm.checkAllowedActivities();
+        },
+        normalizeId: function (value) {
+            const parsed = parseInt(value, 10);
+            return Number.isNaN(parsed) ? null : parsed;
+        },
+        normalizeIdArray: function (values) {
+            if (!Array.isArray(values)) {
+                return [];
+            }
+            return values
+                .map((value) => this.normalizeId(value))
+                .filter((value, index, array) => {
+                    return Number.isInteger(value) && array.indexOf(value) === index;
+                });
+        },
+        normalizeTrailActivitiesPayload: function (payload) {
+            if (!Array.isArray(payload)) {
+                return [];
+            }
+
+            const normalised = [];
+            for (let i = 0; i < payload.length; i++) {
+                const trailId = this.normalizeId(payload[i].trail);
+                if (!Number.isInteger(trailId)) {
+                    continue;
+                }
+
+                const sectionActivities = [];
+                const sections = payload[i].activities || [];
+                for (let j = 0; j < sections.length; j++) {
+                    const sectionId = this.normalizeId(sections[j].section);
+                    if (!Number.isInteger(sectionId)) {
+                        continue;
+                    }
+                    sectionActivities.push({
+                        section: sectionId,
+                        activities: this.normalizeIdArray(sections[j].activities),
+                    });
+                }
+
+                normalised.push({
+                    trail: trailId,
+                    activities: sectionActivities,
+                });
+            }
+            return normalised;
         },
         find_repeated: function (array) {
             var common = new Map();
@@ -1355,7 +1428,7 @@ export default {
             var all_activities = []; //to store all activities for all sections so can find recurring ones to display selected_activities
             var trail_list = [];
             for (var i = 0; i < trails.length; i++) {
-                var current_trail = trails[i].trail.id;
+                var current_trail = vm.normalizeId(trails[i].trail.id);
                 var current_activities = [];
 
                 for (var j = 0; j < trails[i].sections.length; j++) {
@@ -1366,11 +1439,14 @@ export default {
                         k++
                     ) {
                         trail_activities.push(
-                            trails[i].sections[j].trail_activities[k].activity
+                            vm.normalizeId(
+                                trails[i].sections[j].trail_activities[k].activity
+                            )
                         );
                     }
+                    trail_activities = vm.normalizeIdArray(trail_activities);
                     var data_section = {
-                        section: trails[i].sections[j].section,
+                        section: vm.normalizeId(trails[i].sections[j].section),
                         activities: trail_activities,
                     };
                     current_activities.push(data_section);
@@ -1386,12 +1462,16 @@ export default {
 
             for (let i = 0; i < trails.length; i++) {
                 trail_list.push({
-                    trail: trails[i].trail.id,
-                    sections: trails[i].trail.section_ids,
+                    trail: vm.normalizeId(trails[i].trail.id),
+                    sections: vm.normalizeIdArray(trails[i].trail.section_ids),
                 });
             }
             vm.selected_trails = trail_list;
-            vm.trail_activities = vm.find_repeated(all_activities);
+            // Show all activities present across selected trails/sections in the
+            // top-level selector so saved selections are visible after reload.
+            const selectedTrailActivities = vm.find_repeated(all_activities);
+            vm.trail_activities_before = [...selectedTrailActivities];
+            vm.trail_activities = selectedTrailActivities;
         },
         eventListeners: function () {},
     },
