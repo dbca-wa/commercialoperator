@@ -103,8 +103,8 @@
                                                     >here</a
                                                 >.</strong
                                             >
-                                            <button
-                                                v-if="!tradingNameSaved"
+                                            <div v-show="!tradingNameSaved">
+                                                <button
                                                 type="button"
                                                 class="btn btn-primary"
                                                 :disabled="
@@ -112,11 +112,11 @@
                                                     !org.organisation_trading_name
                                                 "
                                                 @click.prevent="
-                                                    updateOrganisation
+                                                    updateOrganisationConfirmation
                                                 "
-                                            >
-                                                Save
-                                            </button>
+                                            >Update</button>
+                                            </div>
+                                            
                                         </div>
                                         <div
                                             v-if="tradingNameError"
@@ -368,6 +368,21 @@ export default {
         });
     },
     methods: {
+        updateOrganisationConfirmation: function () {
+            let vm = this;
+            swal.fire({
+                title: 'Are you sure?',
+                text: 'You are about to save the trading name. This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    vm.updateOrganisation();
+                }
+            });
+        },
         updateOrganisation: function () {
             let vm = this;
             let tradingName = (vm.org.organisation_trading_name || '').trim();
