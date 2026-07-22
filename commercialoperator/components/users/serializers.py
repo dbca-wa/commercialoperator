@@ -132,6 +132,13 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
             2. If there is a licence of that licence type for that user with status Current or Suspended
         """
         _list = []
+        org_pk = obj.get("id") if isinstance(obj, dict) else getattr(obj, "id", None)
+        if org_pk is None:
+            org_pk = (
+                obj.get("organisation_id")
+                if isinstance(obj, dict)
+                else getattr(obj, "organisation_id", None)
+            )
 
         today = timezone.localtime(timezone.now()).date()
         for application_type in [ApplicationType.TCLASS]:
@@ -139,7 +146,7 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
             qs = (
                 Proposal.objects.filter(
                     application_type__name=application_type,
-                    org_applicant=obj["organisation_id"],
+                    org_applicant=org_pk,
                 )
                 .exclude(
                     Q(processing_status__in=["approved", "declined", "discarded"])
@@ -157,7 +164,7 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
             qs = (
                 Proposal.objects.filter(
                     application_type__name=application_type,
-                    org_applicant=obj["organisation_id"],
+                    org_applicant=org_pk,
                 )
                 .exclude(processing_status__in=["approved", "declined", "discarded"])
                 .values_list("lodgement_number", flat=True)
@@ -171,13 +178,20 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
         # Only return the Approvals in last 12 months
         year_date = today - timedelta(days=365)
         _list = []
+        org_pk = obj.get("id") if isinstance(obj, dict) else getattr(obj, "id", None)
+        if org_pk is None:
+            org_pk = (
+                obj.get("organisation_id")
+                if isinstance(obj, dict)
+                else getattr(obj, "organisation_id", None)
+            )
 
         qs = (
             Approval.objects.filter(
                 expiry_date__lte=today,
                 expiry_date__gte=year_date,
                 current_proposal__application_type__name=ApplicationType.EVENT,
-                current_proposal__org_applicant=obj["organisation_id"],
+                current_proposal__org_applicant=org_pk,
             )
             .values(
                 "id", "current_proposal", "current_proposal__event_activity__event_name"

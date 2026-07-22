@@ -2207,7 +2207,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                     raise serializers.ValidationError(
                         {
                             "org_applicant": (
-                                "This organisation has a current commercial operations application or licence. You can apply to attend a licence from the licences table on the home dashboard. [" + existing_refs + "]"
+                                "This organisation has a current commercial operations application or licence. You can apply to amend a licence from the licences table on the home dashboard. [" + existing_refs + "]"
                             )
                         }
                     )

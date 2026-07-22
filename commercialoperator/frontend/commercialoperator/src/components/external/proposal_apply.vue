@@ -769,7 +769,7 @@ export default {
                 swal.fire({
                     title: 'Application Not Allowed',
                     html:
-                        '"This organisation has a current commercial operations application or licence. You can apply to attend a licence from the licences table on the home dashboard.' +
+                        '"This organisation has a current commercial operations application or licence. You can apply to amend a licence from the licences table on the home dashboard.' +
                         vm.active_proposals().join(', '),
                     icon: 'error',
                 });
