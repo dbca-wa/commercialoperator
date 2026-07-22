@@ -761,212 +761,136 @@ def save_park_activity_data(
 @basic_exception_handler
 @transaction.atomic
 def save_trail_section_activity_data(instance, select_trails_activities, request):
-    # if select_trails_activities or len(select_trails_activities) == 0:
-    if not select_trails_activities and not len(select_trails_activities):
+    def _to_int(value):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    if select_trails_activities is None:
         return
 
-    # current_parks=instance.parks.all()
-    selected_trails = []
-    # print("selected_trails",selected_trails)
+    # Clearing all selected trails must remove all stored trail/section/activity data.
+    if len(select_trails_activities) == 0:
+        for existing_trail in instance.trails.all():
+            trail_id = existing_trail.trail_id
+            existing_trail.delete()
+            instance.log_user_action(
+                ProposalUserAction.ACTION_UNLINK_TRAIL.format(trail_id, instance.id),
+                request.user,
+            )
+        return
+
+    selected_trail_ids = set()
+
     for item in select_trails_activities:
-        if item["trail"]:
-            selected_trails.append(item["trail"])
-            selected_sections = []
-            try:
-                # Check if PrposalPark record already exists. If exists, check for sections
-                trail = ProposalTrail.objects.get(
-                    trail=item["trail"], proposal=instance
-                )
-                current_sections = trail.sections.all()
-                current_sections_ids = [a.section_id for a in current_sections]
-                if item["activities"]:
-                    for a in item["activities"]:
-                        if a["section"]:
-                            selected_sections.append(a["section"])
-                            if a["section"] in current_sections_ids:
-                                section = ProposalTrailSection.objects.get(
-                                    proposal_trail=trail,
-                                    section=a["section"],
-                                )
-                                current_activities = section.trail_activities.all()
-                                current_activities_id = [
-                                    s.activity_id for s in current_activities
-                                ]
-                                if a["activities"]:
-                                    for act in a["activities"]:
-                                        if act in current_activities_id:
-                                            # if activity already exists then pass otherwise create the record.
-                                            pass
-                                        else:
-                                            try:
-                                                if (
-                                                    act
-                                                    not in trail.trail.allowed_activities_ids
-                                                ):
-                                                    pass
-                                                else:
-                                                    activity = Activity.objects.get(
-                                                        id=act
-                                                    )
-                                                    ProposalTrailSectionActivity.objects.create(
-                                                        trail_section=section,
-                                                        activity=activity,
-                                                    )
-                                                    instance.log_user_action(
-                                                        ProposalUserAction.ACTION_LINK_ACTIVITY_SECTION.format(
-                                                            activity.id,
-                                                            section.section.id,
-                                                            trail.trail.id,
-                                                        ),
-                                                        request.user,
-                                                    )
-                                            except:
-                                                raise
-                            else:
-                                section_instance = Section.objects.get(id=a["section"])
-                                section = ProposalTrailSection.objects.create(
-                                    proposal_trail=trail,
-                                    section=section_instance,
-                                )
-                                instance.log_user_action(
-                                    ProposalUserAction.ACTION_LINK_SECTION.format(
-                                        section.section.id,
-                                        trail.trail.id,
-                                    ),
-                                    request.user,
-                                )
-                                if a["activities"]:
-                                    for act in a["activities"]:
-                                        try:
-                                            if (
-                                                act
-                                                not in trail.trail.allowed_activities_ids
-                                            ):
-                                                pass
-                                            else:
-                                                activity = Activity.objects.get(id=act)
-                                                ProposalTrailSectionActivity.objects.create(
-                                                    trail_section=section,
-                                                    activity=activity,
-                                                )
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACTIVITY_SECTION.format(
-                                                        activity.id,
-                                                        section.section.id,
-                                                        trail.trail.id,
-                                                    ),
-                                                    request.user,
-                                                )
-                                        except:
-                                            raise
-                            new_activities = section.trail_activities.all()
-                            new_activities_id = set(
-                                n.activity_id for n in new_activities
-                            )
-                            diff_activity = set(new_activities_id).difference(
-                                set(a["activities"])
-                            )
-                            # print("trail:",trail.trail_id,"section:",section.section_id,"new_activities:",new_activities_id, "diff:", diff_activity)
-                            for d in diff_activity:
-                                act = ProposalTrailSectionActivity.objects.get(
-                                    activity_id=d, trail_section=section
-                                )
-                                act.delete()
-                                instance.log_user_action(
-                                    ProposalUserAction.ACTION_UNLINK_ACTIVITY_SECTION.format(
-                                        d,
-                                        section.section.id,
-                                        trail.trail.id,
-                                    ),
-                                    request.user,
-                                )
-            except ProposalTrail.DoesNotExist:
-                try:
-                    # If ProposalPark does not exists then create a new record and activities for it.
-                    trail_instance = Trail.objects.get(id=item["trail"])
-                    trail = ProposalTrail.objects.create(
-                        trail=trail_instance, proposal=instance
-                    )
-                    instance.log_user_action(
-                        ProposalUserAction.ACTION_LINK_TRAIL.format(
-                            trail.trail.id, instance.id
-                        ),
-                        request.user,
-                    )
-                    current_sections = []
-                    if item["activities"]:
-                        for a in item["activities"]:
-                            if a["section"]:
-                                selected_sections.append(a["section"])
-                                section_instance = Section.objects.get(id=a["section"])
-                                section = ProposalTrailSection.objects.create(
-                                    proposal_trail=trail,
-                                    section=section_instance,
-                                )
-                                instance.log_user_action(
-                                    ProposalUserAction.ACTION_LINK_SECTION.format(
-                                        section.section.id,
-                                        trail.trail.id,
-                                    ),
-                                    request.user,
-                                )
-                                if a["activities"]:
-                                    for act in a["activities"]:
-                                        try:
-                                            if (
-                                                act
-                                                not in trail.trail.allowed_activities_ids
-                                            ):
-                                                pass
-                                            else:
-                                                activity = Activity.objects.get(id=act)
-                                                ProposalTrailSectionActivity.objects.create(
-                                                    trail_section=section,
-                                                    activity=activity,
-                                                )
-                                                instance.log_user_action(
-                                                    ProposalUserAction.ACTION_LINK_ACTIVITY_SECTION.format(
-                                                        activity.id,
-                                                        section.section.id,
-                                                        trail.trail.id,
-                                                    ),
-                                                    request.user,
-                                                )
-                                        except:
-                                            raise
-                            # Just to check the new activities. Next 3 lines can be deleted.
-                            new_activities = section.trail_activities.all()
-                            new_activities_id = set(
-                                nw.activity_id for nw in new_activities
-                            )
-                            diff_activity = set(new_activities_id).difference(
-                                set(a["activities"])
-                            )
-                            # print("not deleting","trail:",trail.trail_id,"section:",section.section_id,"new_activities:",new_activities_id, "diff:", diff_activity)
-                except:
-                    raise
-            # compare all sections (new+old) with the list of sections selected to get
-            # the list of deleted sections.
-            new_sections = trail.sections.all()
-            new_sections_ids = set(a.section_id for a in new_sections)
-            diff_sections = set(new_sections_ids).difference(set(selected_sections))
-            # print("trail:",trail.trail_id, "new_sections:", new_sections_ids,"diff_sections:", diff_sections)
-            for d in diff_sections:
-                pk = ProposalTrailSection.objects.get(section=d, proposal_trail=trail)
-                pk.delete()
+        trail_id = _to_int(item.get("trail"))
+        if not trail_id:
+            continue
+
+        selected_trail_ids.add(trail_id)
+
+        trail, trail_created = ProposalTrail.objects.get_or_create(
+            trail_id=trail_id,
+            proposal=instance,
+            defaults={"trail": Trail.objects.get(id=trail_id)},
+        )
+        if trail_created:
+            instance.log_user_action(
+                ProposalUserAction.ACTION_LINK_TRAIL.format(trail.trail.id, instance.id),
+                request.user,
+            )
+
+        selected_section_ids = set()
+        section_payloads = item.get("activities") or []
+
+        for section_payload in section_payloads:
+            section_id = _to_int(section_payload.get("section"))
+            if not section_id:
+                continue
+
+            selected_section_ids.add(section_id)
+
+            section, section_created = ProposalTrailSection.objects.get_or_create(
+                proposal_trail=trail,
+                section_id=section_id,
+                defaults={"section": Section.objects.get(id=section_id)},
+            )
+            if section_created:
                 instance.log_user_action(
-                    ProposalUserAction.ACTION_UNLINK_SECTION.format(d, trail.trail.id),
+                    ProposalUserAction.ACTION_LINK_SECTION.format(
+                        section.section.id,
+                        trail.trail.id,
+                    ),
                     request.user,
                 )
-    new_trails = instance.trails.all()
-    new_trails_id = set(p.trail_id for p in new_trails)
-    diff_trails = set(new_trails_id).difference(set(selected_trails))
-    # print("new_trails", new_trails_id, "diff:", diff_trails)
-    for d in diff_trails:
-        pk = ProposalTrail.objects.get(trail=d, proposal=instance)
-        pk.delete()
+
+            requested_activity_ids = {
+                _to_int(activity_id)
+                for activity_id in (section_payload.get("activities") or [])
+            }
+            requested_activity_ids.discard(None)
+
+            # Keep only activities permitted for the selected trail.
+            allowed_activity_ids = set(trail.trail.allowed_activities_ids)
+            requested_activity_ids = requested_activity_ids.intersection(
+                allowed_activity_ids
+            )
+
+            existing_activity_ids = set(
+                section.trail_activities.values_list("activity_id", flat=True)
+            )
+
+            for activity_id in requested_activity_ids.difference(existing_activity_ids):
+                activity = Activity.objects.get(id=activity_id)
+                ProposalTrailSectionActivity.objects.create(
+                    trail_section=section,
+                    activity=activity,
+                )
+                instance.log_user_action(
+                    ProposalUserAction.ACTION_LINK_ACTIVITY_SECTION.format(
+                        activity.id,
+                        section.section.id,
+                        trail.trail.id,
+                    ),
+                    request.user,
+                )
+
+            for activity_id in existing_activity_ids.difference(requested_activity_ids):
+                ProposalTrailSectionActivity.objects.filter(
+                    trail_section=section,
+                    activity_id=activity_id,
+                ).delete()
+                instance.log_user_action(
+                    ProposalUserAction.ACTION_UNLINK_ACTIVITY_SECTION.format(
+                        activity_id,
+                        section.section.id,
+                        trail.trail.id,
+                    ),
+                    request.user,
+                )
+
+        existing_section_ids = set(
+            trail.sections.values_list("section_id", flat=True)
+        )
+        for section_id in existing_section_ids.difference(selected_section_ids):
+            ProposalTrailSection.objects.filter(
+                proposal_trail=trail,
+                section_id=section_id,
+            ).delete()
+            instance.log_user_action(
+                ProposalUserAction.ACTION_UNLINK_SECTION.format(
+                    section_id,
+                    trail.trail.id,
+                ),
+                request.user,
+            )
+
+    existing_trail_ids = set(instance.trails.values_list("trail_id", flat=True))
+    for trail_id in existing_trail_ids.difference(selected_trail_ids):
+        ProposalTrail.objects.filter(proposal=instance, trail_id=trail_id).delete()
         instance.log_user_action(
-            ProposalUserAction.ACTION_UNLINK_TRAIL.format(d, instance.id),
+            ProposalUserAction.ACTION_UNLINK_TRAIL.format(trail_id, instance.id),
             request.user,
         )
 

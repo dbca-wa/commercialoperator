@@ -2170,29 +2170,40 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 and str(org_applicant).strip() != ""
             ):
                 today = timezone.localtime(timezone.now()).date()
-                existing_tclass_qs = (
-                    Proposal.objects.filter(
-                        application_type__name=ApplicationType.TCLASS,
-                        org_applicant=org_applicant,
+                existing_tclass_qs = Proposal.objects.filter(
+                    application_type__name=ApplicationType.TCLASS,
+                    org_applicant=org_applicant,
+                ).exclude(
+                    Q(
+                        processing_status__in=[
+                            "approved",
+                            "declined",
+                            "discarded",
+                        ]
                     )
-                    .exclude(
-                        Q(
-                            processing_status__in=[
-                                "approved",
-                                "declined",
-                                "discarded",
-                            ]
-                        )
-                        & ~Q(
-                            approval__status__in=["current", "suspended"],
-                            approval__expiry_date__gt=today,
-                        )
+                    & ~Q(
+                        approval__status__in=["current", "suspended"],
+                        approval__expiry_date__gt=today,
                     )
-                    .values_list("lodgement_number", flat=True)
                 )
 
                 if existing_tclass_qs.exists():
-                    existing_refs = ", ".join(existing_tclass_qs)
+                    # If the user just initiated this same draft creation, return the
+                    # existing draft instead of raising an error on duplicate submits.
+                    existing_user_draft = existing_tclass_qs.filter(
+                        submitter_id=request.user.id,
+                        processing_status="draft",
+                        customer_status="draft",
+                        proposal_type="new_proposal",
+                    ).order_by("-id").first()
+
+                    if existing_user_draft:
+                        serializer = SaveProposalSerializer(existing_user_draft)
+                        return Response(serializer.data)
+
+                    existing_refs = ", ".join(
+                        existing_tclass_qs.values_list("lodgement_number", flat=True)
+                    )
                     raise serializers.ValidationError(
                         {
                             "org_applicant": (

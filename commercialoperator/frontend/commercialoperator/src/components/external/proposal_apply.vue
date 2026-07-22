@@ -556,6 +556,7 @@ export default {
             categories: [],
             approval_level: '',
             creatingProposal: false,
+            submitInProgress: false,
             selected_copy_from: null,
             display_region_selectbox: false,
             display_activity_matrix_selectbox: false,
@@ -756,6 +757,10 @@ export default {
         },
         submit: function () {
             let vm = this;
+            if (vm.creatingProposal || vm.submitInProgress) {
+                return;
+            }
+            vm.submitInProgress = true;
             console.log(vm.org_applicant);
             if (
                 vm.selected_application_name == vm.application_type_tclass &&
@@ -768,6 +773,7 @@ export default {
                         vm.active_proposals().join(', '),
                     icon: 'error',
                 });
+                vm.submitInProgress = false;
                 return;
             }
             swal.fire({
@@ -785,6 +791,8 @@ export default {
                 (swalresult) => {
                     if (swalresult.isConfirmed && !vm.has_active_proposals()) {
                         vm.createProposal();
+                    } else {
+                        vm.submitInProgress = false;
                     }
                 }
             );
@@ -837,6 +845,7 @@ export default {
                             params: { proposal_id: vm.proposal.id },
                         });
                         vm.creatingProposal = false;
+                        vm.submitInProgress = false;
                     },
                     (err) => {
                         console.log(err);
@@ -887,6 +896,7 @@ export default {
                             icon: 'error',
                         });
                         vm.creatingProposal = false;
+                        vm.submitInProgress = false;
                     }
                 );
         },
@@ -894,7 +904,8 @@ export default {
             let vm = this;
             if (
                 (vm.org_applicant == '' && vm.yourself == '') ||
-                vm.selected_application_id == ''
+                vm.selected_application_id == '' ||
+                vm.submitInProgress
             ) {
                 return true;
             }
