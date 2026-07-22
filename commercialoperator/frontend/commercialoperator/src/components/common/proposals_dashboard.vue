@@ -188,7 +188,6 @@ export default {
                 { value: 'with_assessor', name: 'Under Review' },
                 { value: 'approved', name: 'Approved' },
                 { value: 'declined', name: 'Declined' },
-                { value: 'discarded', name: 'Discarded' },
                 { value: 'awaiting_payment', name: 'Awaiting Payment' },
             ],
             internal_status: [
