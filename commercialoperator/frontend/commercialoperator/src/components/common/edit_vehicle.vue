@@ -122,27 +122,6 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Transport licence no.</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <input
-                                            ref="license"
-                                            v-model="vehicle.license"
-                                            class="form-control"
-                                            name="license"
-                                            type="text"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -262,7 +241,6 @@ export default {
             this.hasErrors = false;
             $(this.$refs.rego_expiry).val('');
             this.$refs.capacity = '';
-            this.$refs.license = '';
             this.$refs.rego = '';
         },
         fetchContact: function (id) {
