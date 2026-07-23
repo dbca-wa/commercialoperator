@@ -46,7 +46,7 @@
                                                     org.organisation_trading_name
                                                 "
                                                 type="text"
-                                                :disabled="tradingNameSaved"
+                                                :disabled="!organisationLoaded || tradingNameSaved"
                                                 class="form-control"
                                                 name="trading_name"
                                                 placeholder=""
@@ -103,7 +103,7 @@
                                                     >here</a
                                                 >.</strong
                                             >
-                                            <div v-show="!tradingNameSaved">
+                                            <div v-show="organisationLoaded && !tradingNameSaved">
                                                 <button
                                                 type="button"
                                                 class="btn btn-primary"
@@ -325,9 +325,10 @@ export default {
                 organisation_address: {},
             },
             countries: [],
-            tradingNameSaved: false,
+            tradingNameSaved: true,
             savingTradingName: false,
             tradingNameError: null,
+            organisationLoaded: false,
         };
     },
     mounted: function () {
@@ -354,6 +355,7 @@ export default {
                 vm.org.organisation_trading_name &&
                 vm.org.organisation_trading_name.trim()
             );
+            vm.organisationLoaded = true;
         });
     },
     updated: function () {

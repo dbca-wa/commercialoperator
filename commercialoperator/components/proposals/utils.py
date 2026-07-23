@@ -588,7 +588,39 @@ def save_park_activity_data(
     instance, select_parks_activities, request, assessor_save=False
 ):
     # if select_parks_activities or len(select_parks_activities) == 0:
-    if not select_parks_activities and not len(select_parks_activities):
+    if select_parks_activities is None:
+        return
+
+    if len(select_parks_activities) == 0:
+        new_parks = instance.parks.filter(park__park_type="land")
+
+        if not assessor_save:
+            internal_parks = instance.parks.filter(
+                park__park_type="land",
+                park__visible_to_external=False,
+            )
+            internal_park_ids = set(p.park_id for p in internal_parks)
+
+            for park in new_parks:
+                if park.park_id not in internal_park_ids:
+                    park_id = park.park_id
+                    park.delete()
+                    instance.log_user_action(
+                        ProposalUserAction.ACTION_UNLINK_PARK.format(
+                            park_id, instance.id
+                        ),
+                        request.user,
+                    )
+        else:
+            for park in new_parks:
+                park_id = park.park_id
+                park.delete()
+                instance.log_user_action(
+                    ProposalUserAction.ACTION_UNLINK_PARK.format(
+                        park_id, instance.id
+                    ),
+                    request.user,
+                )
         return
 
     # current_parks=instance.parks.all()

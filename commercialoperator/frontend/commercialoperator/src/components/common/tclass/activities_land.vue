@@ -320,6 +320,7 @@ export default {
             isLoading: false,
             selected_activities_initialised: false, //track whether or not selected activities have been initialised - prevent other values being altered until initial state loaded
             selected_access_initialised: false,
+            hiddenParkNames: [],
         };
     },
     computed: {},
@@ -897,7 +898,9 @@ export default {
                             {
                                 id: 'All',
                                 name: 'Select all parks from all regions external',
-                                children: response['land_parks_external'], // land_parks --> regions/districts/parks nested json
+                                children: vm.filterExternalParkTree(
+                                    response['land_parks_external']
+                                ),
                             },
                         ];
                     } else {
@@ -905,7 +908,7 @@ export default {
                             {
                                 id: 'All',
                                 name: 'Select all parks from all regions',
-                                children: response['land_parks'], // land_parks --> regions/districts/parks nested json
+                                children: response['land_parks'],
                             },
                         ];
                     }
@@ -956,6 +959,38 @@ export default {
                     vm.isLoading = false;
                 }
             );
+        },
+        filterExternalParkTree: function (nodes, depth = 0) {
+            if (!Array.isArray(nodes)) {
+                return [];
+            }
+
+            const filteredNodes = [];
+
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+
+                const hasChildren =
+                    Array.isArray(node.children) && node.children.length > 0;
+
+                if (hasChildren) {
+                    const filteredChildren = this.filterExternalParkTree(
+                        node.children,
+                        depth + 1
+                    );
+
+                    if (filteredChildren.length > 0) {
+                        filteredNodes.push({
+                            ...node,
+                            children: filteredChildren,
+                        });
+                    }
+                } else if (depth >= 2) {
+                    filteredNodes.push(node);
+                }
+            }
+
+            return filteredNodes;
         },
         fetchRequiredDocumentList: function () {
             let vm = this;
