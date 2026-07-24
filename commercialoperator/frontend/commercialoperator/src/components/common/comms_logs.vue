@@ -33,7 +33,11 @@
                 </div>
             </div>
         </div>
-        <AddCommLog ref="add_comm" :url="comms_add_url" />
+        <AddCommLog
+            v-if="showAddCommsModal"
+            ref="add_comm"
+            :url="comms_add_url"
+        />
     </div>
 </template>
 
@@ -333,6 +337,7 @@ export default {
                 ],
             },
             commsTable: null,
+            showAddCommsModal: false,
         };
     },
     mounted: function () {
@@ -471,6 +476,13 @@ export default {
             }
         },
         addComm() {
+            if (!this.showAddCommsModal) {
+                this.showAddCommsModal = true;
+                this.$nextTick(() => {
+                    this.$refs.add_comm.isModalOpen = true;
+                });
+                return;
+            }
             this.$refs.add_comm.isModalOpen = true;
         },
     },

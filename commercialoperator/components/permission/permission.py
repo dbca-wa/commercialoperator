@@ -67,6 +67,9 @@ def organisation_permissions(request, ledger_organisation_id):
         )
         return False
 
+    if is_internal(request):
+        return True
+
     # Contacts that are active and either admin or consultant (equivalent to menu_bottom.html)
     cols_organisation_contacts = cols_organisation.contacts.all().filter(
         Q(

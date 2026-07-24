@@ -71,6 +71,26 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             user_orgs = retrieve_delegate_organisation_ids(user.id)
             return Organisation.objects.filter(organisation_id__in=user_orgs)
 
+    def _get_organisation_from_identifier(self, identifier):
+        """
+        Resolve organisation from a URL identifier.
+        The ledger UI uses organisation_id in routes, while some API clients may send pk.
+        """
+        if not identifier:
+            raise serializers.ValidationError(
+                {"message": "An Organisation ID is required"}
+            )
+
+        try:
+            return Organisation.objects.get(organisation_id=identifier)
+        except Organisation.DoesNotExist:
+            try:
+                return Organisation.objects.get(pk=identifier)
+            except Organisation.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"message": f"Organisation with id {identifier} not found"}
+                )
+
     def get_object(self):
         org_id = self.kwargs.get("pk", None)
         if not org_id:
@@ -579,8 +599,8 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     )
     def action_log(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
-            qs = instance.action_logs.all()
+            instance = self._get_organisation_from_identifier(kwargs.get("pk"))
+            qs = instance.action_logs.select_related("who").all()
             serializer = OrganisationActionSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -603,8 +623,8 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     )
     def comms_log(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
-            qs = instance.comms_logs.all()
+            instance = self._get_organisation_from_identifier(kwargs.get("pk"))
+            qs = instance.comms_logs.prefetch_related("documents").all()
             serializer = OrganisationCommsSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -628,7 +648,7 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     @basic_exception_handler
     @transaction.atomic
     def add_comms_log(self, request, *args, **kwargs):
-        instance = self.get_object()
+        instance = self._get_organisation_from_identifier(kwargs.get("pk"))
         mutable = request.data._mutable
         request.data._mutable = True
         request.data["organisation"] = "{}".format(instance.id)
@@ -1016,7 +1036,7 @@ class OrganisationRequestsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
     def action_log(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            qs = instance.action_logs.all()
+            qs = instance.action_logs.select_related("who").all()
             serializer = OrganisationRequestActionSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:
@@ -1039,7 +1059,7 @@ class OrganisationRequestsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
     def comms_log(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            qs = instance.comms_logs.all()
+            qs = instance.comms_logs.prefetch_related("documents").all()
             serializer = OrganisationRequestCommsSerializer(qs, many=True)
             return Response(serializer.data)
         except serializers.ValidationError:

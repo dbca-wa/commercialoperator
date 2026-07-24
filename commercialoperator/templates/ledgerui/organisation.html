@@ -2,16 +2,99 @@
 
 {% load static %}
 {% load django_vite %}
-{% block myorganisation_nav %}
+{% block page_content_inner %}
+<br>
 
-<button class="nav-link managed-organisation-nav" id="nav-contacts-tab" data-bs-toggle="tab" data-bs-target="#nav-contacts" type="button" role="tab" aria-controls="nav-contacts" aria-selected="false">Contact Details</button>
-<button class="nav-link managed-organisation-nav" id="nav-linkedusers-tab" data-bs-toggle="tab" data-bs-target="#nav-linkedusers" type="button" role="tab" aria-controls="nav-linkedusers" aria-selected="false">Linked User Accounts</button>
-<button class="nav-link managed-organisation-nav" id="nav-organisation-tab" data-bs-toggle="tab" data-bs-target="#nav-organisation" type="button" role="tab" aria-controls="nav-organisation" aria-selected="false">Other</button>
+{% block accounts_message_top %}
+{% endblock %}
 
+<div id="app-details" style="display:none;"></div>
+
+<div class="container-fluid px-0">
+    <div class="row">
+        <div class="col-md-3">
+            <div id="organisation-comms-teleport-target" class="mb-3"></div>
+        </div>
+        <div class="col-md-9">
+            <nav class="pb-1">
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <button class="nav-link active managed-organisation-nav" id="nav-orgdetails-tab" data-bs-toggle="tab" data-bs-target="#nav-orgdetails" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Details</button>
+                    <button class="nav-link managed-organisation-nav" id="nav-contacts-tab" data-bs-toggle="tab" data-bs-target="#nav-contacts" type="button" role="tab" aria-controls="nav-contacts" aria-selected="false">Contact Details</button>
+                    <button class="nav-link managed-organisation-nav" id="nav-linkedusers-tab" data-bs-toggle="tab" data-bs-target="#nav-linkedusers" type="button" role="tab" aria-controls="nav-linkedusers" aria-selected="false">Linked User Accounts</button>
+                    <button class="nav-link managed-organisation-nav" id="nav-organisation-tab" data-bs-toggle="tab" data-bs-target="#nav-organisation" type="button" role="tab" aria-controls="nav-organisation" aria-selected="false">Other</button>
+                </div>
+            </nav>
+
+            <div id="nav-orgdetails-tab-page">
+                <a name="organisation-details"></a>
+                <div class="card" id="organisation-details-card-box">
+                    <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
+                            <div class="col-6">
+                                <span id="organisation-details-status"><i class="bi bi-x-circle-fill" style="color: #ff0909"></i></span>&nbsp; Organisation Details
+                            </div>
+                            <div class="col-6 text-end">
+                                <i class="bi fw-bold chevron-toggle" data-bs-target="#ledger_ui_organisation_details-card-body"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body collapse show" id="ledger_ui_organisation_details-card-body">
+                        <div id="ledger_ui_organisation_details"></div>
+                    </div>
+                </div>
+                <br>
+
+                {% if 'billingline1' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'billing_locality' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'billing_state' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'billing_postcode' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'billing_country' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'postal_line1' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'postal_locality' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'postal_state' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'postal_postcode' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'postal_country' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS %}
+                {% endif %}
+
+                {% if 'billing_address' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS or 'postal_address' in settings.LEDGER_UI_ACCOUNTS_MANAGEMENT_KEYS %}
+                <a name="residential-address"></a>
+                <div class="card">
+                    <div class="card-header fw-bold h4" style="padding:30px;">
+                        <div class="row">
+                            <div class="col-6">
+                                <span id="address-details-status"><i class="bi bi-x-circle-fill" style="color: #ff0909"></i></span>&nbsp; Address Details
+                            </div>
+                            <div class="col-6 text-end">
+                                <i class="bi fw-bold down-chevron-close chevron-toggle" data-bs-target="#ledger_ui_address-card-body"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" id="ledger_ui_address-card-body">
+                        <div id="ledger_ui_billing_details"></div>
+                        <div id="ledger_ui_postal_details"></div>
+                    </div>
+                </div>
+                <br>
+                {% endif %}
+            </div>
+
+            <div id="nav-contacts-tab-page" style="display:none;">
+                <div id="contacts-teleport-target"></div>
+            </div>
+
+            <div id="nav-linkedusers-tab-page" style="display:none;">
+                <div id="linkedusers-teleport-target"></div>
+            </div>
+
+            <div id="nav-organisation-tab-page" style="display:none;">
+                <div id="app-other" data-org-id="{{ org_id }}">
+                    <div class="d-flex justify-content-center align-items-center mt-5">
+                        <div class="spinner-grow text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center align-items-center mb-5">
+                        <strong>Loading</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block additional_content %}
-
 <script>
     if (window.ledger_management_organisation && ledger_management_organisation.address) {
         ledger_management_organisation.address.get_data_loading = function () {
@@ -30,29 +113,6 @@
         };
     }
 </script>
-
-<div id="app-details" style="display:none;"></div>
-
-<div id="nav-contacts-tab-page" style="display:none;">
-    <div id="contacts-teleport-target"></div>
-</div>
-
-<div id="nav-linkedusers-tab-page" style="display:none;">
-    <div id="linkedusers-teleport-target"></div>
-</div>
-
-<div id="nav-organisation-tab-page" style="display:none;">
-    <div id="app-other" data-org-id="{{ org_id }}">
-        <div class="d-flex justify-content-center align-items-center mt-5">
-            <div class="spinner-grow text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-        <div class="d-flex justify-content-center align-items-center mb-5">
-            <strong>Loading</strong>
-        </div>
-    </div>
-</div>
 
 {% vite_asset vue3_entry_script app='default' %}
 
