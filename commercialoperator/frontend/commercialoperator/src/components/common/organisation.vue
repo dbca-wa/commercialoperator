@@ -1,6 +1,18 @@
 <template>
     <!-- <div v-if="email_user" class="card"> -->
     <div id="organisationLinkedUser" class="container">
+        <teleport to="#organisation-comms-teleport-target">
+        <h3 v-if="organisationCommsHeading" class="mb-3">
+            {{ organisationCommsHeading }}
+        </h3>
+        <CommsLogs
+            :comms_url="comms_url"
+            :logs_url="logs_url"
+            :comms_add_url="comms_add_url"
+            :disable_add_entry="false"
+        />
+        </teleport>
+
         <teleport to="#contacts-teleport-target">
         <FormSection
             :form-collapse="false"
@@ -291,6 +303,7 @@ import { api_endpoints, constants, helpers, utils } from '@/utils/hooks';
 import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
+import CommsLogs from '@common-utils/comms_logs.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import $ from 'jquery';
@@ -300,6 +313,7 @@ export default {
         alert,
         datatable,
         AddCommLog,
+        CommsLogs,
         FormSection,
         modal,
     },
@@ -307,6 +321,14 @@ export default {
         const vm = this;
         return {
             api_endpoints: api_endpoints,
+            comms_url: helpers.add_endpoint_json(
+                api_endpoints.organisations,
+                vm.$route.params.org_id + '/comms_log'
+            ),
+            logs_url: helpers.add_endpoint_json(
+                api_endpoints.organisations,
+                vm.$route.params.org_id + '/action_log'
+            ),
             comms_add_url: helpers.add_endpoint_json(
                 api_endpoints.organisations,
                 vm.$route.params.org_id + '/add_comms_log'
@@ -484,6 +506,15 @@ export default {
         };
     },
     computed: {
+        organisationCommsHeading: function () {
+            const orgName = this.org?.name || this.org?.organisation_name || '';
+            const orgAbn = this.org?.abn || this.org?.organisation_abn || '';
+
+            if (orgName && orgAbn) {
+                return `${orgName} - ${orgAbn}`;
+            }
+            return orgName || orgAbn || '';
+        },
         linkOrganisationTitle: function () {
             if (
                 this.organisation_requests &&
@@ -499,8 +530,12 @@ export default {
     },
     created: function () {
         console.log('organisation.vue created');
-        this.fetchInitialData().then((response) => {
-            console.log('fetch initial data', response);
+        this.$nextTick(() => {
+            window.requestAnimationFrame(() => {
+                this.fetchInitialData().then((response) => {
+                    console.log('fetch initial data', response);
+                });
+            });
         });
     },
     mounted: function () {
