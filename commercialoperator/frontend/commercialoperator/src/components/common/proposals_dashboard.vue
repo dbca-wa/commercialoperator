@@ -167,6 +167,10 @@ export default {
             type: Number,
             default: null,
         },
+        compactResponsive: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         let vm = this;
@@ -309,12 +313,14 @@ export default {
                             }
                             return '';
                         },
+                        className: vm.compactResponsive ? 'desktop' : '',
                         name: 'submitter__first_name, submitter__last_name, submitter__email',
                         orderable: false,
                         searchable: false, //overridden
                     },
                     {
                         data: 'applicant',
+                        className: vm.compactResponsive ? 'desktop' : '',
                         name: 'org_applicant__organisation__organisation_name, proxy_applicant__email, proxy_applicant__first_name, proxy_applicant__last_name',
                         orderable: false,
                         searchable: false,
@@ -338,6 +344,7 @@ export default {
                     },
                     {
                         data: 'event_name',
+                        className: vm.compactResponsive ? 'desktop' : '',
                         searchable: true,
                         orderable: false,
                         name: 'event_name',
@@ -489,12 +496,14 @@ export default {
                             }
                             return '';
                         },
+                        className: vm.compactResponsive ? 'desktop' : '',
                         name: 'submitter__first_name, submitter__last_name, submitter__email',
                         orderable: false,
                         searchable: false, //override in filter backend
                     },
                     {
                         data: 'applicant',
+                        className: vm.compactResponsive ? 'desktop' : '',
                         name: 'org_applicant__organisation__organisation_name',
                         orderable: false,
                         searchable: false,
@@ -518,12 +527,14 @@ export default {
                     },
                     {
                         data: 'assigned_officer',
+                        className: vm.compactResponsive ? 'desktop' : '',
                         name: 'assigned_officer__first_name, assigned_officer__last_name',
                         orderable: false,
                         searchable: false, //override in filter backend
                     },
                     {
                         data: 'event_name',
+                        className: vm.compactResponsive ? 'desktop' : '',
                         searchable: true,
                         orderable: false,
                         name: 'event_activity__event_name',
