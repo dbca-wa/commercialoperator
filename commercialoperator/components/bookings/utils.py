@@ -1022,13 +1022,23 @@ def checkout(
 
     basket_session = create_basket_session(request, email_user_id, basket_params)
 
+    return_url = request.build_absolute_uri(
+        reverse(return_url_ns, kwargs={"reference": reference})
+    )
+    return_preload_path = reverse(
+        return_preload_url_ns, kwargs={"reference": reference}
+    )
+    return_preload_url = (
+        settings.COMMERCIALOPERATOR_EXTERNAL_URL + return_preload_path
+        if settings.COMMERCIALOPERATOR_EXTERNAL_URL
+        else request.build_absolute_uri(return_preload_path)
+    )
+
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
-        "fallback_url": request.build_absolute_uri(
-            "/"
-        ),
-        "return_url": request.build_absolute_uri(reverse(return_url_ns,kwargs={"reference": reference})),
-        "return_preload_url": settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns,kwargs={"reference": reference}),
+        "fallback_url": request.build_absolute_uri("/"),
+        "return_url": return_url,
+        "return_preload_url": return_preload_url,
         "force_redirect": True,
         "invoice_text": invoice_text,
         #"proxy": True if is_internal(request) else False,
