@@ -532,6 +532,7 @@
                                 >
                                     <ProposalDashTable
                                         ref="proposals_table"
+                                        :compact-responsive="true"
                                         level="internal"
                                         :url="proposals_url"
                                     />
@@ -690,15 +691,11 @@ export default {
             let vm = this;
             // Fix the table responsiveness when tab is shown
             $('a[href="#' + vm.oTab + '"]').on('shown.bs.tab', function () {
-                vm.$refs.proposals_table.$refs.proposal_datatable.vmDataTable.columns
-                    .adjust()
-                    .responsive.recalc();
-                vm.$refs.approvals_table.$refs.proposal_datatable.vmDataTable.columns
-                    .adjust()
-                    .responsive.recalc();
-                vm.$refs.compliance_table.$refs.proposal_datatable.vmDataTable.columns
-                    .adjust()
-                    .responsive.recalc();
+                vm.$nextTick(() => {
+                    vm.$refs.proposals_table?.$refs?.proposal_datatable?.vmDataTable?.columns?.adjust()?.responsive?.recalc();
+                    vm.$refs.approvals_table?.$refs?.proposal_datatable?.vmDataTable?.columns?.adjust()?.responsive?.recalc();
+                    vm.$refs.compliance_table?.$refs?.proposal_datatable?.vmDataTable?.columns?.adjust()?.responsive?.recalc();
+                });
             });
 
             helpers.initialiseSelect2.bind(this)(

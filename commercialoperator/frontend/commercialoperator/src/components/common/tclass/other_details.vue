@@ -862,6 +862,7 @@ export default {
         },
         checkProposalAccreditation: function () {
             let vm = this;
+            vm.selected_accreditations = [];
             if (vm.proposal && vm.proposal.other_details) {
                 for (
                     var i = 0;
@@ -870,28 +871,43 @@ export default {
                 ) {
                     vm.proposal.other_details.accreditations[i].is_deleted =
                         false;
-                    vm.selected_accreditations.push(
+                    if (
                         vm.proposal.other_details.accreditations[i]
-                            .accreditation_type
-                    );
+                            .accreditation_type &&
+                        !vm.selected_accreditations.includes(
+                            vm.proposal.other_details.accreditations[i]
+                                .accreditation_type
+                        )
+                    ) {
+                        vm.selected_accreditations.push(
+                            vm.proposal.other_details.accreditations[i]
+                                .accreditation_type
+                        );
+                    }
                 }
             }
         },
         checkProposalInformationStandard: function(){
                 let vm= this;
+                vm.selected_information_standards=[];
                 if(vm.proposal && vm.proposal.other_details){
                     for(var i=0; i<vm.proposal.other_details.information_standards.length; i++){
                         vm.proposal.other_details.information_standards[i].is_deleted=false;
-                        vm.selected_information_standards.push(vm.proposal.other_details.information_standards[i].information_standard_type);
+                        if(!vm.selected_information_standards.includes(vm.proposal.other_details.information_standards[i].information_standard_type)){
+                            vm.selected_information_standards.push(vm.proposal.other_details.information_standards[i].information_standard_type);
+                        }
                     }
                 }
         },
         checkProposalEmissionStandard: function(){
                 let vm= this;
+                vm.selected_emission_standards=[];
                 if(vm.proposal && vm.proposal.other_details){
                     for(var i=0; i<vm.proposal.other_details.emission_standards.length; i++){
                         vm.proposal.other_details.emission_standards[i].is_deleted=false;
-                        vm.selected_emission_standards.push(vm.proposal.other_details.emission_standards[i].emission_standard_type);
+                        if(!vm.selected_emission_standards.includes(vm.proposal.other_details.emission_standards[i].emission_standard_type)){
+                            vm.selected_emission_standards.push(vm.proposal.other_details.emission_standards[i].emission_standard_type);
+                        }
                     }
                 }
         },
@@ -930,6 +946,9 @@ export default {
                     acc.push(data);
                     vm.proposal.other_details.accreditations = acc;
                 }
+                if (!vm.selected_accreditations.includes(accreditation_type.key)) {
+                    vm.selected_accreditations.push(accreditation_type.key);
+                }
             } else {
                 for (
                     let i = 0;
@@ -955,6 +974,9 @@ export default {
                         }
                     }
                 }
+                vm.selected_accreditations = vm.selected_accreditations.filter(
+                    (item) => item !== accreditation_type.key
+                );
             }
         },
         selectInformationStandard: function(e, info_standard_type){
@@ -979,6 +1001,9 @@ export default {
                     acc.push(data);
                     vm.proposal.other_details.information_standards=acc;
                     }
+                    if(!vm.selected_information_standards.includes(info_standard_type.key)){
+                        vm.selected_information_standards.push(info_standard_type.key);
+                    }
                 }
                 else{
                     for(var i=0;i<vm.proposal.other_details.information_standards.length; i++)
@@ -999,6 +1024,9 @@ export default {
                             }
                         }
                     }
+                    vm.selected_information_standards = vm.selected_information_standards.filter(
+                        (item) => item !== info_standard_type.key
+                    );
                 }
             },
             selectEmissionStandard: function(e, emission_standard_type){
@@ -1023,6 +1051,9 @@ export default {
                         acc.push(data);
                         vm.proposal.other_details.emission_standards=acc;
                         }
+                        if(!vm.selected_emission_standards.includes(emission_standard_type.key)){
+                            vm.selected_emission_standards.push(emission_standard_type.key);
+                        }
                     }
                     else{
                         for(var i=0;i<vm.proposal.other_details.emission_standards.length; i++)
@@ -1043,6 +1074,9 @@ export default {
                                 }
                             }
                         }
+                        vm.selected_emission_standards = vm.selected_emission_standards.filter(
+                            (item) => item !== emission_standard_type.key
+                        );
                     }
         },
         eventListeners: function () {
