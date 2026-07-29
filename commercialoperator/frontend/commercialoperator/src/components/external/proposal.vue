@@ -729,10 +729,13 @@ export default {
             let blank_fields = [];
 
             if (vm.proposal.application_type == vm.application_type_tclass) {
-                if (
-                    vm.$refs.proposal_tclass.$refs.other_details
-                        .selected_accreditations.length == 0
-                ) {
+                const has_accreditation = vm.proposal.other_details.accreditations.some(
+                    (accreditation) =>
+                        !accreditation.is_deleted &&
+                        accreditation.accreditation_type != 'no' &&
+                        accreditation.accreditation_type != 'narta'
+                );
+                if (!has_accreditation) {
                     blank_fields.push(' Level of Accreditation is required');
                 } else {
                     for (
@@ -744,8 +747,9 @@ export default {
                             !vm.proposal.other_details.accreditations[i]
                                 .is_deleted &&
                             vm.proposal.other_details.accreditations[i]
-                                .accreditation_type != 'no' && 
-                            vm.proposal.other_details.accreditations[i].accreditation_type!='narta'
+                                .accreditation_type != 'no' &&
+                            vm.proposal.other_details.accreditations[i]
+                                .accreditation_type != 'narta'
                         ) {
                             if (
                                 vm.proposal.other_details.accreditations[i]
@@ -780,30 +784,69 @@ export default {
                         }
                     }
                 }
-        if (vm.$refs.proposal_tclass.$refs.other_details.selected_information_standards.length==0 ){
-            blank_fields.push(' Accessible Tourism Information is required')
-          }
-          else{
-            for(var j=0; j<vm.proposal.other_details.information_standards.length; j++){
-              if(!vm.proposal.other_details.information_standards[j].is_deleted && vm.proposal.other_details.information_standards[j].information_standard_type!='no'){
-                if(vm.proposal.other_details.information_standards[j].information_comments==null || vm.proposal.other_details.information_standards[j].information_comments==''){
-                  blank_fields.push('Details for accessible tourism information type '+vm.proposal.other_details.information_standards[j].information_standard_type_value+' are required')
+                const has_information_standard = vm.proposal.other_details.information_standards.some(
+                    (standard) =>
+                        !standard.is_deleted &&
+                        standard.information_standard_type != 'no'
+                );
+                if (!has_information_standard) {
+                    blank_fields.push(' Accessible Tourism Information is required');
+                } else {
+                    for (var j = 0; j < vm.proposal.other_details.information_standards.length; j++) {
+                        if (
+                            !vm.proposal.other_details.information_standards[j]
+                                .is_deleted &&
+                            vm.proposal.other_details.information_standards[j]
+                                .information_standard_type != 'no'
+                        ) {
+                            if (
+                                vm.proposal.other_details.information_standards[j]
+                                    .information_comments == null ||
+                                vm.proposal.other_details.information_standards[j]
+                                    .information_comments == ''
+                            ) {
+                                blank_fields.push(
+                                    'Details for accessible tourism information type ' +
+                                        vm.proposal.other_details
+                                            .information_standards[j]
+                                            .information_standard_type_value +
+                                        ' are required'
+                                );
+                            }
+                        }
+                    }
                 }
-              }
-            }
-          }
-          if (vm.$refs.proposal_tclass.$refs.other_details.selected_emission_standards.length==0 ){
-            blank_fields.push(' Tourism Emission Reduction Standards is required')
-          }
-          else{
-            for(var k=0; k<vm.proposal.other_details.emission_standards.length; k++){
-              if(!vm.proposal.other_details.emission_standards[k].is_deleted && vm.proposal.other_details.emission_standards[k].emission_standard_type!='no'){
-                if(vm.proposal.other_details.emission_standards[k].emission_comments==null || vm.proposal.other_details.emission_standards[k].emission_comments==''){
-                  blank_fields.push('Details for tourism emission reduction standard type '+vm.proposal.other_details.emission_standards[k].emission_standard_type_value+' are required')
+                const has_emission_standard = vm.proposal.other_details.emission_standards.some(
+                    (standard) =>
+                        !standard.is_deleted &&
+                        standard.emission_standard_type != 'no'
+                );
+                if (!has_emission_standard) {
+                    blank_fields.push(' Tourism Emission Reduction Standards is required');
+                } else {
+                    for (var k = 0; k < vm.proposal.other_details.emission_standards.length; k++) {
+                        if (
+                            !vm.proposal.other_details.emission_standards[k]
+                                .is_deleted &&
+                            vm.proposal.other_details.emission_standards[k]
+                                .emission_standard_type != 'no'
+                        ) {
+                            if (
+                                vm.proposal.other_details.emission_standards[k]
+                                    .emission_comments == null ||
+                                vm.proposal.other_details.emission_standards[k]
+                                    .emission_comments == ''
+                            ) {
+                                blank_fields.push(
+                                    'Details for tourism emission reduction standard type ' +
+                                        vm.proposal.other_details.emission_standards[k]
+                                            .emission_standard_type_value +
+                                        ' are required'
+                                );
+                            }
+                        }
+                    }
                 }
-              }
-            }
-          }
 
                 if (
                     vm.proposal.other_details.preferred_licence_period == '' ||
