@@ -729,15 +729,17 @@ export default {
             let blank_fields = [];
 
             if (vm.proposal.application_type == vm.application_type_tclass) {
-                const has_accreditation = vm.proposal.other_details.accreditations.some(
+                const active_accreditations = vm.proposal.other_details.accreditations.filter(
+                    (accreditation) => !accreditation.is_deleted
+                );
+                const has_accreditation = active_accreditations.some(
                     (accreditation) =>
-                        !accreditation.is_deleted &&
                         accreditation.accreditation_type != 'no' &&
                         accreditation.accreditation_type != 'narta'
                 );
-                if (!has_accreditation) {
+                if (!has_accreditation && active_accreditations.length === 0) {
                     blank_fields.push(' Level of Accreditation is required');
-                } else {
+                } else if (has_accreditation) {
                     for (
                         var i = 0;
                         i < vm.proposal.other_details.accreditations.length;
@@ -784,14 +786,15 @@ export default {
                         }
                     }
                 }
-                const has_information_standard = vm.proposal.other_details.information_standards.some(
-                    (standard) =>
-                        !standard.is_deleted &&
-                        standard.information_standard_type != 'no'
+                const active_information_standards = vm.proposal.other_details.information_standards.filter(
+                    (standard) => !standard.is_deleted
                 );
-                if (!has_information_standard) {
+                const has_information_standard = active_information_standards.some(
+                    (standard) => standard.information_standard_type != 'no'
+                );
+                if (!has_information_standard && active_information_standards.length === 0) {
                     blank_fields.push(' Accessible Tourism Information is required');
-                } else {
+                } else if (has_information_standard) {
                     for (var j = 0; j < vm.proposal.other_details.information_standards.length; j++) {
                         if (
                             !vm.proposal.other_details.information_standards[j]
@@ -816,14 +819,15 @@ export default {
                         }
                     }
                 }
-                const has_emission_standard = vm.proposal.other_details.emission_standards.some(
-                    (standard) =>
-                        !standard.is_deleted &&
-                        standard.emission_standard_type != 'no'
+                const active_emission_standards = vm.proposal.other_details.emission_standards.filter(
+                    (standard) => !standard.is_deleted
                 );
-                if (!has_emission_standard) {
+                const has_emission_standard = active_emission_standards.some(
+                    (standard) => standard.emission_standard_type != 'no'
+                );
+                if (!has_emission_standard && active_emission_standards.length === 0) {
                     blank_fields.push(' Tourism Emission Reduction Standards is required');
-                } else {
+                } else if (has_emission_standard) {
                     for (var k = 0; k < vm.proposal.other_details.emission_standards.length; k++) {
                         if (
                             !vm.proposal.other_details.emission_standards[k]
