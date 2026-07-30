@@ -164,7 +164,6 @@ export default {
                 'Action',
             ],
             proposal_options: {
-                autoWidth: false,
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,
                 },

@@ -131,7 +131,6 @@ export default {
                 'Documents',
             ],
             requirement_options: {
-                autoWidth: false,
                 language: {
                     processing: constants.DATATABLE_PROCESSING_HTML,
                 },
