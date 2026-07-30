@@ -265,12 +265,12 @@ export default {
     computed: {
         training_doc_url: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
-                        vm.global_settings[i].key == 'online_training_document'
+                        vm.global_settings.results[i].key == 'online_training_document'
                     ) {
-                        return vm.global_settings[i].value;
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
