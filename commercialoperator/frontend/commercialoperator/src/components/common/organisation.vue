@@ -1348,14 +1348,6 @@ export default {
             const orgId = vm.$route.params.org_id;
             let initialisers = [
                 utils.fetchCountries().catch(() => []),
-                helpers
-                    .fetchUrl(
-                        helpers.add_endpoint_json(
-                            api_endpoints.organisations,
-                            orgId
-                        )
-                    )
-                    .catch(() => null),
                 utils.fetchLinkedOrganisation(orgId).catch(() => null),
                 utils.fetchProfile().catch(() => ({
                     commercialoperator_organisations: [],
@@ -1363,12 +1355,9 @@ export default {
             ];
             return Promise.all(initialisers).then((data) => {
                 vm.countries = data[0] || [];
+                vm.org = data[1] || {};
 
-                const directOrganisation = data[1] || {};
-                const linkedOrganisation = data[2] || {};
-                vm.org = Object.assign({}, directOrganisation, linkedOrganisation);
-
-                vm.profile = data[3] || {
+                vm.profile = data[2] || {
                     commercialoperator_organisations: [],
                 };
                 vm.org.organisation_address =
