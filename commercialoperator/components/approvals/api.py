@@ -168,7 +168,19 @@ class ApprovalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
 
         applicant_id = request.GET.get("org_id")
         if applicant_id:
-            qs = qs.filter(org_applicant_id=applicant_id)
+            try:
+                applicant_id_int = int(applicant_id)
+            except (TypeError, ValueError):
+                applicant_id_int = None
+
+            if applicant_id_int is not None:
+                cols_org_ids = list(
+                    Organisation.objects.filter(organisation_id=applicant_id_int).values_list("id", flat=True)
+                )
+                if cols_org_ids:
+                    qs = qs.filter(org_applicant_id__in=cols_org_ids)
+                else:
+                    qs = qs.none()
 
         submitter_id = request.GET.get("submitter_id", None)
         if submitter_id:
