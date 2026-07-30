@@ -334,14 +334,20 @@ def getPrivateFile(request):
         full_file_path= os.path.normpath(settings.BASE_DIR+file_name_path) 
         #we then ensure the normalised path is within the BASE_DIR (and the file exists)
         if full_file_path.startswith(settings.BASE_DIR) and os.path.isfile(full_file_path):
-            extension = file_name_path.split(".")[-1]
+            extension = os.path.splitext(file_name_path)[1].lower().lstrip(".")
             the_file = open(full_file_path, 'rb')
             the_data = the_file.read()
             the_file.close()
-            if extension == 'msg':
-                return HttpResponse(the_data, content_type="application/vnd.ms-outlook")
-            if extension == 'eml':
-                return HttpResponse(the_data, content_type="application/vnd.ms-outlook")
+            if extension in ('msg', 'eml'):
+                response = HttpResponse(
+                    the_data,
+                    content_type="application/vnd.ms-outlook",
+                )
+                response['Content-Disposition'] = (
+                    f'attachment; filename="{os.path.basename(full_file_path)}"'
+                )
+                response['X-Content-Type-Options'] = 'nosniff'
+                return response
 
             try:
                 return HttpResponse(the_data, content_type=mimetypes.types_map['.'+str(extension.lower())])

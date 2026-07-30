@@ -869,10 +869,10 @@ export default {
     computed: {
         park_finder_link: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'park_finder_link') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'park_finder_link') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
@@ -880,13 +880,13 @@ export default {
         },
         commercial_filming_handbook: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
-                        vm.global_settings[i].key ==
+                        vm.global_settings.results[i].key ==
                         'commercial_filming_handbook'
                     ) {
-                        return vm.global_settings[i].value;
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
@@ -894,10 +894,10 @@ export default {
         },
         park_stay_link: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'park_stay_link') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'park_stay_link') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }

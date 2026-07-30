@@ -402,10 +402,10 @@ export default {
     computed: {
         trail_section_map: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'trail_section_map') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'trail_section_map') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
@@ -413,10 +413,10 @@ export default {
         },
         dwer_application_form: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'dwer_application_form') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'dwer_application_form') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
