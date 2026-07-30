@@ -175,12 +175,12 @@
                                             >
                                             <div class="col-sm-6">
                                                 <a
-                                                    target="_blank"
-                                                    :href="
-                                                        access.identification
-                                                    "
+                                                    :href="access.identification"
+                                                    :target="isMsgLetter ? '_self' : '_blank'"
+                                                    :download="isMsgLetter ? letterFileName : null"
+                                                    rel="noopener"
                                                     ><i
-                                                        class="fas fa-file-pdf"
+                                                        :class="letterIconClass"
                                                     ></i
                                                     >&nbsp;Letter</a
                                                 >
@@ -477,6 +477,21 @@ export default {
         isLoading: function () {
             return this.loading.length > 0;
         },
+        isMsgLetter: function () {
+            return this.getIdentificationExtension() === 'msg';
+        },
+        letterFileName: function () {
+            const url = this.access?.identification || '';
+            if (!url) {
+                return 'letter.msg';
+            }
+
+            const path = url.split('?')[0];
+            return path.substring(path.lastIndexOf('/') + 1) || 'letter.msg';
+        },
+        letterIconClass: function () {
+            return this.isMsgLetter ? 'fas fa-envelope' : 'fas fa-file-pdf';
+        },
         isFinalised: function () {
             return (
                 this.access.status == 'With Assesor' ||
@@ -495,6 +510,16 @@ export default {
         });
     },
     methods: {
+        getIdentificationExtension: function () {
+            const url = this.access?.identification || '';
+            if (!url) {
+                return '';
+            }
+
+            const path = url.split('?')[0].toLowerCase();
+            const idx = path.lastIndexOf('.');
+            return idx === -1 ? '' : path.substring(idx + 1);
+        },
         commaToNewline(s) {
             return s.replace(/[,;]/g, '\n');
         },
