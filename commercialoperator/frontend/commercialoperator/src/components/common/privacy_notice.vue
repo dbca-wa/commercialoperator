@@ -87,12 +87,15 @@ export default {
                 .fetchUrl('/api/global_settings.json')
                 .then((response) => {
                     this.globalSettings = response;
+                    console.log('Fetched global settings:', this.globalSettings);
                     // Find privacy_policy_url in the settings
-                    const privacySetting = this.globalSettings.find(
-                        (setting) => setting.key === 'privacy_policy_url'
-                    );
-                    if (privacySetting && privacySetting.value) {
-                        this.privacyPolicyUrl = privacySetting.value;
+                    if(this.globalSettings && this.globalSettings.results) {
+                        const privacySetting = this.globalSettings.results.find(
+                            (setting) => setting.key === 'privacy_policy_url'
+                        );
+                        if (privacySetting && privacySetting.value) {
+                            this.privacyPolicyUrl = privacySetting.value;
+                        }
                     }
                 })
                 .catch((error) => {

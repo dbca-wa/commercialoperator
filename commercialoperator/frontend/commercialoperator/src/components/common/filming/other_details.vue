@@ -390,10 +390,10 @@ export default {
     computed: {
         deed_poll_url: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'deed_poll_filming') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'deed_poll_filming') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
@@ -401,10 +401,10 @@ export default {
         },
         credit_facility_link: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'credit_facility_link') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'credit_facility_link') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
@@ -412,10 +412,10 @@ export default {
         },
         fees_and_charges: function () {
             let vm = this;
-            if (vm.global_settings) {
-                for (var i = 0; i < vm.global_settings.length; i++) {
-                    if (vm.global_settings[i].key == 'fees_and_charges') {
-                        return vm.global_settings[i].value;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'fees_and_charges') {
+                        return vm.global_settings.results[i].value;
                     }
                 }
             }
