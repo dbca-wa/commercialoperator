@@ -368,10 +368,10 @@ CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
 ORGANISATION_PERMISSION_MODULE = "commercialoperator.components.permission.permission"
 
 LEDGER_UI_ORGANISATION_MANAGEMENT = [
-        {'organisation_name': {'options' : {'view': True, 'edit': False}}},
-        {'organisation_abn': {'options' : {'view': True, 'edit': False}}},
-        {'organisation_trading_name': {'options' : {'view': True, 'edit': False}}},
-        {'organisation_email': {'options' : {'view': True, 'edit': False}}},
+        {'organisation_name': {'options' : {'view': True, 'edit': True}}},
+        {'organisation_abn': {'options' : {'view': True, 'edit': True}}},
+        {'organisation_trading_name': {'options' : {'view': True, 'edit': True}}},
+        {'organisation_email': {'options' : {'view': True, 'edit': True}}},
         {'billing_address': {'options' : {'view': True, 'edit': True}}},
         {'postal_address': {'options' : {'view': True, 'edit': True}}}
 ]

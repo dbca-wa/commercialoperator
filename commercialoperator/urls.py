@@ -465,6 +465,11 @@ urlpatterns = (
             name="organisation_history",
         ),
         url(
+            r"^ledger-ui/organisation/(?P<pk>[0-9]+)/",
+            organisation_views.OrganisationDetailView.as_view(),
+            name="view-organisation",
+        ),
+        url(
             r"^booking-session/abort-redirect$",
             booking_views.SessionAbortRedirectView.as_view(),
             name="booking-session-abort-redirect",

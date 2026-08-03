@@ -1,6 +1,7 @@
 import hashlib
 from django.conf import settings
 from ledger_api_client import utils as ledger_api_utils
+from commercialoperator.helpers import is_commercialoperator_admin
 
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.settings import (
@@ -37,4 +38,5 @@ def commercialoperator_url(request):
         "ledger_totals": ledger_totals,
         "checkouthash": checkouthash,
         "vue3_entry_script": VUE3_ENTRY_SCRIPT,
-    }
+        "is_commercialoperator_admin": is_commercialoperator_admin(request),
+   }
