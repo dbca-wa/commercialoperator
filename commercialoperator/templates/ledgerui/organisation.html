@@ -2,6 +2,8 @@
 
 {% load static %}
 {% load django_vite %}
+{% load users %}
+{% is_commercialoperator_admin %}
 {% block page_content_inner %}
 <br>
 
@@ -96,21 +98,54 @@
 
 {% block additional_content %}
 <script>
-    if (window.ledger_management_organisation && ledger_management_organisation.address) {
-        ledger_management_organisation.address.get_data_loading = function () {
-            var countriesReady =
-                ledger_management_organisation.var.countries_status &&
-                ledger_management_organisation.var.countries_status.completed === true;
+    var isColsAdmin = '{{ is_commercialoperator_admin|yesno:"true,false" }}' === 'true';
+    var canEditTradingName = '{{ can_edit_trading_name_for_user|yesno:"true,false" }}' === 'true';
+    if (!isColsAdmin && window.ledger_management_organisation && window.ledger_management_organisation.organisation) {
+        var originalOrganisationInit = window.ledger_management_organisation.organisation.init;
 
-            if (
-                ledger_management_organisation.var.organisation_data_status.is_loading === false &&
-                countriesReady
-            ) {
-                ledger_management_organisation.address.get_data();
-            } else {
-                setTimeout(ledger_management_organisation.address.get_data_loading, 200);
+        window.ledger_management_organisation.organisation.init = function () {
+            var config =
+                window.ledger_management_organisation.var &&
+                window.ledger_management_organisation.var.config;
+
+            if (config) {
+                Object.keys(config).forEach(function (fieldName) {
+                    var field = config[fieldName];
+                    if (field && field.options && typeof field.options.edit !== 'undefined') {
+                        field.options.edit = fieldName === 'organisation_trading_name' ? canEditTradingName : false;
+                    }
+                });
             }
+
+            return originalOrganisationInit.apply(this, arguments);
         };
+
+        if (canEditTradingName && window.ledger_management_organisation.update_organisation_details) {
+            var originalUpdateOrganisationDetails = window.ledger_management_organisation.update_organisation_details;
+
+            window.ledger_management_organisation.update_organisation_details = function (data) {
+                var result = originalUpdateOrganisationDetails.apply(this, arguments);
+
+                (function waitForSaveToFinish() {
+                    var status = window.ledger_management_organisation.var.organisation_data_status;
+                    if (status && status.is_loading) {
+                        setTimeout(waitForSaveToFinish, 200);
+                        return;
+                    }
+
+                    var savedTradingName =
+                        window.ledger_management_organisation.var.organisation_data &&
+                        window.ledger_management_organisation.var.organisation_data.data &&
+                        window.ledger_management_organisation.var.organisation_data.data.organisation_trading_name;
+
+                    if (savedTradingName && savedTradingName.trim().length > 0) {
+                        $('#input-ledger-ui-organisation-trading-name').prop('disabled', true);
+                    }
+                })();
+
+                return result;
+            };
+        }
     }
 </script>
 

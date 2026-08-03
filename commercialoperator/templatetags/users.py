@@ -2,6 +2,9 @@ from django.template import Library
 from django.conf import settings
 from commercialoperator import helpers as commercialoperator_helpers
 from commercialoperator.components.main.models import SystemMaintenance
+from commercialoperator.components.permission.permission import (
+    organisation_permissions,
+)
 from ledger_api_client.helpers import is_payment_admin
 from datetime import timedelta
 from django.utils import timezone
@@ -23,6 +26,22 @@ def is_internal(context):
     # checks if user is a departmentuser and logged in via single sign-on
     request = context["request"]
     return commercialoperator_helpers.is_internal(request)
+
+
+@register.simple_tag(takes_context=True)
+def can_edit_all_organisation_fields(context, organisation_id):
+    request = context["request"]
+    return commercialoperator_helpers.is_commercialoperator_admin(request)
+
+
+@register.simple_tag(takes_context=True)
+def can_edit_trading_name(context, organisation_id):
+    request = context["request"]
+    if not request.user.is_authenticated:
+        return False
+
+    # Page-load check: user must be linked to the current organisation.
+    return organisation_permissions(request, organisation_id)
 
 
 @register.simple_tag(takes_context=True)

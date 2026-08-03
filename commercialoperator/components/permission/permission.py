@@ -56,7 +56,12 @@ class ReferrerPermission(BasePermission):
     def has_permission(self, request, view):
         return is_referrer(request)
 
-def organisation_permissions(request, ledger_organisation_id):
+def is_linked_to_organisation(request, ledger_organisation_id):
+    """Whether request.user is an active admin/consultant contact of the given organisation.
+
+    Unlike `organisation_permissions`, this does NOT bypass the check for internal users -
+    it strictly reflects whether the user is linked to the organisation as a contact.
+    """
     try:
         cols_organisation = Organisation.objects.get(
             organisation_id=ledger_organisation_id
@@ -67,9 +72,6 @@ def organisation_permissions(request, ledger_organisation_id):
         )
         return False
 
-    if is_internal(request):
-        return True
-
     # Contacts that are active and either admin or consultant (equivalent to menu_bottom.html)
     cols_organisation_contacts = cols_organisation.contacts.all().filter(
         Q(
@@ -79,7 +81,14 @@ def organisation_permissions(request, ledger_organisation_id):
         )
     )
 
-    if request.user.email in cols_organisation_contacts.values_list("email", flat=True):
+    return request.user.email in cols_organisation_contacts.values_list("email", flat=True)
+
+
+def organisation_permissions(request, ledger_organisation_id):
+    if is_internal(request):
+        return True
+
+    if is_linked_to_organisation(request, ledger_organisation_id):
         return True
 
     logger.warning(
