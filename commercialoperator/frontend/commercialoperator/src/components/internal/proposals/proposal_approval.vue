@@ -7,7 +7,7 @@
             >
                 <p>
                     The licence has been issued and has been emailed to
-                    {{ proposal.applicant.applicant_name }}
+                    {{ proposal.applicant?.applicant_name || '' }}
                 </p>
                 <p v-if="proposal.proposed_issuance_approval">
                     Expiry date:
@@ -21,7 +21,7 @@
             <div v-else class="col-md-12 alert alert-warning">
                 <p>
                     The application was declined. The decision was emailed to
-                    {{ proposal.applicant.applicant_name }}
+                    {{ proposal.applicant?.applicant_name || '' }}
                 </p>
             </div>
         </template>
@@ -30,7 +30,7 @@
                 <p>
                     The licence has been approved, pending payment and an
                     invoice has been emailed to
-                    {{ proposal.applicant.applicant_name }}
+                    {{ proposal.applicant?.applicant_name || '' }}
                 </p>
             </div>
         </template>
