@@ -237,9 +237,12 @@ export default {
                     {
                         data: 'submitter',
                         // eslint-disable-next-line no-unused-vars
-                        mRender: function (data, type, full) {
+                       mRender: function (data, type, full) {
                             if (data) {
-                                return `${data.first_name} ${data.last_name}`;
+                                const firstName = data.first_name || '';
+                                const lastName = data.last_name || '';
+
+                                return `${firstName} ${lastName}`.trim();
                             }
                             return '';
                         },

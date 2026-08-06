@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.proposals.mixins import ProposedIssuanceApprovalMixin
@@ -278,10 +279,16 @@ class QAOfficerReferralSerializer(serializers.ModelSerializer):
         return obj.get_processing_status_display()
 
     def get_sent_by(self, obj):
-        return obj.sent_by.get_full_name() if obj.sent_by else ""
+        try:
+            return obj.sent_by.get_full_name() if obj.sent_by else ""
+        except ObjectDoesNotExist:
+            return ""
 
     def get_qaofficer(self, obj):
-        return obj.qaofficer.get_full_name() if obj.qaofficer else ""
+        try:
+            return obj.qaofficer.get_full_name() if obj.qaofficer else ""
+        except ObjectDoesNotExist:
+            return ""
 
 
 class ProposalAccreditationSerializer(serializers.ModelSerializer):
