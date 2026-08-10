@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 
 import requests
 from rest_framework import status
@@ -989,8 +990,8 @@ def checkout(
     request,
     proposal,
     lines,
-    return_url_ns="public_booking_success",
-    return_preload_url_ns="public_booking_success",
+    return_url,
+    return_preload_url,
     invoice_text=None,
     vouchers=[],
     reference=None,
@@ -1022,18 +1023,9 @@ def checkout(
 
     basket_session = create_basket_session(request, email_user_id, basket_params)
 
-    return_url = request.build_absolute_uri(
-        reverse(return_url_ns, kwargs={"reference": reference})
-    )
-    return_preload_path = reverse(
-        return_preload_url_ns, kwargs={"reference": reference}
-    )
-    return_preload_url = (
-        settings.COMMERCIALOPERATOR_EXTERNAL_URL + return_preload_path
-        if settings.COMMERCIALOPERATOR_EXTERNAL_URL
-        else request.build_absolute_uri(return_preload_path)
-    )
 
+
+    print(f"Return URL: {return_url}, Return Preload URL: {return_preload_url}")
     checkout_params = {
         "system": settings.PAYMENT_SYSTEM_ID,
         "fallback_url": request.build_absolute_uri("/"),
@@ -1053,7 +1045,12 @@ def checkout(
     create_checkout_session(request, checkout_params)
     
     logger.info("Redirecting user to ledgergw payment details page.")
-    return redirect(reverse("ledgergw-payment-details"))
+    response = HttpResponse(
+        "<script> window.location='" + reverse('ledgergw-payment-details') + "';</script> <a href='" + reverse(
+            'ledgergw-payment-details'
+            ) + "'> Redirecting please wait: " + reverse('ledgergw-payment-details') + "</a>"
+    )
+    return response
 
 
 def checkout_existing_invoice(
