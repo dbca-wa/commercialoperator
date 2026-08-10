@@ -112,12 +112,14 @@ class ApplicationFeeView(TemplateView):
                 lines = create_fee_lines(proposal)
 
                 set_session_application_invoice(request.session, application_fee)
+                return_url = request.build_absolute_uri(reverse("fee_success", kwargs={"reference": proposal.lodgement_number}))
+                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse("fee_success_preload", kwargs={"reference": proposal.lodgement_number})
                 checkout_response = checkout(
                     request,
                     proposal,
                     lines,
-                    return_url_ns="fee_success",
-                    return_preload_url_ns="fee_success_preload",
+                    return_url,
+                    return_preload_url,
                     invoice_text="Application Fee",
                     reference=proposal.lodgement_number
                 )
