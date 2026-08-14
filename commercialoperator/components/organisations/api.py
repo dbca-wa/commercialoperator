@@ -310,10 +310,13 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         instance = self.get_object()
         if not organisation_permissions(request, instance.organisation_id) and not is_commercialoperator_admin(request):
             raise PermissionDenied
-        user_obj = self.request.user
-        user_data = EmailUserSerializer(user_obj.id).data
-        serializer = OrgUserAcceptSerializer(data=user_data)
+
+        serializer = OrgUserAcceptSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        user_obj = EmailUser.objects.get(
+            email=serializer.validated_data["email"].lower()
+        )
 
         instance.unlink_user(user_obj, request)
         serializer = self.get_serializer(instance)
