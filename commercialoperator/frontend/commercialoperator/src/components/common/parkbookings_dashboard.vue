@@ -249,8 +249,8 @@ export default {
                 responsive: true,
                 serverSide: true,
                 lengthMenu: [
-                    [10, 25, 50, 100, -1],
-                    [10, 25, 50, 100, 'All'],
+                    [10, 25, 50, 100],
+                    [10, 25, 50, 100],
                 ],
                 ajax: {
                     url: api_endpoints.parkbooking_paginated_internal,
