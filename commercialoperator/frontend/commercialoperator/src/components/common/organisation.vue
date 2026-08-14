@@ -294,6 +294,14 @@
                                     </div>
                                     </div>
         </FormSection>
+
+        <AddCommLog
+            v-if="showAddCommsModal"
+            ref="add_comm_org_user_action"
+            :url="comms_add_url"
+            :action="pendingCommsAction"
+            @refreshActionFromResponse="handleCommsActionFromCommsLog"
+        />
         </teleport>
     </div>
 </template>
@@ -494,6 +502,8 @@ export default {
             user_action: 'unlink',
             isContactDetailsTableReady: false,
             isModalOpen: false,
+            showAddCommsModal: false,
+            pendingCommsAction: '',
             editContact: {
                 id: null,
                 first_name: '',
@@ -1025,6 +1035,41 @@ export default {
                             }
                         );
                 }
+            }
+        },
+        shouldRequireCommsLog: function (action) {
+            return (
+                this.is_commercialoperator_admin &&
+                (action === 'accept' || action === 'decline')
+            );
+        },
+        triggerLinkedUserAction: function (action) {
+            if (this.shouldRequireCommsLog(action)) {
+                this.pendingCommsAction = action;
+                if (!this.showAddCommsModal) {
+                    this.showAddCommsModal = true;
+                    this.$nextTick(() => {
+                        if (this.$refs.add_comm_org_user_action) {
+                            this.$refs.add_comm_org_user_action.isModalOpen = true;
+                        }
+                    });
+                    return;
+                }
+
+                if (this.$refs.add_comm_org_user_action) {
+                    this.$refs.add_comm_org_user_action.isModalOpen = true;
+                }
+                return;
+            }
+
+            this.orgAction(action);
+        },
+        handleCommsActionFromCommsLog: function (action) {
+            const linkedUserAction = action || this.pendingCommsAction;
+            this.pendingCommsAction = '';
+
+            if (linkedUserAction) {
+                this.orgAction(linkedUserAction);
             }
         },
         eventListeners: function () {

@@ -147,6 +147,302 @@
             };
         }
     }
+
+    if (isColsAdmin && window.ledger_management_organisation && window.ledger_management_organisation.organisation) {
+        var discountLimit = 10000;
+        var originalOrganisationGetData = window.ledger_management_organisation.organisation.get_data;
+        var originalOrganisationUpdateData = window.ledger_management_organisation.organisation.update_data;
+
+        function getOrganisationDiscountSettingsUrl() {
+            var orgId =
+                window.ledger_management_organisation.var &&
+                window.ledger_management_organisation.var.data &&
+                window.ledger_management_organisation.var.data.organisation &&
+                window.ledger_management_organisation.var.data.organisation.org_id;
+
+            return orgId ? '/api/organisations/' + orgId + '/discount_settings/' : null;
+        }
+
+        function chargeOnceTitle() {
+            return 'Charge application fee once per year from the provided day/month. Current year is assumed.';
+        }
+
+        function organisationDiscountFieldsHtml() {
+            return [
+                "<div id='cols-org-discount-settings' class='col-12 pt-3'>",
+                "  <div class='row mb-3'>",
+                "    <div class='col-sm-4 text-sm-end'>",
+                "      <label class='col-form-label fw-bold'>Apply waiver for T Class application fee</label>",
+                "    </div>",
+                "    <div class='col-sm-1 pt-2'>",
+                "      <label><input type='radio' name='apply_application_discount' value='true'> Yes</label>",
+                "    </div>",
+                "    <div class='col-sm-1 pt-2'>",
+                "      <label><input type='radio' name='apply_application_discount' value='false'> No</label>",
+                "    </div>",
+                "    <div class='col-sm-4'>",
+                "      <div id='application-discount-wrapper' style='display:none;'>",
+                "        <div class='row'>",
+                "          <div class='col-sm-3'>",
+                "            <label class='col-form-label fw-bold'>Waiver</label>",
+                "          </div>",
+                "          <div class='col-sm-6 input-group'>",
+                "            <span class='input-group-text'>$</span>",
+                "            <input type='number' min='0' max='10000' step='0.01' class='form-control' id='input-application-discount'>",
+                "          </div>",
+                "        </div>",
+                "        <div id='application-discount-error' class='text-danger small mt-1' style='display:none;'>Waiver amount must be between $0 - $10,000</div>",
+                "      </div>",
+                "    </div>",
+                "  </div>",
+                "  <div class='row mb-3'>",
+                "    <div class='col-sm-4 text-sm-end'>",
+                "      <label class='col-form-label fw-bold'>Apply waiver for T Class licence fee</label>",
+                "    </div>",
+                "    <div class='col-sm-1 pt-2'>",
+                "      <label><input type='radio' name='apply_licence_discount' value='true'> Yes</label>",
+                "    </div>",
+                "    <div class='col-sm-1 pt-2'>",
+                "      <label><input type='radio' name='apply_licence_discount' value='false'> No</label>",
+                "    </div>",
+                "    <div class='col-sm-4'>",
+                "      <div id='licence-discount-wrapper' style='display:none;'>",
+                "        <div class='row'>",
+                "          <div class='col-sm-3'>",
+                "            <label class='col-form-label fw-bold'>Waiver</label>",
+                "          </div>",
+                "          <div class='col-sm-6 input-group'>",
+                "            <span class='input-group-text'>$</span>",
+                "            <input type='number' min='0' max='10000' step='0.01' class='form-control' id='input-licence-discount'>",
+                "          </div>",
+                "        </div>",
+                "        <div id='licence-discount-error' class='text-danger small mt-1' style='display:none;'>Waiver amount must be between $0 - $10,000</div>",
+                "      </div>",
+                "    </div>",
+                "  </div>",
+                "  <div class='row mb-3'>",
+                "    <div class='col-sm-4 text-sm-end'>",
+                "      <label class='col-form-label fw-bold'>Charge once per year - start of year<br>(Event Licence)</label>",
+                "    </div>",
+                "    <div class='col-sm-4'>",
+                "      <input type='text' class='form-control' placeholder='DD/MM' id='input-charge-once-per-year' title='" + chargeOnceTitle() + "'>",
+                "    </div>",
+                "  </div>",
+                "  <div class='row mb-3'>",
+                "    <div class='col-sm-4 text-sm-end'>",
+                "      <label class='col-form-label fw-bold'>Maximum number of months ahead<br>(Event Licence)</label>",
+                "    </div>",
+                "    <div class='col-sm-4'>",
+                "      <input type='number' min='0' max='36' step='1' inputmode='numeric' class='form-control' id='input-max-num-months-ahead' style='max-width: 240px;' title='Max. months ahead for future Event application completion date'>",
+                "    </div>",
+                "  </div>",
+                "</div>",
+            ].join('');
+        }
+
+        function ensureOrganisationDiscountFields() {
+            if ($('#cols-org-discount-settings').length) {
+                return true;
+            }
+
+            var $updateRow = $('#update-organisation-details').closest('div');
+            if (!$updateRow.length) {
+                return false;
+            }
+
+            $updateRow.before(organisationDiscountFieldsHtml());
+            bindOrganisationDiscountFieldEvents();
+            return true;
+        }
+
+        function isValidDiscountValue(value) {
+            if (value === '' || value === null || typeof value === 'undefined') {
+                return true;
+            }
+
+            var number = Number(value);
+            return Number.isFinite(number) && number >= 0 && number <= discountLimit;
+        }
+
+        function updateDiscountFieldVisibility() {
+            var applyApplicationDiscount = $('input[name="apply_application_discount"]:checked').val() === 'true';
+            var applyLicenceDiscount = $('input[name="apply_licence_discount"]:checked').val() === 'true';
+
+            $('#application-discount-wrapper').toggle(applyApplicationDiscount);
+            $('#licence-discount-wrapper').toggle(applyLicenceDiscount);
+        }
+
+        function updateDiscountFieldErrors() {
+            var applicationValue = $('#input-application-discount').val();
+            var licenceValue = $('#input-licence-discount').val();
+            var showApplicationError =
+                $('input[name="apply_application_discount"]:checked').val() === 'true' &&
+                !isValidDiscountValue(applicationValue);
+            var showLicenceError =
+                $('input[name="apply_licence_discount"]:checked').val() === 'true' &&
+                !isValidDiscountValue(licenceValue);
+
+            $('#application-discount-error').toggle(showApplicationError);
+            $('#licence-discount-error').toggle(showLicenceError);
+
+            return !showApplicationError && !showLicenceError;
+        }
+
+        function bindOrganisationDiscountFieldEvents() {
+            $(document)
+                .off('change.colsOrgDiscount', 'input[name="apply_application_discount"], input[name="apply_licence_discount"]')
+                .on(
+                    'change.colsOrgDiscount',
+                    'input[name="apply_application_discount"], input[name="apply_licence_discount"]',
+                    function () {
+                        updateDiscountFieldVisibility();
+                        updateDiscountFieldErrors();
+                    }
+                );
+
+            $(document)
+                .off('input.colsOrgDiscount', '#input-application-discount, #input-licence-discount')
+                .on(
+                    'input.colsOrgDiscount',
+                    '#input-application-discount, #input-licence-discount',
+                    function () {
+                        updateDiscountFieldErrors();
+                    }
+                );
+        }
+
+        function populateOrganisationDiscountFields(data) {
+            if (!ensureOrganisationDiscountFields()) {
+                return;
+            }
+
+            $('input[name="apply_application_discount"][value="' + String(Boolean(data.apply_application_discount)) + '"]').prop('checked', true);
+            $('input[name="apply_licence_discount"][value="' + String(Boolean(data.apply_licence_discount)) + '"]').prop('checked', true);
+            $('#input-application-discount').val(data.application_discount != null ? data.application_discount : '');
+            $('#input-licence-discount').val(data.licence_discount != null ? data.licence_discount : '');
+            $('#input-charge-once-per-year').val(data.charge_once_per_year || '');
+            $('#input-max-num-months-ahead').val(data.max_num_months_ahead != null ? data.max_num_months_ahead : 0);
+            updateDiscountFieldVisibility();
+            updateDiscountFieldErrors();
+        }
+
+        function loadOrganisationDiscountSettings() {
+            var url = getOrganisationDiscountSettingsUrl();
+            if (!url || !ensureOrganisationDiscountFields()) {
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    populateOrganisationDiscountFields(data);
+                },
+                error: function () {
+                    console.log('Error loading organisation discount settings');
+                },
+            });
+        }
+
+        function collectOrganisationDiscountSettingsPayload() {
+            var applyApplicationDiscount = $('input[name="apply_application_discount"]:checked').val() === 'true';
+            var applyLicenceDiscount = $('input[name="apply_licence_discount"]:checked').val() === 'true';
+            var applicationDiscount = $('#input-application-discount').val();
+            var licenceDiscount = $('#input-licence-discount').val();
+            var chargeOncePerYear = $('#input-charge-once-per-year').val();
+            var maxNumMonthsAhead = $('#input-max-num-months-ahead').val();
+
+            return {
+                apply_application_discount: applyApplicationDiscount,
+                application_discount: applicationDiscount === '' ? 0 : Number(applicationDiscount),
+                apply_licence_discount: applyLicenceDiscount,
+                licence_discount: licenceDiscount === '' ? 0 : Number(licenceDiscount),
+                charge_once_per_year: chargeOncePerYear === '' ? null : chargeOncePerYear,
+                max_num_months_ahead: maxNumMonthsAhead === '' ? 0 : Number(maxNumMonthsAhead),
+            };
+        }
+
+        function saveOrganisationDiscountSettings() {
+            var url = getOrganisationDiscountSettingsUrl();
+            if (!url || !updateDiscountFieldErrors()) {
+                return $.Deferred().reject().promise();
+            }
+
+            return $.ajax({
+                url: url,
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.ledger_management_organisation.var.csrf_token,
+                },
+                data: JSON.stringify(collectOrganisationDiscountSettingsPayload()),
+                contentType: 'application/json',
+            });
+        }
+
+        function updateLedgerOrganisationDetails() {
+            var url = getOrganisationDiscountSettingsUrl();
+            if (!url) {
+                return $.Deferred().reject().promise();
+            }
+
+            var orgId =
+                window.ledger_management_organisation.var &&
+                window.ledger_management_organisation.var.data &&
+                window.ledger_management_organisation.var.data.organisation &&
+                window.ledger_management_organisation.var.data.organisation.org_id;
+            var data = {
+                organisation_name: $('#input-ledger-ui-organisation-name').val(),
+            };
+
+            $('#div-ledger-ui-organisation').hide();
+            $('#div-ledger-ui-organisation-loader').show();
+            window.ledger_management_organisation.var.organisation_data_status.is_loading = true;
+
+            return $.ajax({
+                url: '/ledger-ui/api/update-organisation-details/' + orgId + '/',
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': window.ledger_management_organisation.var.csrf_token,
+                },
+                data: JSON.stringify({ payload: data }),
+                contentType: 'application/json',
+            });
+        }
+
+        window.ledger_management_organisation.organisation.get_data = function () {
+            var result = originalOrganisationGetData.apply(this, arguments);
+            loadOrganisationDiscountSettings();
+            return result;
+        };
+
+        window.ledger_management_organisation.organisation.update_data = function () {
+            if (!ensureOrganisationDiscountFields() || !updateDiscountFieldErrors()) {
+                return;
+            }
+
+            updateLedgerOrganisationDetails()
+                .done(function () {
+                    // Keep behavior closer to the old single-save flow: only save COLS fields after ledger succeeds.
+                    saveOrganisationDiscountSettings()
+                        .fail(function () {
+                            alert('Error updating organisation discount settings');
+                        })
+                        .always(function () {
+                            window.ledger_management_organisation.get_organisation_details();
+                            window.ledger_management_organisation.organisation.get_data_loading();
+                        });
+                })
+                .fail(function () {
+                    window.ledger_management_organisation.var.organisation_data_status.is_loading = false;
+                    window.ledger_management_organisation.get_organisation_details();
+                    window.ledger_management_organisation.organisation.get_data_loading();
+                    alert('Error updating organisation information');
+                });
+
+            return;
+        };
+    }
 </script>
 
 {% vite_asset vue3_entry_script app='default' %}
