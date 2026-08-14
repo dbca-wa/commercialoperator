@@ -142,6 +142,12 @@ def update_events_park_doc_filename(instance, filename):
     )
 
 
+def update_vessel_doc_filename(instance, filename):
+    return "{}/proposals/{}/vessels/{}".format(
+        settings.MEDIA_APP_DIR, instance.proposal.id, filename
+    )
+
+
 def update_pre_event_park_doc_filename(instance, filename):
     return "{}/proposals/{}/pre_event_park_documents/{}".format(
         settings.MEDIA_APP_DIR, instance.pre_event_park.proposal.id, filename
@@ -4338,6 +4344,16 @@ class Vessel(SanitiseMixin):
     hire_rego = models.CharField(max_length=200, blank=True)
     craft_no = models.CharField(max_length=200, blank=True)
     size = models.CharField(max_length=200, blank=True)
+    vessel_length = models.CharField(max_length=200, blank=True)
+    vessel_weight = models.CharField(max_length=200, blank=True)
+    number_of_tenders = models.PositiveIntegerField(blank=True, null=True)
+    certificate_of_survey = models.FileField(
+        upload_to=update_vessel_doc_filename,
+        max_length=512,
+        storage=private_storage,
+        blank=True,
+        null=True,
+    )
     # rego_expiry= models.DateField(blank=True, null=True)
     proposal = models.ForeignKey(
         Proposal, related_name="vessels", on_delete=models.CASCADE

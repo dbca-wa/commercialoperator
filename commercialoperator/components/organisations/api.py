@@ -44,6 +44,7 @@ from commercialoperator.components.organisations.serializers import (
     OrganisationRequestSerializer,
     OrganisationRequestDTSerializer,
     OrganisationContactSerializer,
+    SaveDiscountSerializer,
     OrganisationCheckSerializer,
     OrganisationPinCheckSerializer,
     OrganisationRequestActionSerializer,
@@ -310,10 +311,13 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         instance = self.get_object()
         if not organisation_permissions(request, instance.organisation_id) and not is_commercialoperator_admin(request):
             raise PermissionDenied
-        user_obj = self.request.user
-        user_data = EmailUserSerializer(user_obj.id).data
-        serializer = OrgUserAcceptSerializer(data=user_data)
+
+        serializer = OrgUserAcceptSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        user_obj = EmailUser.objects.get(
+            email=serializer.validated_data["email"].lower()
+        )
 
         instance.unlink_user(user_obj, request)
         serializer = self.get_serializer(instance)
@@ -587,6 +591,30 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         instance.update_organisation(request)
 
         serializer = OrganisationSerializer(instance, context={"request": request})
+        return Response(serializer.data)
+
+    @action(
+        methods=[
+            "GET",
+            "POST",
+        ],
+        detail=True,
+        permission_classes=[InternalPermission],
+    )
+    @basic_exception_handler
+    def discount_settings(self, request, *args, **kwargs):
+        instance = self._get_organisation_from_identifier(kwargs.get("pk"))
+
+        if not is_commercialoperator_admin(request):
+            raise PermissionDenied
+
+        if request.method == "GET":
+            serializer = SaveDiscountSerializer(instance, context={"request": request})
+            return Response(serializer.data)
+
+        serializer = SaveDiscountSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)
 
     #TODO remove or refactor action and comms log funcs

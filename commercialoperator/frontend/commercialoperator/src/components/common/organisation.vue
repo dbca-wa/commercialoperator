@@ -294,6 +294,14 @@
                                     </div>
                                     </div>
         </FormSection>
+
+        <AddCommLog
+            v-if="showAddCommsModal"
+            ref="add_comm_org_user_action"
+            :url="comms_add_url"
+            :action="pendingCommsAction"
+            @refreshActionFromResponse="handleCommsActionFromCommsLog"
+        />
         </teleport>
     </div>
 </template>
@@ -494,6 +502,8 @@ export default {
             user_action: 'unlink',
             isContactDetailsTableReady: false,
             isModalOpen: false,
+            showAddCommsModal: false,
+            pendingCommsAction: '',
             editContact: {
                 id: null,
                 first_name: '',
@@ -631,6 +641,8 @@ export default {
         },
         orgAction: function (action) {
             let vm = this;
+            const name = `${vm.contact_user.first_name || ''} ${vm.contact_user.last_name || ''}`.trim();
+            const displayName = name || vm.contact_user.email || 'this user';
             if (action) {
                 if (action == 'unlink') {
                     helpers
@@ -652,10 +664,7 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Unlink',
-                                    text:
-                                        'You have successfully unlinked ' +
-                                        name +
-                                        '.',
+                                    text: 'You have successfully unlinked ' + displayName + '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -678,10 +687,7 @@ export default {
                                 } else {
                                     swal.fire({
                                         title: 'Unlink',
-                                        text:
-                                            'There was an error unlinking ' +
-                                            error +
-                                            '.',
+                                        text: 'There was an error unlinking ' + displayName + '. ' + helpers.apiVueResourceError(error),
                                         icon: 'error',
                                     });
                                 }
@@ -707,10 +713,7 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Relink User',
-                                    text:
-                                        'You have successfully relinked ' +
-                                        name +
-                                        '.',
+                                    text: 'You have successfully relinked ' + displayName + '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -724,10 +727,7 @@ export default {
                                 // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
                                 swal.fire({
                                     title: 'Relink User',
-                                    text:
-                                        'There was an error relinking ' +
-                                        error +
-                                        '.',
+                                    text: 'There was an error relinking ' + displayName + '. ' + helpers.apiVueResourceError(error),
                                     icon: 'error',
                                 });
                             }
@@ -754,7 +754,7 @@ export default {
                                     title: 'Suspend User',
                                     text:
                                         'You have successfully suspended ' +
-                                        name +
+                                        displayName +
                                         ' as a User.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
@@ -774,7 +774,7 @@ export default {
                                     title: 'Suspend User',
                                     text:
                                         'There was an error suspending ' +
-                                        error +
+                                        displayName +
                                         ' as a User.',
                                     icon: 'error',
                                 });
@@ -800,10 +800,7 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Reinstate User',
-                                    text:
-                                        'You have successfully reinstated ' +
-                                        name +
-                                        '.',
+                                    text: 'You have successfully reinstated ' + displayName + '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -817,10 +814,7 @@ export default {
                                 // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
                                 swal.fire({
                                     title: 'Reinstate User',
-                                    text:
-                                        'There was an error reinstating ' +
-                                        error +
-                                        '.',
+                                    text: 'There was an error reinstating ' + displayName + '. ' + helpers.apiVueResourceError(error),
                                     icon: 'error',
                                 });
                             }
@@ -847,7 +841,7 @@ export default {
                                     title: 'Organisation Admin',
                                     text:
                                         'You have successfully made ' +
-                                        name +
+                                        displayName +
                                         ' an Organisation Admin.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
@@ -889,7 +883,7 @@ export default {
                                     title: 'Organisation User',
                                     text:
                                         'You have successfully made ' +
-                                        name +
+                                        displayName +
                                         ' an Organisation User.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
@@ -934,10 +928,7 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Contact Accept',
-                                    text:
-                                        'You have successfully accepted ' +
-                                        name +
-                                        '.',
+                                    text: 'You have successfully accepted ' + displayName + '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -979,10 +970,7 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Contact Decline',
-                                    text:
-                                        'You have successfully declined ' +
-                                        name +
-                                        '.',
+                                    text: 'You have successfully declined ' + displayName + '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -1024,10 +1012,7 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Contact Accept (Previously Declined)',
-                                    text:
-                                        'You have successfully accepted ' +
-                                        name +
-                                        '.',
+                                    text: 'You have successfully accepted ' + displayName + '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -1052,6 +1037,41 @@ export default {
                 }
             }
         },
+        shouldRequireCommsLog: function (action) {
+            return (
+                this.is_commercialoperator_admin &&
+                (action === 'accept' || action === 'decline')
+            );
+        },
+        triggerLinkedUserAction: function (action) {
+            if (this.shouldRequireCommsLog(action)) {
+                this.pendingCommsAction = action;
+                if (!this.showAddCommsModal) {
+                    this.showAddCommsModal = true;
+                    this.$nextTick(() => {
+                        if (this.$refs.add_comm_org_user_action) {
+                            this.$refs.add_comm_org_user_action.isModalOpen = true;
+                        }
+                    });
+                    return;
+                }
+
+                if (this.$refs.add_comm_org_user_action) {
+                    this.$refs.add_comm_org_user_action.isModalOpen = true;
+                }
+                return;
+            }
+
+            this.orgAction(action);
+        },
+        handleCommsActionFromCommsLog: function (action) {
+            const linkedUserAction = action || this.pendingCommsAction;
+            this.pendingCommsAction = '';
+
+            if (linkedUserAction) {
+                this.orgAction(linkedUserAction);
+            }
+        },
         eventListeners: function () {
             const vm = this;
             
@@ -1060,7 +1080,14 @@ export default {
                 '.unlink_contact',
                 (e) => {
                     e.preventDefault();
-                    vm.updateContactUser(e);
+                    if (!vm.updateContactUser(e)) {
+                        swal.fire({
+                            title: 'Unlink',
+                            text: 'Could not determine which user to unlink. Please try again.',
+                            icon: 'error',
+                        });
+                        return;
+                    }
                     const name = `${vm.contact_user.first_name} ${vm.contact_user.last_name}`;
 
                     swal.fire({
@@ -1271,7 +1298,7 @@ export default {
                                 if (!result.isConfirmed) {
                                     return;
                                 }
-                                this.orgAction('accept');
+                                this.triggerLinkedUserAction('accept');
                             }
                         },
                         () => {}
@@ -1303,7 +1330,7 @@ export default {
                                 if (!result.isConfirmed) {
                                     return;
                                 }
-                                this.orgAction('decline');
+                                this.triggerLinkedUserAction('decline');
                             }
                         },
                         () => {}
@@ -1426,11 +1453,54 @@ export default {
             });
         },
         updateContactUser: function (event) {
-            const firstname = $(event.target).data('firstname');
-            const lastname = $(event.target).data('lastname');
-            const email = $(event.target).data('email');
-            const mobile = $(event.target).data('mobile');
-            const phone = $(event.target).data('phone');
+            const vm = this;
+            const normalizeValue = (value) => {
+                if (
+                    value === undefined ||
+                    value === null ||
+                    value === 'undefined' ||
+                    value === 'null'
+                ) {
+                    return '';
+                }
+                return value;
+            };
+
+            // With delegated events, click target can be an inner icon; always
+            // resolve the nearest action element that carries data-* attributes.
+            let $source = $(event.target).closest('[data-email]');
+            if (!$source.length) {
+                $source = $(event.target).closest('a, button');
+            }
+            if (!$source.length) {
+                $source = $(event.target);
+            }
+
+            let firstname = normalizeValue($source.data('firstname'));
+            let lastname = normalizeValue($source.data('lastname'));
+            let email = normalizeValue($source.data('email'));
+            let mobile = normalizeValue($source.data('mobile'));
+            let phone = normalizeValue($source.data('phone'));
+
+            if (!email || (!firstname && !lastname)) {
+                const $row = $source.closest('tr');
+                const $parentRow = $row.hasClass('child') ? $row.prev('tr') : $row;
+                const rowData = vm.$refs.contacts_datatable_user?.vmDataTable
+                    ?.row($parentRow)
+                    .data();
+                if (rowData) {
+                    firstname = firstname || normalizeValue(rowData.first_name);
+                    lastname = lastname || normalizeValue(rowData.last_name);
+                    email = email || normalizeValue(rowData.email);
+                    mobile =
+                        mobile || normalizeValue(rowData.mobile_number);
+                    phone = phone || normalizeValue(rowData.phone_number);
+                }
+            }
+
+            if (!email) {
+                return false;
+            }
 
             const new_user = {
                 first_name: firstname,
@@ -1441,6 +1511,7 @@ export default {
             };
 
             this.contact_user = { ...new_user };
+            return true;
         },
     },
 };

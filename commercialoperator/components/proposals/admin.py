@@ -344,16 +344,16 @@ class VesselAdmin(admin.ModelAdmin):
     list_display = [
         "nominated_vessel",
         "spv_no",
-        "hire_rego",
-        "craft_no",
-        "size",
+        "vessel_length",
+        "vessel_weight",
+        "number_of_tenders",
         "proposal__lodgement_number",
     ]
     search_fields = [
         "nominated_vessel",
         "spv_no",
-        "hire_rego",
-        "craft_no",
+        "vessel_length",
+        "vessel_weight",
         "proposal__lodgement_number",
     ]
     ordering = ("nominated_vessel",)

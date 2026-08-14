@@ -175,7 +175,7 @@
                                             >
                                             <div class="col-sm-6">
                                                 <a
-                                                    :href="access.identification"
+                                                    :href="identificationHref"
                                                     :target="isMsgLetter ? '_self' : '_blank'"
                                                     :download="isMsgLetter ? letterFileName : null"
                                                     rel="noopener"
@@ -492,6 +492,9 @@ export default {
         letterIconClass: function () {
             return this.isMsgLetter ? 'fas fa-envelope' : 'fas fa-file-pdf';
         },
+        identificationHref: function () {
+            return this.normaliseAttachmentUrl(this.access?.identification || '');
+        },
         isFinalised: function () {
             return (
                 this.access.status == 'With Assesor' ||
@@ -510,6 +513,27 @@ export default {
         });
     },
     methods: {
+        normaliseAttachmentUrl: function (rawUrl) {
+            if (!rawUrl) {
+                return '';
+            }
+
+            // Keep private-media links same-origin so scheme and host match current session.
+            const privateMediaMarker = '/private-media/';
+            const markerIndex = rawUrl.indexOf(privateMediaMarker);
+            if (markerIndex !== -1) {
+                return rawUrl.substring(markerIndex);
+            }
+
+            // Force absolute links to current protocol to avoid http links on https pages.
+            try {
+                const parsed = new URL(rawUrl, window.location.origin);
+                parsed.protocol = window.location.protocol;
+                return parsed.toString();
+            } catch (e) {
+                return rawUrl;
+            }
+        },
         getIdentificationExtension: function () {
             const url = this.access?.identification || '';
             if (!url) {

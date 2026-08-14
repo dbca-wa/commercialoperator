@@ -370,6 +370,10 @@ class DetailsSerializer(serializers.ModelSerializer):
 
 
 class SaveDiscountSerializer(serializers.ModelSerializer):
+    charge_once_per_year = serializers.DateField(
+        format="%d/%m", input_formats=["%d/%m"], required=False, allow_null=True
+    )
+
     class Meta:
         model = Organisation
         fields = (
