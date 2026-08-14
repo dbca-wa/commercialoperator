@@ -46,7 +46,7 @@
                                         <label
                                             class="control-label pull-left"
                                             for="Name"
-                                            >SPV No./ Reg. No.</label
+                                            >UVI No. / Reg. No.</label
                                         >
                                     </div>
                                     <div class="col-sm-9">
@@ -67,17 +67,16 @@
                                         <label
                                             class="control-label pull-left"
                                             for="Name"
-                                            >Hire and Drive reg.</label
+                                            >Vessel length (m)</label
                                         >
                                     </div>
                                     <div class="col-sm-9">
                                         <input
-                                            ref="hire_rego"
-                                            v-model="vessel.hire_rego"
+                                            ref="vessel_length"
+                                            v-model="vessel.vessel_length"
                                             class="form-control"
-                                            name="hire_rego"
+                                            name="vessel_length"
                                             type="text"
-                                            required
                                         />
                                     </div>
                                 </div>
@@ -88,17 +87,16 @@
                                         <label
                                             class="control-label pull-left"
                                             for="Name"
-                                            >No. of craft</label
+                                            >Vessel weight</label
                                         >
                                     </div>
                                     <div class="col-sm-9">
                                         <input
-                                            ref="craft_no"
-                                            v-model="vessel.craft_no"
+                                            ref="vessel_weight"
+                                            v-model="vessel.vessel_weight"
                                             class="form-control"
-                                            name="craft_no"
-                                            type="number"
-                                            required
+                                            name="vessel_weight"
+                                            type="text"
                                         />
                                     </div>
                                 </div>
@@ -109,18 +107,61 @@
                                         <label
                                             class="control-label pull-left"
                                             for="Name"
-                                            >Vessel Size</label
+                                            >Number of tenders</label
                                         >
                                     </div>
                                     <div class="col-sm-9">
                                         <input
-                                            ref="size"
-                                            v-model="vessel.size"
+                                            ref="number_of_tenders"
+                                            v-model.number="vessel.number_of_tenders"
                                             class="form-control"
-                                            name="size"
+                                            name="number_of_tenders"
                                             type="number"
-                                            required
                                         />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Certificate of survey</label
+                                        >
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div
+                                            v-if="vessel.certificate_of_survey"
+                                            class="mb-2"
+                                        >
+                                            <a
+                                                :href="vessel.certificate_of_survey"
+                                                target="_blank"
+                                                rel="noopener"
+                                                >View current document</a
+                                            >
+                                        </div>
+                                        <span class="btn btn-link btn-file">
+                                            <u>Attach Document</u>
+                                            <input
+                                                ref="certificate_of_survey"
+                                                class="form-control"
+                                                name="certificate_of_survey"
+                                                type="file"
+                                                @change="
+                                                    handleCertificateChange
+                                                "
+                                            />
+                                        </span>
+                                        <div
+                                            v-if="certificate_of_survey_filename"
+                                            class="mt-2"
+                                        >
+                                            Selected file:
+                                            {{ certificate_of_survey_filename }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -177,6 +218,8 @@ export default {
             isModalOpen: false,
             form: null,
             vessel: Object,
+            certificate_of_survey_file: null,
+            certificate_of_survey_filename: '',
             vessel_id: Number,
             access_types: null,
             vessel_access_id: null,
@@ -235,6 +278,8 @@ export default {
         close: function () {
             this.isModalOpen = false;
             this.vessel = {};
+            this.certificate_of_survey_file = null;
+            this.certificate_of_survey_filename = '';
             this.hasErrors = false;
         },
         fetchContact: function (id) {
@@ -270,6 +315,11 @@ export default {
                         if (vm.vessel.access_type) {
                             vm.vessel_access_id = vm.vessel.access_type.id;
                         }
+                        vm.vessel.vessel_length =
+                            vm.vessel.vessel_length || vm.vessel.size || '';
+                        vm.vessel.size = vm.vessel.size || vm.vessel.vessel_length || '';
+                        vm.certificate_of_survey_file = null;
+                        vm.certificate_of_survey_filename = '';
                     },
                     (err) => {
                         console.log(err);
@@ -277,19 +327,46 @@ export default {
                 );
         },
 
+        handleCertificateChange: function (event) {
+            const selectedFile = event.target.files[0];
+            this.certificate_of_survey_file = selectedFile || null;
+            this.certificate_of_survey_filename = selectedFile
+                ? selectedFile.name
+                : '';
+        },
+
         sendData: function () {
             let vm = this;
             vm.hasErrors = false;
             let vessel = JSON.parse(JSON.stringify(vm.vessel));
             vm.issuingVessel = true;
+            let formData = new FormData();
+            formData.append('nominated_vessel', vessel.nominated_vessel || '');
+            formData.append('spv_no', vessel.spv_no || '');
+            formData.append('size', vessel.vessel_length || vessel.size || '');
+            formData.append('vessel_length', vessel.vessel_length || '');
+            formData.append('vessel_weight', vessel.vessel_weight || '');
+            formData.append(
+                'proposal',
+                (vessel.proposal && vessel.proposal.id) || vessel.proposal || ''
+            );
+            if (
+                vessel.number_of_tenders !== null &&
+                vessel.number_of_tenders !== ''
+            ) {
+                formData.append('number_of_tenders', vessel.number_of_tenders);
+            }
+            if (vm.certificate_of_survey_file) {
+                formData.append(
+                    'certificate_of_survey',
+                    vm.certificate_of_survey_file
+                );
+            }
             if (vm.localVesselAction == 'add' && vm.vessel_id == null) {
                 helpers
                     .fetchUrl(api_endpoints.vessels, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(vessel),
+                        body: formData,
                     })
                     .then(
                         (response) => {
@@ -317,10 +394,7 @@ export default {
                         ),
                         {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(vessel),
+                            body: formData,
                         }
                     )
                     .then(

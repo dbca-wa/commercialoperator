@@ -58,9 +58,11 @@ export default {
             new_vessel: {
                 nominated_vessel: '',
                 spv_no: '',
-                hire_rego: '',
-                craft_no: null,
                 size: '',
+                vessel_length: '',
+                vessel_weight: '',
+                number_of_tenders: null,
+                certificate_of_survey: null,
                 proposal: vm.proposal.id,
             },
             pBody: 'pBody' + uuid(),
@@ -69,10 +71,11 @@ export default {
 
             vessel_headers: [
                 'Nominated Vessel',
-                'SPV no./ reg. no.',
-                'Hire and Drive reg.',
-                'No.of craft',
-                'Vessel Size (m)',
+                'UVI No. / Reg. No.',
+                'Vessel length (m)',
+                'Vessel weight',
+                'Number of tenders',
+                'Certificate of survey',
                 'Action',
             ],
             vessel_options: {
@@ -121,13 +124,25 @@ export default {
                         data: 'spv_no',
                     },
                     {
-                        data: 'hire_rego',
+                        data: 'vessel_length',
+                        mRender: function (data, type, full) {
+                            return full.vessel_length || full.size || '';
+                        },
                     },
                     {
-                        data: 'craft_no',
+                        data: 'vessel_weight',
                     },
                     {
-                        data: 'size',
+                        data: 'number_of_tenders',
+                    },
+                    {
+                        data: 'certificate_of_survey',
+                        mRender: function (data, type, full) {
+                            if (!full.certificate_of_survey) {
+                                return '';
+                            }
+                            return `<a href='${full.certificate_of_survey}' target='_blank' rel='noopener'>View document</a>`;
+                        },
                     },
                     {
                         data: 'id',
@@ -170,12 +185,16 @@ export default {
         newVessel: function () {
             let vm = this;
             this.$refs.edit_vessel.vessel_id = null;
+            this.$refs.edit_vessel.certificate_of_survey_file = null;
+            this.$refs.edit_vessel.certificate_of_survey_filename = '';
             var new_vessel_another = {
                 nominated_vessel: '',
                 spv_no: '',
-                hire_rego: '',
-                craft_no: null,
                 size: '',
+                vessel_length: '',
+                vessel_weight: '',
+                number_of_tenders: null,
+                certificate_of_survey: null,
                 proposal: vm.proposal.id,
             };
             this.$refs.edit_vessel.vessel = new_vessel_another;
