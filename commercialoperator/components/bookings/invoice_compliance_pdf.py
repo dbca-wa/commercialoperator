@@ -469,11 +469,7 @@ def _create_header(canvas, doc, draw_page_number=True):
 
 
 def _is_gst_exempt(compliance, invoice):
-    return (
-        compliance.proposal.application_type.is_gst_exempt
-        if compliance.fee_invoice_reference == invoice.reference
-        else False
-    )
+    return compliance.fee_invoice_reference == invoice.reference
 
 
 def _create_invoice(invoice_buffer, invoice, compliance):

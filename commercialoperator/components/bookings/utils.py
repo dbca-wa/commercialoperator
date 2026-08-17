@@ -603,11 +603,7 @@ def create_tclass_fee_lines(proposal, invoice_text=None, vouchers=[], internal=F
             ),
             "oracle_code": proposal.application_type.oracle_code_application,
             "price_incl_tax": application_price,
-            "price_excl_tax": (
-                application_price
-                if proposal.application_type.is_gst_exempt
-                else calculate_excl_gst(application_price)
-            ),
+            "price_excl_tax": application_price,
             "quantity": 1,
         },
         {
@@ -618,11 +614,7 @@ def create_tclass_fee_lines(proposal, invoice_text=None, vouchers=[], internal=F
             ),
             "oracle_code": proposal.application_type.oracle_code_licence,
             "price_incl_tax": licence_price,
-            "price_excl_tax": (
-                licence_price
-                if proposal.application_type.is_gst_exempt
-                else calculate_excl_gst(licence_price)
-            ),
+            "price_excl_tax": licence_price,
             "quantity": 1,
         },
     ]
@@ -712,11 +704,7 @@ def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=Fa
                 ),
                 "oracle_code": proposal.application_type.oracle_code_application,
                 "price_incl_tax": application_price,
-                "price_excl_tax": (
-                    application_price
-                    if proposal.application_type.is_gst_exempt
-                    else calculate_excl_gst(application_price)
-                ),
+                "price_excl_tax": application_price,
                 "quantity": 1,
             },
         ]
@@ -815,11 +803,7 @@ def create_filming_fee_lines(proposal, invoice_text=None, vouchers=[], internal=
             ),
             "oracle_code": proposal.application_type.oracle_code_application,
             "price_incl_tax": str(application_fee),
-            "price_excl_tax": (
-                str(application_fee)
-                if proposal.application_type.is_gst_exempt
-                else str(calculate_excl_gst(application_fee))
-            ),
+            "price_excl_tax": str(application_fee),
             "quantity": 1,
         }
     ]
@@ -830,11 +814,7 @@ def create_filming_fee_lines(proposal, invoice_text=None, vouchers=[], internal=
             ),
             "oracle_code": proposal.application_type.oracle_code_licence,  # this line is dummy, for aggregated (externally generated) invoice
             "price_incl_tax": str(licence_fee),
-            "price_excl_tax": (
-                str(licence_fee)
-                if proposal.application_type.is_gst_exempt
-                else str(calculate_excl_gst(licence_fee))
-            ),
+            "price_excl_tax": str(licence_fee),
             "quantity": 1,
         }
     ]
