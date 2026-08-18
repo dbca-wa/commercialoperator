@@ -476,7 +476,10 @@ def _create_header(canvas, doc, draw_page_number=True):
 
 
 def _is_gst_exempt(proposal, invoice):
-    return proposal.fee_invoice_reference == invoice.reference
+    return invoice.reference in {
+        getattr(proposal, "fee_invoice_reference", None),
+        getattr(proposal, "filming_fee_invoice_reference", None),
+    }
 
 
 def _create_invoice(invoice_buffer, invoice, proposal):
