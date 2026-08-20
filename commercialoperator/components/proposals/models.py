@@ -3081,29 +3081,23 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 elif self.proposal_type == "amendment":
                     if self.previous_application:
                         previous_approval = self.previous_application.approval
-                        approval, created = Approval.objects.update_or_create(
-                            current_proposal=checking_proposal,
-                            defaults={
-                                "issue_date": timezone.now(),
-                                "expiry_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get("expiry_date"),
-                                    "%d/%m/%Y",
-                                ).date(),
-                                "start_date": datetime.datetime.strptime(
-                                    self.proposed_issuance_approval.get("start_date"),
-                                    "%d/%m/%Y",
-                                ).date(),
-                                "submitter": self.submitter,
-                                #'org_applicant' : self.applicant if isinstance(self.applicant, Organisation) else None,
-                                #'proxy_applicant' : self.applicant if isinstance(self.applicant, EmailUser) else None,
-                                "org_applicant": self.org_applicant,
-                                "proxy_applicant": self.proxy_applicant,
-                                "lodgement_number": previous_approval.lodgement_number,
-                            },
-                        )
-                        if created:
-                            previous_approval.replaced_by = approval
-                            previous_approval.save()
+                        approval = previous_approval
+                        approval.current_proposal = checking_proposal
+                        approval.issue_date = timezone.now()
+                        approval.expiry_date = datetime.datetime.strptime(
+                            self.proposed_issuance_approval.get("expiry_date"),
+                            "%d/%m/%Y",
+                        ).date()
+                        approval.start_date = datetime.datetime.strptime(
+                            self.proposed_issuance_approval.get("start_date"),
+                            "%d/%m/%Y",
+                        ).date()
+                        approval.submitter = self.submitter
+                        approval.org_applicant = self.org_applicant
+                        approval.proxy_applicant = self.proxy_applicant
+                        approval.lodgement_number = previous_approval.lodgement_number
+                        approval.save()
+                        created = False
                 else:
                     approval, created = Approval.objects.update_or_create(
                         current_proposal=checking_proposal,

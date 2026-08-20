@@ -142,6 +142,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
     activity = serializers.CharField(source="current_proposal.activity")
     title = serializers.CharField(source="current_proposal.title")
     application_type = serializers.SerializerMethodField(read_only=True)
+    amendment_proposal = serializers.SerializerMethodField(read_only=True)
     linked_applications = serializers.SerializerMethodField(read_only=True)
     can_renew = serializers.SerializerMethodField()
     can_extend = serializers.SerializerMethodField()
@@ -160,6 +161,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
             "licence_document",
             "replaced_by",
             "current_proposal",
+            "amendment_proposal",
             "activity",
             "region",
             "district",
@@ -202,6 +204,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
             "licence_name",
             "reserved_licence",
         )
+
         # the serverSide functionality of datatables is such that only columns that have field 'data' defined are requested from the serializer. We
         # also require the following additional fields for some of the mRender functions
         datatables_always_serialize = (
@@ -227,6 +230,7 @@ class ApprovalSerializer(serializers.ModelSerializer):
             "set_to_suspend",
             "set_to_surrender",
             "current_proposal",
+            "amendment_proposal",
             "renewal_document",
             "renewal_sent",
             "allowed_assessors",
@@ -240,6 +244,20 @@ class ApprovalSerializer(serializers.ModelSerializer):
             "requirement_docs",
             "licence_name",
             "reserved_licence",
+        )
+
+    def get_amendment_proposal(self, obj):
+        if obj.current_proposal_id:
+            return obj.current_proposal_id
+
+        from commercialoperator.components.proposals.models import Proposal
+
+        return (
+            Proposal.objects.filter(approval=obj)
+            .exclude(id=0)
+            .order_by("-id")
+            .values_list("id", flat=True)
+            .first()
         )
 
     def get_renewal_sent(self, obj):

@@ -584,8 +584,8 @@ export default {
                                             links += `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                         }
 
-                                        if (full.can_amend) {
-                                            links += `<a href='#${full.id}' data-amend-approval='${full.current_proposal}'>Amend</a><br/>`;
+                                        if (full.can_amend && full.amendment_proposal) {
+                                            links += `<a href='#${full.id}' data-amend-approval='${full.amendment_proposal}'>Amend</a><br/>`;
                                         }
                                     }
                                     if (
