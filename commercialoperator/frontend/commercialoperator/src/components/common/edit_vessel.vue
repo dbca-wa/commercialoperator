@@ -140,8 +140,17 @@
                                                 :href="vessel.certificate_of_survey"
                                                 target="_blank"
                                                 rel="noopener"
-                                                >View current document</a
+                                                >{{ certificateFilename }}</a
                                             >
+                                            <button
+                                                type="button"
+                                                class="btn btn-link text-danger"
+                                                @click="removeCertificate"
+                                                title="Delete document"
+                                                aria-label="Delete document"
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                         <span class="btn btn-link btn-file">
                                             <u>Attach Document</u>
@@ -159,8 +168,16 @@
                                             v-if="certificate_of_survey_filename"
                                             class="mt-2"
                                         >
-                                            Selected file:
                                             {{ certificate_of_survey_filename }}
+                                            <button
+                                                type="button"
+                                                class="btn btn-link text-danger"
+                                                @click="removeSelectedCertificate"
+                                                title="Delete selected document"
+                                                aria-label="Delete selected document"
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -220,6 +237,7 @@ export default {
             vessel: Object,
             certificate_of_survey_file: null,
             certificate_of_survey_filename: '',
+            remove_certificate_of_survey: false,
             vessel_id: Number,
             access_types: null,
             vessel_access_id: null,
@@ -243,6 +261,12 @@ export default {
             return this.localVesselAction == 'add'
                 ? 'Add a new Vessel record'
                 : 'Edit a vessel record';
+        },
+        certificateFilename: function () {
+            const filename = this.vessel.certificate_of_survey
+                .split('/')
+                .pop();
+            return decodeURIComponent(filename || 'Certificate of survey');
         },
     },
     watch: {
@@ -280,6 +304,7 @@ export default {
             this.vessel = {};
             this.certificate_of_survey_file = null;
             this.certificate_of_survey_filename = '';
+            this.remove_certificate_of_survey = false;
             this.hasErrors = false;
         },
         fetchContact: function (id) {
@@ -320,6 +345,7 @@ export default {
                         vm.vessel.size = vm.vessel.size || vm.vessel.vessel_length || '';
                         vm.certificate_of_survey_file = null;
                         vm.certificate_of_survey_filename = '';
+                        vm.remove_certificate_of_survey = false;
                     },
                     (err) => {
                         console.log(err);
@@ -333,6 +359,44 @@ export default {
             this.certificate_of_survey_filename = selectedFile
                 ? selectedFile.name
                 : '';
+            this.remove_certificate_of_survey = false;
+        },
+
+        removeCertificate: function () {
+            swal.fire({
+                title: 'Remove document',
+                text: 'Are you sure you want to remove this document?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Remove',
+                confirmButtonColor: '#d9534f',
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                this.vessel.certificate_of_survey = null;
+                this.certificate_of_survey_file = null;
+                this.certificate_of_survey_filename = '';
+                this.remove_certificate_of_survey = true;
+            });
+        },
+
+        removeSelectedCertificate: function () {
+            swal.fire({
+                title: 'Remove document',
+                text: 'Are you sure you want to remove this document?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Remove',
+                confirmButtonColor: '#d9534f',
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                this.certificate_of_survey_file = null;
+                this.certificate_of_survey_filename = '';
+                this.$refs.certificate_of_survey.value = '';
+            });
         },
 
         sendData: function () {
@@ -361,6 +425,9 @@ export default {
                     'certificate_of_survey',
                     vm.certificate_of_survey_file
                 );
+            }
+            if (vm.remove_certificate_of_survey && vm.vessel_id != null) {
+                formData.append('certificate_of_survey_clear', 'true');
             }
             if (vm.localVesselAction == 'add' && vm.vessel_id == null) {
                 helpers
