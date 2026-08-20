@@ -3174,8 +3174,14 @@ class VesselViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
             if not instance.proposal or not user_can_edit(request, instance.proposal):
                 raise PermissionDenied
-            
-            serializer = VesselSerializer(instance, data=request.data)
+
+            data = request.data.copy()
+            clear_certificate = data.pop("certificate_of_survey_clear", [None])
+            if clear_certificate and str(clear_certificate[0]).lower() == "true":
+                instance.certificate_of_survey.delete(save=False)
+                instance.certificate_of_survey = None
+
+            serializer = VesselSerializer(instance, data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             instance.proposal.log_user_action(
