@@ -79,7 +79,6 @@ export default {
                 'Seating capacity',
                 'Registration no.',
                 'Registration Expiry',
-                'Transport license no.',
                 'Action',
             ],
             vehicle_options: {
@@ -133,9 +132,6 @@ export default {
                     },
                     {
                         data: 'rego_expiry',
-                    },
-                    {
-                        data: 'license',
                     },
                     {
                         data: 'id',
