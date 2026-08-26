@@ -476,10 +476,7 @@ def _create_header(canvas, doc, draw_page_number=True):
 
 
 def _is_gst_exempt(proposal, invoice):
-    return invoice.reference in {
-        getattr(proposal, "fee_invoice_reference", None),
-        getattr(proposal, "filming_fee_invoice_reference", None),
-    }
+    return proposal.fee_invoice_reference == invoice.reference
 
 
 def _create_invoice(invoice_buffer, invoice, proposal):
@@ -539,26 +536,32 @@ def _create_invoice(invoice_buffer, invoice, proposal):
     if invoice.text:
         elements.append(Paragraph(invoice.text, styles["Left"]))
         elements.append(Spacer(1, SECTION_BUFFER_HEIGHT * 2))
-    data = [["Item", "Product", "Quantity", "Unit Price", "Total"]]
+    data = [["Item", "Product", "Quantity", "Unit Price", "GST", "Total"]]
     val = 1
     s = styles["BodyText"]
     s.wordWrap = "CJK"
 
     for item in items:
+        # Unit Price is ex-GST; Total is GST-inclusive (unit excl + GST) x qty
+        unit_excl = float(
+            getattr(item, "unit_price_excl_tax", item.unit_price_incl_tax)
+        )
+        unit_incl = float(item.unit_price_incl_tax)
         data.append(
             [
                 val,
                 Paragraph(item.description, s),
                 item.quantity,
-                format_currency(item.unit_price_incl_tax),
+                format_currency(unit_excl),
+                format_currency(round((unit_incl - unit_excl) * item.quantity, 2)),
                 format_currency(item.line_price_before_discounts_incl_tax),
             ]
         )
         val += 1
     # Discounts
-    data.append(["", "", "", ""])
+    data.append(["", "", "", "", ""])
     for discount in discounts:
-        data.append(["", discount.offer, "", "", "-${}".format(discount.amount)])
+        data.append(["", discount.offer, "", "", "", "-${}".format(discount.amount)])
         val += 1
     t = Table(
         data,
@@ -569,6 +572,7 @@ def _create_invoice(invoice_buffer, invoice, proposal):
             None,
             0.7 * inch,
             1.0 * inch,
+            0.8 * inch,
             1.0 * inch,
         ),
     )

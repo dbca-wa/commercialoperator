@@ -2093,7 +2093,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             or self.processing_status == "with_assessor_requirements"
         ):
             return self.__assessor_group() in retrieve_user_groups(
-                "proposalapprovergroup", user.id
+                "proposalassessorgroup", user.id
             )
         else:
             return False
@@ -3212,6 +3212,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "products": lines,
                     "vouchers": [],
                     "custom_basket": True,
+                    "tax_override": True,
                     "booking_reference": reference,
                     "booking_reference_link": reference,
                     "fallback_url": request.build_absolute_uri("/"),
@@ -3522,6 +3523,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = "amendment"
+                proposal.fee_invoice_reference = None
                 # proposal.training_completed = proposal.applicant_training_completed if proposal.application_type.name==ApplicationType.EVENT else True
                 proposal.training_completed = True
                 proposal.reset_training_completed(request)

@@ -69,7 +69,7 @@ def is_in_organisation_contacts(request, organisation):
 
     delegate_ids = retrieve_organisation_delegate_ids(organisation.id)
     delegates = [retrieve_email_user(user_id) for user_id in delegate_ids]
-    delegate_emails = [delegate.email for delegate in delegates]
+    delegate_emails = [delegate.email for delegate in delegates if delegate and delegate.email]
 
     return request.user.email in delegate_emails
 

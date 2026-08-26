@@ -718,11 +718,13 @@ def create_filming_park_fee_lines(proposal, licence_fee, licence_text, filming_p
     def add_line_item(park, price):
         return {
             "ledger_description": f"{park.name} ({licence_text} - {filming_period})",
-            "oracle_code": park.oracle_code(proposal.application_type),
+            # Licence fees use the licence oracle code (GST-exempt), not the park
+            # entry fee oracle code. Licence charges are GST exempt for all
+            # licence types, regardless of the park's is_gst_exempt flag (that
+            # flag only governs park entry fees).
+            "oracle_code": proposal.application_type.oracle_code_licence,
             "price_incl_tax": float(price),
-            "price_excl_tax": float(
-                price
-            ),  # There NO GST for Licences fees (the below licence charge is divided evenly by number of parks)
+            "price_excl_tax": float(price),
             "quantity": 1,  # no_persons,
         }
 
@@ -829,7 +831,8 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
     """Create the ledger lines - line items for invoice sent to payment system"""
 
     def add_line_item(park, arrival, age_group, price, no_persons):
-        # price = Decimal(price)
+        # Configured park price is GST-inclusive; the GST component is carved
+        # out (excl = incl / 1.1) unless the park is GST exempt.
         price = round(float(price), 2)
         # if no_persons > 0 or (same_tour_group and no_persons >= 0):
         if no_persons > 0:
@@ -993,6 +996,7 @@ def checkout(
         "vouchers": vouchers,
         "system": settings.PAYMENT_SYSTEM_ID,
         "custom_basket": True,
+        "tax_override": True,
         "booking_reference": reference,
         "booking_reference_link": reference,
         "fallback_url": request.build_absolute_uri("/"),
