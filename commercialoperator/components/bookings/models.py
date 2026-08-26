@@ -275,7 +275,8 @@ class ParkBooking(RevisionedMixin):
 
         def add_line_item(age_group, price, no_persons, same_tour_group=False):
             if no_persons > 0 or (same_tour_group and no_persons >= 0):
-                # if no_persons > 0:
+                # Configured park price is GST-inclusive; the GST component is
+                # carved out (excl = incl / 1.1) unless the park is GST exempt.
                 return {
                     "ledger_description": "{} - {} - {}".format(
                         self.park.name, self.arrival, age_group
