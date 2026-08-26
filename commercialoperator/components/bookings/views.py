@@ -185,12 +185,14 @@ class ComplianceFeeView(TemplateView):
             with transaction.atomic():
                 set_session_compliance_invoice(request.session, compliance_fee)
                 lines = create_compliance_fee_lines(compliance)
+                return_url = request.build_absolute_uri(reverse("compliance_fee_success", kwargs={"reference": compliance.lodgement_number}))
+                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse("compliance_success_preload", kwargs={"reference": compliance.lodgement_number})
                 checkout_response = checkout(
                     request,
                     compliance.proposal,
                     lines,
-                    return_url_ns="compliance_fee_success",
-                    return_preload_url_ns="compliance_success_preload",
+                    return_url,
+                    return_preload_url,
                     invoice_text="Per participant licence charge",
                     reference=compliance.lodgement_number
                 )
@@ -470,12 +472,14 @@ class MakePaymentView(TemplateView):
 
             with transaction.atomic():
                 set_session_booking(request.session, booking)
+                return_url = request.build_absolute_uri(reverse("public_booking_success", kwargs={"reference": proposal.lodgement_number}))
+                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse("public_booking_success_preload", kwargs={"reference": proposal.lodgement_number})
                 checkout_response = checkout(
                     request,
                     proposal,
                     booking.as_line_items,
-                    return_url_ns="public_booking_success",
-                    return_preload_url_ns="public_booking_success_preload",
+                    return_url,
+                    return_preload_url,
                     invoice_text="Payment Invoice",
                     reference=proposal.lodgement_number
                 )
