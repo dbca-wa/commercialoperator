@@ -9,7 +9,7 @@ from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import Park
 from decimal import Decimal as D
-from ledger_api_client.utils import calculate_excl_gst
+from django.conf import settings
 
 import logging
 
@@ -275,8 +275,15 @@ class ParkBooking(RevisionedMixin):
 
         def add_line_item(age_group, price, no_persons, same_tour_group=False):
             if no_persons > 0 or (same_tour_group and no_persons >= 0):
-                # Configured park price is GST-inclusive; the GST component is
-                # carved out (excl = incl / 1.1) unless the park is GST exempt.
+                # Configured park price is GST-exclusive; GST is added on top
+                # (incl = excl * (1 + GST/100)) unless the park is GST exempt.
+                price_excl_tax = round(D(price), 2)
+                if self.park.is_gst_exempt:
+                    price_incl_tax = price_excl_tax
+                else:
+                    price_incl_tax = round(
+                        price_excl_tax * (D(100) + D(settings.LEDGER_GST)) / D(100), 2
+                    )
                 return {
                     "ledger_description": "{} - {} - {}".format(
                         self.park.name, self.arrival, age_group
@@ -284,15 +291,8 @@ class ParkBooking(RevisionedMixin):
                     "oracle_code": self.park.oracle_code(
                         self.booking.proposal.application_type
                     ),
-                    "price_incl_tax": round(D(price), 2),
-                    "price_excl_tax": round(
-                        (
-                            D(price)
-                            if self.park.is_gst_exempt
-                            else calculate_excl_gst(D(price))
-                        ),
-                        2,
-                    ),
+                    "price_incl_tax": price_incl_tax,
+                    "price_excl_tax": price_excl_tax,
                     "quantity": no_persons,
                 }
             return None
