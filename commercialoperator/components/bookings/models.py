@@ -275,14 +275,15 @@ class ParkBooking(RevisionedMixin):
 
         def add_line_item(age_group, price, no_persons, same_tour_group=False):
             if no_persons > 0 or (same_tour_group and no_persons >= 0):
-                # Configured park price is GST-exclusive; GST is added on top
-                # (incl = excl * (1 + GST/100)) unless the park is GST exempt.
-                price_excl_tax = round(D(price), 2)
+                # Park prices are GST-inclusive. Round reverse GST per person
+                # before multiplying so invoice line totals remain cent-accurate.
+                price_incl_tax = round(D(price), 2)
                 if self.park.is_gst_exempt:
-                    price_incl_tax = price_excl_tax
+                    price_excl_tax = price_incl_tax
                 else:
-                    price_incl_tax = round(
-                        price_excl_tax * (D(100) + D(settings.LEDGER_GST)) / D(100), 2
+                    price_excl_tax = round(
+                        price_incl_tax / (D(100) + D(settings.LEDGER_GST)) * D(100),
+                        2,
                     )
                 return {
                     "ledger_description": "{} - {} - {}".format(
