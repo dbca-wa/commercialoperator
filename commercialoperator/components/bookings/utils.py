@@ -830,15 +830,20 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
     """Create the ledger lines - line items for invoice sent to payment system"""
 
     def add_line_item(park, arrival, age_group, price, no_persons):
-        # Configured park price is GST-exclusive; GST is added on top
-        # (incl = excl * (1 + GST/100)) unless the park is GST exempt.
+        # Park prices are GST-inclusive per person. Round reverse GST per person
+        # before multiplying so invoice line totals remain cent-accurate.
         price = round(float(price), 2)
         # if no_persons > 0 or (same_tour_group and no_persons >= 0):
         if no_persons > 0:
-            price_incl_tax = (
-                price
+            price_incl_tax = round(price * no_persons, 2)
+            price_excl_tax = (
+                price_incl_tax
                 if park.is_gst_exempt
-                else round(price * (1 + settings.LEDGER_GST / 100), 2)
+                else round(
+                    round(price / (1 + settings.LEDGER_GST / 100), 2)
+                    * no_persons,
+                    2,
+                )
             )
             return {
                 "ledger_description": "{} - {} - {}".format(
@@ -847,7 +852,7 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
                 #'oracle_code': park.oracle_code(ApplicationType.TCLASS).encode('utf-8'),
                 "oracle_code": park.oracle_code(ApplicationType.TCLASS),
                 "price_incl_tax": price_incl_tax,
-                "price_excl_tax": price,
+                "price_excl_tax": price_excl_tax,
                 "quantity": no_persons,
             }
         return None
