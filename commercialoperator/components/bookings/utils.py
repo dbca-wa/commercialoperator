@@ -33,7 +33,6 @@ from commercialoperator.components.bookings.email import (
 )
 
 from ledger_api_client.utils import (
-    calculate_excl_gst,
     create_basket_session,
     create_checkout_session,
     generate_payment_session,
@@ -831,23 +830,24 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
     """Create the ledger lines - line items for invoice sent to payment system"""
 
     def add_line_item(park, arrival, age_group, price, no_persons):
-        # Configured park price is GST-inclusive; the GST component is carved
-        # out (excl = incl / 1.1) unless the park is GST exempt.
+        # Configured park price is GST-exclusive; GST is added on top
+        # (incl = excl * (1 + GST/100)) unless the park is GST exempt.
         price = round(float(price), 2)
         # if no_persons > 0 or (same_tour_group and no_persons >= 0):
         if no_persons > 0:
+            price_incl_tax = (
+                price
+                if park.is_gst_exempt
+                else round(price * (1 + settings.LEDGER_GST / 100), 2)
+            )
             return {
                 "ledger_description": "{} - {} - {}".format(
                     park.name, arrival, age_group
                 ),
                 #'oracle_code': park.oracle_code(ApplicationType.TCLASS).encode('utf-8'),
                 "oracle_code": park.oracle_code(ApplicationType.TCLASS),
-                "price_incl_tax": float(price),
-                "price_excl_tax": (
-                    float(price)
-                    if park.is_gst_exempt
-                    else round(float(calculate_excl_gst(price)), 2)
-                ),
+                "price_incl_tax": price_incl_tax,
+                "price_excl_tax": price,
                 "quantity": no_persons,
             }
         return None
