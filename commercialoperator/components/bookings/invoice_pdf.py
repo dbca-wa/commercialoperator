@@ -542,19 +542,20 @@ def _create_invoice(invoice_buffer, invoice, proposal):
     s.wordWrap = "CJK"
 
     for item in items:
-        # Unit Price is ex-GST; Total is GST-inclusive (unit excl + GST) x qty
-        unit_excl = float(
-            getattr(item, "unit_price_excl_tax", item.unit_price_incl_tax)
-        )
-        unit_incl = float(item.unit_price_incl_tax)
+        # Ledger stores the tax values as line totals and the invoice displays
+        # the exclusive line total as a per-person unit price.
+        quantity = int(item.quantity)
+        line_incl = float(item.price_incl_tax)
+        line_excl = float(item.price_excl_tax)
+        unit_excl = line_excl / quantity if quantity else 0.0
         data.append(
             [
                 val,
                 Paragraph(item.description, s),
-                item.quantity,
+                quantity,
                 format_currency(unit_excl),
-                format_currency(round((unit_incl - unit_excl) * item.quantity, 2)),
-                format_currency(item.line_price_before_discounts_incl_tax),
+                format_currency(round(line_incl - line_excl, 2)),
+                format_currency(line_incl),
             ]
         )
         val += 1
