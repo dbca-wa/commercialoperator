@@ -7,16 +7,7 @@
                         {{ user.first_name }} {{ user.last_name }} -
                         {{ user.dob }} ({{ user.email }})
                     </h3>
-                    <div class="col-md-3">
-                        <CommsLogs
-                            :comms_url="comms_url"
-                            :logs_url="logs_url"
-                            :comms_add_url="comms_add_url"
-                            :is_user_log="true"
-                            :disable_add_entry="false"
-                        />
-                    </div>
-                    <div class="col-md-9">
+                    <div class="col-md-12">
                         <ul class="nav nav-pills mb-3" role="tablist">
                             <li class="nav-item">
                                 <a
@@ -66,32 +57,6 @@
                                                     <div
                                                         class="form-group row mb-3"
                                                     >
-                                                        <div
-                                                            class="col-sm-3"
-                                                        ></div>
-                                                        <div class="col-sm-6">
-                                                            <p>
-                                                                <b
-                                                                    >To update
-                                                                    your account
-                                                                    name or
-                                                                    MFA(Multi-Factor
-                                                                    Authentication)
-                                                                    please click
-                                                                    <a
-                                                                        href="/sso/setting"
-                                                                        >here:</a
-                                                                    ></b
-                                                                ><br />
-                                                                Changes will not
-                                                                update until
-                                                                your next login.
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div
-                                                        class="form-group row mb-3"
-                                                    >
                                                         <label
                                                             for=""
                                                             class="col-sm-3 control-label"
@@ -127,6 +92,12 @@
                                                                 disabled
                                                             />
                                                         </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="" class="col-sm-3 control-label"></label>
+                                                            <div class="col-sm-6">
+                                                                <b>To update this account please <a class="btn btn-primary" target="_blank" :href="user.acc_mgmt_url">click here</a></b>
+                                                            </div>
                                                     </div>
                                                 </form>
                                             </FormSection>
@@ -569,14 +540,13 @@
 
 <script>
 
-//TODO make address and contact details readonly, remove/replace action log and comms log
+//TODO make address and contact details readonly
 
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import ProposalDashTable from '@common-utils/proposals_dashboard.vue';
 import ApprovalDashTable from '@common-utils/approvals_dashboard.vue';
 import ComplianceDashTable from '@common-utils/compliances_dashboard.vue';
-import CommsLogs from '@common-utils/comms_logs.vue';
 import utils from '../utils';
 import { v4 as uuid } from 'uuid';
 import $ from 'jquery'
@@ -588,7 +558,6 @@ export default {
         ProposalDashTable,
         ApprovalDashTable,
         ComplianceDashTable,
-        CommsLogs,
     },
     beforeRouteEnter: function (to, from, next) {
         let initialisers = [
@@ -641,21 +610,7 @@ export default {
             updatingContact: false,
             uploadingID: false,
             uploadedID: null,
-            logsTable: null,
             DATE_TIME_FORMAT: 'DD/MM/YYYY HH:mm:ss',
-            activate_tables: false,
-            comms_url: helpers.add_endpoint_json(
-                api_endpoints.users,
-                vm.$route.params.user_id + '/comms_log'
-            ),
-            logs_url: helpers.add_endpoint_json(
-                api_endpoints.users,
-                vm.$route.params.user_id + '/action_log'
-            ),
-            comms_add_url: helpers.add_endpoint_json(
-                api_endpoints.users,
-                vm.$route.params.user_id + '/add_comms_log'
-            ),
             proposals_url:
                 api_endpoints.proposals_paginated_external +
                 '&submitter_id=' +
