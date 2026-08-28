@@ -18,15 +18,11 @@ from commercialoperator.components.organisations.utils import (
     is_consultant,
     is_org_access_member,
 )
-from commercialoperator.components.segregation.models import (
-    EmailUserAction,
-    EmailUserLogEntry,
-)
 from commercialoperator.components.segregation.utils import (
     retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_ledger_user_info_by_id,
 )
-from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin, is_payment_admin
+from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin, is_internal, is_payment_admin
 from commercialoperator.components.approvals.models import Approval
 from rest_framework import serializers, status
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -225,6 +221,7 @@ class UserSerializer(serializers.ModelSerializer):
     system_settings = serializers.SerializerMethodField()
     is_commercialoperator_admin = serializers.SerializerMethodField()
     is_org_access_member = serializers.SerializerMethodField()
+    acc_mgmt_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = EmailUser
@@ -247,6 +244,7 @@ class UserSerializer(serializers.ModelSerializer):
             "system_settings",
             "is_commercialoperator_admin",
             "is_org_access_member",
+            "acc_mgmt_url",
         )
 
     def get_personal_details(self, obj):
@@ -316,6 +314,11 @@ class UserSerializer(serializers.ModelSerializer):
             return is_org_access_member(request.user)
         return False
 
+    def get_acc_mgmt_url(self,obj):
+        request = self.context.get('request')
+        if settings.LEDGER_UI_URL and request and is_internal(request):
+            return settings.LEDGER_UI_URL + "/ledger/account-management/" + str(obj.id) + "/change/"
+        return ''
 
 class PersonalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -352,20 +355,6 @@ class ContactSerializer(serializers.ModelSerializer):
         return obj
 
 
-class EmailUserActionSerializer(serializers.ModelSerializer):
-    who = serializers.CharField(source="who.get_full_name")
-
-    class Meta:
-        model = EmailUserAction
-        fields = "__all__"
-
-
-class EmailUserCommsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmailUserLogEntry
-        fields = "__all__"
-
-
 class CommunicationLogEntrySerializer(serializers.ModelSerializer):
     customer = serializers.PrimaryKeyRelatedField(
         queryset=EmailUser.objects.all(), required=False
@@ -393,13 +382,4 @@ class CommunicationLogEntrySerializer(serializers.ModelSerializer):
         return [[d.name, d._file.url] for d in obj.documents.all()]
 
 
-class EmailUserLogEntrySerializer(CommunicationLogEntrySerializer):
-    documents = serializers.SerializerMethodField()
 
-    class Meta:
-        model = EmailUserLogEntry
-        fields = "__all__"
-        read_only_fields = ("customer",)
-
-    def get_documents(self, obj):
-        return [[d.name, d._file.url] for d in obj.documents.all()]

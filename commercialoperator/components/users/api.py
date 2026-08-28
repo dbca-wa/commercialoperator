@@ -3,11 +3,10 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Q, Value
 from django.db.models.functions import Concat
-from django.db import transaction
 from django.core.exceptions import ValidationError
 from django_countries import countries
 from rest_framework import viewsets, serializers, generics, views, mixins, filters
-from rest_framework.decorators import renderer_classes, action
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
@@ -18,9 +17,6 @@ from commercialoperator.components.segregation.decorators import basic_exception
 from commercialoperator.components.users.serializers import (
     UserSerializer,
     UserFilterSerializer,
-    EmailUserActionSerializer,
-    EmailUserCommsSerializer,
-    EmailUserLogEntrySerializer,
     UserSystemSettingsSerializer,
 )
 from commercialoperator.components.organisations.serializers import (
@@ -164,93 +160,6 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 context={"request": request},
             )
             return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-
-    #TODO remove or replace comms/action log for user
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=True,
-        permission_classes=[InternalPermission]
-    )
-    def action_log(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            qs = instance.action_logs.all()
-            serializer = EmailUserActionSerializer(qs, many=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-
-    @action(
-        methods=[
-            "GET",
-        ],
-        detail=True,
-        permission_classes=[InternalPermission]
-    )
-    def comms_log(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            qs = instance.comms_logs.all()
-            serializer = EmailUserCommsSerializer(qs, many=True)
-            return Response(serializer.data)
-        except serializers.ValidationError:
-            print(traceback.print_exc())
-            raise
-        except ValidationError as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(repr(e.error_dict))
-        except Exception as e:
-            print(traceback.print_exc())
-            raise serializers.ValidationError(str(e))
-
-    @action(
-        methods=[
-            "POST",
-        ],
-        detail=True,
-        permission_classes=[InternalPermission]
-    )
-    @renderer_classes((JSONRenderer,))
-    def add_comms_log(self, request, *args, **kwargs):
-        try:
-            with transaction.atomic():
-                instance = self.get_object()
-                mutable = request.data._mutable
-                request.data._mutable = True
-                request.data["emailuser"] = "{}".format(instance.id)
-                request.data["staff"] = "{}".format(request.user.id)
-                request.data._mutable = mutable
-                serializer = EmailUserLogEntrySerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                comms = serializer.save()
-                # Save the files
-                for _, uploaded_files in request.FILES.lists():
-                    for uploaded_file in uploaded_files:
-                        comms.documents.create(
-                            name=str(uploaded_file),
-                            _file=uploaded_file,
-                        )
-                # End Save Documents
-
-                return Response(serializer.data)
         except serializers.ValidationError:
             print(traceback.print_exc())
             raise
