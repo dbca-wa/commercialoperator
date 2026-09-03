@@ -41,14 +41,14 @@
                                     v-if="training_doc_url"
                                     class="control-label"
                                     >Complete the questionnaire below.
-                                    Information to help you is
+                                    The Commercial Event Training Program with information to help you can be downloaded
                                     <a :href="training_doc_url" target="_blank"
                                         >here</a
                                     >.</label
                                 >
                                 <label v-else class="control-label"
                                     >Complete the questionnaire below.
-                                    Information to help you is here.</label
+                                    The Commercial Event Training Program with information to help you can be downloaded here.</label
                                 >
                             </div>
                             <div class="form-group row">
@@ -268,7 +268,7 @@ export default {
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
-                        vm.global_settings.results[i].key == 'online_training_document'
+                        vm.global_settings.results[i].key == 'event_online_training_document'
                     ) {
                         return vm.global_settings.results[i].value;
                     }
