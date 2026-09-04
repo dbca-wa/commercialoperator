@@ -7,3 +7,4 @@
 # Execute every minute. Polls the COLS Admin table SystemMaintenance, and checks if the application can be taken down at the time indicated in the Admin table
 * * * * * python manage.py system_maintenance_check >/dev/null 2>&1
 */5 * * * * python manage.py run_queue_job >> logs/run_cron_tasks.log 2>&1
+0 */1 * * * run-one python manage_ml.py clearsessions >> logs/clearsessions.log 2>&1
