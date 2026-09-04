@@ -1,7 +1,7 @@
 <template>
     <div id="internalUserInfo" class="container-fluid">
         <div class="row">
-            <div class="col-md-10 col-md-offset-1">
+            <div class="col-md-10 col-md-offset-1 internal-user-content">
                 <div class="row">
                     <h3>
                         {{ user.first_name }} {{ user.last_name }} -
@@ -777,5 +777,21 @@ export default {
 }
 .hidePopover {
     display: none;
+}
+.internal-user-content {
+    float: none;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1040px;
+    padding-left: 24px;
+    padding-right: 24px;
+    width: 100%;
+}
+
+@media (max-width: 767.98px) {
+    .internal-user-content {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
 }
 </style>

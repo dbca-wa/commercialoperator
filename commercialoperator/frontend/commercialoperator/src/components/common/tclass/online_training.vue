@@ -27,15 +27,13 @@
                                 >
                             </div>
                             <label v-if="training_doc_url" class="control-label"
-                                >Complete the questionnaire below. Information
-                                to help you is
+                                >Complete the questionnaire below. The Commercial Operator Training Program with information to help you can be downloaded
                                 <a :href="training_doc_url" target="_blank"
                                     >here</a
                                 >.</label
                             >
                             <label v-else class="control-label"
-                                >Complete the questionnaire below. Information
-                                to help you is here.</label
+                                >Complete the questionnaire below. The Commercial Operator Training Program with information to help you can be downloaded here.</label
                             >
                             <div class="row mt-3">
                                 <form>

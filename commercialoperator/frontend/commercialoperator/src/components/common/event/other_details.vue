@@ -362,7 +362,7 @@
                 <FormSection
                     :form-collapse="false"
                     label="Deed Poll"
-                    index="dee_poll"
+                    index="deed_poll"
                     subtitle=""
                 >
                     <div v-if="proposal">
@@ -445,14 +445,19 @@ export default {
     computed: {
         deed_poll_url: function () {
             let vm = this;
+            let fallback_url = '';
+            let specific_url = '';
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (vm.global_settings.results[i].key == 'deed_poll') {
+                        fallback_url = vm.global_settings.results[i].value;
+                    }
                     if (vm.global_settings.results[i].key == 'deed_poll_event') {
-                        return vm.global_settings.results[i].value;
+                        specific_url = vm.global_settings.results[i].value;
                     }
                 }
             }
-            return '';
+            return specific_url || fallback_url;
         },
         credit_facility_link: function () {
             let vm = this;
