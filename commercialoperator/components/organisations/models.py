@@ -767,6 +767,9 @@ class Organisation(SanitiseMixin):
     def first_five(self):
         delegates_all_5 = retrieve_organisation_delegate_ids(self.id)[:5]
         delegates_all_5 = [retrieve_email_user(user_id) for user_id in delegates_all_5]
+        delegates_all_5 = [
+            user for user in delegates_all_5 if user
+        ]  # Get rid of None values
         return ",".join(
             [
                 user.get_full_name()
@@ -1023,50 +1026,40 @@ class OrganisationRequest(SanitiseFileMixin):
     @transaction.atomic
     def __accept(self, request):
         # Check if orgsanisation exists in ledger
-        ledger_org = None
-        organisation_response = get_search_organisation(self.name, self.abn)
-        response_status = organisation_response.get("status", None)
+        def matching_orgs_by_abn(organisation_response):
+            if organisation_response.get("status", None) != status.HTTP_200_OK:
+                return []
+            for organisation in organisation_response.get("data", []):
+                if organisation.get("organisation_abn") == self.abn:
+                    yield organisation
 
-        if response_status == status.HTTP_404_NOT_FOUND:
+        def existing_org_by_abn(organisation_response):
+            ledger_orgs = list(matching_orgs_by_abn(organisation_response))
+            ledger_org_ids = [org["organisation_id"] for org in ledger_orgs]
+            existing_org = (
+                Organisation.objects.filter(organisation_id__in=ledger_org_ids)
+                .order_by("id")
+                .first()
+            )
+            if existing_org and existing_org.organisation_id in ledger_org_ids:
+                for ledger_org in ledger_orgs:
+                    if ledger_org["organisation_id"] == existing_org.organisation_id:
+                        return ledger_org
+            return ledger_orgs[0] if ledger_orgs else None
+
+        organisation_response = get_search_organisation(self.name, self.abn)
+        ledger_org = existing_org_by_abn(organisation_response)
+
+        # A typo in the requested name can stop the name+ABN search finding the
+        # existing ledger organisation. Search by ABN before trying to create one.
+        if not ledger_org and self.abn:
+            ledger_org = existing_org_by_abn(get_search_organisation(None, self.abn))
+
+        if not ledger_org:
             # Create a new organisation in ledger
             create_organisation(self.name, self.abn)
             organisation_response = get_search_organisation(self.name, self.abn)
-            ledger_org = None
-            response_status = organisation_response.get("status", None)
-            if response_status == status.HTTP_200_OK:
-                for organisation in organisation_response.get("data", {}):
-                    if organisation["organisation_abn"] == self.abn:
-                        ledger_org = organisation
-                        break
-
-        elif response_status == status.HTTP_200_OK:
-            ledger_org = None
-            for organisation in organisation_response.get("data", {}):
-                if organisation["organisation_abn"] == self.abn:
-                    ledger_org = organisation
-                    break
-
-            if ledger_org:
-                requested_name = (self.name or "").strip().lower()
-                existing_name = (
-                    ledger_org.get("organisation_name", "") or ""
-                ).strip().lower()
-                if requested_name and existing_name and requested_name != existing_name:
-                    raise ValidationError(
-                        "ABN {} already exists as organisation '{}'. "
-                        "Use the existing organisation instead of creating a new one."
-                        .format(self.abn, ledger_org.get("organisation_name", ""))
-                    )
-
-            if not ledger_org:
-                create_organisation(self.name, self.abn)
-                organisation_response = get_search_organisation(self.name, self.abn)
-                response_status = organisation_response.get("status", None)
-                if response_status == status.HTTP_200_OK:
-                    for organisation in organisation_response.get("data", {}):
-                        if organisation["organisation_abn"] == self.abn:
-                            ledger_org = organisation
-                            break
+            ledger_org = existing_org_by_abn(organisation_response)
 
         if not ledger_org:
             raise ValidationError("Unable to create or retrieve organisation.")

@@ -868,8 +868,15 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
 
     user_id = user.id
     user_ledger_org_ids = retrieve_delegate_ledger_organisation_ids(user_id)
+    user_delegate_org_ids = retrieve_delegate_organisation_ids(user_id)
+    canonical_organisation_by_abn = {}
+    for organisation in Organisation.objects.filter(id__in=user_delegate_org_ids).order_by("id"):
+        abn = organisation.abn
+        if abn and abn not in canonical_organisation_by_abn:
+            canonical_organisation_by_abn[abn] = organisation
 
     commercialoperator_organisations = []
+    seen_abns = set()
 
     for org_id in user_ledger_org_ids:
 
@@ -878,23 +885,37 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
 
         ledger_organisation = cache.get(cache_key)
 
-        if ledger_organisation:
-            # If the organisation is in the cache, use it
+        if not ledger_organisation:
+            organisations_response = get_organisation(org_id)
+        else:
             logger.debug(f"Organisation {org_id} found in cache")
-            commercialoperator_organisations.append(ledger_organisation)
-            continue
-
-        organisations_response = get_organisation(org_id)
+            organisations_response = {"status": status.HTTP_200_OK, "data": ledger_organisation}
 
         if organisations_response.get("status", None) == status.HTTP_200_OK:
             # Get the organisation object from ledger
             ledger_organisation = organisations_response.get("data", [])
-            # Add the cols organisation model id to the ledger organisation object
-            commercialoperator_organisation = Organisation.objects.get(
-                organisation_id=org_id
+            canonical_organisation = canonical_organisation_by_abn.get(
+                ledger_organisation.get("organisation_abn")
             )
+            if canonical_organisation:
+                if ledger_organisation.get("organisation_abn") in seen_abns:
+                    continue
+                commercialoperator_organisation = canonical_organisation
+                if canonical_organisation.organisation_id != org_id:
+                    canonical_response = get_organisation(
+                        canonical_organisation.organisation_id
+                    )
+                    if canonical_response.get("status", None) == status.HTTP_200_OK:
+                        ledger_organisation = canonical_response.get("data", {})
+            else:
+                # Add the cols organisation model id to the ledger organisation object
+                commercialoperator_organisation = Organisation.objects.get(
+                    organisation_id=org_id
+                )
             ledger_organisation["id"] = commercialoperator_organisation.id
             commercialoperator_organisations.append(ledger_organisation)
+            if ledger_organisation.get("organisation_abn"):
+                seen_abns.add(ledger_organisation.get("organisation_abn"))
 
             cache.set(cache_key, ledger_organisation, cache_timeout)
         else:

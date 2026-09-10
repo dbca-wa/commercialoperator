@@ -929,20 +929,43 @@ class OrganisationRequestsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
             for oid in organisation_ids
             if user_id in retrieve_organisation_delegate_ids(oid)
         ]
+        user_delegate_organisations = Organisation.objects.filter(
+            id__in=user_delegate_organisation_ids
+        ).order_by("id")
+        canonical_organisation_by_abn = {}
+        for organisation in user_delegate_organisations:
+            abn = organisation.abn
+            if abn and abn not in canonical_organisation_by_abn:
+                canonical_organisation_by_abn[abn] = organisation
+
         # Get the organisation ABNs for the user delegate organisations
-        organisation_abns = [
-            org.abn
-            for org in Organisation.objects.filter(
-                id__in=user_delegate_organisation_ids
-            )
-        ]
+        organisation_abns = list(canonical_organisation_by_abn.keys())
 
         serializer = OrganisationRequestSerializer(
             qs.filter(abn__in=organisation_abns),
             context={"request": request},
             many=True,
         )
-        return Response(serializer.data)
+        organisation_request_by_abn = {}
+        for organisation_request in serializer.data:
+            canonical_organisation = canonical_organisation_by_abn.get(
+                organisation_request.get("abn")
+            )
+            if canonical_organisation:
+                abn = canonical_organisation.abn
+                organisation_request["name"] = canonical_organisation.name
+                organisation_request["abn"] = abn
+                organisation_request["organisation"] = OrganisationSerializer(
+                    canonical_organisation, context={"request": request}
+                ).data
+            else:
+                abn = organisation_request.get("abn")
+
+            existing_request = organisation_request_by_abn.get(abn)
+            if not existing_request or organisation_request.get("status") == "Approved":
+                organisation_request_by_abn[abn] = organisation_request
+
+        return Response(list(organisation_request_by_abn.values()))
 
     @action(
         methods=[
