@@ -136,8 +136,7 @@
                                         >
                                     </div>
                                     <div class="col-sm-9">
-                                        <template v-for="(f, i) in files">
-                                            <!-- eslint-disable-next-line vue/require-v-for-key -->
+                                        <template v-for="(f, i) in files" :key="i">
                                             <div
                                                 :class="
                                                     'row top-buffer file-row-' +
@@ -342,7 +341,7 @@ export default {
                 _file = input.files[0];
             }
             file_obj.file = _file;
-            file_obj.name = _file.name;
+            file_obj.name = _file ? _file.name : '';
         },
         removeFile(index) {
             let length = this.files.length;
@@ -381,8 +380,18 @@ export default {
         sendData: function () {
             let vm = this;
             vm.hasErrors = false;
-            let comms = new FormData(vm.form);
+            let comms = new FormData();
+            comms.append('to', vm.comms.to || '');
+            comms.append('fromm', vm.comms.fromm || '');
+            comms.append('type', vm.comms.type || '');
+            comms.append('subject', vm.comms.subject || '');
+            comms.append('text', vm.comms.text || '');
             comms.append('is_ledger_org_query', vm.isLedgerOrgQuery);
+            for (let i = 0; i < vm.files.length; i++) {
+                if (vm.files[i] && vm.files[i].file) {
+                    comms.append('files', vm.files[i].file);
+                }
+            }
             vm.addingComms = true;
             helpers
                 .fetchUrl(vm.url, {
