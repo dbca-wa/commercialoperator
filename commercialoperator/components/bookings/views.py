@@ -224,7 +224,8 @@ class DeferredInvoicingPreviewView(TemplateView):
         try:
             # recipient = proposal.applicant.email
             recipient = proposal.applicant_email
-            submitter = proposal.applicant
+            #submitter = proposal.applicant
+            submitter = proposal.submitter
         except:
             recipient = proposal.submitter.email
             submitter = proposal.submitter
@@ -263,7 +264,8 @@ class DeferredInvoicingView(TemplateView):
         try:
             #recipient = proposal.applicant.email
             recipient = proposal.applicant_email
-            submitter = proposal.applicant
+            # submitter = proposal.applicant
+            submitter = proposal.submitter
         except:
             recipient = proposal.submitter.email
             submitter = proposal.submitter
@@ -386,7 +388,8 @@ class ComplianceFeeSuccessView(TemplateView):
             try:
                 #recipient = proposal.applicant.email
                 recipient = proposal.applicant_email
-                submitter = proposal.applicant
+                #submitter = proposal.applicant
+                submitter = proposal.submitter
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
@@ -450,7 +453,8 @@ class ComplianceFeeSuccessView(TemplateView):
                 try:
                     #recipient = proposal.applicant.email
                     recipient = proposal.applicant_email
-                    submitter = proposal.applicant
+                    #submitter = proposal.applicant
+                    submitter = proposal.submitter
                 except:
                     recipient = proposal.submitter.email
                     submitter = proposal.submitter
@@ -490,7 +494,9 @@ class FilmingFeeSuccessView(TemplateView):
             try:
                 #recipient = proposal.applicant.email
                 recipient = proposal.applicant.email
-                submitter = proposal.applicant
+                #submitter = proposal.applicant
+                submitter = proposal.submitter
+                
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
@@ -546,7 +552,8 @@ class FilmingFeeSuccessView(TemplateView):
                 try:
                     #recipient = proposal.applicant.email
                     recipient = proposal.applicant_email
-                    submitter = proposal.applicant
+                    #submitter = proposal.applicant
+                    submitter = proposal.submitter
                 except:
                     recipient = proposal.submitter.email
                     submitter = proposal.submitter
@@ -577,7 +584,8 @@ class ZeroApplicationFeeView(TemplateView):
             try:
                 #recipient = proposal.applicant.email
                 recipient = proposal.applicant_email
-                submitter = proposal.applicant
+                # submitter = proposal.applicant
+                submitter = proposal.submitter
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
@@ -657,7 +665,9 @@ class ApplicationFeeSuccessView(TemplateView):
             try:
                 #recipient = proposal.applicant.email
                 recipient = proposal.applicant_email
-                submitter = proposal.applicant
+                #submitter = proposal.applicant
+                #submitter has to be EmailUser instance
+                submitter = proposal.submitter
             except:
                 recipient = proposal.submitter.email
                 submitter = proposal.submitter
@@ -665,7 +675,8 @@ class ApplicationFeeSuccessView(TemplateView):
             if self.request.user.is_authenticated():
                 basket = Basket.objects.filter(status='Submitted', owner=request.user).order_by('-id')[:1]
             else:
-                basket = Basket.objects.filter(status='Submitted', owner=booking.proposal.submitter).order_by('-id')[:1]
+                # basket = Basket.objects.filter(status='Submitted', owner=booking.proposal.submitter).order_by('-id')[:1]
+                basket = Basket.objects.filter(status='Submitted', owner=proposal.submitter).order_by('-id')[:1]
 
             order = Order.objects.get(basket=basket[0])
             invoice = Invoice.objects.get(order_number=order.number)
@@ -727,7 +738,8 @@ class ApplicationFeeSuccessView(TemplateView):
                 try:
                     #recipient = proposal.applicant.email
                     recipient = proposal.applicant_email
-                    submitter = proposal.applicant
+                    #submitter = proposal.applicant
+                    submitter = proposal.submitter
                 except:
                     recipient = proposal.submitter.email
                     submitter = proposal.submitter
@@ -764,7 +776,8 @@ class BookingSuccessView(TemplateView):
             try:
                 #recipients.append(proposal.applicant.email)
                 recipient = proposal.applicant_email
-                submitter = proposal.applicant
+                #submitter = proposal.applicant
+                submitter = proposal.submitter
             except:
                 recipients.append(proposal.submitter.email)
                 submitter = proposal.submitter
@@ -844,7 +857,8 @@ class BookingSuccessView(TemplateView):
                 try:
                     #recipients.append(proposal.applicant.email)
                     recipients.append(proposal.applicant_email)
-                    submitter = proposal.applicant
+                    #submitter = proposal.applicant
+                    submitter = proposal.submitter
                 except:
                     recipients.append(proposal.submitter.email)
                     submitter = proposal.submitter
