@@ -660,6 +660,10 @@ class GlobalSettings(models.Model):
         ("dwer_application_form", "DWER Application Form"),
         ('tourism_standards_link', 'Tourism Standards Link'),
         ('privacy_policy_url', 'Privacy Policy URL'),
+        (
+            'civil_aviation_safety_authority_link',
+            'Civil Aviation Safety Authority Link',
+        ),
     )
     key = models.CharField(
         max_length=255,

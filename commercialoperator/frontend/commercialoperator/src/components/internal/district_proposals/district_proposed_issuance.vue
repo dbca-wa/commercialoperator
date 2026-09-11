@@ -49,9 +49,6 @@
                                                 disabled
                                                 required
                                             />
-                                            <span class="input-group-text">
-                                                <i class="fas fa-calendar-days"></i>
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -99,9 +96,6 @@
                                                 disabled
                                                 required
                                             />
-                                            <span class="input-group-text">
-                                                <i class="fas fa-calendar-days"></i>
-                                            </span>
                                         </div>
                                     </div>
                                 </div>

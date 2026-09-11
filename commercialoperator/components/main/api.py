@@ -143,6 +143,9 @@ class GlobalSettingsViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             queryset = GlobalSettings.objects.all().order_by("id")
+            setting_key = self.request.query_params.get("key")
+            if setting_key:
+                queryset = queryset.filter(key=setting_key)
             return queryset
         return GlobalSettings.objects.none()
 

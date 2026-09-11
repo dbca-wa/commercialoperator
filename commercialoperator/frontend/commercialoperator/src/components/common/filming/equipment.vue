@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="row">&nbsp;</div>
                                 <div
-                                    v-if="
+                                    v-show="
                                         proposal.filming_equipment &&
                                         proposal.filming_equipment.vehicle_owned
                                     "
@@ -173,9 +173,16 @@
                                     >
                                         Please specify the model of RPA you
                                         intend to use and attach a copy of your
-                                        CASA remotely piloted aircraft operator
-                                        accreditation or licence (RePL) and
-                                        operator's certificate (ReOC)
+                                        <a
+                                            v-if="casa_link"
+                                            :href="casa_link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            >Civil Aviation Safety Authority</a
+                                        ><span v-else
+                                            >Civil Aviation Safety Authority</span
+                                        >
+                                        RPA accreditation or licence (RePL).
                                     </label>
                                 </div>
                                 <div
@@ -488,6 +495,7 @@ export default {
             lBody: 'lBody' + uuid(),
             values: null,
             access_types: [],
+            global_settings: [],
             vehicles_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,
                 vm.$route.params.proposal_id + '/vehicles'
@@ -498,9 +506,26 @@ export default {
             ),
         };
     },
+    computed: {
+        casa_link: function () {
+            let vm = this;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'civil_aviation_safety_authority_link'
+                    ) {
+                        return vm.global_settings.results[i].value;
+                    }
+                }
+            }
+            return '';
+        },
+    },
     mounted: function () {
         let vm = this;
         vm.fetchAccessTypes();
+        vm.fetchGlobalSettings();
     },
     methods: {
         fetchAccessTypes: function () {
@@ -514,6 +539,32 @@ export default {
                 }
             );
         },
+        fetchGlobalSettings: function () {
+            let vm = this;
+            helpers.fetchUrl(
+                '/api/global_settings.json?key=civil_aviation_safety_authority_link'
+            ).then(
+                (response) => {
+                    vm.global_settings = response;
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
+        },
+            fetchAccessTypes: function () {
+                let vm = this;
+                helpers.fetchUrl(api_endpoints.access_types).then(
+                    (response) => {
+                        vm.access_types = Array.isArray(response)
+                            ? response
+                            : response.results || [];
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                );
+            },
     },
 };
 </script>
