@@ -16,7 +16,7 @@ ENV SITE_DOMAIN='dbca.wa.gov.au'
 ENV OSCAR_SHOP_NAME='Parks & Wildlife'
 ENV BPAY_ALLOWED=False
 
-RUN gdalinfo --version
+
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
