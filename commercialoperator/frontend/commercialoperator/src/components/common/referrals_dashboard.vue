@@ -82,9 +82,6 @@
                                 max="2999-12-31"
                                 placeholder="DD/MM/YYYY"
                             />
-                            <span class="input-group-text">
-                                <i class="fas fa-calendar-days"></i>
-                            </span>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -101,9 +98,6 @@
                                 max="2999-12-31"
                                 placeholder="DD/MM/YYYY"
                             />
-                            <span class="input-group-text">
-                                <i class="fas fa-calendar-days"></i>
-                            </span>
                         </div>
                     </div>
                 </div>
