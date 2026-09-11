@@ -670,9 +670,12 @@
                                         <label
                                             class="control-label pull-left"
                                             for="Name"
-                                            >Will you be featuring Aboriginal
-                                            people/ items/ area of cultural
-                                            significance?</label
+                                            >Are you proposing to film or
+                                            produce any Aboriginal cultural
+                                            content or material including
+                                            featuring Aboriginal people, items,
+                                            stories, registered sites or areas
+                                            of cultural significance?</label
                                         >
                                     </div>
                                     <div class="col-sm-6">
@@ -741,9 +744,7 @@
                                             class="control-label pull-left"
                                             for="Name"
                                         >
-                                            Please advise how you propose to
-                                            depict Aboriginal people or
-                                            items/areas of cultural significance
+                                            If yes, please provide details.
                                         </label>
                                     </div>
                                     <div class="col-sm-6">
@@ -774,22 +775,18 @@
                                             class="control-label pull-left"
                                             for="Name"
                                         >
-                                            If applicable, please upload a copy
-                                            of your written approval from the
-                                            relevant Aboriginal traditional
-                                            owner group for filming at
-                                            Aboriginal cultural sites or filming
-                                            of cultural material. Please see the
-                                            Commercial Filming Handbook
+                                            Please see the Commercial Filming
+                                            Handbook
                                             <a
                                                 :href="
                                                     commercial_filming_handbook
                                                 "
                                                 target="_blank"
                                                 >here</a
-                                            >
-                                            for information on required
-                                            approvals and contact details
+                                            > for information and conditions
+                                            regarding Protecting Cultural
+                                            Heritage, including filming of
+                                            Aboriginal cultural content.
                                         </label>
                                     </div>
                                     <div class="col-sm-6">
