@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="row">&nbsp;</div>
                                 <div
-                                    v-if="
+                                    v-show="
                                         proposal.filming_equipment &&
                                         proposal.filming_equipment.vehicle_owned
                                     "
@@ -552,6 +552,19 @@ export default {
                 }
             );
         },
+            fetchAccessTypes: function () {
+                let vm = this;
+                helpers.fetchUrl(api_endpoints.access_types).then(
+                    (response) => {
+                        vm.access_types = Array.isArray(response)
+                            ? response
+                            : response.results || [];
+                    },
+                    (error) => {
+                        console.log(error);
+                    }
+                );
+            },
     },
 };
 </script>
