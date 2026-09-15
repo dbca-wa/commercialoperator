@@ -91,3 +91,9 @@ python manage.py migrate
 ```
 python manage.py migrate_auth_groups
 ```
+
+**Step 6 Populate File Extension Whitelist**
+
+```
+python manage.py populate_file_extension_whitelist
+```
