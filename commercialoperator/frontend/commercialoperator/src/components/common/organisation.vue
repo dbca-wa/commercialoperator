@@ -1,6 +1,10 @@
 <template>
     <!-- <div v-if="email_user" class="card"> -->
     <div id="organisationLinkedUser" class="container">
+        <teleport to="#organisation-privacy-notice-target">
+            <PrivacyNotice />
+        </teleport>
+
         <teleport to="#organisation-comms-teleport-target">
         <h3 v-if="organisationCommsHeading" class="mb-3">
             {{ organisationCommsHeading }}
@@ -312,6 +316,7 @@ import alert from '@vue-utils/alert.vue';
 import datatable from '@vue-utils/datatable.vue';
 import AddCommLog from '@common-utils/add_comm_log_org.vue';
 import CommsLogs from '@common-utils/comms_logs.vue';
+import PrivacyNotice from '@common-utils/privacy_notice.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import $ from 'jquery';
@@ -322,6 +327,7 @@ export default {
         datatable,
         AddCommLog,
         CommsLogs,
+        PrivacyNotice,
         FormSection,
         modal,
     },

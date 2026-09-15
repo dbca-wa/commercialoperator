@@ -4,6 +4,53 @@ const ERRORS = {
     NETWORK_ERROR: `NETWORK ERROR: Please check your internet connection and try again.`,
 };
 
+const cleanErrorMessage = (message) =>
+    String(message || '')
+        .replace(/[[\]"]/g, '')
+        .replace(/^['"](.*)['"]$/, '$1');
+
+const formatFieldName = (fieldName) =>
+    fieldName
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (character) => character.toUpperCase());
+
+const formatValidationError = (errors) => {
+    if (!errors || typeof errors !== 'object') {
+        return cleanErrorMessage(errors);
+    }
+
+    if (Array.isArray(errors)) {
+        return formatValidationError(errors[0]);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(errors, 'non_field_errors')) {
+        return formatValidationError(errors.non_field_errors);
+    }
+
+    const fieldName = Object.keys(errors)[0];
+    if (!fieldName) {
+        return '';
+    }
+
+    const fieldError = errors[fieldName];
+    if (fieldError && typeof fieldError === 'object' && !Array.isArray(fieldError)) {
+        return formatValidationError(fieldError);
+    }
+
+    const message = cleanErrorMessage(
+        Array.isArray(fieldError) ? fieldError[0] : fieldError
+    );
+    const label = formatFieldName(fieldName);
+    if (
+        message === 'This field may not be null.' ||
+        message === 'This field may not be blank.' ||
+        message === 'This field is required.'
+    ) {
+        return `${label} is required.`;
+    }
+    return message;
+};
+
 export default {
     fetchUrl: async function (url, options) {
         return new Promise((resolve, reject) => {
@@ -83,24 +130,13 @@ export default {
         }
 
         if (resp && typeof resp === 'object' && typeof resp.status === 'undefined') {
-            if (Object.prototype.hasOwnProperty.call(resp, 'non_field_errors') && Array.isArray(resp.non_field_errors)) {
-                return String(resp.non_field_errors[0] || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
-            }
             if (Object.prototype.hasOwnProperty.call(resp, 'message')) {
                 return String(resp.message || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
             }
             if (Object.prototype.hasOwnProperty.call(resp, 'detail')) {
-                return String(resp.detail || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+                return formatValidationError(resp.detail);
             }
-            for (const key in resp) {
-                const element = resp[key];
-                if (Array.isArray(element) && element.length > 0) {
-                    return String(element[0]).replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
-                }
-                if (element !== null && typeof element !== 'undefined') {
-                    return String(element).replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
-                }
-            }
+            return formatValidationError(resp);
         }
 
         if (resp.status === 404) {
@@ -117,23 +153,7 @@ export default {
             }
 
             if (typeof text == 'object') {
-                // eslint-disable-next-line no-prototype-builtins
-                if (text.hasOwnProperty('non_field_errors')) {
-                    error_str = text.non_field_errors[0].replace(/[[\]"]/g, '');
-                } else {
-                    //error_str = text;
-
-                    for (const key in text) {
-                        const element = text[key];
-                        if (Array.isArray(element)) {
-                            for (let message of element) {
-                                error_str = message;
-                            }
-                        } else {
-                            error_str = element;
-                        }
-                    }
-                }
+                error_str = formatValidationError(text);
             } else {
                 error_str = text.replace(/[[\]"]/g, '');
                 error_str = text.replace(/^['"](.*)['"]$/, '$1');

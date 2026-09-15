@@ -364,7 +364,6 @@ export default {
         },
         removeFile(index) {
             let length = this.files.length;
-            $('.file-row-' + index).remove();
             this.files.splice(index, 1);
             this.$nextTick(() => {
                 length == 1 ? this.attachAnother() : '';

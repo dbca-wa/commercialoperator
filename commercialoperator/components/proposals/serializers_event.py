@@ -147,10 +147,33 @@ class ProposalPreEventsParksSerializer(serializers.ModelSerializer):
 
 
 class SaveProposalPreEventsParksSerializer(serializers.ModelSerializer):
-    # park=ParkFilterSerializer()
+    activities = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        error_messages={
+            "blank": "Activity Type is required.",
+            "invalid": "Activity Type is required.",
+            "required": "Activity Type is required.",
+        },
+    )
+
     class Meta:
         model = ProposalPreEventsParks
         fields = ("id", "park", "proposal", "activities")
+
+    def validate(self, attrs):
+        proposal = attrs.get("proposal", getattr(self.instance, "proposal", None))
+        park = attrs.get("park", getattr(self.instance, "park", None))
+        duplicate_parks = ProposalPreEventsParks.objects.filter(
+            proposal=proposal, park=park
+        )
+        if self.instance:
+            duplicate_parks = duplicate_parks.exclude(pk=self.instance.pk)
+        if duplicate_parks.exists():
+            raise serializers.ValidationError(
+                {"park": "This park has already been added."}
+            )
+        return attrs
 
 
 class ProposalEventsTrailsSerializer(serializers.ModelSerializer):

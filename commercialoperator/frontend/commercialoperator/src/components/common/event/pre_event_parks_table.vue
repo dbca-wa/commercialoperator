@@ -67,7 +67,7 @@ export default {
             park_headers: [
                 'Park or Reserve',
                 'Activities',
-                'Itenary/ Maps',
+                'Itinerary/ Maps',
                 'Action',
             ],
             park_options: {
