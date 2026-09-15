@@ -291,7 +291,6 @@ export default {
             let vm = this;
             if ($(vm.form).valid()) {
                 vm.sendData();
-                vm.$refs.filefield.reset_files();
             }
         },
         cancel: function () {
