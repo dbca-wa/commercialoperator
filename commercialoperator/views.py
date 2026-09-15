@@ -269,7 +269,7 @@ def is_authorised_to_access_proposal_document(request,document_id):
         return True
     elif request.user and request.user.is_authenticated:
         user = request.user
-        user_orgs = [org.id for org in user.commericaloperator_organisations.all()]
+        user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
         return Proposal.objects.filter(id=document_id).filter(
                 Q(applicant_id__in=user_orgs) |
                 Q(submitter=user)).exists()
@@ -279,7 +279,7 @@ def is_authorised_to_access_approval_document(request,document_id):
         return True
     elif request.user and request.user.is_authenticated:
         user = request.user
-        user_orgs = [org.id for org in user.commericaloperator_organisations.all()]
+        user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
         return Approval.objects.filter(id=document_id).filter(
                 Q(applicant_id__in = user_orgs) |
                 Q(proxy_applicant_id=user.id)).exists()
