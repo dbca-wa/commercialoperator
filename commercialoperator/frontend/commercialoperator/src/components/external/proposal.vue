@@ -9,7 +9,7 @@
             enctype="multipart/form-data"
         >
             <div v-if="!proposal_readonly">
-                <div v-if="hasAmendmentRequest" class="row" style="color: red">
+                <div v-if="hasAmendmentRequest" class="row">
                     <div class="col-lg-12 pull-right">
                             <FormSection
                                 :form-collapse="false"
@@ -20,6 +20,7 @@
                                 <div
                                     v-for="a in amendment_request"
                                     :key="a.reason"
+                                    class="text-danger"
                                 >
                                     <p>Reason: {{ a.reason }}</p>
                                     <p>Details:</p>
