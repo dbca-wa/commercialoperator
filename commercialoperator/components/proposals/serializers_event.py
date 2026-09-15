@@ -147,7 +147,16 @@ class ProposalPreEventsParksSerializer(serializers.ModelSerializer):
 
 
 class SaveProposalPreEventsParksSerializer(serializers.ModelSerializer):
-    # park=ParkFilterSerializer()
+    activities = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        error_messages={
+            "blank": "Activity Type is required.",
+            "invalid": "Activity Type is required.",
+            "required": "Activity Type is required.",
+        },
+    )
+
     class Meta:
         model = ProposalPreEventsParks
         fields = ("id", "park", "proposal", "activities")
