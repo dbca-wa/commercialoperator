@@ -7608,16 +7608,8 @@ class ProposalEventsParks(SanitiseMixin):
 
     @property
     def activities_assessor_names(self):
-        """Return the names of activities that are allowed in the park."""
-        return (
-            [
-                a.name
-                for a in self.activities_assessor.all()
-                if a.id in self.park.allowed_activities_ids
-            ]
-            if self.activities_assessor
-            else None
-        )
+        """Return the names of activities selected by the assessor."""
+        return [a.name for a in self.activities_assessor.all()]
 
     def add_documents(self, request):
         with transaction.atomic():
@@ -7775,16 +7767,8 @@ class ProposalEventsTrails(SanitiseMixin):
 
     @property
     def activities_assessor_names(self):
-        """Return the names of activities that are allowed in the park."""
-        return (
-            [
-                a.name
-                for a in self.activities_assessor.all()
-                if a.id in self.trail.allowed_activities_ids
-            ]
-            if self.activities_assessor
-            else None
-        )
+        """Return the names of activities selected by the assessor."""
+        return [a.name for a in self.activities_assessor.all()]
 
 
 # --------------------------------------------------------------------------------------
