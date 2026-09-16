@@ -46,7 +46,12 @@ TEMPLATE_HEADER_LOGO = "/static/commercialoperator/img/logo-park-stay-trunc.gif"
 TEMPLATE_GROUP = "parkswildlife"
 
 LEDGER_TEMPLATE = "bootstrap5"
-
+GDAL_LIBRARY_PATH = os.environ.get(
+    "GDAL_LIBRARY_PATH",
+)
+GEOS_LIBRARY_PATH = os.environ.get(
+    "GEOS_LIBRARY_PATH",
+)
 # Use git commit hash for purging cache in browser for deployment changes
 GIT_COMMIT_HASH = os.popen(
     f"cd {BASE_DIR}; git log -1 --format=%H"
