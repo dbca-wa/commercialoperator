@@ -28,7 +28,7 @@ RUN gdalinfo --version
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install --no-install-recommends -y ssh software-properties-common imagemagick curl
+RUN apt-get install --no-install-recommends -y imagemagick curl
 
 RUN groupadd -g 5000 oim 
 RUN useradd -g 5000 -u 5000 oim -s /bin/bash -d /app
@@ -52,9 +52,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 FROM builder_base_cols as python_libs_cols
 WORKDIR /app
 USER oim
+RUN python -V
 ENV VIRTUAL_ENV=/app/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH=$VIRTUAL_ENV/bin:$PATH
+RUN python -V
 RUN git config --global --add safe.directory /app
 
 COPY --chown=oim:oim  requirements.txt ./
