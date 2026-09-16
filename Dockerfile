@@ -28,7 +28,7 @@ RUN gdalinfo --version
 RUN apt-get clean
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install --no-install-recommends -y  ssh python3-gevent software-properties-common imagemagick curl
+RUN apt-get install --no-install-recommends -y ssh software-properties-common imagemagick curl
 
 RUN groupadd -g 5000 oim 
 RUN useradd -g 5000 -u 5000 oim -s /bin/bash -d /app
