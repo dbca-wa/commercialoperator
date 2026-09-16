@@ -1,5 +1,5 @@
 # Prepare the base environment.
-FROM dbcawa/commercialoperator:latest as builder_base_commercialoperatordev
+FROM ghcr.io/dbca-wa/docker_app_dev:commercialoperator_seg_dev_latest as builder_base_commercialoperatordev
 
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y npm patch
