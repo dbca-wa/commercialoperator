@@ -634,20 +634,14 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-sm-12">
-                                        <ul class="list-block">
-                                            <li
-                                                class="control-label list-inline-item"
-                                            >
+                                        <ul>
+                                            <li class="control-label">
                                                 Event Management plan
                                             </li>
-                                            <li
-                                                class="control-label list-inline-item"
-                                            >
+                                            <li class="control-label">
                                                 Emergency response plan
                                             </li>
-                                            <li
-                                                class="control-label list-inline-item"
-                                            >
+                                            <li class="control-label">
                                                 Risk Management plan
                                             </li>
                                         </ul>

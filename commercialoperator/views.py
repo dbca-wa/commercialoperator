@@ -19,6 +19,9 @@ from django.db.models import Q
 
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.proposals.mixins import ReferralOwnerMixin
+from commercialoperator.components.segregation.utils import (
+    retrieve_delegate_organisation_ids,
+)
 
 from django.core.management import call_command
 from django.core.cache import cache
@@ -269,9 +272,9 @@ def is_authorised_to_access_proposal_document(request,document_id):
         return True
     elif request.user and request.user.is_authenticated:
         user = request.user
-        user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+        user_orgs = retrieve_delegate_organisation_ids(user.id)
         return Proposal.objects.filter(id=document_id).filter(
-                Q(applicant_id__in=user_orgs) |
+                Q(org_applicant_id__in=user_orgs) |
                 Q(submitter=user)).exists()
 
 def is_authorised_to_access_approval_document(request,document_id):
@@ -279,9 +282,9 @@ def is_authorised_to_access_approval_document(request,document_id):
         return True
     elif request.user and request.user.is_authenticated:
         user = request.user
-        user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+        user_orgs = retrieve_delegate_organisation_ids(user.id)
         return Approval.objects.filter(id=document_id).filter(
-                Q(applicant_id__in = user_orgs) |
+                Q(org_applicant_id__in=user_orgs) |
                 Q(proxy_applicant_id=user.id)).exists()
 
 def is_authorised_to_access_organisation_document(request,document_id):

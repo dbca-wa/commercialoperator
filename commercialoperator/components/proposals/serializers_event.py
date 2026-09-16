@@ -119,6 +119,21 @@ class SaveProposalEventsParksSerializer(serializers.ModelSerializer):
         model = ProposalEventsParks
         fields = ("id", "park", "proposal", "event_activities", "activities_assessor")
 
+    def validate(self, attrs):
+        proposal = attrs.get("proposal", getattr(self.instance, "proposal", None))
+        park = attrs.get("park", getattr(self.instance, "park", None))
+        duplicate_parks = ProposalEventsParks.objects.filter(
+            proposal=proposal, park=park
+        )
+        if self.instance:
+            duplicate_parks = duplicate_parks.exclude(pk=self.instance.pk)
+        if duplicate_parks.exists():
+            raise serializers.ValidationError(
+                {"park": "This park has already been added."}
+            )
+        return attrs
+
+
 
 class AbseilingClimbingActivitySerializer(serializers.ModelSerializer):
     expiry_date = serializers.DateField(required=False, allow_null=True)
