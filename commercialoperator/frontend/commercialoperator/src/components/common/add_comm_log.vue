@@ -193,8 +193,9 @@
                                                 </div>
                                                 <div class="col-sm-4">
                                                     <button
+                                                        type="button"
                                                         class="btn btn-danger"
-                                                        @click="removeFile(i)"
+                                                        @click.prevent="removeFile(i)"
                                                     >
                                                         Remove
                                                     </button>
