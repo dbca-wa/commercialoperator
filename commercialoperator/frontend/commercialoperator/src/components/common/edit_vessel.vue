@@ -77,6 +77,7 @@
                                             class="form-control"
                                             name="vessel_length"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -97,6 +98,7 @@
                                             class="form-control"
                                             name="vessel_weight"
                                             type="text"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -117,6 +119,8 @@
                                             class="form-control"
                                             name="number_of_tenders"
                                             type="number"
+                                            min="0"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -178,6 +182,12 @@
                                             >
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                        </div>
+                                        <div
+                                            v-if="showCertificateError"
+                                            class="text-danger mt-2"
+                                        >
+                                            Certificate of survey is required.
                                         </div>
                                     </div>
                                 </div>
@@ -250,6 +260,7 @@ export default {
             success: false,
             dateFormat: 'YYYY-MM-DD',
             localVesselAction: JSON.parse(JSON.stringify(this.vessel_action)),
+            showCertificateError: false,
         };
     },
     computed: {
@@ -267,6 +278,12 @@ export default {
                 .split('/')
                 .pop();
             return decodeURIComponent(filename || 'Certificate of survey');
+        },
+        hasCertificateOfSurvey: function () {
+            return Boolean(
+                this.vessel.certificate_of_survey ||
+                    this.certificate_of_survey_file
+            );
         },
     },
     watch: {
@@ -288,8 +305,9 @@ export default {
     methods: {
         ok: function () {
             let vm = this;
+            vm.showCertificateError = !vm.hasCertificateOfSurvey;
             // Check form validity
-            if (helpers.validateForm(vm.form)) {
+            if (helpers.validateForm(vm.form) && vm.hasCertificateOfSurvey) {
                 console.log('Form is valid');
                 vm.sendData();
             } else {
@@ -306,6 +324,7 @@ export default {
             this.certificate_of_survey_filename = '';
             this.remove_certificate_of_survey = false;
             this.hasErrors = false;
+            this.showCertificateError = false;
         },
         fetchContact: function (id) {
             let vm = this;
@@ -360,6 +379,7 @@ export default {
                 ? selectedFile.name
                 : '';
             this.remove_certificate_of_survey = false;
+            this.showCertificateError = !this.hasCertificateOfSurvey;
         },
 
         removeCertificate: function () {
@@ -378,6 +398,7 @@ export default {
                 this.certificate_of_survey_file = null;
                 this.certificate_of_survey_filename = '';
                 this.remove_certificate_of_survey = true;
+                this.showCertificateError = !this.hasCertificateOfSurvey;
             });
         },
 
@@ -396,6 +417,7 @@ export default {
                 this.certificate_of_survey_file = null;
                 this.certificate_of_survey_filename = '';
                 this.$refs.certificate_of_survey.value = '';
+                this.showCertificateError = !this.hasCertificateOfSurvey;
             });
         },
 
