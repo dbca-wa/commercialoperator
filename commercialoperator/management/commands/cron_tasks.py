@@ -50,9 +50,6 @@ class Command(BaseCommand):
         subprocess.call(
             "python manage.py monthly_invoices" + stdout_redirect, shell=True
         )
-        subprocess.call(
-            "python manage.py update_cache" + stdout_redirect, shell=True
-        )
 
         logger.info("Command {} completed".format(__name__))
         self.send_email()

@@ -1347,9 +1347,25 @@ class VehicleSerializer(serializers.ModelSerializer):
 
 
 class VesselSerializer(serializers.ModelSerializer):
+    nominated_vessel = serializers.CharField(required=True, allow_blank=False)
+    spv_no = serializers.CharField(required=True, allow_blank=False)
+    vessel_length = serializers.CharField(required=True, allow_blank=False)
+    vessel_weight = serializers.CharField(required=True, allow_blank=False)
+    number_of_tenders = serializers.IntegerField(required=True, min_value=0)
+
     class Meta:
         model = Vessel
         fields = "__all__"
+
+    def validate(self, attrs):
+        certificate = attrs.get("certificate_of_survey", serializers.empty)
+        if certificate is serializers.empty:
+            certificate = self.instance.certificate_of_survey if self.instance else None
+        if not certificate:
+            raise serializers.ValidationError(
+                {"certificate_of_survey": "Certificate of survey is required."}
+            )
+        return attrs
 
 
 class SaveVehicleSerializer(serializers.ModelSerializer):
