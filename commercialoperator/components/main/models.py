@@ -1,25 +1,23 @@
 import os
 
-from django.core.cache import cache
-from django.conf import settings
-from django.db import models
-from django.core.exceptions import ValidationError
+import reversion
 from django.apps import apps
-
+from django.conf import settings
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.core.files.storage import FileSystemStorage
+from django.db import models
+from django.db.models import JSONField
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
-from django.db.models import JSONField
-
-from commercialoperator.components.segregation.utils import retrieve_email_user
-
-from django.core.files.storage import FileSystemStorage
-
 from commercialoperator.components.main.mixins import SanitiseFileMixin, SanitiseMixin
+from commercialoperator.components.segregation.utils import retrieve_email_user
 
 private_storage = FileSystemStorage(
     location=settings.PRIVATE_MEDIA_STORAGE_LOCATION,
     base_url=settings.PRIVATE_MEDIA_BASE_URL,
 )
+
 
 class FileExtensionWhitelist(models.Model):
 
@@ -56,7 +54,6 @@ class FileExtensionWhitelist(models.Model):
         cache.delete(settings.CACHE_KEY_FILE_EXTENSION_WHITELIST)
 
 
-
 class Region(models.Model):
     name = models.CharField(max_length=200, unique=True)
     forest_region = models.BooleanField(default=False)
@@ -86,7 +83,7 @@ class District(models.Model):
 
     @property
     def parks(self):
-        return Parks.objects.filter(district=self)
+        return Park.objects.filter(district=self)
 
     @property
     def land_parks(self):
@@ -124,7 +121,7 @@ class LicencePeriod(models.Model):
         (LICENCE_PERIOD_5_YEAR, "5 Years"),
         (LICENCE_PERIOD_7_YEAR, "7 Years"),
         (LICENCE_PERIOD_10_YEAR, "10 Years"),
-        (LICENCE_PERIOD_20_YEAR, '20 Years'),
+        (LICENCE_PERIOD_20_YEAR, "20 Years"),
     )
 
     licence_period = models.CharField(
@@ -146,7 +143,7 @@ class LicencePeriod(models.Model):
         return f"{self.licence_period} - {self.renewal_month}"
 
     def save(self, *args, **kwargs):
-        super(LicencePeriod, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         cache.delete(settings.CACHE_KEY_LICENCE_PERIOD_CHOICES)
 
     @property
@@ -270,7 +267,8 @@ class Park(models.Model):
     )
     # oracle_code = models.CharField(max_length=50)
 
-    # editable=False --> related to invoice PDF generation, currently GST is computed assuming GST is payable for ALL parks.
+    # editable=False --> related to invoice PDF generation,
+    # currently GST is computed assuming GST is payable for ALL parks.
     # Must fix invoice calc. GST per park in pdf line_items, for net GST if editable is to be set to True
     is_gst_exempt = models.BooleanField(default=False, editable=True)
     visible_to_external = models.BooleanField(default=True)
@@ -299,10 +297,8 @@ class Park(models.Model):
         """application_type - TClass/Filming/Event"""
         try:
             return self.oracle_codes.get(code_type=application_type).code
-        except:
-            raise ValidationError(
-                "Unknown application type: {}".format(application_type)
-            )
+        except OracleCode.DoesNotExist:
+            raise ValidationError(f"Unknown application type: {application_type}")
 
 
 class Zone(models.Model):
@@ -449,7 +445,7 @@ class ApplicationType(models.Model):
         app_label = "commercialoperator"
 
     def save(self, *args, **kwargs):
-        super(ApplicationType, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         cache.delete(settings.CACHE_KEY_APPLICATION_TYPES)
 
     def __str__(self):
@@ -478,7 +474,7 @@ class OracleCode(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return "{} - {}".format(self.code_type, self.code)
+        return f"{self.code_type} - {self.code}"
 
 
 class ActivityMatrix(models.Model):
@@ -502,7 +498,7 @@ class ActivityMatrix(models.Model):
         verbose_name_plural = "Activity matrix"
 
     def __str__(self):
-        return "{} - v{}".format(self.name, self.version)
+        return f"{self.name} - v{self.version}"
 
 
 class Tenure(models.Model):
@@ -517,7 +513,7 @@ class Tenure(models.Model):
         app_label = "commercialoperator"
 
     def __str__(self):
-        return "{}: {}".format(self.name, self.application_type)
+        return f"{self.name}: {self.application_type}"
 
 
 class Question(models.Model):
@@ -658,11 +654,11 @@ class GlobalSettings(models.Model):
         ("event_traffic_code_of_practice", "Event traffic code of practice"),
         ("trail_section_map", "Trail section map"),
         ("dwer_application_form", "DWER Application Form"),
-        ('tourism_standards_link', 'Tourism Standards Link'),
-        ('privacy_policy_url', 'Privacy Policy URL'),
+        ("tourism_standards_link", "Tourism Standards Link"),
+        ("privacy_policy_url", "Privacy Policy URL"),
         (
-            'civil_aviation_safety_authority_link',
-            'Civil Aviation Safety Authority Link',
+            "civil_aviation_safety_authority_link",
+            "Civil Aviation Safety Authority Link",
         ),
     )
     key = models.CharField(
@@ -708,7 +704,8 @@ class SystemMaintenance(models.Model):
 class UserSystemSettings(models.Model):
     one_row_per_park = models.BooleanField(
         default=False
-    )  # Setting for user if they want to see Payment (Park Entry Fees Dashboard) by one row per park or one row per booking
+    )  # Setting for user if they want to see Payment (Park Entry Fees Dashboard)
+    # by one row per park or one row per booking
     user = models.OneToOneField(
         EmailUser, related_name="system_settings", on_delete=models.CASCADE
     )
@@ -722,27 +719,26 @@ class UserSystemSettings(models.Model):
 
 class JobQueue(models.Model):
     STATUS = (
-       (0, 'Pending'),
-       (1, 'Running'),
-       (2, 'Completed'),
-       (3, 'Failed'),
+        (0, "Pending"),
+        (1, "Running"),
+        (2, "Completed"),
+        (3, "Failed"),
     )
 
     job_cmd = models.CharField(max_length=1000, null=True, blank=True)
     system_id = models.CharField(max_length=4, null=True, blank=True)
-    status = models.SmallIntegerField(choices=STATUS, default=0) 
+    status = models.SmallIntegerField(choices=STATUS, default=0)
     parameters_json = models.JSONField(null=True, blank=True)
-    processed_dt = models.DateTimeField(default=None,null=True, blank=True )
+    processed_dt = models.DateTimeField(default=None, null=True, blank=True)
     user = models.IntegerField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'commercialoperator'
-        
-    def __str__(self):
-        return self.job_cmd  
+        app_label = "commercialoperator"
 
-import reversion
+    def __str__(self):
+        return self.job_cmd
+
 
 reversion.register(Region, follow=["districts"])
 reversion.register(District, follow=["parks"])
@@ -775,7 +771,5 @@ reversion.register(ApplicationType, follow=["tenure_app_types"])
 reversion.register(ActivityMatrix)
 reversion.register(Tenure)
 reversion.register(Question)
-reversion.register(UserAction)
 reversion.register(CommunicationsLogEntry)
-reversion.register(Document)
 reversion.register(SystemMaintenance)
