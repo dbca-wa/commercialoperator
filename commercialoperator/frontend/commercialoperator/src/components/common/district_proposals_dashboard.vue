@@ -1,84 +1,74 @@
 <template id="district_proposal_dashboard">
     <div class="row">
         <div class="col-sm-12">
-            <div class="card">
-                <div class="row mb-1">
-                    <div class="col-md-3">
-                        <div
-                            id="select_district_proposal_status_parent"
-                            class="form-group"
+            <div class="row mb-1">
+                <div class="col-md-3">
+                    <div
+                        id="select_district_proposal_status_parent"
+                        class="form-group"
+                    >
+                        <label for="select_district_proposal_status"
+                            >Status</label
                         >
-                            <label for="select_district_proposal_status"
-                                >Status</label
+                        <div v-show="isLoading">
+                            <select class="form-control">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div v-show="!isLoading">
+                            <select
+                                id="select_district_proposal_status"
+                                ref="select_district_proposal_status"
+                                v-model="filterProposalStatus"
+                                class="form-control"
                             >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_district_proposal_status"
-                                    ref="select_district_proposal_status"
-                                    v-model="filterProposalStatus"
-                                    class="form-control"
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in proposal_status"
+                                    :key="s.value"
+                                    :value="s.value"
                                 >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in proposal_status"
-                                        :key="s.value"
-                                        :value="s.value"
-                                    >
-                                        {{ s.name }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="input_proposal_date_from"
-                            >Lodged From</label
-                        >
-                        <div
-                            ref="proposalDateFromPicker"
-                            class="input-group date"
-                        >
-                            <input
-                                id="input_proposal_date_from"
-                                v-model="filterProposalLodgedFrom"
-                                type="date"
-                                class="form-control"
-                                max="2999-12-31"
-                                placeholder="DD/MM/YYYY"
-                            />
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="input_proposal_date_to">Lodged To</label>
-                        <div
-                            ref="proposalDateToPicker"
-                            class="input-group date"
-                        >
-                            <input
-                                id="input_proposal_date_to"
-                                v-model="filterProposalLodgedTo"
-                                type="date"
-                                class="form-control"
-                                max="2999-12-31"
-                                placeholder="DD/MM/YYYY"
-                            />
+                                    {{ s.name }}
+                                </option>
+                            </select>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <datatable
-                            :id="datatable_id"
-                            ref="proposal_datatable"
-                            :dt-options="proposal_options"
-                            :dt-headers="proposal_headers"
+                <div class="col-md-3">
+                    <label for="input_proposal_date_from">Lodged From</label>
+                    <div ref="proposalDateFromPicker" class="input-group date">
+                        <input
+                            id="input_proposal_date_from"
+                            v-model="filterProposalLodgedFrom"
+                            type="date"
+                            class="form-control"
+                            max="2999-12-31"
+                            placeholder="DD/MM/YYYY"
                         />
                     </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="input_proposal_date_to">Lodged To</label>
+                    <div ref="proposalDateToPicker" class="input-group date">
+                        <input
+                            id="input_proposal_date_to"
+                            v-model="filterProposalLodgedTo"
+                            type="date"
+                            class="form-control"
+                            max="2999-12-31"
+                            placeholder="DD/MM/YYYY"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <datatable
+                        :id="datatable_id"
+                        ref="proposal_datatable"
+                        :dt-options="proposal_options"
+                        :dt-headers="proposal_headers"
+                    />
                 </div>
             </div>
         </div>
@@ -89,7 +79,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'DistrictProposalTableDash',
     components: {
@@ -276,9 +266,7 @@ export default {
         $('a[data-bs-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'fa-chevron-down fa-chevron-up'
-                );
+                $(chev).toggleClass('fa-chevron-down fa-chevron-up');
             }, 100);
         });
         this.$nextTick(() => {

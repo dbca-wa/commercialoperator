@@ -1,176 +1,161 @@
 <template id="proposal_dashboard">
     <div class="row">
         <div class="col-sm-12">
-            <div class="card">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div
-                            id="select_approval_proposal_status_parent"
-                            class="form-group"
+            <div class="row">
+                <div class="col-md-3">
+                    <div
+                        id="select_approval_proposal_status_parent"
+                        class="form-group"
+                    >
+                        <label for="select_approval_proposal_status"
+                            >Status</label
                         >
-                            <label for="select_approval_proposal_status"
-                                >Status</label
-                            >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_approval_proposal_status"
-                                    ref="select_approval_proposal_status"
-                                    v-model="filterProposalStatus"
-                                    class="form-control"
-                                >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in approval_status"
-                                        :key="s"
-                                        :value="s"
-                                    >
-                                        {{ s }}
-                                    </option>
-                                </select>
-                            </div>
+                        <div v-show="isLoading">
+                            <select class="form-control">
+                                <option value="">Loading...</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div
-                            id="select_approval_licence_type_parent"
-                            class="form-group"
-                        >
-                            <label for="select_approval_licence_type"
-                                >Licence Type</label
+                        <div v-show="!isLoading">
+                            <select
+                                id="select_approval_proposal_status"
+                                ref="select_approval_proposal_status"
+                                v-model="filterProposalStatus"
+                                class="form-control"
                             >
-                            <div v-show="isLoading">
-                                <select class="form-control">
-                                    <option value="">Loading...</option>
-                                </select>
-                            </div>
-                            <div v-show="!isLoading">
-                                <select
-                                    id="select_approval_licence_type"
-                                    ref="select_approval_licence_type"
-                                    v-model="filterApplicationType"
-                                    class="form-control"
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in approval_status"
+                                    :key="s"
+                                    :value="s"
                                 >
-                                    <option value="All">All</option>
-                                    <option
-                                        v-for="s in application_types"
-                                        :key="s"
-                                        :value="s"
-                                    >
-                                        {{ s }}
-                                    </option>
-                                </select>
-                            </div>
+                                    {{ s }}
+                                </option>
+                            </select>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="input_start_from_date"
-                                >Start From</label
-                            >
-                            <div
-                                ref="startDateFromPicker"
-                                class="input-group date"
-                            >
-                                <input
-                                    id="input_start_from_date"
-                                    v-model="filterStartFrom"
-                                    type="date"
-                                    class="form-control"
-                                    max="2999-12-31"
-                                    placeholder="DD/MM/YYYY"
-                                />
-                            </div>
+                <div class="col-md-3">
+                    <div
+                        id="select_approval_licence_type_parent"
+                        class="form-group"
+                    >
+                        <label for="select_approval_licence_type"
+                            >Licence Type</label
+                        >
+                        <div v-show="isLoading">
+                            <select class="form-control">
+                                <option value="">Loading...</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="input_start_to_date">Start To</label>
-                            <div
-                                ref="startDateToPicker"
-                                class="input-group date"
+                        <div v-show="!isLoading">
+                            <select
+                                id="select_approval_licence_type"
+                                ref="select_approval_licence_type"
+                                v-model="filterApplicationType"
+                                class="form-control"
                             >
-                                <input
-                                    id="input_start_to_date"
-                                    v-model="filterStartTo"
-                                    type="date"
-                                    class="form-control"
-                                    max="2999-12-31"
-                                    placeholder="DD/MM/YYYY"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="input_expiry_from_date"
-                                >Expiry From</label
-                            >
-                            <div
-                                ref="expiryDateFromPicker"
-                                class="input-group date"
-                            >
-                                <input
-                                    id="input_expiry_from_date"
-                                    v-model="filterExpiryFrom"
-                                    type="date"
-                                    class="form-control"
-                                    max="2999-12-31"
-                                    placeholder="DD/MM/YYYY"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="input_expiry_to_date">Expiry To</label>
-                            <div
-                                ref="expiryDateToPicker"
-                                class="input-group date"
-                            >
-                                <input
-                                    id="input_expiry_to_date"
-                                    v-model="filterExpiryTo"
-                                    type="date"
-                                    class="form-control"
-                                    max="2999-12-31"
-                                    placeholder="DD/MM/YYYY"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-if="is_internal" class="col-md-3 ms-md-auto">
-                        <div class="form-group">
-                            <label />
-                            <div>
-                                <button
-                                    class="btn btn-primary top-buffer-s float-end"
-                                    :disabled="disabled"
-                                    @click.prevent="createEClassLicence()"
+                                <option value="All">All</option>
+                                <option
+                                    v-for="s in application_types"
+                                    :key="s"
+                                    :value="s"
                                 >
-                                    New E Class licence
-                                </button>
-                            </div>
+                                    {{ s }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="input_start_from_date">Start From</label>
+                        <div ref="startDateFromPicker" class="input-group date">
+                            <input
+                                id="input_start_from_date"
+                                v-model="filterStartFrom"
+                                type="date"
+                                class="form-control"
+                                max="2999-12-31"
+                                placeholder="DD/MM/YYYY"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="input_start_to_date">Start To</label>
+                        <div ref="startDateToPicker" class="input-group date">
+                            <input
+                                id="input_start_to_date"
+                                v-model="filterStartTo"
+                                type="date"
+                                class="form-control"
+                                max="2999-12-31"
+                                placeholder="DD/MM/YYYY"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="input_expiry_from_date">Expiry From</label>
+                        <div
+                            ref="expiryDateFromPicker"
+                            class="input-group date"
+                        >
+                            <input
+                                id="input_expiry_from_date"
+                                v-model="filterExpiryFrom"
+                                type="date"
+                                class="form-control"
+                                max="2999-12-31"
+                                placeholder="DD/MM/YYYY"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="input_expiry_to_date">Expiry To</label>
+                        <div ref="expiryDateToPicker" class="input-group date">
+                            <input
+                                id="input_expiry_to_date"
+                                v-model="filterExpiryTo"
+                                type="date"
+                                class="form-control"
+                                max="2999-12-31"
+                                placeholder="DD/MM/YYYY"
+                            />
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-lg-12" style="margin-top: 25px">
-                        <datatable
-                            :id="datatable_id"
-                            ref="proposal_datatable"
-                            :dt-options="proposal_options"
-                            :dt-headers="proposal_headers"
-                        />
+                <div v-if="is_internal" class="col-md-3 ms-md-auto">
+                    <div class="form-group">
+                        <label />
+                        <div>
+                            <button
+                                class="btn btn-primary top-buffer-s float-end"
+                                :disabled="disabled"
+                                @click.prevent="createEClassLicence()"
+                            >
+                                New E Class licence
+                            </button>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12" style="margin-top: 25px">
+                    <datatable
+                        :id="datatable_id"
+                        ref="proposal_datatable"
+                        :dt-options="proposal_options"
+                        :dt-headers="proposal_headers"
+                    />
                 </div>
             </div>
         </div>
@@ -203,7 +188,7 @@ import EClassLicence from '../internal/approvals/approval_eclass.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -417,8 +402,8 @@ export default {
                         orderable: false,
                         searchable: false,
                     },
-                    { 
-                        data: 'status', 
+                    {
+                        data: 'status',
                         orderable: false,
                         searchable: false,
                     },
@@ -572,7 +557,10 @@ export default {
                                             links += `<a href='#${full.id}' data-surrender-approval='${full.id}'>Surrender</a><br/>`;
                                         }
 
-                                        if (full.can_amend && full.amendment_proposal) {
+                                        if (
+                                            full.can_amend &&
+                                            full.amendment_proposal
+                                        ) {
                                             links += `<a href='#${full.id}' data-amend-approval='${full.amendment_proposal}'>Amend</a><br/>`;
                                         }
                                     }
@@ -978,10 +966,10 @@ export default {
                 icon: 'input',
                 showCancelButton: true,
                 confirmButtonText: 'Extend licence',
-            }).then(
-                (swalresult) => {
-                    if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(
+            }).then((swalresult) => {
+                if (swalresult.isConfirmed) {
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.approvals,
                                 approval_id + '/approval_extend'
@@ -993,7 +981,8 @@ export default {
                                     'Content-Type': 'application/json',
                                 },
                             }
-                        ).then(
+                        )
+                        .then(
                             () => {
                                 vm.$router.push({
                                     name: 'internal-proposal',
@@ -1009,9 +998,8 @@ export default {
                                 });
                             }
                         );
-                    }
-                },
-            );
+                }
+            });
         },
 
         extendApproval: function (approval_id) {
@@ -1030,37 +1018,38 @@ export default {
             }).then(
                 (swalresult) => {
                     if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(
-                            helpers.add_endpoint_json(
-                                api_endpoints.approvals,
-                                approval_id + '/approval_reinstate'
-                            ),
-                            {
-                                method: 'POST',
-                                body: JSON.stringify({}),
-                                headers: {
-                                    'Content-Type': 'application/json',
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.approvals,
+                                    approval_id + '/approval_reinstate'
+                                ),
+                                {
+                                    method: 'POST',
+                                    body: JSON.stringify({}),
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                }
+                            )
+                            .then(
+                                () => {
+                                    swal.fire({
+                                        title: 'Reinstate',
+                                        text: 'Your licence has been reinstated',
+                                        icon: 'success',
+                                    });
+                                    vm.$refs.proposal_datatable.vmDataTable.ajax.reload();
                                 },
-                            }
-                        )
-                        .then(
-                            () => {
-                                swal.fire({
-                                    title: 'Reinstate',
-                                    text: 'Your licence has been reinstated',
-                                    icon: 'success',
-                                });
-                                vm.$refs.proposal_datatable.vmDataTable.ajax.reload();
-                            },
-                            (error) => {
-                                console.log(error);
-                                swal.fire({
-                                    title: 'Reinstate Licence',
-                                    text: error,
-                                    icon: 'error',
-                                });
-                            }
-                        );
+                                (error) => {
+                                    console.log(error);
+                                    swal.fire({
+                                        title: 'Reinstate Licence',
+                                        text: error,
+                                        icon: 'error',
+                                    });
+                                }
+                            );
                     }
                 },
                 () => {}
@@ -1089,32 +1078,33 @@ export default {
                                 container: 'swal2-popover',
                             },
                         });
-                        helpers.fetchUrl(
-                            helpers.add_endpoint_json(
-                                api_endpoints.proposals,
-                                proposal_id + '/renew_approval'
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.proposals,
+                                    proposal_id + '/renew_approval'
+                                )
                             )
-                        )
-                        .then(
-                            (response) => {
-                                swal.hideLoading();
-                                swal.close();
-                                let proposal = {};
-                                proposal = response;
-                                vm.$router.push({
-                                    name: 'draft_proposal',
-                                    params: { proposal_id: proposal.id },
-                                });
-                            },
-                            (error) => {
-                                console.log(error);
-                                swal.fire({
-                                    title: 'Renew Licence',
-                                    text: error,
-                                    icon: 'error',
-                                });
-                            }
-                        );
+                            .then(
+                                (response) => {
+                                    swal.hideLoading();
+                                    swal.close();
+                                    let proposal = {};
+                                    proposal = response;
+                                    vm.$router.push({
+                                        name: 'draft_proposal',
+                                        params: { proposal_id: proposal.id },
+                                    });
+                                },
+                                (error) => {
+                                    console.log(error);
+                                    swal.fire({
+                                        title: 'Renew Licence',
+                                        text: error,
+                                        icon: 'error',
+                                    });
+                                }
+                            );
                     }
                 },
                 () => {}

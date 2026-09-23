@@ -2,17 +2,22 @@
     <div id="externalDash" class="container">
         <div class="row">
             <div class="col-sm-12 mb-2">
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">
-                        Welcome to the {{ system_name }} dashboard.
+                        Welcome to the {{ system_name }} Dashboard
                     </div>
-                    <div class="card card-body bg-light p-2">
-                        <p class="card-text">
-                            From this page you can view existing applications,
-                            create new applications,<br />
-                            view current licences, apply to amend a licence,
-                            check through conditions of your licence.
-                        </p>
+                    <div class="card-body pb-1">
+                        <div class="card-text">
+                            <p>From this page you can:</p>
+                            <ul>
+                                <li>Create new applications</li>
+                                <li>View existing applications</li>
+                                <li>
+                                    View the compliances for your licence(s)
+                                </li>
+                                <li>Apply to amend a licence</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
