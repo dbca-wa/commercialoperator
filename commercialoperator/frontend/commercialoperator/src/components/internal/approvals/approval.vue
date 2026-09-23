@@ -51,8 +51,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-1"></div>
-            <div class="col-md-8">
+            <div class="col-md-9">
                 <div class="">
                         <FormSection
                             :form-collapse="false"
