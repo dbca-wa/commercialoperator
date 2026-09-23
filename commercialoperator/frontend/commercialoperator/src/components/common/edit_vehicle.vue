@@ -118,7 +118,6 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </form>
                 </div>
@@ -153,7 +152,7 @@
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'Edit-Vehicle',
@@ -353,7 +352,7 @@ export default {
 };
 </script>
 
-<style lang="css">
+<style scoped lang="css">
 input[type='date'],
 input[type='text'],
 input[type='number'] {

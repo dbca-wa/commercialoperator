@@ -8,87 +8,260 @@
                     method="post"
                 >
                     <FormSection
-                            :form-collapse="false"
-                            label="Applicant"
-                            index="license_applicant"
-                            subtitle="The applicant will be the licensee"
-                        >
-                            <template #header-extra>
-                                <span
-                                    >&nbsp;<i
-                                        class="fas fa-circle-question"
-                                        data-bs-toggle="tooltip"
-                                        data-placement="bottom"
-                                        style="color: blue"
-                                        title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate."
-                                    ></i
-                                ></span>
-                            </template>
-                            <div class="col-sm-12">
-                                <div v-if="!isLoading" class="form-group">
+                        :form-collapse="false"
+                        label="Applicant"
+                        index="license_applicant"
+                        subtitle="The applicant will be the licensee"
+                    >
+                        <template #header-extra>
+                            <span
+                                >&nbsp;<i
+                                    class="fas fa-circle-question"
+                                    data-bs-toggle="tooltip"
+                                    data-placement="bottom"
+                                    style="color: blue"
+                                    title="Please ensure the applicant is the same as the insured party on your public liability on your public liability insurance certificate."
+                                ></i
+                            ></span>
+                        </template>
+                        <div class="col-sm-12">
+                            <div v-if="!isLoading" class="form-group">
+                                <div
+                                    v-if="
+                                        profile.commercialoperator_organisations
+                                            .length > 0
+                                    "
+                                >
+                                    <label>Do you apply </label>
+                                    <br />
                                     <div
-                                        v-if="
-                                            profile
-                                                .commercialoperator_organisations
-                                                .length > 0
+                                        v-for="orga in profile.commercialoperator_organisations"
+                                        :key="orga.id"
+                                        class="radio"
+                                    >
+                                        <label v-if="!orga.is_consultant">
+                                            <input
+                                                v-model="org_applicant"
+                                                type="radio"
+                                                name="behalf_of_org"
+                                                :value="orga.id"
+                                            />
+                                            On behalf of {{ orga.name }}
+                                        </label>
+                                        <label v-if="orga.is_consultant">
+                                            <input
+                                                v-model="org_applicant"
+                                                type="radio"
+                                                name="behalf_of_org"
+                                                :value="orga.id"
+                                            />
+                                            On behalf of {{ orga.name }} (as a
+                                            Consultant)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <p style="color: red">
+                                        You cannot start a new application as
+                                        you have not linked yourself to any
+                                        organisation yet. Please go to your
+                                        account page in the Options menu to link
+                                        your self to an organisation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </FormSection>
+
+                    <FormSection
+                        v-show="org_applicant != '' || yourself != ''"
+                        :form-collapse="false"
+                        label="Apply for"
+                        index="license_apply_for"
+                        subtitle=""
+                    >
+                        <div>
+                            <label
+                                for="select_proposal_apply_license_type"
+                                class="control-label"
+                                >Licence Type *
+                                <a
+                                    :href="proposal_type_help_url"
+                                    target="_blank"
+                                    ><i
+                                        class="fas fa-circle-question"
+                                        style="color: blue"
+                                        >&nbsp;</i
+                                    ></a
+                                ></label
+                            >
+                            <div class="col-sm-12">
+                                <div
+                                    id="select_proposal_apply_license_type_parent"
+                                    class="form-group"
+                                >
+                                    <select
+                                        id="select_proposal_apply_license_type"
+                                        ref="select_proposal_apply_license_type"
+                                        v-model="selected_application_id"
+                                        class="form-control"
+                                        style="width: 40%"
+                                        @change="
+                                            chainedSelectAppType(
+                                                selected_application_id
+                                            )
                                         "
                                     >
-                                        <label>Do you apply </label>
-                                        <br />
-                                        <div
-                                            v-for="orga in profile.commercialoperator_organisations"
-                                            :key="orga.id"
-                                            class="radio"
+                                        <option value="" selected disabled>
+                                            Select Licence type*
+                                        </option>
+                                        <option
+                                            v-for="application_type in application_types"
+                                            :key="application_type.value"
+                                            :value="application_type.value"
                                         >
-                                            <label v-if="!orga.is_consultant">
-                                                <input
-                                                    v-model="org_applicant"
-                                                    type="radio"
-                                                    name="behalf_of_org"
-                                                    :value="orga.id"
-                                                />
-                                                On behalf of {{ orga.name }}
-                                            </label>
-                                            <label v-if="orga.is_consultant">
-                                                <input
-                                                    v-model="org_applicant"
-                                                    type="radio"
-                                                    name="behalf_of_org"
-                                                    :value="orga.id"
-                                                />
-                                                On behalf of {{ orga.name }} (as
-                                                a Consultant)
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div v-else>
-                                        <p style="color: red">
-                                            You cannot start a new application
-                                            as you have not linked yourself to
-                                            any organisation yet. Please go to
-                                            your account page in the Options
-                                            menu to link your self to an
-                                            organisation.
-                                        </p>
+                                            {{ application_type.text }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-show="has_event_proposals()" class="">
+                            <div>
+                                <label
+                                    for="select_proposal_apply_copy_license"
+                                    class="control-label"
+                                    >Prefill application with details from
+                                    previously approved event
+                                </label>
+                                <div class="col-sm-12">
+                                    <div
+                                        id="select_proposal_apply_copy_license_parent"
+                                        class="form-group"
+                                    >
+                                        <select
+                                            id="select_proposal_apply_copy_license"
+                                            ref="select_proposal_apply_copy_license"
+                                            v-model="selected_copy_from"
+                                            class="form-control"
+                                            style="width: 40%"
+                                        >
+                                            <option value="" selected disabled>
+                                                Select Event Licence to copy
+                                                from*
+                                            </option>
+                                            <option
+                                                v-for="event_proposal in event_proposals()"
+                                                :key="event_proposal.id"
+                                                :value="
+                                                    event_proposal.current_proposal
+                                                "
+                                            >
+                                                {{
+                                                    event_proposal.current_proposal__event_activity__event_name
+                                                }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
-                        </FormSection>
+                        </div>
 
-                    <FormSection
-                            v-show="org_applicant != '' || yourself != ''"
-                            :form-collapse="false"
-                            label="Apply for"
-                            index="license_apply_for"
-                            subtitle=""
-                        >
-                            <div>
+                        <div v-if="display_region_selectbox">
+                            <label
+                                for="select_proposal_apply_region"
+                                class="control-label"
+                                >Region *
+                                <a :href="region_help_url" target="_blank"
+                                    ><i
+                                        class="fas fa-circle-question"
+                                        style="color: blue"
+                                        >&nbsp;</i
+                                    ></a
+                                >
+                            </label>
+                            <div class="col-sm-12">
+                                <div
+                                    id="select_proposal_apply_region_parent"
+                                    class="form-group"
+                                >
+                                    <select
+                                        id="select_proposal_apply_region"
+                                        ref="select_proposal_apply_region"
+                                        v-model="selected_region"
+                                        class="form-control"
+                                        style="width: 40%"
+                                        @change="
+                                            chainedSelectDistricts(
+                                                selected_region
+                                            )
+                                        "
+                                    >
+                                        <option value="" selected disabled>
+                                            Select region
+                                        </option>
+                                        <option
+                                            v-for="region in regions"
+                                            :key="region.value"
+                                            :value="region.value"
+                                        >
+                                            {{ region.text }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="display_region_selectbox && selected_region">
+                            <label
+                                for="select_proposal_apply_district"
+                                class="control-label"
+                                style="font-weight: normal"
+                                >District
+                                <a :href="district_help_url" target="_blank"
+                                    ><i
+                                        class="fas fa-circle-question"
+                                        style="color: blue"
+                                        >&nbsp;</i
+                                    ></a
+                                ></label
+                            >
+                            <div class="col-sm-12">
+                                <div
+                                    id="select_proposal_apply_district_parent"
+                                    class="form-group"
+                                >
+                                    <select
+                                        id="select_proposal_apply_district"
+                                        ref="select_proposal_apply_district"
+                                        v-model="selected_district"
+                                        class="form-control"
+                                        style="width: 40%"
+                                    >
+                                        <option value="" selected disabled>
+                                            Select district
+                                        </option>
+                                        <option
+                                            v-for="district in districts"
+                                            :key="district.value"
+                                            :value="district.value"
+                                        >
+                                            {{ district.text }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="display_activity_matrix_selectbox">
+                            <div v-if="activities.length > 0">
                                 <label
-                                    for="select_proposal_apply_license_type"
+                                    for="select_proposal_apply_activity"
                                     class="control-label"
-                                    >Licence Type *
+                                    >Activity Type *
                                     <a
-                                        :href="proposal_type_help_url"
+                                        :href="activity_type_help_url"
                                         target="_blank"
                                         ><i
                                             class="fas fa-circle-question"
@@ -99,137 +272,44 @@
                                 >
                                 <div class="col-sm-12">
                                     <div
-                                        id="select_proposal_apply_license_type_parent"
+                                        id="select_proposal_apply_activity_parent"
                                         class="form-group"
                                     >
                                         <select
-                                            id="select_proposal_apply_license_type"
-                                            ref="select_proposal_apply_license_type"
-                                            v-model="selected_application_id"
+                                            id="select_proposal_apply_activity"
+                                            ref="select_proposal_apply_activity"
+                                            v-model="selected_activity"
                                             class="form-control"
                                             style="width: 40%"
                                             @change="
-                                                chainedSelectAppType(
-                                                    selected_application_id
+                                                chainedSelectSubActivities1(
+                                                    selected_activity
                                                 )
                                             "
                                         >
                                             <option value="" selected disabled>
-                                                Select Licence type*
+                                                Select activity
                                             </option>
                                             <option
-                                                v-for="application_type in application_types"
-                                                :key="application_type.value"
-                                                :value="application_type.value"
+                                                v-for="activity in activities"
+                                                :key="activity.value"
+                                                :value="activity.value"
                                             >
-                                                {{ application_type.text }}
+                                                {{ activity.text }}
                                             </option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <div v-show="has_event_proposals()" class="">
-                                <div>
-                                    <label
-                                        for="select_proposal_apply_copy_license"
-                                        class="control-label"
-                                        >Prefill application with details from
-                                        previously approved event
-                                    </label>
-                                    <div class="col-sm-12">
-                                        <div
-                                            id="select_proposal_apply_copy_license_parent"
-                                            class="form-group"
-                                        >
-                                            <select
-                                                id="select_proposal_apply_copy_license"
-                                                ref="select_proposal_apply_copy_license"
-                                                v-model="selected_copy_from"
-                                                class="form-control"
-                                                style="width: 40%"
-                                            >
-                                                <option
-                                                    value=""
-                                                    selected
-                                                    disabled
-                                                >
-                                                    Select Event Licence to copy
-                                                    from*
-                                                </option>
-                                                <option
-                                                    v-for="event_proposal in event_proposals()"
-                                                    :key="event_proposal.id"
-                                                    :value="
-                                                        event_proposal.current_proposal
-                                                    "
-                                                >
-                                                    {{
-                                                        event_proposal.current_proposal__event_activity__event_name
-                                                    }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div v-if="display_region_selectbox">
+                            <div v-if="sub_activities1.length > 0">
                                 <label
-                                    for="select_proposal_apply_region"
+                                    for="select_proposal_apply_sub_activity1"
                                     class="control-label"
-                                    >Region *
-                                    <a :href="region_help_url" target="_blank"
-                                        ><i
-                                            class="fas fa-circle-question"
-                                            style="color: blue"
-                                            >&nbsp;</i
-                                        ></a
-                                    >
-                                </label>
-                                <div class="col-sm-12">
-                                    <div
-                                        id="select_proposal_apply_region_parent"
-                                        class="form-group"
-                                    >
-                                        <select
-                                            id="select_proposal_apply_region"
-                                            ref="select_proposal_apply_region"
-                                            v-model="selected_region"
-                                            class="form-control"
-                                            style="width: 40%"
-                                            @change="
-                                                chainedSelectDistricts(
-                                                    selected_region
-                                                )
-                                            "
-                                        >
-                                            <option value="" selected disabled>
-                                                Select region
-                                            </option>
-                                            <option
-                                                v-for="region in regions"
-                                                :key="region.value"
-                                                :value="region.value"
-                                            >
-                                                {{ region.text }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div
-                                v-if="
-                                    display_region_selectbox && selected_region
-                                "
-                            >
-                                <label
-                                    for="select_proposal_apply_district"
-                                    class="control-label"
-                                    style="font-weight: normal"
-                                    >District
-                                    <a :href="district_help_url" target="_blank"
+                                    >Sub Activity 1 *
+                                    <a
+                                        :href="sub_activity_1_help_url"
+                                        target="_blank"
                                         ><i
                                             class="fas fa-circle-question"
                                             style="color: blue"
@@ -239,238 +319,130 @@
                                 >
                                 <div class="col-sm-12">
                                     <div
-                                        id="select_proposal_apply_district_parent"
+                                        id="select_proposal_apply_sub_activity1_parent"
                                         class="form-group"
                                     >
                                         <select
-                                            id="select_proposal_apply_district"
-                                            ref="select_proposal_apply_district"
-                                            v-model="selected_district"
+                                            id="select_proposal_apply_sub_activity1"
+                                            ref="select_proposal_apply_sub_activity1"
+                                            v-model="selected_sub_activity1"
                                             class="form-control"
                                             style="width: 40%"
+                                            @change="
+                                                chainedSelectSubActivities2(
+                                                    selected_sub_activity1
+                                                )
+                                            "
                                         >
                                             <option value="" selected disabled>
-                                                Select district
+                                                Select sub_activity 1
                                             </option>
                                             <option
-                                                v-for="district in districts"
-                                                :key="district.value"
-                                                :value="district.value"
+                                                v-for="sub_activity1 in sub_activities1"
+                                                :key="sub_activity1.value"
+                                                :value="sub_activity1.value"
                                             >
-                                                {{ district.text }}
+                                                {{ sub_activity1.text }}
                                             </option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <div v-if="display_activity_matrix_selectbox">
-                                <div v-if="activities.length > 0">
-                                    <label
-                                        for="select_proposal_apply_activity"
-                                        class="control-label"
-                                        >Activity Type *
-                                        <a
-                                            :href="activity_type_help_url"
-                                            target="_blank"
-                                            ><i
-                                                class="fas fa-circle-question"
-                                                style="color: blue"
-                                                >&nbsp;</i
-                                            ></a
-                                        ></label
+                            <div v-if="sub_activities2.length > 0">
+                                <label
+                                    for="select_proposal_apply_sub_activity2"
+                                    class="control-label"
+                                    >Sub Activity 2 *
+                                    <a
+                                        :href="sub_activity_2_help_url"
+                                        target="_blank"
+                                        ><i
+                                            class="fas fa-circle-question"
+                                            style="color: blue"
+                                            >&nbsp;</i
+                                        ></a
+                                    ></label
+                                >
+                                <div class="col-sm-12">
+                                    <div
+                                        id="select_proposal_apply_sub_activity2_parent"
+                                        class="form-group"
                                     >
-                                    <div class="col-sm-12">
-                                        <div
-                                            id="select_proposal_apply_activity_parent"
-                                            class="form-group"
+                                        <select
+                                            id="select_proposal_apply_sub_activity2"
+                                            ref="select_proposal_apply_sub_activity2"
+                                            v-model="selected_sub_activity2"
+                                            class="form-control"
+                                            style="width: 40%"
+                                            @change="
+                                                chainedSelectCategories(
+                                                    selected_sub_activity2
+                                                )
+                                            "
                                         >
-                                            <select
-                                                id="select_proposal_apply_activity"
-                                                ref="select_proposal_apply_activity"
-                                                v-model="selected_activity"
-                                                class="form-control"
-                                                style="width: 40%"
-                                                @change="
-                                                    chainedSelectSubActivities1(
-                                                        selected_activity
-                                                    )
-                                                "
+                                            <option value="" selected disabled>
+                                                Select sub_activity 2
+                                            </option>
+                                            <option
+                                                v-for="sub_activity2 in sub_activities2"
+                                                :key="sub_activity2.value"
+                                                :value="sub_activity2.value"
                                             >
-                                                <option
-                                                    value=""
-                                                    selected
-                                                    disabled
-                                                >
-                                                    Select activity
-                                                </option>
-                                                <option
-                                                    v-for="activity in activities"
-                                                    :key="activity.value"
-                                                    :value="activity.value"
-                                                >
-                                                    {{ activity.text }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-if="sub_activities1.length > 0">
-                                    <label
-                                        for="select_proposal_apply_sub_activity1"
-                                        class="control-label"
-                                        >Sub Activity 1 *
-                                        <a
-                                            :href="sub_activity_1_help_url"
-                                            target="_blank"
-                                            ><i
-                                                class="fas fa-circle-question"
-                                                style="color: blue"
-                                                >&nbsp;</i
-                                            ></a
-                                        ></label
-                                    >
-                                    <div class="col-sm-12">
-                                        <div
-                                            id="select_proposal_apply_sub_activity1_parent"
-                                            class="form-group"
-                                        >
-                                            <select
-                                                id="select_proposal_apply_sub_activity1"
-                                                ref="select_proposal_apply_sub_activity1"
-                                                v-model="selected_sub_activity1"
-                                                class="form-control"
-                                                style="width: 40%"
-                                                @change="
-                                                    chainedSelectSubActivities2(
-                                                        selected_sub_activity1
-                                                    )
-                                                "
-                                            >
-                                                <option
-                                                    value=""
-                                                    selected
-                                                    disabled
-                                                >
-                                                    Select sub_activity 1
-                                                </option>
-                                                <option
-                                                    v-for="sub_activity1 in sub_activities1"
-                                                    :key="sub_activity1.value"
-                                                    :value="sub_activity1.value"
-                                                >
-                                                    {{ sub_activity1.text }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-if="sub_activities2.length > 0">
-                                    <label
-                                        for="select_proposal_apply_sub_activity2"
-                                        class="control-label"
-                                        >Sub Activity 2 *
-                                        <a
-                                            :href="sub_activity_2_help_url"
-                                            target="_blank"
-                                            ><i
-                                                class="fas fa-circle-question"
-                                                style="color: blue"
-                                                >&nbsp;</i
-                                            ></a
-                                        ></label
-                                    >
-                                    <div class="col-sm-12">
-                                        <div
-                                            id="select_proposal_apply_sub_activity2_parent"
-                                            class="form-group"
-                                        >
-                                            <select
-                                                id="select_proposal_apply_sub_activity2"
-                                                ref="select_proposal_apply_sub_activity2"
-                                                v-model="selected_sub_activity2"
-                                                class="form-control"
-                                                style="width: 40%"
-                                                @change="
-                                                    chainedSelectCategories(
-                                                        selected_sub_activity2
-                                                    )
-                                                "
-                                            >
-                                                <option
-                                                    value=""
-                                                    selected
-                                                    disabled
-                                                >
-                                                    Select sub_activity 2
-                                                </option>
-                                                <option
-                                                    v-for="sub_activity2 in sub_activities2"
-                                                    :key="sub_activity2.value"
-                                                    :value="sub_activity2.value"
-                                                >
-                                                    {{ sub_activity2.text }}
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div v-if="categories.length > 0">
-                                    <label
-                                        for="select_proposal_apply_category"
-                                        class="control-label"
-                                        >Category *
-                                        <a
-                                            :href="category_help_url"
-                                            target="_blank"
-                                            ><i
-                                                class="fas fa-circle-question"
-                                                style="color: blue"
-                                                >&nbsp;</i
-                                            ></a
-                                        ></label
-                                    >
-                                    <div class="col-sm-12">
-                                        <div
-                                            id="select_proposal_apply_category_parent"
-                                            class="form-group"
-                                        >
-                                            <select
-                                                id="select_proposal_apply_category"
-                                                ref="select_proposal_apply_category"
-                                                v-model="selected_category"
-                                                class="form-control"
-                                                style="width: 40%"
-                                                @change="
-                                                    get_approval_level(
-                                                        selected_category
-                                                    )
-                                                "
-                                            >
-                                                <option
-                                                    value=""
-                                                    selected
-                                                    disabled
-                                                >
-                                                    Select category
-                                                </option>
-                                                <option
-                                                    v-for="category in categories"
-                                                    :key="category.value"
-                                                    :value="category.value"
-                                                    :name="category.approval"
-                                                >
-                                                    {{ category.text }}
-                                                </option>
-                                            </select>
-                                        </div>
+                                                {{ sub_activity2.text }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
-                        </FormSection>
+
+                            <div v-if="categories.length > 0">
+                                <label
+                                    for="select_proposal_apply_category"
+                                    class="control-label"
+                                    >Category *
+                                    <a :href="category_help_url" target="_blank"
+                                        ><i
+                                            class="fas fa-circle-question"
+                                            style="color: blue"
+                                            >&nbsp;</i
+                                        ></a
+                                    ></label
+                                >
+                                <div class="col-sm-12">
+                                    <div
+                                        id="select_proposal_apply_category_parent"
+                                        class="form-group"
+                                    >
+                                        <select
+                                            id="select_proposal_apply_category"
+                                            ref="select_proposal_apply_category"
+                                            v-model="selected_category"
+                                            class="form-control"
+                                            style="width: 40%"
+                                            @change="
+                                                get_approval_level(
+                                                    selected_category
+                                                )
+                                            "
+                                        >
+                                            <option value="" selected disabled>
+                                                Select category
+                                            </option>
+                                            <option
+                                                v-for="category in categories"
+                                                :key="category.value"
+                                                :value="category.value"
+                                                :name="category.approval"
+                                            >
+                                                {{ category.text }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </FormSection>
 
                     <div v-show="has_active_proposals()" class="col-sm-12">
                         <p style="color: red">
@@ -787,15 +759,13 @@ export default {
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Accept',
-            }).then(
-                (swalresult) => {
-                    if (swalresult.isConfirmed && !vm.has_active_proposals()) {
-                        vm.createProposal();
-                    } else {
-                        vm.submitInProgress = false;
-                    }
+            }).then((swalresult) => {
+                if (swalresult.isConfirmed && !vm.has_active_proposals()) {
+                    vm.createProposal();
+                } else {
+                    vm.submitInProgress = false;
                 }
-            );
+            });
         },
         alertText: function () {
             let vm = this;
@@ -1194,7 +1164,7 @@ export default {
 };
 </script>
 
-<style lang="css">
+<style scoped lang="css">
 input[type='text'],
 select {
     width: 40%;

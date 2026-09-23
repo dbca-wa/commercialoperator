@@ -115,7 +115,9 @@
                                     <div class="col-sm-9">
                                         <input
                                             ref="number_of_tenders"
-                                            v-model.number="vessel.number_of_tenders"
+                                            v-model.number="
+                                                vessel.number_of_tenders
+                                            "
                                             class="form-control"
                                             name="number_of_tenders"
                                             type="number"
@@ -141,7 +143,9 @@
                                             class="mb-2"
                                         >
                                             <a
-                                                :href="vessel.certificate_of_survey"
+                                                :href="
+                                                    vessel.certificate_of_survey
+                                                "
                                                 target="_blank"
                                                 rel="noopener"
                                                 >{{ certificateFilename }}</a
@@ -149,9 +153,9 @@
                                             <button
                                                 type="button"
                                                 class="btn btn-link text-danger"
-                                                @click="removeCertificate"
                                                 title="Delete document"
                                                 aria-label="Delete document"
+                                                @click="removeCertificate"
                                             >
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -169,16 +173,20 @@
                                             />
                                         </span>
                                         <div
-                                            v-if="certificate_of_survey_filename"
+                                            v-if="
+                                                certificate_of_survey_filename
+                                            "
                                             class="mt-2"
                                         >
                                             {{ certificate_of_survey_filename }}
                                             <button
                                                 type="button"
                                                 class="btn btn-link text-danger"
-                                                @click="removeSelectedCertificate"
                                                 title="Delete selected document"
                                                 aria-label="Delete selected document"
+                                                @click="
+                                                    removeSelectedCertificate
+                                                "
                                             >
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -274,15 +282,13 @@ export default {
                 : 'Edit a vessel record';
         },
         certificateFilename: function () {
-            const filename = this.vessel.certificate_of_survey
-                .split('/')
-                .pop();
+            const filename = this.vessel.certificate_of_survey.split('/').pop();
             return decodeURIComponent(filename || 'Certificate of survey');
         },
         hasCertificateOfSurvey: function () {
             return Boolean(
                 this.vessel.certificate_of_survey ||
-                    this.certificate_of_survey_file
+                this.certificate_of_survey_file
             );
         },
     },
@@ -361,7 +367,8 @@ export default {
                         }
                         vm.vessel.vessel_length =
                             vm.vessel.vessel_length || vm.vessel.size || '';
-                        vm.vessel.size = vm.vessel.size || vm.vessel.vessel_length || '';
+                        vm.vessel.size =
+                            vm.vessel.size || vm.vessel.vessel_length || '';
                         vm.certificate_of_survey_file = null;
                         vm.certificate_of_survey_filename = '';
                         vm.remove_certificate_of_survey = false;
@@ -510,7 +517,7 @@ export default {
 };
 </script>
 
-<style lang="css">
+<style scoped lang="css">
 input[type='text'],
 input[type='number'] {
     width: 40%;
