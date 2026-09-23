@@ -1,5 +1,6 @@
 [![Build
 status](https://travis-ci.org/dbca-wa/commercialoperator.svg?branch=master)](https://travis-ci.org/dbca-wa/commercialoperator/builds) [![Coverage Status](https://coveralls.io/repos/github/dbca-wa/commercialoperator/badge.svg?branch=master)](https://coveralls.io/github/dbca-wa/commercialoperator?branch=master)
+
 # Commercial Operator Licensing System
 
 The Commercial Operator Licensing System (COLS) is used by customers applying for a licence to deliver tourist and educational services for a profit while on land managed by the Department and to pay for the access fees to access these lands. The system is used by Department staff to process the licence applications and to manage issued licences.
@@ -11,10 +12,44 @@ It is a database-backed Django application, using REST API with Vue.js as the cl
 - Python (>=3.12, <4.0)
 - PostgreSQL (>=12.20)
 
-Python library requirements should be installed using `pip`:
+## Prerequisites: Installing Poetry
 
-`pip install -U setuptools==44.0.0`
-`pip install -r requirements.txt`
+To avoid conflicts with your project or system Python packages, install Poetry in its own isolated environment using the official installer.
+
+### 1. Install Poetry
+
+Run the official installation script:
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+
+### 2. Add Poetry to your PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+### 3. Verify Installation
+which poetry
+# Expected output: /home/container/.local/bin/poetry
+
+poetry --version
+
+```
+
+Poetry Basics (for more see: https://python-poetry.org/docs/)
+
+- Manage the package versions in pyproject.toml rather than requirements.txt
+
+- Use `poetry install` for an inital install into your active project virtualenv
+
+- Use `poetry update` to easily pull in minor and patch releases
+
+- Keep the poetry.lock file commited to version control
+
+- To generate a frozen requirements file:
+
+`poetry export -f requirements.txt --output requirements.txt --without-hashes`
+
+This requirements file is then deterministic rather than being able to change if a hotfix is made and the container is rebuilt.
 
 # Environment settings
 
