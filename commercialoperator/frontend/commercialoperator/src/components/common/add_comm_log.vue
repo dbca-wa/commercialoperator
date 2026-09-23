@@ -15,7 +15,7 @@
                         >
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -34,7 +34,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -53,7 +53,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -83,7 +83,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -103,7 +103,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -122,7 +122,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -131,77 +131,74 @@
                                         >
                                     </div>
                                     <div class="col-sm-9">
-                                        <template v-for="(f, i) in files" :key="i">
-                                            <div
-                                                :class="
-                                                    'row top-buffer file-row-' +
-                                                    i
-                                                "
-                                            >
-                                                <div class="col-sm-4">
-                                                    <span
-                                                        v-if="f.file == null"
-                                                        class="btn btn-info btn-file pull-left"
-                                                    >
-                                                        Attach File
-                                                        <input
-                                                            type="file"
-                                                            :name="
+                                        <div
+                                            v-for="(f, i) in files"
+                                            :key="i"
+                                            :class="
+                                                'row top-buffer file-row-' + i
+                                            "
+                                        >
+                                            <div class="col-sm-4">
+                                                <span
+                                                    v-if="f.file == null"
+                                                    class="btn btn-info btn-file pull-left"
+                                                >
+                                                    Attach File
+                                                    <input
+                                                        type="file"
+                                                        :name="
+                                                            'file-upload-' + i
+                                                        "
+                                                        :class="
+                                                            'file-upload-' + i
+                                                        "
+                                                        @change="
+                                                            uploadFile(
                                                                 'file-upload-' +
-                                                                i
-                                                            "
-                                                            :class="
+                                                                    i,
+                                                                f
+                                                            )
+                                                        "
+                                                    />
+                                                </span>
+                                                <span
+                                                    v-else
+                                                    class="btn btn-info btn-file pull-left"
+                                                >
+                                                    Update File
+                                                    <input
+                                                        type="file"
+                                                        :name="
+                                                            'file-upload-' + i
+                                                        "
+                                                        :class="
+                                                            'file-upload-' + i
+                                                        "
+                                                        @change="
+                                                            uploadFile(
                                                                 'file-upload-' +
-                                                                i
-                                                            "
-                                                            @change="
-                                                                uploadFile(
-                                                                    'file-upload-' +
-                                                                        i,
-                                                                    f
-                                                                )
-                                                            "
-                                                        />
-                                                    </span>
-                                                    <span
-                                                        v-else
-                                                        class="btn btn-info btn-file pull-left"
-                                                    >
-                                                        Update File
-                                                        <input
-                                                            type="file"
-                                                            :name="
-                                                                'file-upload-' +
-                                                                i
-                                                            "
-                                                            :class="
-                                                                'file-upload-' +
-                                                                i
-                                                            "
-                                                            @change="
-                                                                uploadFile(
-                                                                    'file-upload-' +
-                                                                        i,
-                                                                    f
-                                                                )
-                                                            "
-                                                        />
-                                                    </span>
-                                                </div>
-                                                <div class="col-sm-4">
-                                                    <span>{{ f.name }}</span>
-                                                </div>
-                                                <div class="col-sm-4">
-                                                    <button
-                                                        type="button"
-                                                        class="btn btn-danger"
-                                                        @click.prevent="removeFile(i)"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
+                                                                    i,
+                                                                f
+                                                            )
+                                                        "
+                                                    />
+                                                </span>
                                             </div>
-                                        </template>
+                                            <div class="col-sm-4">
+                                                <span>{{ f.name }}</span>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-danger"
+                                                    @click.prevent="
+                                                        removeFile(i)
+                                                    "
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
                                         <a
                                             href=""
                                             @click.prevent="attachAnother"
@@ -243,7 +240,7 @@
 </template>
 
 <script>
-import $ from 'jquery'
+import $ from 'jquery';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers } from '@/utils/hooks.js';
@@ -279,11 +276,11 @@ export default {
             errorString: '',
             successString: '',
             success: false,
-            to: "",
-            from: "",
-            log_type: "",
-            subject: "",
-            text: "",
+            to: '',
+            from: '',
+            log_type: '',
+            subject: '',
+            text: '',
             files: [],
         };
     },
@@ -317,7 +314,9 @@ export default {
         syncTypeSelect: function (value = '') {
             this.comms.type = value;
             if (this.$refs.select_add_comm_log_type) {
-                $(this.$refs.select_add_comm_log_type).val(value).trigger('change');
+                $(this.$refs.select_add_comm_log_type)
+                    .val(value)
+                    .trigger('change');
             }
         },
         ok: function () {
@@ -335,14 +334,18 @@ export default {
 
             if (!formIsValid) {
                 vm.hasErrors = true;
-                if (vm.validation_form && vm.validation_form.errorList.length > 0) {
+                if (
+                    vm.validation_form &&
+                    vm.validation_form.errorList.length > 0
+                ) {
                     const firstError = vm.validation_form.errorList[0];
                     const fieldName = firstError.element.name
                         ? firstError.element.name.replace('fromm', 'from')
                         : 'required field';
                     vm.errorString = `Please complete the '${fieldName}' field.`;
                 } else {
-                    vm.errorString = 'Please complete all required fields before adding this entry.';
+                    vm.errorString =
+                        'Please complete all required fields before adding this entry.';
                 }
                 return;
             }
@@ -406,7 +409,7 @@ export default {
         sendData: function () {
             let vm = this;
             vm.hasErrors = false;
-            let comms = new FormData(); 
+            let comms = new FormData();
             comms.append('to', vm.comms.to || '');
             comms.append('fromm', vm.comms.fromm || '');
             comms.append('cc', vm.comms.cc || '');
@@ -434,7 +437,7 @@ export default {
                         vm.addingComms = false;
                         try {
                             vm.errorString = helpers.apiVueResourceError(error);
-                        } catch (e) {
+                        } catch {
                             vm.errorString = 'The file type is not supported.';
                         }
 
@@ -456,7 +459,8 @@ export default {
                 },
                 messages: {},
                 showErrors: function (errorMap, errorList) {
-                    const hasTooltip = $.fn && typeof $.fn.tooltip === 'function';
+                    const hasTooltip =
+                        $.fn && typeof $.fn.tooltip === 'function';
                     $.each(this.validElements(), function (index, element) {
                         var $element = $(element);
                         $element
