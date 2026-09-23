@@ -3646,6 +3646,22 @@ platformdirs = ">=3.9.1,<5"
 python-discovery = ">=1.6"
 
 [[package]]
+name = "wagov_utils"
+version = "1.20"
+description = "DBCA WA GOV utils"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/dbca-wa/wagov_utils.git"
+reference = "HEAD"
+resolved_reference = "9aeb8ff8683ef5624e8fe2b0ca9a0ca0ac7cd588"
+
+[[package]]
 name = "wcwidth"
 version = "0.8.4"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -3844,4 +3860,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "f636f41fc3a91484756395c24e754789da4a45139e40e42de98817e81c7d32d5"
+content-hash = "8e7c0ece7e7098e864741bfdd8c9e0e93b6beeb6092a52dd19c7a736af1a4713"
