@@ -12,7 +12,9 @@
                             <ul>
                                 <li>Create new applications</li>
                                 <li>View existing applications</li>
-                                <li>View the conditions of your licence</li>
+                                <li>
+                                    View the compliances for your licence(s)
+                                </li>
                                 <li>Apply to amend a licence</li>
                             </ul>
                         </div>
