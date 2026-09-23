@@ -6,44 +6,39 @@
 
 {% if is_internal_login %}
     <li class="nav-item">
-        <a class="nav-link{% if request.path == '/internal/' or 'internal/proposal' in request.path or 'internal/proposal_compare' in request.path %} active{% endif %}" href="/internal/">
-            Applications
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link{% if 'approvals' in request.path %} active{% endif %}" href="/internal/approvals">
+        <a class="nav-link{% if '/approvals' in request.path %} active{% endif %}" href="/internal/approvals">
             Licences
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link{% if 'compliances' in request.path %} active{% endif %}" href="/internal/compliances">
+        <a class="nav-link{% if '/compliances' in request.path %} active{% endif %}" href="/internal/compliances">
             Compliance with Requirements
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link{% if 'organisations' in request.path %} active{% endif %}" href="/internal/organisations/access">
+        <a class="nav-link{% if '/organisations' in request.path %} active{% endif %}" href="/internal/organisations/access">
             Organisation Access
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/internal/search">
+        <a class="nav-link{% if '/search' in request.path %} active{% endif %}" href="/internal/search">
             Search
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/internal/payment">
+        <a class="nav-link{% if '/payment' in request.path %} active{% endif %}" href="/internal/payment">
             Park Entry Fees
         </a>
     </li>
 {% else %}
     {% if request.user.is_authenticated %}
         <li class="nav-item">
-            <a class="nav-link{% if 'proposals' in request.path %} active{% endif %}" href="/external/">
+            <a class="nav-link{% if '/proposals' in request.path %} active{% endif %}" href="/external/">
                 Applications
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="/external/payment">
+            <a class="nav-link{% if '/payment' in request.path %} active{% endif %}" href="/external/payment">
                 Park Entry Fees
             </a>
         </li>
