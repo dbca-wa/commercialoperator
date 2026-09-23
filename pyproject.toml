@@ -11,6 +11,7 @@ python = "^3.14"
 django = "^5.2.1"
 ledger-api-client = {git = "https://github.com/dbca-wa/ledger_api_client.git"}
 webtemplate-dbca = {git = "https://github.com/dbca-wa/webtemplate2.git"}
+wagov_utils = {git = "https://github.com/dbca-wa/wagov_utils.git"}
 django-extensions = "^4.1"
 coverage = "^7.16.1"
 coveralls = "^4.1.0"
