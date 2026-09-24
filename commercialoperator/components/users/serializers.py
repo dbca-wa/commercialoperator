@@ -218,6 +218,7 @@ class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     is_department_user = serializers.SerializerMethodField()
     is_payment_admin = serializers.SerializerMethodField()
+    is_internal = serializers.SerializerMethodField()
     system_settings = serializers.SerializerMethodField()
     is_commercialoperator_admin = serializers.SerializerMethodField()
     is_org_access_member = serializers.SerializerMethodField()
@@ -240,12 +241,20 @@ class UserSerializer(serializers.ModelSerializer):
             "full_name",
             "is_department_user",
             "is_payment_admin",
+            "is_internal",
             "is_staff",
             "system_settings",
             "is_commercialoperator_admin",
             "is_org_access_member",
             "acc_mgmt_url",
         )
+
+    def get_is_internal(self, obj):
+        request = self.context["request"] if self.context else None
+        if obj.email:
+            return is_internal(request)
+        else:
+            return False
 
     def get_personal_details(self, obj):
         return True if obj.last_name and obj.first_name else False

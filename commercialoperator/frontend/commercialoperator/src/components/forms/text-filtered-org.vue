@@ -67,6 +67,7 @@
                     :options="options"
                     placeholder="Start typing to search for an organisation"
                     @search="onSearch"
+                    @option:selected="onSelected"
                 >
                     <template #no-options
                         >Search for name, trading name or ABN</template
@@ -172,6 +173,9 @@ export default {
         onSearch(search, loading) {
             loading(true);
             this.search(loading, search, this);
+        },
+        onSelected(option) {
+            this.$emit('selected', option);
         },
         search: _.debounce((loading, search, vm) => {
             helpers

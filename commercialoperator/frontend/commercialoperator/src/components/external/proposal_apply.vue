@@ -60,6 +60,26 @@
                                                 a Consultant)
                                             </label>
                                         </div>
+                                        <div>
+                                            <label v-show="profile.is_internal">
+                                                <input
+                                                    v-model="org_applicant"
+                                                    type="radio"
+                                                    name="behalf_of_org"
+                                                    value="external"
+                                                />
+                                                On behalf of an external organisation
+                                            </label>
+                                        </div>
+                                        <div v-show="org_applicant=='external'">
+                                            <TextFilteredOrgField
+                                                ref="orgField"
+                                                id="id_org"
+                                                :url="filtered_org_url"
+                                                name="SearchOrganisation"
+                                                @selected="onOrgSelected"
+                                            />
+                                        </div>
                                     </div>
                                     <div v-else>
                                         <p style="color: red">
@@ -508,10 +528,11 @@ import { api_endpoints, helpers } from '@/utils/hooks';
 import utils from './utils';
 import FormSection from '@/components/forms/section_toggle.vue';
 import { v4 as uuid } from 'uuid';
-
+import TextFilteredOrgField from '@/components/forms/text-filtered-org.vue';
 export default {
     components: {
         FormSection,
+        TextFilteredOrgField,
     },
     beforeRouteEnter: function (to, from, next) {
         let initialisers = [utils.fetchProfile()];
@@ -532,12 +553,13 @@ export default {
             yourself: '',
             profile: {
                 commercialoperator_organisations: [],
+                is_internal: false,
             },
             loading: [],
             form: null,
             pBody: 'pBody' + uuid(),
             pBody2: 'pBody2' + uuid(),
-
+            selected_org: '',
             selected_application_id: '',
             selected_application_name: '',
             selected_region: '',
@@ -563,6 +585,7 @@ export default {
             site_url: api_endpoints.site_url.endsWith('/')
                 ? api_endpoints.site_url
                 : api_endpoints.site_url + '/',
+            filtered_org_url: api_endpoints.filtered_organisations + '?search=',
         };
     },
     computed: {
@@ -571,7 +594,7 @@ export default {
         },
         org: function () {
             let vm = this;
-            if (vm.org_applicant != '' && vm.org_applicant != 'yourself') {
+            if (vm.org_applicant != '' && vm.org_applicant != 'yourself' && vm.org_applicant != 'external') {
                 return vm.profile.commercialoperator_organisations.find(
                     (org) => parseInt(org.id) === parseInt(vm.org_applicant)
                 ).name;
@@ -715,6 +738,10 @@ export default {
         });
     },
     methods: {
+        onOrgSelected(option) {
+            this.selected_org = option.org_id;
+            console.log(this.selected_org)
+        },
         has_active_proposals: function () {
             return this.active_proposals().length > 0;
         },
