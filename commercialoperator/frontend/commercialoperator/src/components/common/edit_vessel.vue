@@ -19,7 +19,7 @@
                         >
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -41,7 +41,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -62,7 +62,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -83,7 +83,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -104,7 +104,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -129,7 +129,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
