@@ -74,7 +74,7 @@
 }
 
 /* Bring app content inline with header logo and navbar */
-div#app .container {
+div#app>.container {
     padding: 0 40px 0 40px;
     margin-bottom: 45px;
 }
