@@ -42,7 +42,7 @@
 {% is_internal as is_internal_login %}
   <div class="navbar-nav">
     <div class="nav-item">
-      <a class="nav-link{% if request.path == '/' or request.path == '/internal/' or '/proposal' in request.path  %} active{% endif %}" href="{% url 'home' %}"><img src="{% static 'img/pwl_icon.png' %}" class="me-2">{% if is_internal_login %}Applications{% else %}Home {% endif %}</a>
+      <a class="nav-link{% if request.path == '/' or request.path == '/internal/' or request.path == '/external/'  %} active{% endif %}" href="{% url 'home' %}"><img src="{% static 'img/pwl_icon.png' %}" class="me-2">Home</a>
     </div>
   </div>
 {% endblock menu_items_left_brand%}
