@@ -1,7 +1,7 @@
 <template lang="html">
     <div>
         <div class="col-md-12">
-            <ul id="pills-tab" class="nav nav-tabs mb-3" role="tablist">
+            <ul id="pills-tab" class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
                     <a
                         id="pills-applicant-tab"
