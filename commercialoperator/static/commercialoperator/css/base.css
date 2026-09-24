@@ -139,6 +139,20 @@ body {
     text-decoration: none;
 }
 
+.nav-link.active {
+    border-bottom-right-radius: revert !important;
+    border-bottom-left-radius: revert !important;
+}
+
+.nav-tabs {
+    margin-left: 5px !important;
+    border-bottom: 0;
+}
+
+.nav-tabs .nav-link.active {
+    cursor: default;
+}
+
 @media (max-width: 992px) {
     .ps-banner h1 {
         display: none;
