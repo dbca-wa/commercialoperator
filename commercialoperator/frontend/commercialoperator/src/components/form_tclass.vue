@@ -1,7 +1,7 @@
 <template lang="html">
     <div>
         <div class="col-md-12">
-            <ul id="pills-tab" class="nav nav-pills mb-3" role="tablist">
+            <ul id="pills-tab" class="nav nav-tabs mb-3" role="tablist">
                 <li class="nav-item">
                     <a
                         id="pills-applicant-tab"
@@ -427,7 +427,7 @@ export default {
                 /* Payment tab  (this is enabled after online_training is completed - in online_training.vue)*/
                 $('#pills-payment-tab').attr(
                     'style',
-                    'background-color:#E5E8E8 !important; color: #99A3A4;'
+                    'background-color:#E5E8E8 !important; color: #99A3A4; margin-left:2px !important;'
                 );
                 $('#li-payment').attr('class', 'nav-item disabled');
             }
@@ -435,7 +435,7 @@ export default {
             /* Confirmation tab - Always Disabled */
             $('#pills-confirm-tab').attr(
                 'style',
-                'background-color:#E5E8E8 !important; color: #99A3A4;'
+                'background-color:#E5E8E8 !important; color: #99A3A4; margin-left:2px !important;'
             );
             $('#li-confirm').attr('class', 'nav-item disabled');
         },
@@ -479,40 +479,3 @@ export default {
     },
 };
 </script>
-
-<style lang="css" scoped>
-.section {
-    text-transform: capitalize;
-}
-.list-group {
-    margin-bottom: 0;
-}
-.fixed-top {
-    position: fixed;
-    top: 56px;
-}
-
-.nav-item {
-    background-color: rgb(200, 200, 200, 0.8) !important;
-    margin-bottom: 2px;
-}
-
-.nav-item > li > a {
-    background-color: yellow !important;
-    color: #fff;
-}
-
-.nav-item > li.active > a,
-.nav-item > li.active > a:hover,
-.nav-item > li.active > a:focus {
-    color: white;
-    background-color: blue;
-    border: 1px solid #888888;
-}
-
-.admin > div {
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 1em;
-}
-</style>

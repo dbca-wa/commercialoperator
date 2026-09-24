@@ -1,7 +1,7 @@
 <template lang="html">
     <div>
         <div class="col-md-12">
-            <ul id="pills-tab" class="nav nav-pills mb-3" role="tablist">
+            <ul id="pills-tab" class="nav nav-tabs mb-3" role="tablist">
                 <li class="nav-item">
                     <a
                         id="pills-applicant-tab"
@@ -211,7 +211,7 @@
 
 <script>
 import Account from '@/components/user/account.vue';
-import Organisation from '@/components/external/organisations//organisation_details.vue';
+import Organisation from '@/components/external/organisations/organisation_details.vue';
 import Applicant from '@/components/common/tclass/applicant.vue';
 import Assessment from '@/components/common/tclass/assessment.vue';
 import ApprovalType from '@/components/common/filming/approval_type.vue';
@@ -331,40 +331,3 @@ export default {
     },
 };
 </script>
-
-<style lang="css" scoped>
-.section {
-    text-transform: capitalize;
-}
-.list-group {
-    margin-bottom: 0;
-}
-.fixed-top {
-    position: fixed;
-    top: 56px;
-}
-
-.nav-item {
-    background-color: rgb(200, 200, 200, 0.8) !important;
-    margin-bottom: 2px;
-}
-
-.nav-item > li > a {
-    background-color: yellow !important;
-    color: #fff;
-}
-
-.nav-item > li.active > a,
-.nav-item > li.active > a:hover,
-.nav-item > li.active > a:focus {
-    color: white;
-    background-color: blue;
-    border: 1px solid #888888;
-}
-
-.admin > div {
-    display: inline-block;
-    vertical-align: top;
-    margin-right: 1em;
-}
-</style>

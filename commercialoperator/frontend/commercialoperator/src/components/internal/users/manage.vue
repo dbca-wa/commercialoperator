@@ -8,7 +8,7 @@
                         {{ user.dob }} ({{ user.email }})
                     </h3>
                     <div class="col-md-12">
-                        <ul class="nav nav-pills mb-3" role="tablist">
+                        <ul class="nav nav-tabs mb-3" role="tablist">
                             <li class="nav-item">
                                 <a
                                     id="pills-details-tab"
