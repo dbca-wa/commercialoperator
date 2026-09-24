@@ -18,7 +18,7 @@
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
                                         <div class="radio">
@@ -80,7 +80,7 @@
                                             :is-required="false"
                                         />
                                         <div class="form-group">
-                                            <div class="row">
+                                            <div class="row mb-3">
                                                 <div class="col-sm-3">
                                                     <label
                                                         class="control-label pull-left"
@@ -203,7 +203,7 @@ import DateField from '@/components/forms/date-field.vue';
 import TextFilteredField from '@/components/forms/text-filtered.vue';
 
 import { helpers, api_endpoints } from '@/utils/hooks.js';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'proposal-onhold',
