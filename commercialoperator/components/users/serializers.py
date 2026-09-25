@@ -80,8 +80,8 @@ class UserSystemSettingsSerializer(serializers.ModelSerializer):
 
 
 class UserOrganisationSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source="organisation_name", read_only=True)
-    abn = serializers.CharField(source="organisation_abn", read_only=True)
+    name = serializers.SerializerMethodField(read_only=True)
+    abn = serializers.SerializerMethodField(read_only=True)
     email = serializers.SerializerMethodField(
         source="organisation_email", read_only=True
     )
@@ -104,17 +104,33 @@ class UserOrganisationSerializer(serializers.ModelSerializer):
             "current_event_proposals",
         )
 
+    def get_name(self, obj):
+        if type(obj) is dict:
+            return obj["organisation_name"]
+        return obj.name
+
+    def get_abn(self, obj):
+        if type(obj) is dict:
+            return obj["organisation_abn"]
+        return obj.abn
+
     def get_is_admin(self, obj):
-        user = EmailUser.objects.get(id=self.context.get("user_id"))
-        return can_admin_org(obj, user.id)
+        if self.context:
+            user = EmailUser.objects.get(id=self.context.get("user_id"))
+            return can_admin_org(obj, user.id)
+        return False
 
     def get_is_consultant(self, obj):
-        user = EmailUser.objects.get(id=self.context.get("user_id"))
-        return is_consultant(obj, user)
+        if self.context:
+            user = EmailUser.objects.get(id=self.context.get("user_id"))
+            return is_consultant(obj, user)
+        return False
 
     def get_email(self, obj):
-        email = EmailUser.objects.get(id=self.context.get("user_id")).email
-        return email
+        if self.context:
+            email = EmailUser.objects.get(id=self.context.get("user_id")).email
+            return email
+        return None
 
     def get_active_proposals(self, obj):
         """

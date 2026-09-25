@@ -2181,6 +2181,13 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             approval_level = request.data.get("approval_level")
             selected_copy_from = request.data.get("selected_copy_from", None)
 
+            submitter = request.user.id #TODO if the user is internal and NOT a member of the organisation, override submitter with an org admin (prioritising an org admin with a matching email to the org email address)
+            user_orgs = retrieve_delegate_organisation_ids(request.user)
+            if is_internal(request) and not org_applicant in user_orgs:
+                raise serializers.ValidationError("WIP")
+            elif not org_applicant in user_orgs:
+                raise serializers.ValidationError("user not authorised to submit an application on organisation's behalf")
+
             application_name = ApplicationType.objects.get(id=application_type).name
             # Get most recent versions of the Proposal Types
             qs_proposal_type = (
@@ -2243,7 +2250,7 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             else:
                 data = {
                     "schema": proposal_type.schema,
-                    "submitter": request.user.id,
+                    "submitter": submitter,
                     "org_applicant": request.data.get("org_applicant"),
                     "application_type": application_type,
                     "region": region,

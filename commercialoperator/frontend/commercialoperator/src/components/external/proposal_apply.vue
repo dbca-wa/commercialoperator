@@ -96,7 +96,7 @@
                         </FormSection>
 
                     <FormSection
-                            v-show="org_applicant != '' || yourself != ''"
+                            v-show="(org_applicant != '' && (org_applicant != 'external' || selected_org != '')) || yourself != ''"
                             :form-collapse="false"
                             label="Apply for"
                             index="license_apply_for"
@@ -582,11 +582,22 @@ export default {
             selected_copy_from: null,
             display_region_selectbox: false,
             display_activity_matrix_selectbox: false,
+            fetched_org: null,
             site_url: api_endpoints.site_url.endsWith('/')
                 ? api_endpoints.site_url
                 : api_endpoints.site_url + '/',
             filtered_org_url: api_endpoints.filtered_organisations + '?search=',
         };
+    },
+    watch: {
+        selected_org: {
+            immediate: true,
+            handler(val) {
+                if (this.org_applicant === 'external' && val) {
+                    this.fetchOrg();
+                }
+            }
+        }
     },
     computed: {
         isLoading: function () {
@@ -598,11 +609,16 @@ export default {
                 return vm.profile.commercialoperator_organisations.find(
                     (org) => parseInt(org.id) === parseInt(vm.org_applicant)
                 ).name;
+            } else if (vm.org_applicant == 'external' && this.selected_org && this.fetched_org) {
+                return this.fetched_org.name
             }
             return vm.org_applicant;
         },
         manyDistricts: function () {
             return this.districts.length > 1;
+        },
+        organisation_url: function () {
+            return api_endpoints.organisation + "/" + this.selected_org + "/commercialoperator_organisation";
         },
         proposal_type_help_url: function () {
             return api_endpoints.proposal_type_help_url;
@@ -740,7 +756,6 @@ export default {
     methods: {
         onOrgSelected(option) {
             this.selected_org = option.org_id;
-            console.log(this.selected_org)
         },
         has_active_proposals: function () {
             return this.active_proposals().length > 0;
@@ -749,6 +764,12 @@ export default {
             // returns active 'T Class' proposals - cannot have more than 1 active 'T Class' application at a time
             let vm = this;
             var proposals = [];
+            if (this.org_applicant === "external" && this.selected_org !== "" && this.fetched_org !== null && vm.selected_application_name == vm.application_type_tclass) {
+                proposals = this.fetched_org.active_proposals.find(
+                    (el) => el.application_type === vm.application_type_tclass
+                ).proposals;
+                return proposals
+            }
             var org = vm.profile.commercialoperator_organisations.find(
                 (el) => el.name === vm.org
             );
@@ -788,7 +809,6 @@ export default {
                 return;
             }
             vm.submitInProgress = true;
-            console.log(vm.org_applicant);
             if (
                 vm.selected_application_name == vm.application_type_tclass &&
                 vm.has_active_proposals()
@@ -844,8 +864,14 @@ export default {
             if (vm.org_applicant == 'yourself') {
                 vm.org_applicant = '';
             }
+
+            let org_applicant = vm.org_applicant;
+            if (vm.org_applicant == 'external' && vm.selected_org) {
+                org_applicant = vm.selected_org;
+            }
+
             const data = {
-                org_applicant: vm.org_applicant,
+                org_applicant: org_applicant,
                 application: vm.selected_application_id,
                 region: vm.selected_region,
                 district: vm.selected_district,
@@ -930,13 +956,25 @@ export default {
         isDisabled: function () {
             let vm = this;
             if (
-                (vm.org_applicant == '' && vm.yourself == '') ||
+                ((vm.org_applicant == '' || (vm.org_applicant == 'external' && (this.selected_org == '' || this.fetched_org == null))) && vm.yourself == '') ||
                 vm.selected_application_id == '' ||
                 vm.submitInProgress
             ) {
                 return true;
             }
             return false;
+        },
+        fetchOrg: function () {
+            let vm = this;
+
+            helpers.fetchUrl(vm.organisation_url).then(
+                (response) => {
+                    vm.fetched_org = response;
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
         },
         fetchRegions: function () {
             let vm = this;
