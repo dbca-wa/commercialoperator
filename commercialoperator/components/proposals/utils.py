@@ -58,7 +58,7 @@ from commercialoperator.components.main.models import (
     Section,
     Zone,
 )
-from commercialoperator.components.organisations.models import Organisation
+from commercialoperator.components.organisations.models import Organisation, OrganisationContact
 
 import traceback
 import os
@@ -1512,8 +1512,15 @@ def save_assessor_data(instance, request, viewset):
 @transaction.atomic
 def proposal_submit(proposal, request=None):
     if proposal.can_user_edit:
-        if request: #if being called after payment, this has already been set
-            proposal.submitter = request.user
+        if request and request.user and isinstance(request.user,EmailUser):
+            if not proposal.submitter:
+                proposal.submitter = request.user #NOTE: submitter should already be set
+                proposal.save()
+            #Same org, different submitter
+            if proposal.org_applicant:
+                if OrganisationContact.objects.filter(organisation=proposal.org_applicant,email=request.user.email).exists():
+                    proposal.submitter = request.user
+                    proposal.save()
         proposal.lodgement_date = timezone.now()
         proposal.training_completed = True
         if proposal.amendment_requests:

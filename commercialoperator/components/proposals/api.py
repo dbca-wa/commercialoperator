@@ -142,7 +142,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from commercialoperator.components.main.models import private_storage
-from commercialoperator.components.organisations.models import Organisation
+from commercialoperator.components.organisations.models import Organisation, OrganisationContact
 from ledger_api_client.utils import get_search_organisation
 
 
@@ -2181,10 +2181,18 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             approval_level = request.data.get("approval_level")
             selected_copy_from = request.data.get("selected_copy_from", None)
 
-            submitter = request.user.id #TODO if the user is internal and NOT a member of the organisation, override submitter with an org admin (prioritising an org admin with a matching email to the org email address)
+            submitter = request.user.id 
+            #if the user is internal and NOT a member of the organisation, override submitter with an org admin (prioritising an org admin with a matching email to the org email address)
             user_orgs = retrieve_delegate_organisation_ids(request.user)
             if is_internal(request) and not org_applicant in user_orgs:
-                raise serializers.ValidationError("WIP")
+                org_admins = OrganisationContact.objects.filter(organisation_id=org_applicant,is_admin=True)
+                organisation = Organisation.objects.get(id=org_applicant)
+                #if the organisation has an email and the email belongs to an organisation admin, prioritise that, otherwise pick first on the list
+                organisation_email = organisation.email
+                if organisation_email and org_admins.filter(email=organisation_email).exists():
+                    submitter = EmailUser.objects.get(email=organisation_email).id
+                else:
+                    submitter = EmailUser.objects.get(email=org_admins.first().email).id
             elif not org_applicant in user_orgs:
                 raise serializers.ValidationError("user not authorised to submit an application on organisation's behalf")
 
