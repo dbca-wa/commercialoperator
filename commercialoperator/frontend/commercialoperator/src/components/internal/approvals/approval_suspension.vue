@@ -18,7 +18,7 @@
                         >
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -50,7 +50,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -82,7 +82,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -137,7 +137,7 @@
 </template>
 
 <script>
-import $ from 'jquery'
+import $ from 'jquery';
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';

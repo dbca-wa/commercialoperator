@@ -14,7 +14,7 @@
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
                                         <TextArea
@@ -55,7 +55,7 @@ import TextArea from '@/components/forms/text-area.vue';
 import FileField from '@/components/forms/file.vue';
 
 import { helpers, api_endpoints } from '@/utils/hooks.js';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'proposal-onhold',

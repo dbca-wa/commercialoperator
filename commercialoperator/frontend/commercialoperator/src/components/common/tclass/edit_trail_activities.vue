@@ -32,7 +32,7 @@
                                 <div
                                     v-for="s in trail.sections"
                                     :key="s.name"
-                                    class="row"
+                                    class="row mb-3"
                                 >
                                     <div class="form-horizontal col-sm-3">
                                         <div class="">

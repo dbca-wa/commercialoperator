@@ -11,24 +11,24 @@
             <div v-if="!proposal_readonly">
                 <div v-if="hasAmendmentRequest" class="row">
                     <div class="col-lg-12 pull-right">
-                            <FormSection
-                                :form-collapse="false"
-                                label="An amendment has been requested for this Application"
-                                index="amendment_request"
-                                subtitle=""
+                        <FormSection
+                            :form-collapse="false"
+                            label="An amendment has been requested for this Application"
+                            index="amendment_request"
+                            subtitle=""
+                        >
+                            <div
+                                v-for="a in amendment_request"
+                                :key="a.reason"
+                                class="text-danger"
                             >
-                                <div
-                                    v-for="a in amendment_request"
-                                    :key="a.reason"
-                                    class="text-danger"
-                                >
-                                    <p>Reason: {{ a.reason }}</p>
-                                    <p>Details:</p>
-                                    <p v-for="t in splitText(a.text)" :key="t">
-                                        {{ t }}
-                                    </p>
-                                </div>
-                            </FormSection>
+                                <p>Reason: {{ a.reason }}</p>
+                                <p>Details:</p>
+                                <p v-for="t in splitText(a.text)" :key="t">
+                                    {{ t }}
+                                </p>
+                            </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
             </div>
 
             <div v-if="proposal" id="scrollspy-heading" class="col-lg-12">
-                <h4>
+                <h4 class="mb-4">
                     Commercial Operator -
                     {{ proposal.application_type }} application:
                     {{ proposal.lodgement_number }}
@@ -112,105 +112,116 @@
                 />
                 <input type="hidden" name="proposal_id" :value="1" />
 
-                <div class="row" style="margin-bottom: 50px">
-                    <div
-                        class="navbar navbar-nav navbar-fixed-bottom ms-auto align-items-end"
-                        style="background-color: #f5f5f5"
-                    >
-                        <div>
-                            <div
-                                v-if="proposal && !proposal.readonly"
-                                class="container-fluid"
-                            >
-                                <p class="pull-right" style="margin-top: 5px">
-                                    <button
-                                        v-if="saveExitProposal"
-                                        type="button"
-                                        class="btn btn-primary"
-                                        disabled
+                <div class="row">
+                    <div class="col">
+                        <nav
+                            class="navbar navbar-expand-lg bg-light fixed-bottom border-top"
+                        >
+                            <div class="container pb-0">
+                                <div
+                                    v-if="proposal && !proposal.readonly"
+                                    class="w-100 d-flex justify-content-end align-items-center"
+                                >
+                                    <p
+                                        class="pull-right"
+                                        style="margin-top: 5px"
                                     >
-                                        Save and Exit&nbsp;
-                                        <i
-                                            class="fas fa-circle-notch fa-spin fa-fw"
-                                        ></i>
-                                    </button>
-                                    <input
-                                        v-else
-                                        type="button"
-                                        class="btn btn-primary me-2"
-                                        value="Save and Exit"
-                                        :disabled="
-                                            savingProposal || paySubmitting
-                                        "
-                                        @click.prevent="save_exit"
-                                    />
-                                    <button
-                                        v-if="savingProposal"
-                                        type="button"
-                                        class="btn btn-primary me-2"
-                                        disabled
-                                    >
-                                        Save and Continue&nbsp;
-                                        <i
-                                            class="fas fa-circle-notch fa-spin fa-fw"
-                                        ></i>
-                                    </button>
-                                    <input
-                                        v-else
-                                        type="button"
-                                        class="btn btn-primary me-2"
-                                        value="Save and Continue"
-                                        :disabled="
-                                            saveExitProposal || paySubmitting
-                                        "
-                                        @click.prevent="save"
-                                    />
+                                        <button
+                                            v-if="saveExitProposal"
+                                            type="button"
+                                            class="btn btn-primary"
+                                            disabled
+                                        >
+                                            Save and Exit&nbsp;
+                                            <i
+                                                class="fas fa-circle-notch fa-spin fa-fw"
+                                            ></i>
+                                        </button>
+                                        <input
+                                            v-else
+                                            type="button"
+                                            class="btn btn-primary me-2"
+                                            value="Save and Exit"
+                                            :disabled="
+                                                savingProposal || paySubmitting
+                                            "
+                                            @click.prevent="save_exit"
+                                        />
+                                        <button
+                                            v-if="savingProposal"
+                                            type="button"
+                                            class="btn btn-primary me-2"
+                                            disabled
+                                        >
+                                            Save and Continue&nbsp;
+                                            <i
+                                                class="fas fa-circle-notch fa-spin fa-fw"
+                                            ></i>
+                                        </button>
+                                        <input
+                                            v-else
+                                            type="button"
+                                            class="btn btn-primary me-2"
+                                            value="Save and Continue"
+                                            :disabled="
+                                                saveExitProposal ||
+                                                paySubmitting
+                                            "
+                                            @click.prevent="save"
+                                        />
 
-                                    <button
-                                        v-if="paySubmitting"
-                                        type="button"
-                                        class="btn btn-primary me-2"
-                                        disabled
+                                        <button
+                                            v-if="paySubmitting"
+                                            type="button"
+                                            class="btn btn-primary me-2"
+                                            disabled
+                                        >
+                                            {{ submit_text() }}&nbsp;
+                                            <i
+                                                class="fas fa-circle-notch fa-spin fa-fw"
+                                            ></i>
+                                        </button>
+                                        <input
+                                            v-else
+                                            type="button"
+                                            class="btn btn-primary me-2"
+                                            :value="submit_text()"
+                                            :disabled="
+                                                !trainingCompleted ||
+                                                saveExitProposal ||
+                                                savingProposal
+                                            "
+                                            :title="completed_online_training"
+                                            @click.prevent="submit"
+                                        />
+                                        <input
+                                            id="save_and_continue_btn"
+                                            type="hidden"
+                                            class="btn btn-primary me-2"
+                                            value="Save Without Confirmation"
+                                            @click.prevent="save_wo_confirm"
+                                        />
+                                    </p>
+                                </div>
+                                <div
+                                    v-else
+                                    class="w-100 d-flex justify-content-end align-items-center"
+                                >
+                                    <p
+                                        class="float-end"
+                                        style="margin-top: 5px"
                                     >
-                                        {{ submit_text() }}&nbsp;
-                                        <i
-                                            class="fas fa-circle-notch fa-spin fa-fw"
-                                        ></i>
-                                    </button>
-                                    <input
-                                        v-else
-                                        type="button"
-                                        class="btn btn-primary me-2"
-                                        :value="submit_text()"
-                                        :disabled="
-                                            !trainingCompleted ||
-                                            saveExitProposal ||
-                                            savingProposal
-                                        "
-                                        :title="completed_online_training"
-                                        @click.prevent="submit"
-                                    />
-                                    <input
-                                        id="save_and_continue_btn"
-                                        type="hidden"
-                                        class="btn btn-primary me-2"
-                                        value="Save Without Confirmation"
-                                        @click.prevent="save_wo_confirm"
-                                    />
-                                </p>
+                                        <router-link
+                                            class="btn btn-primary me-2"
+                                            :to="{
+                                                name: 'external-proposals-dash',
+                                            }"
+                                            >Back to Dashboard</router-link
+                                        >
+                                    </p>
+                                </div>
                             </div>
-                            <div v-else class="container-fluid">
-                                <p class="float-end" style="margin-top: 5px">
-                                    <router-link
-                                        class="btn btn-primary me-2"
-                                        :to="{
-                                            name: 'external-proposals-dash',
-                                        }"
-                                        >Back to Dashboard</router-link
-                                    >
-                                </p>
-                            </div>
-                        </div>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -225,7 +236,7 @@ import ProposalEvent from '../form_event.vue';
 import FormSection from '@/components/forms/section_toggle.vue';
 import PrivacyNotice from '@/components/common/privacy_notice.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'ExternalProposal',
     components: {
@@ -734,9 +745,10 @@ export default {
             let blank_fields = [];
 
             if (vm.proposal.application_type == vm.application_type_tclass) {
-                const active_accreditations = vm.proposal.other_details.accreditations.filter(
-                    (accreditation) => !accreditation.is_deleted
-                );
+                const active_accreditations =
+                    vm.proposal.other_details.accreditations.filter(
+                        (accreditation) => !accreditation.is_deleted
+                    );
                 const has_accreditation = active_accreditations.some(
                     (accreditation) =>
                         accreditation.accreditation_type != 'no' &&
@@ -791,16 +803,28 @@ export default {
                         }
                     }
                 }
-                const active_information_standards = vm.proposal.other_details.information_standards.filter(
-                    (standard) => !standard.is_deleted
-                );
-                const has_information_standard = active_information_standards.some(
-                    (standard) => standard.information_standard_type != 'no'
-                );
-                if (!has_information_standard && active_information_standards.length === 0) {
-                    blank_fields.push(' Accessible Tourism Information is required');
+                const active_information_standards =
+                    vm.proposal.other_details.information_standards.filter(
+                        (standard) => !standard.is_deleted
+                    );
+                const has_information_standard =
+                    active_information_standards.some(
+                        (standard) => standard.information_standard_type != 'no'
+                    );
+                if (
+                    !has_information_standard &&
+                    active_information_standards.length === 0
+                ) {
+                    blank_fields.push(
+                        ' Accessible Tourism Information is required'
+                    );
                 } else if (has_information_standard) {
-                    for (var j = 0; j < vm.proposal.other_details.information_standards.length; j++) {
+                    for (
+                        var j = 0;
+                        j <
+                        vm.proposal.other_details.information_standards.length;
+                        j++
+                    ) {
                         if (
                             !vm.proposal.other_details.information_standards[j]
                                 .is_deleted &&
@@ -808,10 +832,12 @@ export default {
                                 .information_standard_type != 'no'
                         ) {
                             if (
-                                vm.proposal.other_details.information_standards[j]
-                                    .information_comments == null ||
-                                vm.proposal.other_details.information_standards[j]
-                                    .information_comments == ''
+                                vm.proposal.other_details.information_standards[
+                                    j
+                                ].information_comments == null ||
+                                vm.proposal.other_details.information_standards[
+                                    j
+                                ].information_comments == ''
                             ) {
                                 blank_fields.push(
                                     'Details for accessible tourism information type ' +
@@ -824,16 +850,26 @@ export default {
                         }
                     }
                 }
-                const active_emission_standards = vm.proposal.other_details.emission_standards.filter(
-                    (standard) => !standard.is_deleted
-                );
+                const active_emission_standards =
+                    vm.proposal.other_details.emission_standards.filter(
+                        (standard) => !standard.is_deleted
+                    );
                 const has_emission_standard = active_emission_standards.some(
                     (standard) => standard.emission_standard_type != 'no'
                 );
-                if (!has_emission_standard && active_emission_standards.length === 0) {
-                    blank_fields.push(' Tourism Emission Reduction Standards is required');
+                if (
+                    !has_emission_standard &&
+                    active_emission_standards.length === 0
+                ) {
+                    blank_fields.push(
+                        ' Tourism Emission Reduction Standards is required'
+                    );
                 } else if (has_emission_standard) {
-                    for (var k = 0; k < vm.proposal.other_details.emission_standards.length; k++) {
+                    for (
+                        var k = 0;
+                        k < vm.proposal.other_details.emission_standards.length;
+                        k++
+                    ) {
                         if (
                             !vm.proposal.other_details.emission_standards[k]
                                 .is_deleted &&
@@ -848,7 +884,8 @@ export default {
                             ) {
                                 blank_fields.push(
                                     'Details for tourism emission reduction standard type ' +
-                                        vm.proposal.other_details.emission_standards[k]
+                                        vm.proposal.other_details
+                                            .emission_standards[k]
                                             .emission_standard_type_value +
                                         ' are required'
                                 );
@@ -1351,8 +1388,8 @@ export default {
                     if (
                         !vm.proposal.is_amendment_proposal &&
                         !vm.proposal.fee_paid &&
-                            vm.proposal.application_type !=
-                                vm.application_type_filming
+                        vm.proposal.application_type !=
+                            vm.application_type_filming
                     ) {
                         vm.save_and_redirect();
                     } else {

@@ -2,308 +2,298 @@
 <template lang="html">
     <div id="activityInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Event Details"
-                    index="event_details"
-                    subtitle=""
-                >
-                    <div v-if="proposal.event_activity">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="Name"
-                                            >Event name</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <input
-                                            v-model="
-                                                proposal.event_activity
-                                                    .event_name
-                                            "
-                                            type="text"
-                                            class="form-control"
-                                            name="event_name"
-                                            :disabled="
-                                                !canEditPeriod ||
-                                                proposal.pending_amendment_request ||
-                                                proposal.is_amendment_proposal
-                                            "
-                                        />
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="Name"
-                                            >Period of proposed event</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-4">
-                                        <div
-                                            ref="event_activity_commencement_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_activity
-                                                        .commencement_date
-                                                "
-                                                type="date"
-                                                class="form-control"
-                                                name="event_activity_commencement_date"
-                                                max="2999-12-31"
-                                                placeholder="Commencement date"
-                                                required
-                                                :disabled="
-                                                    !canEditPeriod ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                            />
-                                        </div>
-                                        <label
-                                            class="control-label small-label"
-                                            for="event_activity_commencement_date"
-                                            >Commencement date
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-4">
-                                        <div
-                                            ref="event_activity_completion_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_activity
-                                                        .completion_date
-                                                "
-                                                type="date"
-                                                max="2999-12-31"
-                                                class="form-control"
-                                                name="event_activity_completion_date"
-                                                placeholder="Completion date"
-                                                required
-                                                :disabled="
-                                                    !canEditPeriod ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                            />
-                                        </div>
-                                        <label
-                                            class="control-label small-label"
-                                            for="event_activity_completion_date"
-                                            >Completion date
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div
-                                    v-if="is_internal || is_referral"
-                                    class="row"
-                                >
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="Name"
-                                            >Event date</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <input
-                                            v-model="
-                                                proposal.event_activity
-                                                    .event_date
-                                            "
-                                            type="text"
-                                            class="form-control"
-                                            name="event_date"
-                                            :disabled="
-                                                !canEditPeriod ||
-                                                proposal.pending_amendment_request ||
-                                                proposal.is_amendment_proposal
-                                            "
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <label class="col-sm-12" for="Name"
-                                        >List the parks (terrestrial and/or
-                                        marine) where this event is proposed to
-                                        occur and add the proposed activities to
-                                        be undertaken in each park.</label
+            <FormSection
+                :form-collapse="false"
+                label="Event Details"
+                index="event_details"
+                subtitle=""
+            >
+                <div v-if="proposal.event_activity">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="Name"
+                                        >Event name</label
                                     >
-                                    <ParksActivityTable
-                                        ref="parks_table"
-                                        :url="parks_url"
-                                        :proposal="proposal"
-                                        :can-edit-activities="canEditActivities"
-                                        :is_internal="is_internal"
-                                        :is_external="is_external"
-                                    ></ParksActivityTable>
                                 </div>
-                                <div class="row">&nbsp;</div>
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="
+                                            proposal.event_activity.event_name
+                                        "
+                                        type="text"
+                                        class="form-control"
+                                        name="event_name"
+                                        :disabled="
+                                            !canEditPeriod ||
+                                            proposal.pending_amendment_request ||
+                                            proposal.is_amendment_proposal
+                                        "
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Is any part of your proposed event
-                                            located within Public Drinking Water
-                                            Source Areas (PDSWA)?</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <ul class="list-inline">
-                                            <li
-                                                class="form-check list-inline-item"
-                                            >
-                                                <input
-                                                    ref="Radio"
-                                                    v-model="
-                                                        proposal.event_activity
-                                                            .pdswa_location
-                                                    "
-                                                    class="form-check-input"
-                                                    type="radio"
-                                                    :value="true"
-                                                    data-parsley-required
-                                                    :disabled="
-                                                        proposal.readonly
-                                                    "
-                                                    name="pdswa_location"
-                                                />
-                                                Yes
-                                            </li>
-                                            <li
-                                                class="form-check list-inline-item"
-                                            >
-                                                <input
-                                                    ref="Radio"
-                                                    v-model="
-                                                        proposal.event_activity
-                                                            .pdswa_location
-                                                    "
-                                                    class="form-check-input"
-                                                    type="radio"
-                                                    :value="false"
-                                                    data-parsley-required
-                                                    :disabled="
-                                                        proposal.readonly
-                                                    "
-                                                    name="pdswa_location"
-                                                />
-                                                No
-                                            </li>
-                                        </ul>
-                                    </div>
+                            <div class="row">&nbsp;</div>
+
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="Name"
+                                        >Period of proposed event</label
+                                    >
                                 </div>
-                                <div
-                                    v-if="
-                                        proposal.event_activity.pdswa_location
-                                    "
-                                    class="row"
-                                >
-                                    <div class="col-sm-6">
-                                        <label
-                                            v-if="dwer_application_form"
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Please complete and attach the
-                                            Department of Water and
-                                            Environmental Regulation application
-                                            form accessible
-                                            <a
-                                                :href="dwer_application_form"
-                                                target="_blank"
-                                                >here</a
-                                            >.</label
-                                        >
-                                        <label
-                                            v-else
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Please complete and attach the
-                                            Department of Water and
-                                            Environmental Regulation application
-                                            form accessible here.</label
-                                        >
+                                <div class="col-sm-4">
+                                    <div
+                                        ref="event_activity_commencement_date"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_activity
+                                                    .commencement_date
+                                            "
+                                            type="date"
+                                            class="form-control"
+                                            name="event_activity_commencement_date"
+                                            max="2999-12-31"
+                                            placeholder="Commencement date"
+                                            required
+                                            :disabled="
+                                                !canEditPeriod ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
+                                        />
                                     </div>
-                                    <div class="col-sm-6">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="event_activity_pdswa_file"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="true"
-                                            name="event_activity_pdswa_location"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
+                                    <label
+                                        class="control-label small-label"
+                                        for="event_activity_commencement_date"
+                                        >Commencement date
+                                    </label>
                                 </div>
-                                <div class="row">&nbsp;</div>
+                                <div class="col-sm-4">
+                                    <div
+                                        ref="event_activity_completion_date"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_activity
+                                                    .completion_date
+                                            "
+                                            type="date"
+                                            max="2999-12-31"
+                                            class="form-control"
+                                            name="event_activity_completion_date"
+                                            placeholder="Completion date"
+                                            required
+                                            :disabled="
+                                                !canEditPeriod ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
+                                        />
+                                    </div>
+                                    <label
+                                        class="control-label small-label"
+                                        for="event_activity_completion_date"
+                                        >Completion date
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div v-if="is_internal || is_referral" class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="Name"
+                                        >Event date</label
+                                    >
+                                </div>
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="
+                                            proposal.event_activity.event_date
+                                        "
+                                        type="text"
+                                        class="form-control"
+                                        name="event_date"
+                                        :disabled="
+                                            !canEditPeriod ||
+                                            proposal.pending_amendment_request ||
+                                            proposal.is_amendment_proposal
+                                        "
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
-                <FormSection
-                    :form-collapse="false"
-                    label="Activities and Location"
-                    index="activities_and_location"
-                    subtitle="(Trails)"
-                >
-                    <div>
+
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="">
                             <div class="row">
-                                <label
-                                    v-if="trail_section_map"
-                                    class="col-sm-12"
-                                    for="Name"
-                                    >List the the track and trail sections where
-                                    this event is proposed to occur and add the
-                                    proposed activties to be undertaken. A map
-                                    of the sections can be viewed
-                                    <a :href="trail_section_map" target="_blank"
-                                        >here</a
-                                    >.</label
+                                <label class="col-sm-12" for="Name"
+                                    >List the parks (terrestrial and/or marine)
+                                    where this event is proposed to occur and
+                                    add the proposed activities to be undertaken
+                                    in each park.</label
                                 >
-                                <label v-else class="col-sm-12" for="Name"
-                                    >List the the track and trail sections where
-                                    this event is proposed to occur and add the
-                                    proposed activties to be undertaken. A map
-                                    of the sections can be viewed here.</label
-                                >
-                                <TrailsActivityTable
-                                    ref="trails_table"
-                                    :url="trails_url"
+                                <ParksActivityTable
+                                    ref="parks_table"
+                                    :url="parks_url"
                                     :proposal="proposal"
                                     :can-edit-activities="canEditActivities"
                                     :is_internal="is_internal"
                                     :is_external="is_external"
-                                ></TrailsActivityTable>
+                                ></ParksActivityTable>
                             </div>
                             <div class="row">&nbsp;</div>
                         </div>
                     </div>
-                </FormSection>
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Is any part of your proposed event
+                                        located within Public Drinking Water
+                                        Source Areas (PDSWA)?</label
+                                    >
+                                </div>
+                                <div class="col-sm-6">
+                                    <ul class="list-inline">
+                                        <li class="form-check list-inline-item">
+                                            <input
+                                                ref="Radio"
+                                                v-model="
+                                                    proposal.event_activity
+                                                        .pdswa_location
+                                                "
+                                                class="form-check-input"
+                                                type="radio"
+                                                :value="true"
+                                                data-parsley-required
+                                                :disabled="proposal.readonly"
+                                                name="pdswa_location"
+                                            />
+                                            Yes
+                                        </li>
+                                        <li class="form-check list-inline-item">
+                                            <input
+                                                ref="Radio"
+                                                v-model="
+                                                    proposal.event_activity
+                                                        .pdswa_location
+                                                "
+                                                class="form-check-input"
+                                                type="radio"
+                                                :value="false"
+                                                data-parsley-required
+                                                :disabled="proposal.readonly"
+                                                name="pdswa_location"
+                                            />
+                                            No
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div
+                                v-if="proposal.event_activity.pdswa_location"
+                                class="row"
+                            >
+                                <div class="col-sm-6">
+                                    <label
+                                        v-if="dwer_application_form"
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Please complete and attach the
+                                        Department of Water and Environmental
+                                        Regulation application form accessible
+                                        <a
+                                            :href="dwer_application_form"
+                                            target="_blank"
+                                            >here</a
+                                        >.</label
+                                    >
+                                    <label
+                                        v-else
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Please complete and attach the
+                                        Department of Water and Environmental
+                                        Regulation application form accessible
+                                        here.</label
+                                    >
+                                </div>
+                                <div class="col-sm-6">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="event_activity_pdswa_file"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="true"
+                                        name="event_activity_pdswa_location"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
+            <FormSection
+                :form-collapse="false"
+                label="Activities and Location"
+                index="activities_and_location"
+                subtitle="(Trails)"
+            >
+                <div>
+                    <div class="">
+                        <div class="row">
+                            <label
+                                v-if="trail_section_map"
+                                class="col-sm-12"
+                                for="Name"
+                                >List the the track and trail sections where
+                                this event is proposed to occur and add the
+                                proposed activties to be undertaken. A map of
+                                the sections can be viewed
+                                <a :href="trail_section_map" target="_blank"
+                                    >here</a
+                                >.</label
+                            >
+                            <label v-else class="col-sm-12" for="Name"
+                                >List the the track and trail sections where
+                                this event is proposed to occur and add the
+                                proposed activties to be undertaken. A map of
+                                the sections can be viewed here.</label
+                            >
+                            <TrailsActivityTable
+                                ref="trails_table"
+                                :url="trails_url"
+                                :proposal="proposal"
+                                :can-edit-activities="canEditActivities"
+                                :is_internal="is_internal"
+                                :is_external="is_external"
+                            ></TrailsActivityTable>
+                        </div>
+                        <div class="row">&nbsp;</div>
+                    </div>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -315,7 +305,7 @@ import TrailsActivityTable from './trails_activity_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'EventActivities',
     components: {
@@ -398,7 +388,9 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'trail_section_map') {
+                    if (
+                        vm.global_settings.results[i].key == 'trail_section_map'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
@@ -409,7 +401,10 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'dwer_application_form') {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'dwer_application_form'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
@@ -826,12 +821,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 5px;
-    margin-top: 5px;
-}
 .small-label {
     font-size: 12px;
     color: #555;
