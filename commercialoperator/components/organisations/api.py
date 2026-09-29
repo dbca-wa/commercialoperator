@@ -807,8 +807,7 @@ class OrganisationListFilterView(generics.ListAPIView):
     permission_classes=[InternalPermission]
 
     def get_queryset(self):
-        org_list = Organisation.objects.all().values_list("organisation_id", flat=True)
-        return Organisation.objects.filter(id__in=org_list)
+        return Organisation.objects.all()
 
     def list(self, request, *args, **kwargs):
         from commercialoperator.components.segregation.serializers import (
