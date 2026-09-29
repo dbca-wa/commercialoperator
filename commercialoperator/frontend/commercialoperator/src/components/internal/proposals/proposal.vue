@@ -2,7 +2,7 @@
     <div v-if="proposal.id" id="internalProposal" class="container">
         <div class="row" style="padding-bottom: 50px">
             <h3>Application: {{ proposal.lodgement_number }}</h3>
-            <h4>
+            <h4 class="mb-3">
                 Application Type: {{ proposal.application_type }}
                 {{
                     proposal.proposal_type ? `(${proposal.proposal_type})` : ''
@@ -870,7 +870,6 @@
                     </div>
                 </div>
             </div>
-            <div v-if="!comparing" class="col-md-1"></div>
             <div :class="class_ncols">
                 <div class="row">
                     <template
@@ -1074,7 +1073,7 @@ import WithQAOfficer from './proposal_qaofficer.vue';
 import FilmingDistrictProposalsTable from '@common-utils/filming_district_proposals_table.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'InternalProposal',
     components: {

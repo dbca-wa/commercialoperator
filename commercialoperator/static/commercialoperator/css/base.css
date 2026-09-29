@@ -74,7 +74,7 @@
 }
 
 /* Bring app content inline with header logo and navbar */
-div#app .container {
+div#app>.container {
     padding: 0 40px 0 40px;
     margin-bottom: 45px;
 }
@@ -120,22 +120,6 @@ body {
     background-color: #226fbb !important;
 }
 
-.nav-pills .nav-link {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-top-left-radius: 0.5em;
-    border-top-right-radius: 0.5em;
-    margin-right: 0.25em;
-}
-
-.nav-pills .nav-link {
-    background: lightgray;
-}
-
-.nav-pills .nav-link.active {
-    background: gray;
-}
-
 .page-item>.page-link {
     color: #226fbb;
 }
@@ -155,12 +139,18 @@ body {
     text-decoration: none;
 }
 
-.nav-pills .nav-link,
-.nav-pills .nav-link:link,
-.nav-pills .nav-link:visited,
-.nav-pills .nav-link:hover,
-.nav-pills .nav-link:focus {
-    text-decoration: none;
+.nav-link.active {
+    border-bottom-right-radius: revert !important;
+    border-bottom-left-radius: revert !important;
+}
+
+.nav-tabs {
+    margin-left: 5px !important;
+    border-bottom: 0;
+}
+
+.nav-tabs .nav-link.active {
+    cursor: default;
 }
 
 @media (max-width: 992px) {

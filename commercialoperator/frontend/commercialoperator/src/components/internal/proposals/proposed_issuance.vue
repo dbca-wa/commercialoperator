@@ -15,7 +15,7 @@
                         >
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             v-if="
@@ -51,7 +51,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div v-show="showstartDateError" class="row">
+                                <div
+                                    v-show="showstartDateError"
+                                    class="row mb-3"
+                                >
                                     <alert class="col-sm-12" type="danger"
                                         ><strong>{{
                                             startDateErrorString
@@ -60,7 +63,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             v-if="
@@ -96,7 +99,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div v-show="showtoDateError" class="row">
+                                <div v-show="showtoDateError" class="row mb-3">
                                     <alert class="col-sm-12" type="danger"
                                         ><strong>{{
                                             toDateErrorString
@@ -105,7 +108,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             v-if="
@@ -135,7 +138,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             v-if="
@@ -163,7 +166,10 @@
                                         />
                                     </div>
                                 </div>
-                                <div v-show="showApprovalCCError" class="row">
+                                <div
+                                    v-show="showApprovalCCError"
+                                    class="row mb-3"
+                                >
                                     <alert class="col-sm-12" type="danger"
                                         ><strong>{{
                                             approvalCCErrorString
@@ -211,7 +217,7 @@
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'Proposed-Approval',

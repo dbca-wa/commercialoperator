@@ -7,83 +7,80 @@
                     label="Organisation Access Requests"
                     index="organisation_access_requests"
                 >
-                    <div class="card">
-                        <div class="row mb-1">
-                            <div class="col-md-3">
-                                <div
-                                    id="select_organisation_access_role_parent"
-                                    class="form-group"
+                    <div class="row mb-1">
+                        <div class="col-md-3">
+                            <div
+                                id="select_organisation_access_role_parent"
+                                class="form-group"
+                            >
+                                <label for="select_organisation_access_role"
+                                    >Role</label
                                 >
-                                    <label for="select_organisation_access_role"
-                                        >Role</label
-                                    >
-                                    <div v-show="isLoading">
-                                        <select class="form-control">
-                                            <option value="">Loading...</option>
-                                        </select>
-                                    </div>
-                                    <div v-show="!isLoading">
-                                        <select
-                                            id="select_organisation_access_role"
-                                            ref="select_organisation_access_role"
-                                            v-model="filterRole"
-                                            class="form-control"
-                                        >
-                                            <option value="All">All</option>
-                                            <option
-                                                v-for="r in roleChoices"
-                                                :key="r"
-                                                :value="r"
-                                            >
-                                                {{ r }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                <div v-show="isLoading">
+                                    <select class="form-control">
+                                        <option value="">Loading...</option>
+                                    </select>
                                 </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div
-                                    id="select_organisation_access_status_parent"
-                                    class="form-group"
-                                >
-                                    <label
-                                        for="select_organisation_access_status"
-                                        >Status</label
+                                <div v-show="!isLoading">
+                                    <select
+                                        id="select_organisation_access_role"
+                                        ref="select_organisation_access_role"
+                                        v-model="filterRole"
+                                        class="form-control"
                                     >
-                                    <div v-show="isLoading">
-                                        <select class="form-control">
-                                            <option value="">Loading...</option>
-                                        </select>
-                                    </div>
-                                    <div v-show="!isLoading">
-                                        <select
-                                            id="select_organisation_access_status"
-                                            ref="select_organisation_access_status"
-                                            v-model="filterStatus"
-                                            class="form-control"
+                                        <option value="All">All</option>
+                                        <option
+                                            v-for="r in roleChoices"
+                                            :key="r"
+                                            :value="r"
                                         >
-                                            <option value="All">All</option>
-                                            <option
-                                                v-for="s in statusChoices"
-                                                :key="s.search_term"
-                                                :value="s.search_term"
-                                            >
-                                                {{ s.value }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                            {{ r }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <datatable
-                                    id="org-access-table"
-                                    ref="org_access_table"
-                                    :dt-options="dtOptions"
-                                    :dt-headers="dtHeaders"
-                                ></datatable>
+                        <div class="col-md-3">
+                            <div
+                                id="select_organisation_access_status_parent"
+                                class="form-group"
+                            >
+                                <label for="select_organisation_access_status"
+                                    >Status</label
+                                >
+                                <div v-show="isLoading">
+                                    <select class="form-control">
+                                        <option value="">Loading...</option>
+                                    </select>
+                                </div>
+                                <div v-show="!isLoading">
+                                    <select
+                                        id="select_organisation_access_status"
+                                        ref="select_organisation_access_status"
+                                        v-model="filterStatus"
+                                        class="form-control"
+                                    >
+                                        <option value="All">All</option>
+                                        <option
+                                            v-for="s in statusChoices"
+                                            :key="s.search_term"
+                                            :value="s.search_term"
+                                        >
+                                            {{ s.value }}
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <datatable
+                                id="org-access-table"
+                                ref="org_access_table"
+                                :dt-options="dtOptions"
+                                :dt-headers="dtHeaders"
+                            ></datatable>
                         </div>
                     </div>
                 </FormSection>
