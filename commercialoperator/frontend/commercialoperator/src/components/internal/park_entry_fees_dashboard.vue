@@ -1,54 +1,56 @@
 <template>
-<div class="container" id="internalDash">
-    <div v-if="one_row_per_park">
-        <ParkBookingDash level="internal"/>
+    <div id="internalDash" class="container">
+        <!-- Check for true, false, and null to not possibly load both tables while the profile is being fetched -->
+        <div v-if="one_row_per_park == true">
+            <ParkBookingDash level="internal" />
+        </div>
+        <div v-else-if="one_row_per_park == false">
+            <PaymentDash level="internal" />
+        </div>
+        <BootstrapSpinner v-else class="text-primary" />
     </div>
-    <div v-else>
-        <PaymentDash level="internal"/>
-    </div>
-</div>
 </template>
 <script>
-import ParkBookingDash from '@common-utils/parkbookings_dashboard.vue'
-import PaymentDash from '@common-utils/payments_dashboard.vue'
-import {
-  api_endpoints,
-  helpers
-}
-from '@/utils/hooks'
+import ParkBookingDash from '@common-utils/parkbookings_dashboard.vue';
+import PaymentDash from '@common-utils/payments_dashboard.vue';
+import { api_endpoints, helpers } from '@/utils/hooks';
+import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
 export default {
     name: 'ParkEntryFeesDashboard',
-    data() {
-        let vm = this;
-        return {
-            profile: {},
-            one_row_per_park: false,
-        }
-    
-    },
-    watch: {},
     components: {
         ParkBookingDash,
         PaymentDash,
+        BootstrapSpinner,
     },
-    computed: {
-        
+    data() {
+        return {
+            profile: {},
+            one_row_per_park: null,
+        };
     },
-    methods: {
-        fetchProfile: function(){
-          let vm=this;
-          vm.$http.get(api_endpoints.profile).then((response) => {
-                    vm.profile = response.body
-                    if (vm.profile.system_settings == null){ vm.one_row_per_park = false; }
-                    else { vm.one_row_per_park = vm.profile.system_settings.one_row_per_park; }
-        },(error) => {
-            console.log(error);
-        })
-
-        },
-    },
+    computed: {},
+    watch: {},
     mounted: function () {
         this.fetchProfile();
-    }
-}
+    },
+    methods: {
+        fetchProfile: function () {
+            let vm = this;
+            helpers.fetchUrl(api_endpoints.profile).then(
+                (response) => {
+                    vm.profile = response;
+                    if (vm.profile.system_settings == null) {
+                        vm.one_row_per_park = false;
+                    } else {
+                        vm.one_row_per_park =
+                            vm.profile.system_settings.one_row_per_park;
+                    }
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
+        },
+    },
+};
 </script>

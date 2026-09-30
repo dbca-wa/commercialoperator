@@ -1,12 +1,14 @@
 .settings/
 .env
+.venv/
 venv/
 venv2/
 node_modules/
 #cronjobs
 .ropeproject/
-mooring/cache/*
+commercialoperator/cache/*
 .ropeproject/
+tmp/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -84,6 +86,7 @@ target/
 # media
 media/
 private-media/
+private-media/
 
 # Database/fixture dumps
 *.pgdump
@@ -105,5 +108,11 @@ commercialoperator/static/commercialoperator_vue/
 *.csv
 *.xls*
 .DAV
+
+# ledger
+datasets/
+
+sri-manifest.json
+sri-files/*
 
 session_store/

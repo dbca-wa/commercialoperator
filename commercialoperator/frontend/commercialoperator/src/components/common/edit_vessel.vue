@@ -1,323 +1,527 @@
 <template lang="html">
     <div id="editVessel">
-        <modal transition="modal fade" @ok="ok()" @cancel="cancel()" :title="title" large>
+        <modal
+            transition="modal fade"
+            :title="title"
+            large
+            @ok="ok()"
+            @cancel="cancel()"
+        >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="vesselForm">
-                        <alert :show.sync="showError" type="danger"><strong>{{errorString}}</strong></alert>
+                    <form
+                        id="vessel-form"
+                        class="form-horizontal"
+                        name="vesselForm"
+                    >
+                        <alert v-if="showError" type="danger"
+                            ><strong>{{ errorString }}</strong></alert
+                        >
                         <div class="col-sm-12">
-                            
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">Nominated Vessel</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Nominated Vessel</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <input class="form-control" name="capacity" ref="capacity" v-model="vessel.nominated_vessel" type="text">
+                                        <input
+                                            ref="capacity"
+                                            v-model="vessel.nominated_vessel"
+                                            class="form-control"
+                                            name="capacity"
+                                            type="text"
+                                            required
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">SPV No./ Reg. No.</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >UVI No. / Reg. No.</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <input class="form-control" name="spv_no" ref="spv_no" v-model="vessel.spv_no" type="text">
+                                        <input
+                                            ref="spv_no"
+                                            v-model="vessel.spv_no"
+                                            class="form-control"
+                                            name="spv_no"
+                                            type="text"
+                                            required
+                                        />
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">Hire and Drive reg.</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Vessel length (m)</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <input class="form-control" name="hire_rego" ref="hire_rego" v-model="vessel.hire_rego" type="text">
+                                        <input
+                                            ref="vessel_length"
+                                            v-model="vessel.vessel_length"
+                                            class="form-control"
+                                            name="vessel_length"
+                                            type="text"
+                                            required
+                                        />
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">No. of craft</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Vessel weight</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <input class="form-control" name="craft_no" ref="craft_no" v-model="vessel.craft_no" type="text">
+                                        <input
+                                            ref="vessel_weight"
+                                            v-model="vessel.vessel_weight"
+                                            class="form-control"
+                                            name="vessel_weight"
+                                            type="text"
+                                            required
+                                        />
                                     </div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
-                                        
-                                        <label class="control-label pull-left"  for="Name">Vessel Size</label>
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Number of tenders</label
+                                        >
                                     </div>
                                     <div class="col-sm-9">
-                                        <input class="form-control" name="size" ref="size" v-model="vessel.size" type="text">
+                                        <input
+                                            ref="number_of_tenders"
+                                            v-model.number="
+                                                vessel.number_of_tenders
+                                            "
+                                            class="form-control"
+                                            name="number_of_tenders"
+                                            type="number"
+                                            min="0"
+                                            required
+                                        />
                                     </div>
                                 </div>
-                            </div>                      
+                            </div>
+
+                            <div class="form-group">
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label
+                                            class="control-label pull-left"
+                                            for="Name"
+                                            >Certificate of survey</label
+                                        >
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div
+                                            v-if="vessel.certificate_of_survey"
+                                            class="mb-2"
+                                        >
+                                            <a
+                                                :href="
+                                                    vessel.certificate_of_survey
+                                                "
+                                                target="_blank"
+                                                rel="noopener"
+                                                >{{ certificateFilename }}</a
+                                            >
+                                            <button
+                                                type="button"
+                                                class="btn btn-link text-danger"
+                                                title="Delete document"
+                                                aria-label="Delete document"
+                                                @click="removeCertificate"
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <span class="btn btn-link btn-file">
+                                            <u>Attach Document</u>
+                                            <input
+                                                ref="certificate_of_survey"
+                                                class="form-control"
+                                                name="certificate_of_survey"
+                                                type="file"
+                                                @change="
+                                                    handleCertificateChange
+                                                "
+                                            />
+                                        </span>
+                                        <div
+                                            v-if="
+                                                certificate_of_survey_filename
+                                            "
+                                            class="mt-2"
+                                        >
+                                            {{ certificate_of_survey_filename }}
+                                            <button
+                                                type="button"
+                                                class="btn btn-link text-danger"
+                                                title="Delete selected document"
+                                                aria-label="Delete selected document"
+                                                @click="
+                                                    removeSelectedCertificate
+                                                "
+                                            >
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div
+                                            v-if="showCertificateError"
+                                            class="text-danger mt-2"
+                                        >
+                                            Certificate of survey is required.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
-            <div slot="footer">
-                <button type="button" v-if="issuingVessel" disabled class="btn btn-default" @click="ok"><i class="fa fa-spinner fa-spin"></i> Processing</button>
-                <button type="button" v-else class="btn btn-default" @click="ok">Ok</button>
-                <button type="button" class="btn btn-default" @click="cancel">Cancel</button>
-            </div>
+            <template #footer>
+                <button
+                    v-if="issuingVessel"
+                    type="button"
+                    disabled
+                    class="btn btn-primary"
+                    @click="ok"
+                >
+                    <i class="fas fa-spinner fa-spin"></i> Processing
+                </button>
+                <button
+                    v-else
+                    type="button"
+                    class="btn btn-primary"
+                    @click="ok"
+                >
+                    Ok
+                </button>
+                <button type="button" class="btn btn-secondary" @click="cancel">
+                    Cancel
+                </button>
+            </template>
         </modal>
     </div>
 </template>
 
 <script>
-//import $ from 'jquery'
-import Vue from 'vue'
-import modal from '@vue-utils/bootstrap-modal.vue'
-import alert from '@vue-utils/alert.vue'
-import {helpers,api_endpoints} from "@/utils/hooks.js"
+import modal from '@vue-utils/bootstrap-modal.vue';
+import alert from '@vue-utils/alert.vue';
+import { helpers, api_endpoints } from '@/utils/hooks.js';
 export default {
-    name:'Edit-Vessel',
-    components:{
+    // eslint-disable-next-line vue/component-definition-name-casing
+    name: 'Edit-Vessel',
+    components: {
         modal,
-        alert
+        alert,
     },
-    props:{
-        vessel_id: {
-            type: Number,
-            required: true
-        },
-        vessel_action:{
+    props: {
+        // eslint-disable-next-line vue/prop-name-casing
+        vessel_action: {
             type: String,
-            default: 'edit'
-        }
+            default: 'edit',
+        },
     },
-    data:function () {
-        let vm = this;
+    data: function () {
         return {
-            isModalOpen:false,
-            form:null,
+            isModalOpen: false,
+            form: null,
             vessel: Object,
+            certificate_of_survey_file: null,
+            certificate_of_survey_filename: '',
+            remove_certificate_of_survey: false,
             vessel_id: Number,
             access_types: null,
             vessel_access_id: null,
             state: 'proposed_vessel',
             issuingVessel: false,
             validation_form: null,
-            errors: false,
+            hasErrors: false,
             errorString: '',
             successString: '',
-            success:false,
-            dateFormat:'YYYY-MM-DD',
-            datepickerOptions:{
-                format: 'DD/MM/YYYY',
-                showClear:true,
-                useCurrent:false,
-                keepInvalid:true,
-                allowInputToggle:true
-            },
-        }
+            success: false,
+            dateFormat: 'YYYY-MM-DD',
+            localVesselAction: JSON.parse(JSON.stringify(this.vessel_action)),
+            showCertificateError: false,
+        };
     },
     computed: {
-        showError: function() {
+        showError: function () {
             var vm = this;
-            return vm.errors;
+            return vm.hasErrors;
         },
-        title: function(){
-            return this.vessel_action == 'add' ? 'Add a new Vessel record' : 'Edit a vessel record';
-        }
+        title: function () {
+            return this.localVesselAction == 'add'
+                ? 'Add a new Vessel record'
+                : 'Edit a vessel record';
+        },
+        certificateFilename: function () {
+            const filename = this.vessel.certificate_of_survey.split('/').pop();
+            return decodeURIComponent(filename || 'Certificate of survey');
+        },
+        hasCertificateOfSurvey: function () {
+            return Boolean(
+                this.vessel.certificate_of_survey ||
+                this.certificate_of_survey_file
+            );
+        },
     },
-    methods:{
-        ok:function () {
-            let vm =this;
-            if($(vm.form).valid()){
-                vm.sendData();
-               
-            }
+    watch: {
+        vessel_action: {
+            handler(newVal) {
+                this.localVesselAction = JSON.parse(JSON.stringify(newVal));
+            },
+            deep: true,
         },
-        cancel:function () {
-            this.close()
-        },
-        close:function () {
-            this.isModalOpen = false;
-            this.vessel = {};
-            this.errors = false;
-            $('.has-error').removeClass('has-error');
-            this.validation_form.resetForm();
-        },
-        fetchContact: function(id){
-            let vm = this;
-            vm.$http.get(api_endpoints.contact(id)).then((response) => {
-                vm.contact = response.body; vm.isModalOpen = true;
-            },(error) => {
-                console.log(error);
-            } );
-        },
-        fetchAccessTypes: function(){
-            let vm=this;
-            Vue.http.get('/api/access_types.json').then((res) => {
-                      vm.access_types=res.body; 
-                },
-              err => { 
-                        console.log(err);
-                  });
-        },
-        fetchVessel: function(vid){
-            let vm=this;
-            Vue.http.get(helpers.add_endpoint_json(api_endpoints.vessels,vid)).then((res) => {
-                      vm.vessel=res.body; 
-                      if(vm.vessel.access_type)
-                      {
-                        vm.vessel_access_id=vm.vessel.access_type.id
-                      }
-                      // if(vm.vessel.rego_expiry){
-                      //   vm.vessel.rego_expiry=vm.vessel.rego_expiry.format('DD/MM/YYYY')
-                      //   }
-                },
-              err => { 
-                        console.log(err);
-                  });
-        },
+    },
+    mounted: function () {
+        let vm = this;
 
-        sendData:function(){
-            let vm = this;
-            vm.errors = false;
-            // if(vm.vessel_access_id!=null){
-            //     vm.vessel.access_type=vm.vessel_access_id
-            // }
-            // if(vm.vessel.rego_expiry){
-            //     vm.vessel.rego_expiry=vm.vessel.rego_expiry.format('YYYY-MM-DD')
-            // }
-            let vessel = JSON.parse(JSON.stringify(vm.vessel));
-            vm.issuingVessel = true;
-            if(vm.vessel_action=="add" && vm.vessel_id==null)
-            {
-                vm.$http.post(api_endpoints.vessels,JSON.stringify(vessel),{
-                        emulateJSON:true,
-                    }).then((response)=>{
-                        vm.issuingVessel = false;
-                        vm.close();
-                        swal(
-                             'Created',
-                             'New vessel record has been created.',
-                             'success'
-                        );
-                        vm.$emit('refreshFromResponse',response);
-                    },(error)=>{
-                        vm.errors = true;
-                        vm.issuingVessel = false;
-                        vm.errorString = helpers.apiVueResourceError(error);
-                    });
-            }
-            else{
-            vm.$http.post(helpers.add_endpoint_json(api_endpoints.vessels,vm.vessel_id+'/edit_vessel'),JSON.stringify(vessel),{
-                        emulateJSON:true,
-                    }).then((response)=>{
-                        vm.issuingVessel = false;
-                        vm.close();
-                        swal(
-                             'Saved',
-                             'Vessel details has been saved.',
-                             'success'
-                        );
-                        vm.$emit('refreshFromResponse',response);
-                    },(error)=>{
-                        vm.errors = true;
-                        vm.issuingVessel = false;
-                        vm.errorString = helpers.apiVueResourceError(error);
-                    });
-                }
-        },
-        addFormValidations: function() {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {
-                    access_type:"required",                    
-                },
-                messages: {
-                },
-                showErrors: function(errorMap, errorList) {
-                    $.each(this.validElements(), function(index, element) {
-                        var $element = $(element);
-                        $element.attr("data-original-title", "").parents('.form-group').removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    $("." + this.settings.validClass).tooltip("destroy");
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: "focus"
-                            })
-                            .attr("data-original-title", error.message)
-                            .parents('.form-group').addClass('has-error');
-                    }
-                }
-            });
-       },
-       eventListeners:function () {
-            let vm = this;
-            // $(vm.$refs.rego_expiry).datetimepicker(vm.datepickerOptions);
-            // $(vm.$refs.rego_expiry).on('dp.change', function(e){
-            //     if ($(vm.$refs.rego_expiry).data('DateTimePicker').date()) {
-            //         vm.vessel.rego_expiry =  e.date.format('DD/MM/YYYY');
-            //         //vm.vessel.rego_expiry =  e.date.format('YYYY-MM-DD')
-            //     }
-            //     else if ($(vm.$refs.rego_expiry).data('date') === "") {
-            //         vm.vessel.rego_expiry = null;
-            //     }
-            //  });
-
-            // Intialise select2
-            // $(vm.$refs.access_type).select2({
-            //     "theme": "bootstrap",
-            //     allowClear: true,
-            //     placeholder:"Select access"
-            // }).
-            // on("select2:select",function (e) {
-            //     var selected = $(e.currentTarget);
-            //     //vm.vessel.access_type = selected.val();
-            //     vm.vessel_access_id = selected.val();
-            // }).
-            // on("select2:unselect",function (e) {
-            //     var selected = $(e.currentTarget);
-            //     //vm.vessel.access_type = selected.val();
-            //     vm.vessel_access_id = selected.val();
-            // });
-
-
-            //Initialise Date Picker TODO: Check why this is not working
-            // console.log($(vm.$refs.rego_expiry).datetimepicker(vm.datepickerOptions))
-            // $(vm.$refs.rego_expiry).datetimepicker(vm.datepickerOptions);
-            // $(vm.$refs.rego_expiry).on('dp.change', function(e){
-            //     if ($(vm.$refs.rego_expiry).data('DateTimePicker').date()) {
-            //         vm.vessel.rego_expiry =  e.date.format('DD/MM/YYYY');
-            //     }
-            //     else if ($(vm.$refs.rego_expiry).data('date') === "") {
-            //         vm.vessel.rego_expiry = "";
-            //     }
-            //  });
-       }
-   },
-   mounted:function () {
-        let vm =this;
-        //vm.fetchAccessTypes();
-        
         vm.form = document.forms.vesselForm;
-        vm.addFormValidations();
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
             vm.eventListeners();
         });
-   }
-}
+    },
+    methods: {
+        ok: function () {
+            let vm = this;
+            vm.showCertificateError = !vm.hasCertificateOfSurvey;
+            // Check form validity
+            if (helpers.validateForm(vm.form) && vm.hasCertificateOfSurvey) {
+                console.log('Form is valid');
+                vm.sendData();
+            } else {
+                console.warn('Form is not valid');
+            }
+        },
+        cancel: function () {
+            this.close();
+        },
+        close: function () {
+            this.isModalOpen = false;
+            this.vessel = {};
+            this.certificate_of_survey_file = null;
+            this.certificate_of_survey_filename = '';
+            this.remove_certificate_of_survey = false;
+            this.hasErrors = false;
+            this.showCertificateError = false;
+        },
+        fetchContact: function (id) {
+            let vm = this;
+            helpers.fetchUrl(api_endpoints.contact(id)).then(
+                (response) => {
+                    vm.contact = response;
+                    vm.isModalOpen = true;
+                },
+                (error) => {
+                    console.log(error);
+                }
+            );
+        },
+        fetchAccessTypes: function () {
+            let vm = this;
+            helpers.fetchUrl('/api/access_types.json').then(
+                (res) => {
+                    vm.access_types = res;
+                },
+                (err) => {
+                    console.log(err);
+                }
+            );
+        },
+        fetchVessel: function (vid) {
+            let vm = this;
+            helpers
+                .fetchUrl(helpers.add_endpoint_json(api_endpoints.vessels, vid))
+                .then(
+                    (res) => {
+                        vm.vessel = res;
+                        if (vm.vessel.access_type) {
+                            vm.vessel_access_id = vm.vessel.access_type.id;
+                        }
+                        vm.vessel.vessel_length =
+                            vm.vessel.vessel_length || vm.vessel.size || '';
+                        vm.vessel.size =
+                            vm.vessel.size || vm.vessel.vessel_length || '';
+                        vm.certificate_of_survey_file = null;
+                        vm.certificate_of_survey_filename = '';
+                        vm.remove_certificate_of_survey = false;
+                    },
+                    (err) => {
+                        console.log(err);
+                    }
+                );
+        },
+
+        handleCertificateChange: function (event) {
+            const selectedFile = event.target.files[0];
+            this.certificate_of_survey_file = selectedFile || null;
+            this.certificate_of_survey_filename = selectedFile
+                ? selectedFile.name
+                : '';
+            this.remove_certificate_of_survey = false;
+            this.showCertificateError = !this.hasCertificateOfSurvey;
+        },
+
+        removeCertificate: function () {
+            swal.fire({
+                title: 'Remove document',
+                text: 'Are you sure you want to remove this document?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Remove',
+                confirmButtonColor: '#d9534f',
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                this.vessel.certificate_of_survey = null;
+                this.certificate_of_survey_file = null;
+                this.certificate_of_survey_filename = '';
+                this.remove_certificate_of_survey = true;
+                this.showCertificateError = !this.hasCertificateOfSurvey;
+            });
+        },
+
+        removeSelectedCertificate: function () {
+            swal.fire({
+                title: 'Remove document',
+                text: 'Are you sure you want to remove this document?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Remove',
+                confirmButtonColor: '#d9534f',
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                this.certificate_of_survey_file = null;
+                this.certificate_of_survey_filename = '';
+                this.$refs.certificate_of_survey.value = '';
+                this.showCertificateError = !this.hasCertificateOfSurvey;
+            });
+        },
+
+        sendData: function () {
+            let vm = this;
+            vm.hasErrors = false;
+            let vessel = JSON.parse(JSON.stringify(vm.vessel));
+            vm.issuingVessel = true;
+            let formData = new FormData();
+            formData.append('nominated_vessel', vessel.nominated_vessel || '');
+            formData.append('spv_no', vessel.spv_no || '');
+            formData.append('size', vessel.vessel_length || vessel.size || '');
+            formData.append('vessel_length', vessel.vessel_length || '');
+            formData.append('vessel_weight', vessel.vessel_weight || '');
+            formData.append(
+                'proposal',
+                (vessel.proposal && vessel.proposal.id) || vessel.proposal || ''
+            );
+            if (
+                vessel.number_of_tenders !== null &&
+                vessel.number_of_tenders !== ''
+            ) {
+                formData.append('number_of_tenders', vessel.number_of_tenders);
+            }
+            if (vm.certificate_of_survey_file) {
+                formData.append(
+                    'certificate_of_survey',
+                    vm.certificate_of_survey_file
+                );
+            }
+            if (vm.remove_certificate_of_survey && vm.vessel_id != null) {
+                formData.append('certificate_of_survey_clear', 'true');
+            }
+            if (vm.localVesselAction == 'add' && vm.vessel_id == null) {
+                helpers
+                    .fetchUrl(api_endpoints.vessels, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                    .then(
+                        (response) => {
+                            vm.issuingVessel = false;
+                            vm.close();
+                            swal.fire({
+                                title: 'Created',
+                                text: 'New vessel record has been created.',
+                                icon: 'success',
+                            });
+                            vm.$emit('refreshFromResponse', response);
+                        },
+                        (error) => {
+                            vm.hasErrors = true;
+                            vm.issuingVessel = false;
+                            vm.errorString = helpers.apiVueResourceError(error);
+                        }
+                    );
+            } else {
+                helpers
+                    .fetchUrl(
+                        helpers.add_endpoint_json(
+                            api_endpoints.vessels,
+                            vm.vessel_id + '/edit_vessel'
+                        ),
+                        {
+                            method: 'POST',
+                            body: formData,
+                        }
+                    )
+                    .then(
+                        (response) => {
+                            vm.issuingVessel = false;
+                            vm.close();
+                            swal.fire({
+                                title: 'Saved',
+                                text: 'Vessel details has been saved.',
+                                icon: 'success',
+                            });
+                            vm.$emit('refreshFromResponse', response);
+                        },
+                        (error) => {
+                            vm.hasErrors = true;
+                            vm.issuingVessel = false;
+                            vm.errorString = helpers.apiVueResourceError(error);
+                        }
+                    );
+            }
+        },
+        eventListeners: function () {},
+    },
+};
 </script>
 
-<style lang="css">
+<style scoped lang="css">
+input[type='text'],
+input[type='number'] {
+    width: 40%;
+    box-sizing: border-box;
+    margin-bottom: 0.25rem;
+}
 </style>

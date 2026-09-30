@@ -11,7 +11,7 @@ from commercialoperator.components.bookings.utils import oracle_integration
 class OracleIntegrationCronJob(CronJobBase):
     """
     To Test (shortly after RUN_AT_TIMES):
-        ./manage_co.py runcrons
+        ./manage.py runcrons
     """
     #RUN_AT_TIMES = ['04:05']
     RUN_AT_TIMES = [settings.CRON_RUN_AT_TIMES]

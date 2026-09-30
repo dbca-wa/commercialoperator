@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 from django.conf import settings
 
 from django.apps import AppConfig
@@ -12,5 +11,7 @@ class CommercialOperatorConfig(AppConfig):
         if not self.run_once:
             from commercialoperator.components.organisations import signals
             from commercialoperator.components.proposals import signals
+            # NOTE: Commented out until we know whether it is desired behavior to run these signals that delete activities from proposals
+            # from commercialoperator.components.main import signals
 
         self.run_once = True

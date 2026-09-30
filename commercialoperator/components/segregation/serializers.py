@@ -1,0 +1,201 @@
+from django.conf import settings
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
+from rest_framework import serializers
+
+from commercialoperator.components.organisations.models import Organisation
+from commercialoperator.components.organisations.utils import can_manage_org
+from commercialoperator.components.segregation.models import LedgerOrganisation
+from commercialoperator.components.segregation.utils import retrieve_email_user
+from commercialoperator.components.users.serializers import UserAddressSerializer
+
+
+class EmailUserRoSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
+    mobile_number = serializers.SerializerMethodField()
+    organisation = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmailUser
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "title",
+            "address",
+            "phone_number",
+            "mobile_number",
+            "organisation",
+        )
+
+    def get_id(self, obj):
+        if isinstance(obj, EmailUser):
+            return obj.id
+        return obj
+
+    def get_email(self, obj):
+        email_user = retrieve_email_user(obj)
+        if email_user:
+            return email_user.email
+        return None
+
+    def get_first_name(self, obj):
+        email_user = retrieve_email_user(obj)
+        if email_user:
+            return email_user.first_name
+        return None
+
+    def get_last_name(self, obj):
+        email_user = retrieve_email_user(obj)
+        if email_user:
+            return email_user.last_name
+        return None
+
+    def get_full_name(self, obj):
+        email_user = retrieve_email_user(obj)
+        if email_user:
+            return email_user.get_full_name()
+        return
+
+    def get_title(self, obj):
+        email_user = retrieve_email_user(obj)
+        if email_user:
+            return email_user.title
+        return None
+
+    def get_address(self, obj):
+        emailuser = retrieve_email_user(obj)
+        if not emailuser:
+            return None
+        return UserAddressSerializer(emailuser).data
+
+    def get_phone_number(self, obj):
+        email_user = retrieve_email_user(obj)
+        if not email_user:
+            return None
+        return email_user.phone_number
+
+    def get_mobile_number(self, obj):
+        email_user = retrieve_email_user(obj)
+        if not email_user:
+            return None
+        return email_user.mobile_number
+
+    def get_organisation(self, obj):
+        email_user = retrieve_email_user(obj)
+        if email_user:
+            return email_user.organisation
+        return None
+
+
+class OrganisationSerializer(serializers.ModelSerializer):
+    """This serializer is used to serialize the organisation details coming from the ledger API."""
+
+    id = serializers.IntegerField(source="organisation_id", read_only=True)
+    pins = serializers.SerializerMethodField(read_only=True)
+    delegates = serializers.SerializerMethodField(read_only=True)
+    # delegate_organisation_contacts = serializers.ListField(
+    #     child=OrganisationContactSerializer(), read_only=True
+    # )
+    organisation_name = serializers.CharField(read_only=True)
+    # contacts = OrganisationContactSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = LedgerOrganisation
+        fields = (
+            "id",
+            "organisation_id",
+            "organisation_name",
+            "organisation_trading_name",
+            "organisation_abn",
+            "organisation_email",
+            # "phone_number",
+            "pins",
+            "delegates",
+            # "delegate_organisation_contacts",
+            # "contacts",
+            # "address",
+        )
+
+    def get_trading_name(self, obj):
+        return obj.ledger_organisation_name
+
+    def get_pins(self, obj):
+        try:
+            user = self.context["request"].user
+            org = Organisation.objects.get(organisation_id=obj.organisation_id)
+            # Check if the request user is among the first five delegates in the organisation
+            if can_manage_org(org, user):
+                return {
+                    "one": obj.admin_pin_one,
+                    "two": obj.admin_pin_two,
+                    "three": obj.user_pin_one,
+                    "four": obj.user_pin_two,
+                }
+            else:
+                return None
+        except KeyError:
+            return None
+
+    def get_delegates(self, obj):
+        return None
+
+    #     user_delegate_ids = UserDelegation.objects.filter(organisation=obj).values_list(
+    #         "user", flat=True
+    #     )
+    #     return BasicOrganisationContactSerializer(
+    #         obj.contacts.filter(
+    #             user_status="active",
+    #             user_role="organisation_admin",
+    #             user__in=user_delegate_ids,
+    #         ).order_by("user_role", "first_name"),
+    #         many=True,
+    #         read_only=True,
+    #     ).data
+
+
+class OrganisationListSerializer(OrganisationSerializer):
+    name = serializers.CharField(source="organisation_name", read_only=True)
+    org_id = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = LedgerOrganisation
+        fields = (
+            "id",
+            "name",
+            "org_id",
+            "organisation_id",
+            "organisation_name",
+            "organisation_trading_name",
+            "organisation_abn",
+            "organisation_email",
+            "pins",
+            "delegates",
+        )
+        read_only_fields = fields
+        extra_kwargs = {field: {"read_only": True} for field in fields}
+
+    def get_org_id(self, obj):
+        try:
+            organisation = Organisation.objects.get(organisation_id=obj.organisation_id)
+        except Organisation.DoesNotExist:
+            return None
+        else:
+            return organisation.id
+
+
+class SegregationBaseSerializer(serializers.ModelSerializer):
+    """Base class for serializing the data of different models.
+    Provides common methods for the serializers.
+    """
+
+    pass

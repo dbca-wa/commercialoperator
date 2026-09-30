@@ -1,8 +1,5 @@
 from django.template import Library
 from django.conf import settings
-from datetime import datetime, timedelta
-from django.utils import timezone
-import pytz
 
 register = Library()
 
@@ -46,3 +43,6 @@ def basket_total_price(lines):
 def build_tag():
     return settings.BUILD_TAG
 
+@register.simple_tag()
+def application_version():
+    return settings.APPLICATION_VERSION

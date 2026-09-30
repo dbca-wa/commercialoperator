@@ -1,286 +1,525 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template lang="html">
     <div class="row">
         <div class="col-sm-12">
+            <FormSection
+                v-if="applicantType == 'ORG'"
+                :form-collapse="false"
+                label="Applicant"
+                index="applicant"
+                subtitle=""
+            >
+                <form class="form-horizontal">
+                    <div class="form-group row mb-2">
+                        <label
+                            for="applicantName"
+                            class="col-sm-3 control-label"
+                            >Name</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                                v-model="
+                                    proposal.org_applicant.organisation_name
+                                "
+                                disabled
+                                type="text"
+                                class="form-control"
+                                name="applicantName"
+                                placeholder=""
+                                style="width: 100%"
+                            />
+                        </div>
+                    </div>
+                    <div class="form-group row mb-2">
+                        <label
+                            for="applicantName"
+                            class="col-sm-3 control-label"
+                            >Trading Name</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                                v-model="
+                                    proposal.org_applicant
+                                        .organisation_trading_name
+                                "
+                                disabled
+                                type="text"
+                                class="form-control"
+                                name="applicantName"
+                                placeholder=""
+                                style="width: 100%"
+                            />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label
+                            for="applicantName"
+                            class="col-sm-3 control-label"
+                            >ABN/ACN</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                                v-model="
+                                    proposal.org_applicant.organisation_abn
+                                "
+                                disabled
+                                type="text"
+                                class="form-control"
+                                name="applicantABN"
+                                placeholder=""
+                                style="width: 100%"
+                            />
+                        </div>
+                    </div>
+                </form>
+            </FormSection>
+            <FormSection
+                v-if="applicantType == 'SUB'"
+                :form-collapse="false"
+                label="Approval Type"
+                index="approval_type"
+                subtitle=""
+            >
+                <form class="form-horizontal">
+                    <div class="form-group row">
+                        <label
+                            for="applicantName"
+                            class="col-sm-3 control-label"
+                            >Given Name(s)</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                                v-model="proposal.submitter.first_name"
+                                disabled
+                                type="text"
+                                class="form-control"
+                                name="applicantName"
+                                placeholder=""
+                            />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label
+                            for="applicantName"
+                            class="col-sm-3 control-label"
+                            >Surname</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                                v-model="proposal.submitter.last_name"
+                                disabled
+                                type="text"
+                                class="form-control"
+                                name="applicantName"
+                                placeholder=""
+                            />
+                        </div>
+                    </div>
+                </form>
+            </FormSection>
             <div class="col-md-12">
-                        <div class="row">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">Applicant
-                                        <a class="panelClicker" :href="'#'+detailsBody" data-toggle="collapse"  data-parent="#userInfo" expanded="true" :aria-controls="detailsBody">
-                                            <span class="glyphicon glyphicon-chevron-up pull-right "></span>
-                                        </a>
-                                    </h3> 
-                                </div>
-                                <div v-if="applicantType == 'ORG'" class="panel-body panel-collapse collapse in" :id="detailsBody">
-                                      <form class="form-horizontal">
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Name</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="applicantName" placeholder="" v-model="proposal.org_applicant.name" style="width: 100%">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Trading Name</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="applicantName" placeholder="" v-model="proposal.org_applicant.trading_name" style="width: 100%">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label" >ABN/ACN</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="applicantABN" placeholder="" v-model="proposal.org_applicant.abn" style="width: 100%">
-                                            </div>
-                                          </div>
-
-                                      </form>
-                                </div>
-                                <div v-if="applicantType == 'SUB'" class="panel-body panel-collapse collapse in" :id="detailsBody">
-                                      <form class="form-horizontal">
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Given Name(s)</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="applicantName" placeholder="" v-model="proposal.submitter.first_name">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Surname</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="applicantName" placeholder="" v-model="proposal.submitter.last_name">
-                                            </div>
-                                          </div>
-                                      </form>
-                                </div>
+                <FormSection
+                    v-if="
+                        applicantType == 'ORG' &&
+                        proposal.org_applicant.organisation_address
+                    "
+                    :form-collapse="false"
+                    label="Address Details"
+                    index="address_details"
+                    subtitle=""
+                >
+                    <form class="form-horizontal">
+                        <div class="form-group row mb-2">
+                            <label for="street" class="col-sm-3 control-label"
+                                >Street</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="
+                                        proposal.org_applicant
+                                            .organisation_address.line1
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="street"
+                                    placeholder=""
+                                />
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="row">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">Address Details
-                                        <a class="panelClicker" :href="'#'+addressBody" data-toggle="collapse"  data-parent="#userInfo" expanded="false" :aria-controls="addressBody">
-                                            <span class="glyphicon glyphicon-chevron-down pull-right "></span>
-                                        </a>
-                                    </h3> 
-                                </div>
-                                <div v-if="applicantType == 'ORG' && proposal.org_applicant.address" class="panel-body panel-collapse collapse" :id="addressBody">
-                                      <form class="form-horizontal">
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Street</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="street" placeholder="" v-model="proposal.org_applicant.address.line1">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label" >Town/Suburb</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="surburb" placeholder="" v-model="proposal.org_applicant.address.locality">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">State</label>
-                                            <div class="col-sm-2">
-                                                <input disabled type="text" class="form-control" name="country" placeholder="" v-model="proposal.org_applicant.address.state">
-                                            </div>
-                                            <label for="" class="col-sm-2 control-label">Postcode</label>
-                                            <div class="col-sm-2">
-                                                <input disabled type="text" class="form-control" name="postcode" placeholder="" v-model="proposal.org_applicant.address.postcode">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label" >Country</label>
-                                            <div class="col-sm-4">
-                                                <input disabled type="text" class="form-control" name="country" v-model="proposal.org_applicant.address.country"/>
-                                            </div>
-                                          </div>
-                                       </form>
-                                </div>
-                                <div v-if="applicantType == 'SUB' && proposal.submitter.residential_address" class="panel-body panel-collapse collapse" :id="addressBody">
-                                      <form class="form-horizontal">
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">Street</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="street" placeholder="" v-model="proposal.submitter.residential_address.line1">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label" >Town/Suburb</label>
-                                            <div class="col-sm-6">
-                                                <input disabled type="text" class="form-control" name="surburb" placeholder="" v-model="proposal.submitter.residential_address.locality">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label">State</label>
-                                            <div class="col-sm-2">
-                                                <input disabled type="text" class="form-control" name="country" placeholder="" v-model="proposal.submitter.residential_address.state">
-                                            </div>
-                                            <label for="" class="col-sm-2 control-label">Postcode</label>
-                                            <div class="col-sm-2">
-                                                <input disabled type="text" class="form-control" name="postcode" placeholder="" v-model="proposal.submitter.residential_address.postcode">
-                                            </div>
-                                          </div>
-                                          <div class="form-group">
-                                            <label for="" class="col-sm-3 control-label" >Country</label>
-                                            <div class="col-sm-4">
-                                                <input disabled type="text" class="form-control" name="country" v-model="proposal.submitter.residential_address.country"/>
-                                            </div>
-                                          </div>
-                                       </form>
-                                </div>
+                        <div class="form-group row mb-2">
+                            <label for="suburb" class="col-sm-3 control-label"
+                                >Town/Suburb</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="
+                                        proposal.org_applicant
+                                            .organisation_address.locality
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="surburb"
+                                    placeholder=""
+                                />
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="row">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">Contact Details
-                                        <a class="panelClicker" :href="'#'+contactsBody" data-toggle="collapse"  data-parent="#userInfo" expanded="false" :aria-controls="contactsBody">
-                                            <span class="glyphicon glyphicon-chevron-down pull-right "></span>
-                                        </a>
-                                    </h3>
-                                </div>
-                                <div v-if="applicantType == 'ORG'" class="panel-body panel-collapse collapse" :id="contactsBody">
-                                    <table ref="contacts_datatable" :id="contacts_table_id" class="hover table table-striped table-bordered dt-responsive" cellspacing="0" width="100%">
-                                    </table>
-                                </div>
-                                <div v-if="applicantType == 'SUB'" class="panel-body panel-collapse collapse" :id="contactsBody">
-                                  <form class="form-horizontal">
-                                      <div class="form-group">
-                                        <label for="" class="col-sm-3 control-label">Phone (work)</label>
-                                        <div class="col-sm-6">
-                                            <input disabled type="text" class="form-control" name="applicantPhoneNumber" placeholder="" v-model="proposal.submitter.phone_number">
-                                        </div>
-                                      </div>
-                                      <div class="form-group">
-                                        <label for="" class="col-sm-3 control-label">Mobile</label>
-                                        <div class="col-sm-6">
-                                            <input disabled type="text" class="form-control" name="applicantMobileNumber" placeholder="" v-model="proposal.submitter.mobile_number">
-                                        </div>
-                                      </div>
-                                      <div class="form-group">
-                                        <label for="" class="col-sm-3 control-label" >Email</label>
-                                        <div class="col-sm-6">
-                                            <input disabled type="text" class="form-control" name="applicantEmail" placeholder="" v-model="proposal.submitter.email">
-                                        </div>
-                                      </div>
-                                  </form>
-                                </div>
+                        <div class="form-group row mb-2">
+                            <label for="country" class="col-sm-3 control-label"
+                                >State</label
+                            >
+                            <div class="col-sm-2">
+                                <input
+                                    v-model="
+                                        proposal.org_applicant
+                                            .organisation_address.state
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="country"
+                                    placeholder=""
+                                />
+                            </div>
+                            <label
+                                for="postcode"
+                                class="col-sm-2 control-label text-nowrap"
+                                >Postcode</label
+                            >
+                            <div class="col-sm-2">
+                                <input
+                                    v-model="
+                                        proposal.org_applicant
+                                            .organisation_address.postcode
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="postcode"
+                                    placeholder=""
+                                />
                             </div>
                         </div>
-                    </div>
-                </div>
-        <!-- <Assessment :proposal="proposal" :assessment="proposal.assessor_assessment" :hasAssessorMode="hasAssessorMode" :is_internal="is_internal" :is_referral="is_referral"></Assessment> -->
+                        <div class="form-group row">
+                            <label for="country" class="col-sm-3 control-label"
+                                >Country</label
+                            >
+                            <div class="col-sm-4">
+                                <input
+                                    v-model="
+                                        proposal.org_applicant
+                                            .organisation_address.country
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="country"
+                                />
+                            </div>
+                        </div>
+                    </form>
+                </FormSection>
+                <FormSection
+                    v-if="
+                        applicantType == 'SUB' &&
+                        proposal.submitter.residential_address
+                    "
+                    :form-collapse="false"
+                    label="Address Details"
+                    index="address_details"
+                    subtitle=""
+                >
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="street" class="col-sm-3 control-label"
+                                >Street</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="
+                                        proposal.submitter.residential_address
+                                            .line1
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="street"
+                                    placeholder=""
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="suburb" class="col-sm-3 control-label"
+                                >Town/Suburb</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="
+                                        proposal.submitter.residential_address
+                                            .locality
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="surburb"
+                                    placeholder=""
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="country" class="col-sm-3 control-label"
+                                >State</label
+                            >
+                            <div class="col-sm-2">
+                                <input
+                                    v-model="
+                                        proposal.submitter.residential_address
+                                            .state
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="country"
+                                    placeholder=""
+                                />
+                            </div>
+                            <label
+                                for="postcode"
+                                class="col-sm-2 control-label text-nowrap"
+                                >Postcode</label
+                            >
+                            <div class="col-sm-2">
+                                <input
+                                    v-model="
+                                        proposal.submitter.residential_address
+                                            .postcode
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="postcode"
+                                    placeholder=""
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="country" class="col-sm-3 control-label"
+                                >Country</label
+                            >
+                            <div class="col-sm-4">
+                                <input
+                                    v-model="
+                                        proposal.submitter.residential_address
+                                            .country
+                                    "
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="country"
+                                />
+                            </div>
+                        </div>
+                    </form>
+                </FormSection>
+            </div>
+            <div class="col-md-12">
+                <FormSection
+                    v-if="applicantType == 'ORG'"
+                    :form-collapse="false"
+                    label="Contact Details"
+                    index="contact_details"
+                    subtitle=""
+                >
+                    <table
+                        :id="contacts_table_id"
+                        ref="contacts_datatable"
+                        class="hover table table-striped table-bordered dt-responsive"
+                        cellspacing="0"
+                        width="100%"
+                    ></table>
+                </FormSection>
+                <!-- <div
+                            v-if="applicantType == 'SUB'"
+                            :id="contactsBody"
+                            class="panel-body panel-collapse collapse"
+                        > -->
+                <FormSection
+                    v-if="applicantType == 'SUB'"
+                    :form-collapse="false"
+                    label="Contact Details"
+                    index="contact_details"
+                    subtitle=""
+                >
+                    <form class="form-horizontal">
+                        <div class="form-group row mb-2">
+                            <label
+                                for="applicantPhoneNumber"
+                                class="col-sm-3 control-label"
+                                >Phone (work)</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="proposal.submitter.phone_number"
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="applicantPhoneNumber"
+                                    placeholder=""
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group row mb-2">
+                            <label
+                                for="applicantMobileNumber"
+                                class="col-sm-3 control-label"
+                                >Mobile</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="proposal.submitter.mobile_number"
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="applicantMobileNumber"
+                                    placeholder=""
+                                />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label
+                                for="applicantEmail"
+                                class="col-sm-3 control-label"
+                                >Email</label
+                            >
+                            <div class="col-sm-6">
+                                <input
+                                    v-model="proposal.submitter.email"
+                                    disabled
+                                    type="text"
+                                    class="form-control"
+                                    name="applicantEmail"
+                                    placeholder=""
+                                />
+                            </div>
+                        </div>
+                    </form>
+                </FormSection>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
-import Assessment from './assessment.vue'
-import {
-    api_endpoints,
-    helpers
-}
-from '@/utils/hooks'
-    export default {
-        //props:["type","name","id", "comment_value","value","isRequired","help_text","help_text_assessor","assessorMode","label","readonly","assessor_readonly", "help_text_url", "help_text_assessor_url"],
-        props:{
-            proposal:{
-                type: Object,
-                required:true
-            }
+import FormSection from '@/components/forms/section_toggle.vue';
+import { api_endpoints, constants, helpers } from '@/utils/hooks';
+import { v4 as uuid } from 'uuid';
+import $ from 'jquery';
+export default {
+    name: 'ApplicantComponent',
+    components: { FormSection },
+    props: {
+        proposal: {
+            type: Object,
+            required: true,
         },
-        data:function () {
-            let vm=this;
-            return{
-                values:null,
-                detailsBody: 'detailsBody'+vm._uid,
-                addressBody: 'addressBody'+vm._uid,
-                contactsBody: 'contactsBody'+vm._uid,
-                panelClickersInitialised: false,
-                contacts_table_id: vm._uid+'contacts-table',
-                contacts_table_initialised: false,
-                contacts_options:{
-                    language: {
-                        processing: "<i class='fa fa-4x fa-spinner fa-spin'></i>"
-                    },
-                    responsive: true,
-                    ajax: {
-                        "url": vm.contactsURL,
-                        "dataSrc": ''
-                    },
-                    columns: [
-                        {
-                            title: 'Name',
-                            mRender:function (data,type,full) {
-                                return full.first_name + " " + full.last_name;
-                            }
-                        },
-                        {
-                            title: 'Phone',
-                            data:'phone_number'
-                        },
-                        {
-                            title: 'Mobile',
-                            data:'mobile_number'
-                        },
-                        {
-                            title: 'Fax',
-                            data:'fax_number'
-                        },
-                        {
-                            title: 'Email',
-                            data:'email'
-                        },
-                      ],
-                      processing: true
+    },
+    data: function () {
+        let vm = this;
+        return {
+            values: null,
+            detailsBody: 'detailsBody' + uuid(),
+            addressBody: 'addressBody' + uuid(),
+            contactsBody: 'contactsBody' + uuid(),
+            panelClickersInitialised: false,
+            contacts_table_id: uuid() + 'contacts-table',
+            contacts_table_initialised: false,
+            contacts_options: {
+                language: {
+                    processing: constants.DATATABLE_PROCESSING_HTML,
                 },
-                contacts_table: null,
-            }
+                responsive: true,
+                ajax: {
+                    url: vm.contactsURL,
+                    dataSrc: '',
+                },
+                columns: [
+                    {
+                        title: 'Name',
+                        data: 'id',
+                        mRender: function (data, type, full) {
+                            return full.first_name + ' ' + full.last_name;
+                        },
+                    },
+                    {
+                        title: 'Phone',
+                        data: 'phone_number',
+                    },
+                    {
+                        title: 'Mobile',
+                        data: 'mobile_number',
+                    },
+                    {
+                        title: 'Fax',
+                        data: 'fax_number',
+                    },
+                    {
+                        title: 'Email',
+                        data: 'email',
+                    },
+                ],
+                processing: true,
+            },
+            contacts_table: null,
+        };
+    },
+    computed: {
+        contactsURL: function () {
+            return this.proposal != null
+                ? helpers.add_endpoint_json(
+                      api_endpoints.organisations,
+                      this.proposal.org_applicant.id + '/contacts'
+                  )
+                : '';
         },
-        components: {
-          Assessment
-        },
-        computed:{
-        contactsURL: function(){
-            return this.proposal!= null ? helpers.add_endpoint_json(api_endpoints.organisations,this.proposal.org_applicant.id+'/contacts') : '';
-        },
-        applicantType: function(){
+        applicantType: function () {
             return this.proposal.applicant_type;
         },
-        // hasAssessorMode:function(){
-        //     return this.proposal && this.proposal.assessor_mode.has_assessor_mode ? true : false;
-        // },
-        },
-        methods:{
-            initialiseOrgContactTable: function(){
-                let vm = this;
-                //console.log("i am here")
-                if (vm.proposal && !vm.contacts_table_initialised){
-                    vm.contacts_options.ajax.url = helpers.add_endpoint_json(api_endpoints.organisations,vm.proposal.org_applicant.id+'/contacts');
-                    vm.contacts_table = $('#'+vm.contacts_table_id).DataTable(vm.contacts_options);
-                    vm.contacts_table_initialised = true;
+    },
+    mounted: function () {
+        let vm = this;
+        if (!vm.panelClickersInitialised) {
+            $('.panelClicker[data-bs-toggle="collapse"]').on(
+                'click',
+                function () {
+                    var chev = $(this).children()[0];
+                    window.setTimeout(function () {
+                        $(chev).toggleClass('fa-chevron-down fa-chevron-up');
+                    }, 100);
                 }
-            },
-        },
-        mounted: function(){
-            let vm=this;
-            if (!vm.panelClickersInitialised){
-            $('.panelClicker[data-toggle="collapse"]').on('click', function () {
-                var chev = $(this).children()[0];
-                window.setTimeout(function () {
-                    $(chev).toggleClass("glyphicon-chevron-down glyphicon-chevron-up");
-                },100);
-            }); 
+            );
             vm.panelClickersInitialised = true;
-            }
-            this.$nextTick(() => {
-                vm.initialiseOrgContactTable();
-                
-            });
         }
-    }
+        this.$nextTick(() => {
+            vm.initialiseOrgContactTable();
+        });
+    },
+    methods: {
+        initialiseOrgContactTable: function () {
+            let vm = this;
+            if (vm.proposal && !vm.contacts_table_initialised) {
+                vm.contacts_options.ajax.url = helpers.add_endpoint_json(
+                    api_endpoints.organisations,
+                    vm.proposal.org_applicant.id + '/contacts'
+                );
+                vm.contacts_table = $('#' + vm.contacts_table_id).DataTable(
+                    vm.contacts_options
+                );
+                vm.contacts_table_initialised = true;
+            }
+        },
+    },
+};
 </script>
 
-<style lang="css" scoped>
-</style>
-
+<style lang="css" scoped></style>

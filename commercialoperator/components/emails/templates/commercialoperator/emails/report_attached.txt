@@ -1,0 +1,5 @@
+{%  extends 'commercialoperator/emails/base_email.html' %}
+
+{%  block content %}
+        The requested {{model}} report is attached to this email.
+{%  endblock %}
