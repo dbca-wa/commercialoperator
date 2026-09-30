@@ -30,7 +30,10 @@ class Command(BaseCommand):
         approvals = Approval.objects.filter(
             expiry_date__gt=today,
             replaced_by__isnull=True,
-            status__in=["current", "suspended"],
+            status__in=[
+                Approval.APPROVAL_STATUS_CURRENT,
+                Approval.APPROVAL_STATUS_SUSPENDED,
+            ],
             current_proposal__application_type__name=ApplicationType.TCLASS,
         ).exclude(
             current_proposal__other_details__preferred_licence_period=LicencePeriod.LICENCE_PERIOD_2_MONTHS
