@@ -9,10 +9,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status, views, serializers
 from rest_framework.response import Response
 
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.compliances.models import Compliance
 from commercialoperator.components.main.models import ApplicationType
-from commercialoperator.components.organisations.models import Organisation
+from commercialoperator.components.organisations.models import Organisation, OrganisationContact
 from commercialoperator.components.bookings.context_processors import template_context
 from commercialoperator.components.bookings.invoice_compliance_pdf import (
     create_invoice_compliance_pdf_bytes,
@@ -99,8 +100,15 @@ class ApplicationFeeView(TemplateView):
             except:
                 raise
 
-            proposal.submitter = request.user
-            proposal.save()
+            if request.user and isinstance(request.user,EmailUser):
+                if not proposal.submitter:
+                    proposal.submitter = request.user #NOTE: submitter should already be set
+                    proposal.save()
+                #Same org, different submitter
+                if proposal.org_applicant:
+                    if OrganisationContact.objects.filter(organisation=proposal.org_applicant,email=request.user.email).exists():
+                        proposal.submitter = request.user
+                        proposal.save()
             
             application_fee = ApplicationFee.objects.create(
                 proposal=proposal,
