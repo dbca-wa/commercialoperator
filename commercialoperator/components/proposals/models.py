@@ -24,7 +24,7 @@ from ledger_api_client.utils import (
 from commercialoperator.components.main.mixins import RevisionedMixin, SanitiseMixin
 
 from commercialoperator import exceptions
-from commercialoperator.components.organisations.models import Organisation
+from commercialoperator.components.organisations.models import Organisation, OrganisationContact
 from commercialoperator.components.main.models import (
     CommunicationsLogEntry,
     UserAction,
@@ -2165,8 +2165,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         ",".join(missing_fields)
                     )
                     raise exceptions.ProposalMissingFields(detail=error_text)
-                self.submitter = request.user
-                # self.lodgement_date = datetime.datetime.strptime(timezone.now().strftime('%Y-%m-%d'),'%Y-%m-%d').date()
+
+                if request.user and isinstance(request.user,EmailUser):
+                    if not self.submitter:
+                        self.submitter = request.user #NOTE: submitter should already be set
+                        self.save()
+                    #Same org, different submitter
+                    if self.org_applicant:
+                        if OrganisationContact.objects.filter(organisation=self.org_applicant,email=request.user.email).exists():
+                            self.submitter = request.user
+                            self.save()
+
                 self.lodgement_date = timezone.now()
                 if self.amendment_requests:
                     qs = self.amendment_requests.filter(status="requested")
@@ -3385,7 +3394,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     name=proposal.application_type
                 ).latest("version")
                 proposal.schema = ptype.schema
-                proposal.submitter = request.user
+                if not previous_proposal.submitter:
+                    proposal.submitter = request.user
+                else:
+                    proposal.submitter = previous_proposal.submitter
+                #Same org, different submitter
+                if previous_proposal.org_applicant:
+                    if OrganisationContact.objects.filter(organisation=previous_proposal.org_applicant,email=request.user.email).exists():
+                        proposal.submitter = request.user
                 proposal.previous_application = self
                 proposal.proposed_issuance_approval = None
 
@@ -3533,7 +3549,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     name=proposal.application_type
                 ).latest("version")
                 proposal.schema = ptype.schema
-                proposal.submitter = request.user
+                if not previous_proposal.submitter:
+                    proposal.submitter = request.user
+                else:
+                    proposal.submitter = previous_proposal.submitter
+                #Same org, different submitter
+                if previous_proposal.org_applicant:
+                    if OrganisationContact.objects.filter(organisation=previous_proposal.org_applicant,email=request.user.email).exists():
+                        proposal.submitter = request.user
                 proposal.previous_application = self
                 if proposal.application_type.name == ApplicationType.TCLASS:
                     try:
@@ -3798,7 +3821,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 "version"
             )
             proposal.schema = ptype.schema
-            proposal.submitter = request.user
+            if not previous_proposal.submitter:
+                proposal.submitter = request.user
+            else:
+                proposal.submitter = previous_proposal.submitter
+            #Same org, different submitter
+            if previous_proposal.org_applicant:
+                if OrganisationContact.objects.filter(organisation=previous_proposal.org_applicant,email=request.user.email).exists():
+                    proposal.submitter = request.user
             # proposal.previous_application = self
             proposal.proposed_issuance_approval = None
             if proposal.application_type.name == ApplicationType.TCLASS:

@@ -14,7 +14,7 @@
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
                                         <label
@@ -32,7 +32,7 @@
                                 </div>
                             </div>
 
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-offset-2 col-sm-8">
                                     <div class="form-group">
                                         <!-- templated from from proposal_approval.vue -->
@@ -79,7 +79,7 @@ import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 
 import { helpers, api_endpoints } from '@/utils/hooks.js';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'referral-complete',

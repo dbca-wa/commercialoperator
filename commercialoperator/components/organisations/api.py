@@ -14,7 +14,7 @@ from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import get_all_organisation
 
-from commercialoperator.components.approvals.serializers import EmailUserSerializer
+from commercialoperator.components.users.serializers import UserOrganisationSerializer
 from commercialoperator.components.permission.permission import organisation_permissions, InternalPermission, OrganisationRequestPermission
 from commercialoperator.components.segregation.api import (
     LedgerOrganisationFilterBackend,
@@ -124,6 +124,26 @@ class OrganisationViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
                 raise serializers.ValidationError(
                     {"message": "Organisation does not exist"}
                 )
+
+    @action(
+        methods=[
+            "GET",
+        ],
+        detail=True,
+    )
+    def commercialoperator_organisation(self, request, *args, **kwargs):
+        """
+            Endpoint for retrieving organisation details specifically in the same format found with user profiles
+        """
+        try:
+            instance = self.get_object()
+            serializer = UserOrganisationSerializer(
+                instance, many=False
+            )
+            return Response(serializer.data)
+        except ValidationError as e:
+            print(traceback.print_exc())
+            raise serializers.ValidationError(str(e))
 
     @action(
         methods=[

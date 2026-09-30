@@ -6,306 +6,330 @@
         </teleport>
 
         <teleport to="#organisation-comms-teleport-target">
-        <h3 v-if="organisationCommsHeading" class="mb-3">
-            {{ organisationCommsHeading }}
-        </h3>
-        <CommsLogs
-            :comms_url="comms_url"
-            :logs_url="logs_url"
-            :comms_add_url="comms_add_url"
-            :disable_add_entry="false"
-        />
+            <h3 v-if="organisationCommsHeading" class="mb-3">
+                {{ organisationCommsHeading }}
+            </h3>
+            <CommsLogs
+                :comms_url="comms_url"
+                :logs_url="logs_url"
+                :comms_add_url="comms_add_url"
+                :disable_add_entry="false"
+            />
         </teleport>
 
         <teleport to="#contacts-teleport-target">
-        <FormSection
-            :form-collapse="false"
-            label="Contact Details"
-            index="contact_details"
-        >
-            <div v-if="isContactDetailsLoading" class="py-3">
-                <div class="d-flex justify-content-center align-items-center mt-2">
-                    <div class="spinner-grow text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+            <FormSection
+                :form-collapse="false"
+                label="Contact Details"
+                index="contact_details"
+            >
+                <div v-if="isContactDetailsLoading" class="py-3">
+                    <div
+                        class="d-flex justify-content-center align-items-center mt-2"
+                    >
+                        <div class="spinner-grow text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div
+                        class="d-flex justify-content-center align-items-center mt-2"
+                    >
+                        <strong>Loading</strong>
                     </div>
                 </div>
-                <div class="d-flex justify-content-center align-items-center mt-2">
-                    <strong>Loading</strong>
+                <div v-show="!isContactDetailsLoading">
+                    <datatable
+                        v-if="isContactDetailsTableReady"
+                        id="organisation_contact_details_datatable_ref"
+                        ref="contacts_datatable_details"
+                        :dt-options="contact_details_options_ref"
+                        :dt-headers="contact_details_headers_ref"
+                    />
                 </div>
-            </div>
-            <div v-show="!isContactDetailsLoading">
-                <datatable
-                    v-if="isContactDetailsTableReady"
-                    id="organisation_contact_details_datatable_ref"
-                    ref="contacts_datatable_details"
-                    :dt-options="contact_details_options_ref"
-                    :dt-headers="contact_details_headers_ref"
-                />
-            </div>
-        </FormSection>
+            </FormSection>
 
-        <modal
-            transition="modal fade"
-            title="Update Contact"
-            large
-            @ok="submitContactEdit"
-            @cancel="close"
-        >
-            <div class="container-fluid">
-                <div class="row">
-                    <form class="form-horizontal" @submit.prevent="submitContactEdit">
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label">Given Name(s):</label>
-                            <div class="col-sm-9">
-                                <input
-                                    v-model="editContact.first_name"
-                                    type="text"
-                                    class="form-control"
-                                    required
-                                />
+            <modal
+                transition="modal fade"
+                title="Update Contact"
+                large
+                @ok="submitContactEdit"
+                @cancel="close"
+            >
+                <div class="container-fluid">
+                    <div class="row">
+                        <form
+                            class="form-horizontal"
+                            @submit.prevent="submitContactEdit"
+                        >
+                            <div class="form-group row mb-3">
+                                <label class="col-sm-3 col-form-label"
+                                    >Given Name(s):</label
+                                >
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="editContact.first_name"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label">Surname:</label>
-                            <div class="col-sm-9">
-                                <input
-                                    v-model="editContact.last_name"
-                                    type="text"
-                                    class="form-control"
-                                    required
-                                />
+                            <div class="form-group row mb-3">
+                                <label class="col-sm-3 col-form-label"
+                                    >Surname:</label
+                                >
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="editContact.last_name"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label">Phone:</label>
-                            <div class="col-sm-9">
-                                <input
-                                    v-model="editContact.phone_number"
-                                    type="text"
-                                    class="form-control"
-                                />
+                            <div class="form-group row mb-3">
+                                <label class="col-sm-3 col-form-label"
+                                    >Phone:</label
+                                >
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="editContact.phone_number"
+                                        type="text"
+                                        class="form-control"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label">Mobile:</label>
-                            <div class="col-sm-9">
-                                <input
-                                    v-model="editContact.mobile_number"
-                                    type="text"
-                                    class="form-control"
-                                />
+                            <div class="form-group row mb-3">
+                                <label class="col-sm-3 col-form-label"
+                                    >Mobile:</label
+                                >
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="editContact.mobile_number"
+                                        type="text"
+                                        class="form-control"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label">Fax:</label>
-                            <div class="col-sm-9">
-                                <input
-                                    v-model="editContact.fax_number"
-                                    type="text"
-                                    class="form-control"
-                                />
+                            <div class="form-group row mb-3">
+                                <label class="col-sm-3 col-form-label"
+                                    >Fax:</label
+                                >
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="editContact.fax_number"
+                                        type="text"
+                                        class="form-control"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group row mb-3">
-                            <label class="col-sm-3 col-form-label">Email:</label>
-                            <div class="col-sm-9">
-                                <input
-                                    v-model="editContact.email"
-                                    type="email"
-                                    class="form-control"
-                                    required
-                                />
+                            <div class="form-group row mb-3">
+                                <label class="col-sm-3 col-form-label"
+                                    >Email:</label
+                                >
+                                <div class="col-sm-9">
+                                    <input
+                                        v-model="editContact.email"
+                                        type="email"
+                                        class="form-control"
+                                        required
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <template #footer>
-                <button type="button" class="btn btn-primary" @click="submitContactEdit">
-                    Ok
-                </button>
-                <button type="button" class="btn btn-secondary" @click="close">
-                    Cancel
-                </button>
-            </template>
-        </modal>
+                <template #footer>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        @click="submitContactEdit"
+                    >
+                        Ok
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        @click="close"
+                    >
+                        Cancel
+                    </button>
+                </template>
+            </modal>
         </teleport>
 
         <teleport to="#linkedusers-teleport-target">
-        <FormSection
-            :form-collapse="false"
-            label="Linked User Accounts"
-            index="linked_user_accounts"
-            subtitle="Manage the user accounts linked to the organisation"
-        >
-                                    <div v-if="isLinkedUsersLoading" class="py-3">
-                                        <div class="d-flex justify-content-center align-items-center mt-2">
-                                            <div class="spinner-grow text-primary" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-center align-items-center mt-2">
-                                            <strong>Loading</strong>
-                                        </div>
-                                    </div>
-                                    <div v-show="!isLinkedUsersLoading">
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <div v-if="org" class="row">
-                                                <div class="col-sm-12">
-                                                    <h4>
-                                                        Persons linked to this organisation:
-                                                    </h4>
-                                                </div>
-                                                <div v-for="d in org.delegates" :key="d.id">
-                                                    <div v-if="d.is_admin" class="row mb-1">
-                                                        <label
-                                                            :for="`organisation_admin_${d.id}`"
-                                                            class="col-sm-3"
-                                                        >
-                                                            <i
-                                                                class="bi bi-shield-lock-fill"
-                                                                style="color: #007bff"
-                                                            ></i
-                                                            >&nbsp;
-                                                            <strong
-                                                                >Organisation Admin:</strong
-                                                            >
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <input
-                                                                class="form-control w-100"
-                                                                type="text"
-                                                                :value="`${d.name} (${d.email})`"
-                                                                aria-label="organisation admin name"
-                                                                :name="`organisation_admin_${d.id}`"
-                                                                disabled
-                                                                readonly
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div v-else class="row mb-1">
-                                                        <label
-                                                            :for="`organisation_user_${d.id}`"
-                                                            class="col-sm-3"
-                                                        >
-                                                            <i
-                                                                class="bi bi-person-fill"
-                                                                style="color: #007bff"
-                                                            ></i
-                                                            >&nbsp;
-                                                            <strong
-                                                                >Organisation User:</strong
-                                                            >
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            <input
-                                                                class="form-control w-100"
-                                                                type="text"
-                                                                :value="`${d.name} (${d.email})`"
-                                                                aria-label="organisation user name"
-                                                                :name="`organisation_user_${d.id}`"
-                                                                disabled
-                                                                readonly
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    class="col-sm-12 top-buffer-s mb-3 mt-3"
-                                                >
-                                                    <alert
-                                                        type="info"
-                                                        icon="info-circle"
-                                                        class="alert alert-info"
-                                                    >
-                                                        <i
-                                                            class="bi bi-exclamation-triangle-fill"
-                                                            style="color: #dc3545"
-                                                        ></i
-                                                        >&nbsp; The Department cannot manage
-                                                        this list of people. The
-                                                        organisation is responsible for
-                                                        managing people linked to the
-                                                        organisation.
-                                                        <br />
-                                                    </alert>
-                                                </div>
-                                            </div>
+            <FormSection
+                :form-collapse="false"
+                label="Linked User Accounts"
+                index="linked_user_accounts"
+                subtitle="Manage the user accounts linked to the organisation"
+            >
+                <div v-if="isLinkedUsersLoading" class="py-3">
+                    <div
+                        class="d-flex justify-content-center align-items-center mt-2"
+                    >
+                        <div class="spinner-grow text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div
+                        class="d-flex justify-content-center align-items-center mt-2"
+                    >
+                        <strong>Loading</strong>
+                    </div>
+                </div>
+                <div v-show="!isLinkedUsersLoading">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div v-if="org" class="row mb-3">
+                                <div class="col-sm-12">
+                                    <h4>
+                                        Persons linked to this organisation:
+                                    </h4>
+                                </div>
+                                <div v-for="d in org.delegates" :key="d.id">
+                                    <div v-if="d.is_admin" class="row mb-1">
+                                        <label
+                                            :for="`organisation_admin_${d.id}`"
+                                            class="col-sm-3"
+                                        >
+                                            <i
+                                                class="bi bi-shield-lock-fill"
+                                                style="color: #007bff"
+                                            ></i
+                                            >&nbsp;
+                                            <strong>Organisation Admin:</strong>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <input
+                                                class="form-control w-100"
+                                                type="text"
+                                                :value="`${d.name} (${d.email})`"
+                                                aria-label="organisation admin name"
+                                                :name="`organisation_admin_${d.id}`"
+                                                disabled
+                                                readonly
+                                            />
                                         </div>
                                     </div>
-
-                                    <form
-                                        v-if="org?.pins"
-                                        class="form-horizontal"
-                                        action="index.html"
-                                        method="post"
+                                    <div v-else class="row mb-1">
+                                        <label
+                                            :for="`organisation_user_${d.id}`"
+                                            class="col-sm-3"
+                                        >
+                                            <i
+                                                class="bi bi-person-fill"
+                                                style="color: #007bff"
+                                            ></i
+                                            >&nbsp;
+                                            <strong>Organisation User:</strong>
+                                        </label>
+                                        <div class="col-sm-9">
+                                            <input
+                                                class="form-control w-100"
+                                                type="text"
+                                                :value="`${d.name} (${d.email})`"
+                                                aria-label="organisation user name"
+                                                :name="`organisation_user_${d.id}`"
+                                                disabled
+                                                readonly
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 top-buffer-s mb-3 mt-3">
+                                    <alert
+                                        type="info"
+                                        icon="info-circle"
+                                        class="alert alert-info"
                                     >
-                                        <div class="row mb-2">
-                                            <label
-                                                for=""
-                                                class="col-sm-3 control-label fw-bold"
-                                            >
-                                                User Pin Code 1:</label
-                                            >
-                                            <span class="col-sm-3 fw-light">
-                                                {{ org.pins.three }}
-                                            </span>
-                                            <label
-                                                for=""
-                                                class="col-sm-3 control-label fw-bold"
-                                            >
-                                                User Pin Code 2:</label
-                                            >
-                                            <div class="col-sm-3 fw-light">
-                                                {{ org.pins.four }}
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3">
-                                            <label
-                                                for=""
-                                                class="col-sm-3 control-label fw-bold"
-                                            >
-                                                Admin Pin Code 1:</label
-                                            >
-                                            <span class="col-sm-3 fw-light">
-                                                {{ org.pins.one }}
-                                            </span>
-                                            <label
-                                                for=""
-                                                class="col-sm-3 control-label fw-bold"
-                                            >
-                                                Admin Pin Code 2:</label
-                                            >
-                                            <div class="col-sm-3 fw-light">
-                                                {{ org.pins.two }}
-                                            </div>
-                                        </div>
-                                    </form>
-                                    <div>
-                                        <datatable
-                                            id="organisation_contacts_datatable_ref"
-                                            ref="contacts_datatable_user"
-                                            v-model="filterOrgContactStatus"
-                                            :dt-options="contacts_options_ref"
-                                            :dt-headers="contacts_headers_ref"
-                                        />
-                                    </div>
-                                    </div>
-        </FormSection>
+                                        <i
+                                            class="bi bi-exclamation-triangle-fill"
+                                            style="color: #dc3545"
+                                        ></i
+                                        >&nbsp; The Department cannot manage
+                                        this list of people. The organisation is
+                                        responsible for managing people linked
+                                        to the organisation.
+                                        <br />
+                                    </alert>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <AddCommLog
-            v-if="showAddCommsModal"
-            ref="add_comm_org_user_action"
-            :url="comms_add_url"
-            :action="pendingCommsAction"
-            @refreshActionFromResponse="handleCommsActionFromCommsLog"
-        />
+                    <form
+                        v-if="org?.pins"
+                        class="form-horizontal"
+                        action="index.html"
+                        method="post"
+                    >
+                        <div class="row mb-2">
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                User Pin Code 1:</label
+                            >
+                            <span class="col-sm-3 fw-light">
+                                {{ org.pins.three }}
+                            </span>
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                User Pin Code 2:</label
+                            >
+                            <div class="col-sm-3 fw-light">
+                                {{ org.pins.four }}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                Admin Pin Code 1:</label
+                            >
+                            <span class="col-sm-3 fw-light">
+                                {{ org.pins.one }}
+                            </span>
+                            <label
+                                for=""
+                                class="col-sm-3 control-label fw-bold"
+                            >
+                                Admin Pin Code 2:</label
+                            >
+                            <div class="col-sm-3 fw-light">
+                                {{ org.pins.two }}
+                            </div>
+                        </div>
+                    </form>
+                    <div>
+                        <datatable
+                            id="organisation_contacts_datatable_ref"
+                            ref="contacts_datatable_user"
+                            v-model="filterOrgContactStatus"
+                            :dt-options="contacts_options_ref"
+                            :dt-headers="contacts_headers_ref"
+                        />
+                    </div>
+                </div>
+            </FormSection>
+
+            <AddCommLog
+                v-if="showAddCommsModal"
+                ref="add_comm_org_user_action"
+                :url="comms_add_url"
+                :action="pendingCommsAction"
+                @refreshActionFromResponse="handleCommsActionFromCommsLog"
+            />
         </teleport>
     </div>
 </template>
@@ -467,7 +491,10 @@ export default {
                         data: 'id',
                         mRender: function (data, type, full) {
                             let links = '';
-                            if (vm.is_commercialoperator_admin || vm.is_org_admin) {
+                            if (
+                                vm.is_commercialoperator_admin ||
+                                vm.is_org_admin
+                            ) {
                                 if (full.user_status == 'Pending') {
                                     links += `<a data-email='${full.email}' data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="accept_contact">Accept</a><br/>`;
                                     links += `<a data-email='${full.email}'  data-firstname='${full.first_name}' data-lastname='${full.last_name}' data-id='${full.id}' data-mobile='${full.mobile_number}' data-phone='${full.phone_number}' class="decline_contact">Decline</a><br/>`;
@@ -629,25 +656,35 @@ export default {
         initialiseSectionLoaders: function () {
             const vm = this;
 
-            if (vm.isContactDetailsTableReady && vm.$refs.contacts_datatable_details?.vmDataTable) {
-                vm.$refs.contacts_datatable_details.vmDataTable.one('xhr', function () {
-                    vm.isContactDetailsLoading = false;
-                });
+            if (
+                vm.isContactDetailsTableReady &&
+                vm.$refs.contacts_datatable_details?.vmDataTable
+            ) {
+                vm.$refs.contacts_datatable_details.vmDataTable.one(
+                    'xhr',
+                    function () {
+                        vm.isContactDetailsLoading = false;
+                    }
+                );
             } else if (vm.isContactDetailsTableReady) {
                 vm.isContactDetailsLoading = false;
             }
 
             if (vm.$refs.contacts_datatable_user?.vmDataTable) {
-                vm.$refs.contacts_datatable_user.vmDataTable.one('xhr', function () {
-                    vm.isLinkedUsersLoading = false;
-                });
+                vm.$refs.contacts_datatable_user.vmDataTable.one(
+                    'xhr',
+                    function () {
+                        vm.isLinkedUsersLoading = false;
+                    }
+                );
             } else {
                 vm.isLinkedUsersLoading = false;
             }
         },
         orgAction: function (action) {
             let vm = this;
-            const name = `${vm.contact_user.first_name || ''} ${vm.contact_user.last_name || ''}`.trim();
+            const name =
+                `${vm.contact_user.first_name || ''} ${vm.contact_user.last_name || ''}`.trim();
             const displayName = name || vm.contact_user.email || 'this user';
             if (action) {
                 if (action == 'unlink') {
@@ -670,14 +707,20 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Unlink',
-                                    text: 'You have successfully unlinked ' + displayName + '.',
+                                    text:
+                                        'You have successfully unlinked ' +
+                                        displayName +
+                                        '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
                                     () => {
                                         vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
-                                        if (vm.contact_user.email == vm.profile.email) {
-                                            this.$router.push('/external')
+                                        if (
+                                            vm.contact_user.email ==
+                                            vm.profile.email
+                                        ) {
+                                            this.$router.push('/external');
                                         }
                                     },
                                     () => {}
@@ -693,7 +736,11 @@ export default {
                                 } else {
                                     swal.fire({
                                         title: 'Unlink',
-                                        text: 'There was an error unlinking ' + displayName + '. ' + helpers.apiVueResourceError(error),
+                                        text:
+                                            'There was an error unlinking ' +
+                                            displayName +
+                                            '. ' +
+                                            helpers.apiVueResourceError(error),
                                         icon: 'error',
                                     });
                                 }
@@ -719,7 +766,10 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Relink User',
-                                    text: 'You have successfully relinked ' + displayName + '.',
+                                    text:
+                                        'You have successfully relinked ' +
+                                        displayName +
+                                        '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -733,7 +783,11 @@ export default {
                                 // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
                                 swal.fire({
                                     title: 'Relink User',
-                                    text: 'There was an error relinking ' + displayName + '. ' + helpers.apiVueResourceError(error),
+                                    text:
+                                        'There was an error relinking ' +
+                                        displayName +
+                                        '. ' +
+                                        helpers.apiVueResourceError(error),
                                     icon: 'error',
                                 });
                             }
@@ -767,8 +821,11 @@ export default {
                                 }).then(
                                     () => {
                                         vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
-                                        if (vm.contact_user.email == vm.profile.email) {
-                                            this.$router.push('/external')
+                                        if (
+                                            vm.contact_user.email ==
+                                            vm.profile.email
+                                        ) {
+                                            this.$router.push('/external');
                                         }
                                     },
                                     () => {}
@@ -806,7 +863,10 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Reinstate User',
-                                    text: 'You have successfully reinstated ' + displayName + '.',
+                                    text:
+                                        'You have successfully reinstated ' +
+                                        displayName +
+                                        '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -820,7 +880,11 @@ export default {
                                 // Note: The alert text seems to indicate to display the user name, but the name is not retrieved from the error response
                                 swal.fire({
                                     title: 'Reinstate User',
-                                    text: 'There was an error reinstating ' + displayName + '. ' + helpers.apiVueResourceError(error),
+                                    text:
+                                        'There was an error reinstating ' +
+                                        displayName +
+                                        '. ' +
+                                        helpers.apiVueResourceError(error),
                                     icon: 'error',
                                 });
                             }
@@ -896,8 +960,11 @@ export default {
                                 }).then(
                                     () => {
                                         vm.$refs.contacts_datatable_user.vmDataTable.ajax.reload();
-                                        if (vm.contact_user.email == vm.profile.email) {
-                                            this.$router.push('/external')
+                                        if (
+                                            vm.contact_user.email ==
+                                            vm.profile.email
+                                        ) {
+                                            this.$router.push('/external');
                                         }
                                     },
                                     () => {}
@@ -934,7 +1001,10 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Contact Accept',
-                                    text: 'You have successfully accepted ' + displayName + '.',
+                                    text:
+                                        'You have successfully accepted ' +
+                                        displayName +
+                                        '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -976,7 +1046,10 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Contact Decline',
-                                    text: 'You have successfully declined ' + displayName + '.',
+                                    text:
+                                        'You have successfully declined ' +
+                                        displayName +
+                                        '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -1018,7 +1091,10 @@ export default {
                                 // Note: This block is missing a response to retrieve the name from
                                 swal.fire({
                                     title: 'Contact Accept (Previously Declined)',
-                                    text: 'You have successfully accepted ' + displayName + '.',
+                                    text:
+                                        'You have successfully accepted ' +
+                                        displayName +
+                                        '.',
                                     icon: 'success',
                                     confirmButtonText: 'OK',
                                 }).then(
@@ -1080,7 +1156,7 @@ export default {
         },
         eventListeners: function () {
             const vm = this;
-            
+
             vm.$refs.contacts_datatable_user.vmDataTable.on(
                 'click',
                 '.unlink_contact',
@@ -1428,10 +1504,11 @@ export default {
                     vm.contact_details_options_ref.ajax &&
                     vm.contact_details_options_ref.ajax.url
                 ) {
-                    vm.contact_details_options_ref.ajax.url = helpers.add_endpoint_json(
-                        api_endpoints.organisations,
-                        orgId + '/contacts_exclude'
-                    );
+                    vm.contact_details_options_ref.ajax.url =
+                        helpers.add_endpoint_json(
+                            api_endpoints.organisations,
+                            orgId + '/contacts_exclude'
+                        );
                 }
 
                 if (
@@ -1439,10 +1516,11 @@ export default {
                     vm.contacts_options_ref.ajax &&
                     vm.contacts_options_ref.ajax.url
                 ) {
-                    vm.contacts_options_ref.ajax.url = helpers.add_endpoint_json(
-                        api_endpoints.organisations,
-                        orgId + '/contacts_exclude'
-                    );
+                    vm.contacts_options_ref.ajax.url =
+                        helpers.add_endpoint_json(
+                            api_endpoints.organisations,
+                            orgId + '/contacts_exclude'
+                        );
                 }
 
                 vm.isContactDetailsTableReady = true;
@@ -1490,7 +1568,9 @@ export default {
 
             if (!email || (!firstname && !lastname)) {
                 const $row = $source.closest('tr');
-                const $parentRow = $row.hasClass('child') ? $row.prev('tr') : $row;
+                const $parentRow = $row.hasClass('child')
+                    ? $row.prev('tr')
+                    : $row;
                 const rowData = vm.$refs.contacts_datatable_user?.vmDataTable
                     ?.row($parentRow)
                     .data();
@@ -1498,8 +1578,7 @@ export default {
                     firstname = firstname || normalizeValue(rowData.first_name);
                     lastname = lastname || normalizeValue(rowData.last_name);
                     email = email || normalizeValue(rowData.email);
-                    mobile =
-                        mobile || normalizeValue(rowData.mobile_number);
+                    mobile = mobile || normalizeValue(rowData.mobile_number);
                     phone = phone || normalizeValue(rowData.phone_number);
                 }
             }

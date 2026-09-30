@@ -119,12 +119,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-1"></div>
-            <div class="col-md-8">
+            <div class="col-md-9">
                 <div class="">
                     <div class="card mb-3">
-                        <div class="card-header">
-                            <h3>Organisation Access Request</h3>
+                        <div class="card-header h4 fw-bold p-4">
+                            Organisation Access Request
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -176,8 +175,16 @@
                                             <div class="col-sm-6">
                                                 <a
                                                     :href="identificationHref"
-                                                    :target="isMsgLetter ? '_self' : '_blank'"
-                                                    :download="isMsgLetter ? letterFileName : null"
+                                                    :target="
+                                                        isMsgLetter
+                                                            ? '_self'
+                                                            : '_blank'
+                                                    "
+                                                    :download="
+                                                        isMsgLetter
+                                                            ? letterFileName
+                                                            : null
+                                                    "
                                                     rel="noopener"
                                                     ><i
                                                         :class="letterIconClass"
@@ -493,7 +500,9 @@ export default {
             return this.isMsgLetter ? 'fas fa-envelope' : 'fas fa-file-pdf';
         },
         identificationHref: function () {
-            return this.normaliseAttachmentUrl(this.access?.identification || '');
+            return this.normaliseAttachmentUrl(
+                this.access?.identification || ''
+            );
         },
         isFinalised: function () {
             return (
@@ -642,40 +651,42 @@ export default {
             }).then(
                 (swalresult) => {
                     if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(
-                            helpers.add_endpoint_json(
-                                api_endpoints.organisation_requests,
-                                vm.access.id + '/accept'
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.organisation_requests,
+                                    vm.access.id + '/accept'
+                                )
                             )
-                        )
-                        .then(
-                            (response) => {
-                                console.log(response);
-                                vm.access = response;
-                                swal.fire({
-                                    title: 'Success',
-                                    text: 'Organisation request has been accepted',
-                                    icon: 'success',
-                                });
-                            },
-                            (error) => {
-                                console.log(error);
-                                var text = helpers.apiVueResourceError(error);
-                                if (typeof text == 'object') {
-                                    // eslint-disable-next-line no-prototype-builtins
-                                    if (text.hasOwnProperty('email')) {
-                                        text = text.email[0];
+                            .then(
+                                (response) => {
+                                    console.log(response);
+                                    vm.access = response;
+                                    swal.fire({
+                                        title: 'Success',
+                                        text: 'Organisation request has been accepted',
+                                        icon: 'success',
+                                    });
+                                },
+                                (error) => {
+                                    console.log(error);
+                                    var text =
+                                        helpers.apiVueResourceError(error);
+                                    if (typeof text == 'object') {
+                                        // eslint-disable-next-line no-prototype-builtins
+                                        if (text.hasOwnProperty('email')) {
+                                            text = text.email[0];
+                                        }
                                     }
+                                    swal.fire({
+                                        title: 'Error',
+                                        text:
+                                            'Organisation request cannot be accepted because of the following error: ' +
+                                            text,
+                                        icon: 'error',
+                                    });
                                 }
-                                swal.fire({
-                                    title: 'Error',
-                                    text:
-                                        'Organisation request cannot be accepted because of the following error: ' +
-                                        text,
-                                    icon: 'error',
-                                });
-                            }
-                        );
+                            );
                     }
                 },
                 () => {}
@@ -690,10 +701,10 @@ export default {
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Decline',
-            }).then(
-                (swalresult) => {
-                    if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(
+            }).then((swalresult) => {
+                if (swalresult.isConfirmed) {
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.organisation_requests,
                                 vm.access.id + '/decline'
@@ -708,9 +719,8 @@ export default {
                                 console.log(error);
                             }
                         );
-                    }
-                },
-            );
+                }
+            });
         },
 
         fetchProfile: function () {

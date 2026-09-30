@@ -15,7 +15,7 @@
                         >
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -47,7 +47,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -69,7 +69,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -97,7 +97,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
@@ -126,7 +126,7 @@
                             </div>
 
                             <div class="form-group">
-                                <div class="row">
+                                <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label class="text-left" for="filefield"
                                             >Please attach a detailed itinerary
@@ -194,7 +194,7 @@ import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
 import FileField2 from '@/components/forms/filefield2.vue';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'Edit-Park',
