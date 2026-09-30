@@ -31,102 +31,95 @@
         </template>
 
         <div class="col-md-12">
-            <div class="row">
-                    <FormSection
-                        :form-collapse="false"
-                        :label="!isFinalised ? 'Proposed Decision' : 'Decision'"
-                        index="proposed_decision"
-                        subtitle=""
-                    >
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <template
-                                    v-if="
-                                        !district_proposal.proposed_decline_status
-                                    "
-                                >
-                                    <template v-if="isFinalised">
-                                        <p><strong>Decision: Issue</strong></p>
-                                        <p>
-                                            <strong
-                                                >Start date:
-                                                {{
-                                                    district_proposal
-                                                        .proposed_issuance_approval
-                                                        .start_date
-                                                }}</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Expiry date:
-                                                {{
-                                                    district_proposal
-                                                        .proposed_issuance_approval
-                                                        .expiry_date
-                                                }}</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >CC emails:
-                                                {{
-                                                    district_proposal
-                                                        .proposed_issuance_approval
-                                                        .cc_email
-                                                }}</strong
-                                            >
-                                        </p>
-                                    </template>
-                                    <template v-else>
-                                        <p>
-                                            <strong
-                                                >Proposed decision:
-                                                Issue</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Proposed start date:
-                                                {{
-                                                    district_proposal
-                                                        .proposed_issuance_approval
-                                                        .start_date
-                                                }}</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Proposed expiry date:
-                                                {{
-                                                    district_proposal
-                                                        .proposed_issuance_approval
-                                                        .expiry_date
-                                                }}</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Proposed cc emails:
-                                                {{
-                                                    district_proposal
-                                                        .proposed_issuance_approval
-                                                        .cc_email
-                                                }}</strong
-                                            >
-                                        </p>
-                                    </template>
-                                </template>
-                                <template v-else>
-                                    <strong v-if="!isFinalised"
-                                        >Proposed decision: Decline</strong
+            <FormSection
+                :form-collapse="false"
+                :label="!isFinalised ? 'Proposed Decision' : 'Decision'"
+                index="proposed_decision"
+                subtitle=""
+            >
+                <div class="row">
+                    <div class="col-sm-12">
+                        <template
+                            v-if="!district_proposal.proposed_decline_status"
+                        >
+                            <template v-if="isFinalised">
+                                <p><strong>Decision: Issue</strong></p>
+                                <p>
+                                    <strong
+                                        >Start date:
+                                        {{
+                                            district_proposal
+                                                .proposed_issuance_approval
+                                                .start_date
+                                        }}</strong
                                     >
-                                    <strong v-else>Decision: Decline</strong>
-                                </template>
-                            </div>
-                        </div>
-                    </FormSection>
-            </div>
+                                </p>
+                                <p>
+                                    <strong
+                                        >Expiry date:
+                                        {{
+                                            district_proposal
+                                                .proposed_issuance_approval
+                                                .expiry_date
+                                        }}</strong
+                                    >
+                                </p>
+                                <p>
+                                    <strong
+                                        >CC emails:
+                                        {{
+                                            district_proposal
+                                                .proposed_issuance_approval
+                                                .cc_email
+                                        }}</strong
+                                    >
+                                </p>
+                            </template>
+                            <template v-else>
+                                <p>
+                                    <strong>Proposed decision: Issue</strong>
+                                </p>
+                                <p>
+                                    <strong
+                                        >Proposed start date:
+                                        {{
+                                            district_proposal
+                                                .proposed_issuance_approval
+                                                .start_date
+                                        }}</strong
+                                    >
+                                </p>
+                                <p>
+                                    <strong
+                                        >Proposed expiry date:
+                                        {{
+                                            district_proposal
+                                                .proposed_issuance_approval
+                                                .expiry_date
+                                        }}</strong
+                                    >
+                                </p>
+                                <p>
+                                    <strong
+                                        >Proposed cc emails:
+                                        {{
+                                            district_proposal
+                                                .proposed_issuance_approval
+                                                .cc_email
+                                        }}</strong
+                                    >
+                                </p>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <strong v-if="!isFinalised"
+                                >Proposed decision: Decline</strong
+                            >
+                            <strong v-else>Decision: Decline</strong>
+                        </template>
+                    </div>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -134,7 +127,7 @@
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'InternalProposalApproval',
     components: {
@@ -238,26 +231,27 @@ export default {
             }).then(
                 (swalresult) => {
                     if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(
-                            helpers.add_endpoint_json(
-                                api_endpoints.district_proposal_requirements,
-                                _id
-                            ),
-                            {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type': 'application/json',
+                        helpers
+                            .fetchUrl(
+                                helpers.add_endpoint_json(
+                                    api_endpoints.district_proposal_requirements,
+                                    _id
+                                ),
+                                {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                }
+                            )
+                            .then(
+                                () => {
+                                    vm.$refs.requirements_datatable.vmDataTable.ajax.reload();
                                 },
-                            }
-                        )
-                        .then(
-                            () => {
-                                vm.$refs.requirements_datatable.vmDataTable.ajax.reload();
-                            },
-                            (error) => {
-                                console.log(error);
-                            }
-                        );
+                                (error) => {
+                                    console.log(error);
+                                }
+                            );
                     }
                 },
                 () => {}

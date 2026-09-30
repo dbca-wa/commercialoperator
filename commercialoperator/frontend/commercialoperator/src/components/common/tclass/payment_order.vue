@@ -1,143 +1,173 @@
 <template lang="html">
     <div class="container">
         <div class="col-sm-12">
-            <div class="row">
-                    <FormSection
-                        :form-collapse="false"
-                        label="Park Entry Fees"
-                        index="payment"
-                        subtitle=""
+            <FormSection
+                :form-collapse="false"
+                label="Park Entry Fees"
+                index="payment"
+                subtitle=""
+            >
+                <form
+                    method="post"
+                    name="new_payment"
+                    novalidate
+                    @submit.prevent="submit()"
+                >
+                    <input
+                        type="hidden"
+                        name="csrfmiddlewaretoken"
+                        :value="csrf_token"
+                    />
+
+                    <div
+                        v-if="formErrors.length > 0"
+                        id="error"
+                        style="
+                            margin: 10px;
+                            padding: 5px;
+                            color: red;
+                            border: 1px solid red;
+                        "
                     >
-                        <form
-                            method="post"
-                            name="new_payment"
-                            novalidate
-                            @submit.prevent="submit()"
+                        <b>Please correct the error(s) in row(s):</b>
+                        <BootstrapAlert
+                            v-for="(error, index) in formErrors"
+                            :key="`bs-alert-${index}-${error.id}`"
+                            type="danger"
                         >
-                            <input
-                                type="hidden"
-                                name="csrfmiddlewaretoken"
-                                :value="csrf_token"
-                            />
+                            {{ error.name }}: {{ error.label }}
+                        </BootstrapAlert>
+                    </div>
 
-                            <div
-                                v-if="formErrors.length > 0"
-                                id="error"
-                                style="
-                                    margin: 10px;
-                                    padding: 5px;
-                                    color: red;
-                                    border: 1px solid red;
-                                "
-                            >
-                                <b>Please correct the error(s) in row(s):</b>
-                                <BootstrapAlert
-                                    v-for="(error, index) in formErrors"
-                                    :key="`bs-alert-${index}-${error.id}`"
-                                    type="danger"
+                    <div
+                        v-if="warnings.length > 0"
+                        id="id_warning"
+                        style="
+                            margin: 10px;
+                            padding: 5px;
+                            color: blue;
+                            border: 1px solid blue;
+                            display: none;
+                        "
+                    >
+                        <div
+                            ref="warning"
+                            :key="JSON.stringify(tbody)"
+                            style="text-align: left"
+                            :data="tbody"
+                        >
+                            <b>Multiple payment(s) selected:</b>
+                            <ul>
+                                <li
+                                    v-for="warning in warnings"
+                                    :key="warning.id"
                                 >
-                                    {{ error.name }}: {{ error.label }}
-                                </BootstrapAlert>
+                                    {{ warning.name }}:
+                                    {{ warning.label }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <label for="select_id_licence">Licence</label>
+                    <select
+                        id="select_id_licence"
+                        ref="select_id_licence"
+                        v-model="selected_licence_id"
+                        class="form-control"
+                        :clearable="false"
+                        required
+                        @change="proposal_parks()"
+                    >
+                        <option
+                            v-for="l in licences"
+                            :key="l.value"
+                            :value="l.value"
+                        >
+                            {{ l.label }}
+                        </option>
+                    </select>
+                    <OrderTable
+                        id="id_payment"
+                        ref="order_table"
+                        :expiry_date="selected_licence.expiry_date"
+                        :disabled="!parks_available"
+                        :headers="headers"
+                        :options="parks"
+                        name="payment"
+                        label=""
+                    />
+
+                    <div
+                        v-if="
+                            selected_licence.org_applicant == null ||
+                            (!selected_licence.bpay_allowed &&
+                                !selected_licence.monthly_invoicing_allowed &&
+                                !selected_licence.other_allowed)
+                        "
+                        style="float: right"
+                    >
+                        <!-- Individual applicants must pay using Credit Card -->
+                        <button
+                            :disabled="!parks_available"
+                            class="btn btn-primary float-end"
+                            type="submit"
+                            style="margin-top: 5px"
+                        >
+                            Proceed to Payment
+                        </button>
+                    </div>
+                    <div v-else class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <select
+                                    name="payment_method"
+                                    class="form-control float-end"
+                                    style="width: 50%"
+                                    required
+                                >
+                                    <option value="" disabled selected>
+                                        Select Payment Method...
+                                    </option>
+                                    <option value="credit_card">
+                                        Pay by Credit Card
+                                    </option>
+                                    <option
+                                        v-if="selected_licence.bpay_allowed"
+                                        value="bpay"
+                                    >
+                                        Pay by BPAY
+                                    </option>
+                                    <option
+                                        v-if="
+                                            selected_licence.monthly_invoicing_allowed ||
+                                            selected_licence.other_allowed
+                                        "
+                                        value="monthly_invoicing"
+                                    >
+                                        Monthly Invoicing
+                                    </option>
+                                    <option
+                                        v-if="selected_licence.other_allowed"
+                                        value="other"
+                                    >
+                                        Other
+                                    </option>
+                                </select>
                             </div>
-
-                            <div
-                                v-if="warnings.length > 0"
-                                id="id_warning"
-                                style="
-                                    margin: 10px;
-                                    padding: 5px;
-                                    color: blue;
-                                    border: 1px solid blue;
-                                    display: none;
-                                "
-                            >
-                                <div
-                                    ref="warning"
-                                    :key="JSON.stringify(tbody)"
-                                    style="text-align: left"
-                                    :data="tbody"
-                                >
-                                    <b>Multiple payment(s) selected:</b>
-                                    <ul>
-                                        <li
-                                            v-for="warning in warnings"
-                                            :key="warning.id"
-                                        >
-                                            {{ warning.name }}:
-                                            {{ warning.label }}
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <label for="select_id_licence">Licence</label>
-                            <select
-                                id="select_id_licence"
-                                ref="select_id_licence"
-                                v-model="selected_licence_id"
-                                class="form-control"
-                                :clearable="false"
-                                required
-                                @change="proposal_parks()"
-                            >
-                                <option
-                                    v-for="l in licences"
-                                    :key="l.value"
-                                    :value="l.value"
-                                >
-                                    {{ l.label }}
-                                </option>
-                            </select>
-                            <OrderTable
-                                id="id_payment"
-                                ref="order_table"
-                                :expiry_date="selected_licence.expiry_date"
-                                :disabled="!parks_available"
-                                :headers="headers"
-                                :options="parks"
-                                name="payment"
-                                label=""
-                            />
-
-                            <div
-                                v-if="selected_licence.org_applicant == null || (!selected_licence.bpay_allowed && !selected_licence.monthly_invoicing_allowed && !selected_licence.other_allowed)"
-                                style="float: right"
-                            >
-                                <!-- Individual applicants must pay using Credit Card -->
+                            <div class="col-md-3">
                                 <button
                                     :disabled="!parks_available"
                                     class="btn btn-primary float-end"
-                                    type="submit"
                                     style="margin-top: 5px"
                                 >
                                     Proceed to Payment
                                 </button>
                             </div>
-                            <div v-else class="container-fluid">
-                                <div class="row">
-                                    <div class="col-md-9">
-                                        <select name="payment_method" class="form-control float-end" style="width: 50%" required>
-                                            <option value="" disabled selected>Select Payment Method...</option>
-                                            <option value="credit_card">Pay by Credit Card</option>
-                                            <option v-if="selected_licence.bpay_allowed" value="bpay">Pay by BPAY</option>
-                                            <option v-if="selected_licence.monthly_invoicing_allowed || selected_licence.other_allowed" value="monthly_invoicing">Monthly Invoicing</option>
-                                            <option v-if="selected_licence.other_allowed" value="other">Other</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <button
-                                            :disabled="!parks_available"
-                                            class="btn btn-primary float-end"
-                                            style="margin-top: 5px"
-                                        >
-                                            Proceed to Payment
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </FormSection>
-            </div>
+                        </div>
+                    </div>
+                </form>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -147,7 +177,7 @@ import OrderTable from './order_table.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import BootstrapAlert from '@/components/vue2-components/BootstrapAlert.vue';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'PaymentOrder',
     components: {
@@ -398,36 +428,32 @@ export default {
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Accept',
-                }).then(
-                    async (result) => {
-                        if (result.isConfirmed) {
-                            if (
-                                vm.payment_method == 'monthly_invoicing' ||
-                                vm.payment_method == 'bpay' ||
-                                vm.payment_method == 'other'
-                            ) {
-                                vm.form.action =
-                                    '/preview_deferred/' +
-                                    vm.selected_licence.value +
-                                    '/?method=' +
-                                    vm.payment_method;
-                            } else {
-                                vm.form.action =
-                                    '/payment/' +
-                                    vm.selected_licence.value +
-                                    '/';
-                            }
-                            if (
-                                helpers.validateForm(vm.form) &&
-                                vm.formErrors.length == 0
-                            ) {
-                                vm.form.submit();
-                            } else {
-                                return;
-                            }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        if (
+                            vm.payment_method == 'monthly_invoicing' ||
+                            vm.payment_method == 'bpay' ||
+                            vm.payment_method == 'other'
+                        ) {
+                            vm.form.action =
+                                '/preview_deferred/' +
+                                vm.selected_licence.value +
+                                '/?method=' +
+                                vm.payment_method;
+                        } else {
+                            vm.form.action =
+                                '/payment/' + vm.selected_licence.value + '/';
                         }
-                    },
-                );
+                        if (
+                            helpers.validateForm(vm.form) &&
+                            vm.formErrors.length == 0
+                        ) {
+                            vm.form.submit();
+                        } else {
+                            return;
+                        }
+                    }
+                });
             } else {
                 if (
                     vm.payment_method == 'monthly_invoicing' ||

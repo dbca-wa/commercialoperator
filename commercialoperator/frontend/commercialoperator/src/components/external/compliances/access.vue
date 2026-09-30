@@ -12,20 +12,17 @@
             <div v-if="!isFinalised">
                 <div v-if="hasAmendmentRequest" class="row" style="color: red">
                     <div class="col-lg-12 pull-right">
-                            <FormSection
-                                :form-collapse="false"
-                                label="An amendment has been requested for this Compliance with Requirements"
-                                index="amendment_request"
-                                subtitle=""
-                            >
-                                <div
-                                    v-for="a in amendment_request"
-                                    :key="a.text"
-                                >
-                                    <p>Reason: {{ a.reason }}</p>
-                                    <p>Details: {{ a.text }}</p>
-                                </div>
-                            </FormSection>
+                        <FormSection
+                            :form-collapse="false"
+                            label="An amendment has been requested for this Compliance with Requirements"
+                            index="amendment_request"
+                            subtitle=""
+                        >
+                            <div v-for="a in amendment_request" :key="a.text">
+                                <p>Reason: {{ a.reason }}</p>
+                                <p>Details: {{ a.text }}</p>
+                            </div>
+                        </FormSection>
                     </div>
                 </div>
             </div>
@@ -38,348 +35,308 @@
             </h3>
 
             <div class="col-md-12">
-                <div class="row">
-                        <FormSection
-                            :form-collapse="false"
-                            label="Compliance with Requirements"
-                            index="compliance"
-                            subtitle=""
-                        >
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <form
-                                        class="form-horizontal"
-                                        name="complianceForm"
-                                        method="post"
-                                    >
-                                        <alert v-if="showError" type="danger"
-                                            ><strong>{{
-                                                errorString
-                                            }}</strong></alert
-                                        >
+                <FormSection
+                    :form-collapse="false"
+                    label="Compliance with Requirements"
+                    index="compliance"
+                    subtitle=""
+                >
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form
+                                class="form-horizontal"
+                                name="complianceForm"
+                                method="post"
+                            >
+                                <alert v-if="showError" type="danger"
+                                    ><strong>{{ errorString }}</strong></alert
+                                >
 
-                                        <div class="row mb-2">
-                                            <div class="form-group">
-                                                <label
-                                                    class="col-sm-3 control-label pull-left"
-                                                    for="text_requirement"
-                                                    >Requirement:</label
-                                                >
-                                                <div class="col-sm-6">
-                                                    <textarea
-                                                        id="text_requirement"
-                                                        v-model="
-                                                            compliance.requirement
-                                                        "
-                                                        type="text"
-                                                        class="form-control w-100"
-                                                        name="requirement"
-                                                        disabled
-                                                        readonly
-                                                    ></textarea>
-                                                </div>
-                                            </div>
+                                <div class="row mb-2">
+                                    <div class="form-group">
+                                        <label
+                                            class="col-sm-3 control-label pull-left"
+                                            for="text_requirement"
+                                            >Requirement:</label
+                                        >
+                                        <div class="col-sm-6">
+                                            <textarea
+                                                id="text_requirement"
+                                                v-model="compliance.requirement"
+                                                type="text"
+                                                class="form-control w-100"
+                                                name="requirement"
+                                                disabled
+                                                readonly
+                                            ></textarea>
                                         </div>
-                                        <div class="row mb-2">
-                                            <div class="form-group">
-                                                <label
-                                                    class="col-sm-3 control-label pull-left"
-                                                    for="text_details"
-                                                    >Details:</label
-                                                >
-                                                <div class="col-sm-6">
-                                                    <textarea
-                                                        id="text_details"
-                                                        v-model="
-                                                            compliance.text
-                                                        "
-                                                        :disabled="isFinalised"
-                                                        class="form-control"
-                                                        name="detail"
-                                                        placeholder=""
-                                                        required
-                                                    ></textarea>
-                                                </div>
-                                            </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="form-group">
+                                        <label
+                                            class="col-sm-3 control-label pull-left"
+                                            for="text_details"
+                                            >Details:</label
+                                        >
+                                        <div class="col-sm-6">
+                                            <textarea
+                                                id="text_details"
+                                                v-model="compliance.text"
+                                                :disabled="isFinalised"
+                                                class="form-control"
+                                                name="detail"
+                                                placeholder=""
+                                                required
+                                            ></textarea>
                                         </div>
-                                        <div class="row mb-2">
-                                            <div
-                                                v-if="hasDocuments"
-                                                class="form-group"
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div v-if="hasDocuments" class="form-group">
+                                        <div
+                                            class="col-sm-3 control-label pull-left"
+                                        >
+                                            <label for="compliance-document-0"
+                                                >Documents:</label
                                             >
-                                                <div
-                                                    class="col-sm-3 control-label pull-left"
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div
+                                                v-for="(
+                                                    d, idx
+                                                ) in compliance.documents"
+                                                :key="d.id"
+                                                class="row"
+                                            >
+                                                <a
+                                                    :id="`compliance-document-${idx}`"
+                                                    :href="d[1]"
+                                                    target="_blank"
+                                                    class="control-label pull-left"
+                                                    >{{ d[0] }}</a
                                                 >
-                                                    <label
-                                                        for="compliance-document-0"
-                                                        >Documents:</label
-                                                    >
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <div
-                                                        v-for="(
-                                                            d, idx
-                                                        ) in compliance.documents"
-                                                        :key="d.id"
-                                                        class="row"
-                                                    >
-                                                        <a
-                                                            :id="`compliance-document-${idx}`"
-                                                            :href="d[1]"
-                                                            target="_blank"
-                                                            class="control-label pull-left"
-                                                            >{{ d[0] }}</a
-                                                        >
+                                                <span
+                                                    v-if="
+                                                        !isFinalised &&
+                                                        d.can_delete
+                                                    "
+                                                >
+                                                    <a
+                                                        class="fas fa-trash control-label"
+                                                        title="Remove file"
+                                                        style="
+                                                            cursor: pointer;
+                                                            color: red;
+                                                        "
+                                                        @click="
+                                                            delete_document(d)
+                                                        "
+                                                    ></a>
+                                                </span>
+                                                <span v-else>
+                                                    <i
+                                                        class="fas fa-circle-info"
+                                                        aria-hidden="true"
+                                                        title="Previously submitted documents cannot be deleted"
+                                                        style="cursor: pointer"
+                                                    ></i
+                                                ></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div v-if="!isFinalised" class="form-group">
+                                        <label
+                                            class="col-sm-3 control-label pull-left"
+                                            :for="`file-upload-form-${files.findIndex((f) => f.file === null)}`"
+                                            >Attachments:</label
+                                        >
+                                        <div class="col-sm-6">
+                                            <template v-for="(f, i) in files">
+                                                <!-- eslint-disable-next-line vue/require-v-for-key -->
+                                                <div
+                                                    :class="
+                                                        'row top-buffer file-row-' +
+                                                        i
+                                                    "
+                                                >
+                                                    <div class="col-sm-4">
                                                         <span
                                                             v-if="
-                                                                !isFinalised &&
-                                                                d.can_delete
+                                                                f.file == null
+                                                            "
+                                                            class="btn btn-info btn-file pull-left"
+                                                            style="
+                                                                margin-bottom: 5px;
                                                             "
                                                         >
-                                                            <a
-                                                                class="fas fa-trash control-label"
-                                                                title="Remove file"
-                                                                style="
-                                                                    cursor: pointer;
-                                                                    color: red;
+                                                            Attach File
+                                                            <input
+                                                                :id="`file-upload-form-${i}`"
+                                                                type="file"
+                                                                :name="
+                                                                    'file-upload-' +
+                                                                    i
                                                                 "
-                                                                @click="
-                                                                    delete_document(
-                                                                        d
+                                                                :class="
+                                                                    'file-upload-' +
+                                                                    i
+                                                                "
+                                                                @change="
+                                                                    uploadFile(
+                                                                        'file-upload-' +
+                                                                            i,
+                                                                        f
                                                                     )
                                                                 "
-                                                            ></a>
+                                                            />
                                                         </span>
-                                                        <span v-else>
-                                                            <i
-                                                                class="fas fa-circle-info"
-                                                                aria-hidden="true"
-                                                                title="Previously submitted documents cannot be deleted"
-                                                                style="
-                                                                    cursor: pointer;
-                                                                "
-                                                            ></i
-                                                        ></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div
-                                                v-if="!isFinalised"
-                                                class="form-group"
-                                            >
-                                                <label
-                                                    class="col-sm-3 control-label pull-left"
-                                                    :for="`file-upload-form-${files.findIndex((f) => f.file === null)}`"
-                                                    >Attachments:</label
-                                                >
-                                                <div class="col-sm-6">
-                                                    <template
-                                                        v-for="(f, i) in files"
-                                                    >
-                                                        <!-- eslint-disable-next-line vue/require-v-for-key -->
-                                                        <div
-                                                            :class="
-                                                                'row top-buffer file-row-' +
-                                                                i
+                                                        <span
+                                                            v-else
+                                                            class="btn btn-info btn-file pull-left"
+                                                            style="
+                                                                margin-bottom: 5px;
                                                             "
                                                         >
-                                                            <div
-                                                                class="col-sm-4"
-                                                            >
-                                                                <span
-                                                                    v-if="
-                                                                        f.file ==
-                                                                        null
-                                                                    "
-                                                                    class="btn btn-info btn-file pull-left"
-                                                                    style="
-                                                                        margin-bottom: 5px;
-                                                                    "
-                                                                >
-                                                                    Attach File
-                                                                    <input
-                                                                        :id="`file-upload-form-${i}`"
-                                                                        type="file"
-                                                                        :name="
-                                                                            'file-upload-' +
-                                                                            i
-                                                                        "
-                                                                        :class="
-                                                                            'file-upload-' +
-                                                                            i
-                                                                        "
-                                                                        @change="
-                                                                            uploadFile(
-                                                                                'file-upload-' +
-                                                                                    i,
-                                                                                f
-                                                                            )
-                                                                        "
-                                                                    />
-                                                                </span>
-                                                                <span
-                                                                    v-else
-                                                                    class="btn btn-info btn-file pull-left"
-                                                                    style="
-                                                                        margin-bottom: 5px;
-                                                                    "
-                                                                >
-                                                                    Update File
-                                                                    <input
-                                                                        :id="`file-upload-form-${i}`"
-                                                                        type="file"
-                                                                        :name="
-                                                                            'file-upload-' +
-                                                                            i
-                                                                        "
-                                                                        :class="
-                                                                            'file-upload-' +
-                                                                            i
-                                                                        "
-                                                                        @change="
-                                                                            uploadFile(
-                                                                                'file-upload-' +
-                                                                                    i,
-                                                                                f
-                                                                            )
-                                                                        "
-                                                                    />
-                                                                </span>
-                                                            </div>
-                                                            <div
-                                                                class="col-sm-4"
-                                                            >
-                                                                <span>{{
-                                                                    f.name
-                                                                }}</span>
-                                                            </div>
-                                                            <div
-                                                                class="col-sm-4"
-                                                            >
-                                                                <button
-                                                                    class="btn btn-danger"
-                                                                    @click="
-                                                                        removeFile(
-                                                                            i
-                                                                        )
-                                                                    "
-                                                                >
-                                                                    Remove
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </template>
-                                                    <a
-                                                        href=""
-                                                        @click.prevent="
-                                                            attachAnother
-                                                        "
-                                                        ><i
-                                                            class="fas fa-lg fa-plus top-buffer-2x"
-                                                        ></i
-                                                    ></a>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            v-if="
-                                                compliance.participant_number_required &&
-                                                !isFinalised &&
-                                                !compliance.fee_paid
-                                            "
-                                        >
-                                            <div class="row">
-                                                <div class="form-group">
-                                                    <label
-                                                        class="col-sm-3 control-label pull-left"
-                                                        for="Name"
-                                                        >Number of event
-                                                        participants (aged 17
-                                                        years or over):</label
-                                                    >
-                                                    <div class="col-sm-6">
-                                                        <input
-                                                            type="text"
-                                                            :disabled="
-                                                                isFinalised
+                                                            Update File
+                                                            <input
+                                                                :id="`file-upload-form-${i}`"
+                                                                type="file"
+                                                                :name="
+                                                                    'file-upload-' +
+                                                                    i
+                                                                "
+                                                                :class="
+                                                                    'file-upload-' +
+                                                                    i
+                                                                "
+                                                                @change="
+                                                                    uploadFile(
+                                                                        'file-upload-' +
+                                                                            i,
+                                                                        f
+                                                                    )
+                                                                "
+                                                            />
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <span>{{
+                                                            f.name
+                                                        }}</span>
+                                                    </div>
+                                                    <div class="col-sm-4">
+                                                        <button
+                                                            class="btn btn-danger"
+                                                            @click="
+                                                                removeFile(i)
                                                             "
-                                                            class="form-control"
-                                                            name="num_participants"
-                                                            placeholder=""
-                                                        />
+                                                        >
+                                                            Remove
+                                                        </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="form-group">
-                                                    <label
-                                                        class="col-sm-3 control-label pull-left"
-                                                        for="Name"
-                                                        >Number of child
-                                                        participants (aged 16
-                                                        years or below):</label
-                                                    >
-                                                    <div class="col-sm-6">
-                                                        <input
-                                                            type="text"
-                                                            :disabled="
-                                                                isFinalised
-                                                            "
-                                                            class="form-control"
-                                                            name="num_child_participants"
-                                                            placeholder=""
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            </template>
+                                            <a
+                                                href=""
+                                                @click.prevent="attachAnother"
+                                                ><i
+                                                    class="fas fa-lg fa-plus top-buffer-2x"
+                                                ></i
+                                            ></a>
                                         </div>
-
-                                        <div class="row">
-                                            <div class="col-sm-9">
-                                                <div class="pull-right">
-                                                    <button
-                                                        v-if="
-                                                            compliance.participant_number_required &&
-                                                            !isFinalised &&
-                                                            !compliance.fee_paid
-                                                        "
-                                                        type="button"
-                                                        class="btn btn-primary me-2"
-                                                        @click.prevent="
-                                                            pay_and_submit()
-                                                        "
-                                                    >
-                                                        Pay and Submit
-                                                    </button>
-                                                    <button
-                                                        v-else-if="!isFinalised"
-                                                        type="button"
-                                                        class="btn btn-primary me-2"
-                                                        @click.prevent="
-                                                            submit()
-                                                        "
-                                                    >
-                                                        Submit
-                                                    </button>
-                                                    <button
-                                                        v-if="!isFinalised"
-                                                        type="button"
-                                                        class="btn btn-primary"
-                                                        @click.prevent="close()"
-                                                    >
-                                                        Close
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
+                                    </div>
                                 </div>
-                            </div>
-                        </FormSection>
-                </div>
+
+                                <div
+                                    v-if="
+                                        compliance.participant_number_required &&
+                                        !isFinalised &&
+                                        !compliance.fee_paid
+                                    "
+                                >
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label
+                                                class="col-sm-3 control-label pull-left"
+                                                for="Name"
+                                                >Number of event participants
+                                                (aged 17 years or over):</label
+                                            >
+                                            <div class="col-sm-6">
+                                                <input
+                                                    type="text"
+                                                    :disabled="isFinalised"
+                                                    class="form-control"
+                                                    name="num_participants"
+                                                    placeholder=""
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="form-group">
+                                            <label
+                                                class="col-sm-3 control-label pull-left"
+                                                for="Name"
+                                                >Number of child participants
+                                                (aged 16 years or below):</label
+                                            >
+                                            <div class="col-sm-6">
+                                                <input
+                                                    type="text"
+                                                    :disabled="isFinalised"
+                                                    class="form-control"
+                                                    name="num_child_participants"
+                                                    placeholder=""
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-9">
+                                        <div class="pull-right">
+                                            <button
+                                                v-if="
+                                                    compliance.participant_number_required &&
+                                                    !isFinalised &&
+                                                    !compliance.fee_paid
+                                                "
+                                                type="button"
+                                                class="btn btn-primary me-2"
+                                                @click.prevent="
+                                                    pay_and_submit()
+                                                "
+                                            >
+                                                Pay and Submit
+                                            </button>
+                                            <button
+                                                v-else-if="!isFinalised"
+                                                type="button"
+                                                class="btn btn-primary me-2"
+                                                @click.prevent="submit()"
+                                            >
+                                                Submit
+                                            </button>
+                                            <button
+                                                v-if="!isFinalised"
+                                                type="button"
+                                                class="btn btn-primary"
+                                                @click.prevent="close()"
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </FormSection>
             </div>
         </div>
     </div>
@@ -673,35 +630,39 @@ export default {
                         confirmButtonText: vm.submit_text(),
                     }).then((swalresult) => {
                         if (swalresult.isConfirmed) {
-                            helpers.fetchUrl(
-                                helpers.add_endpoint_json(
-                                    api_endpoints.compliances,
-                                    vm.compliance.id + '/submit'
-                                ),
-                                {
-                                    method: 'POST',
-                                    body: data,
-                                }
-                            )
-                            .then(
-                                (response) => {
-                                    vm.addingCompliance = false;
-                                    vm.refreshFromResponse(response);
-                                    vm.compliance = response;
+                            helpers
+                                .fetchUrl(
+                                    helpers.add_endpoint_json(
+                                        api_endpoints.compliances,
+                                        vm.compliance.id + '/submit'
+                                    ),
+                                    {
+                                        method: 'POST',
+                                        body: data,
+                                    }
+                                )
+                                .then(
+                                    (response) => {
+                                        vm.addingCompliance = false;
+                                        vm.refreshFromResponse(response);
+                                        vm.compliance = response;
 
-                                    /* after the above save, redirect to the Django post() method in ApplicationFeeView */
-                                    vm.post_and_redirect(
-                                        vm.compliance_fee_url,
-                                        { csrfmiddlewaretoken: vm.csrf_token }
-                                    );
-                                },
-                                (error) => {
-                                    vm.hasErrors = true;
-                                    vm.addingCompliance = false;
-                                    vm.errorString =
-                                        helpers.apiVueResourceError(error);
-                                }
-                            );
+                                        /* after the above save, redirect to the Django post() method in ApplicationFeeView */
+                                        vm.post_and_redirect(
+                                            vm.compliance_fee_url,
+                                            {
+                                                csrfmiddlewaretoken:
+                                                    vm.csrf_token,
+                                            }
+                                        );
+                                    },
+                                    (error) => {
+                                        vm.hasErrors = true;
+                                        vm.addingCompliance = false;
+                                        vm.errorString =
+                                            helpers.apiVueResourceError(error);
+                                    }
+                                );
                         }
                     });
                 }
@@ -756,57 +717,65 @@ export default {
             }).then(
                 (swalresult) => {
                     if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(vm.proposal_form_url, {
-                            method: 'POST',
-                            body: formData,
-                        })
-                        .then(
-                            () => {
-                                /* after the above save, redirect to the Django post() method in ApplicationFeeView */
-                                vm.post_and_redirect(vm.application_fee_url, {
-                                    csrfmiddlewaretoken: vm.csrf_token,
-                                });
-                            },
-                            () => {}
-                        );
-
-                    // Filming has deferred payment once assessor decides whether 'Licence' (fee) or 'Lawful Authority' (no fee) is to be issued
-                    if (
-                        !vm.proposal.fee_paid &&
-                        vm.proposal.application_type !=
-                            vm.application_type_filming
-                    ) {
-                        vm.save_and_redirect();
-                    } else {
-                        /* just save and submit - no payment required (probably application was pushed back by assessor for amendment */
-                        vm.save_wo_confirm();
                         helpers
-                            .fetchUrl(
-                                helpers.add_endpoint_json(
-                                    api_endpoints.proposals,
-                                    vm.proposal.id + '/submit'
-                                ),
-                                {
-                                    method: 'POST',
-                                    body: formData,
-                                }
-                            )
+                            .fetchUrl(vm.proposal_form_url, {
+                                method: 'POST',
+                                body: formData,
+                            })
                             .then(
-                                (res) => {
-                                    vm.proposal = res;
-                                    vm.$router.push({
-                                        name: 'submit_proposal',
-                                        params: { proposal_id: vm.proposal.id },
-                                    });
+                                () => {
+                                    /* after the above save, redirect to the Django post() method in ApplicationFeeView */
+                                    vm.post_and_redirect(
+                                        vm.application_fee_url,
+                                        {
+                                            csrfmiddlewaretoken: vm.csrf_token,
+                                        }
+                                    );
                                 },
-                                (err) => {
-                                    swal.fire({
-                                        title: 'Submit Error',
-                                        text: helpers.apiVueResourceError(err),
-                                        icon: 'error',
-                                    });
-                                }
+                                () => {}
                             );
+
+                        // Filming has deferred payment once assessor decides whether 'Licence' (fee) or 'Lawful Authority' (no fee) is to be issued
+                        if (
+                            !vm.proposal.fee_paid &&
+                            vm.proposal.application_type !=
+                                vm.application_type_filming
+                        ) {
+                            vm.save_and_redirect();
+                        } else {
+                            /* just save and submit - no payment required (probably application was pushed back by assessor for amendment */
+                            vm.save_wo_confirm();
+                            helpers
+                                .fetchUrl(
+                                    helpers.add_endpoint_json(
+                                        api_endpoints.proposals,
+                                        vm.proposal.id + '/submit'
+                                    ),
+                                    {
+                                        method: 'POST',
+                                        body: formData,
+                                    }
+                                )
+                                .then(
+                                    (res) => {
+                                        vm.proposal = res;
+                                        vm.$router.push({
+                                            name: 'submit_proposal',
+                                            params: {
+                                                proposal_id: vm.proposal.id,
+                                            },
+                                        });
+                                    },
+                                    (err) => {
+                                        swal.fire({
+                                            title: 'Submit Error',
+                                            text: helpers.apiVueResourceError(
+                                                err
+                                            ),
+                                            icon: 'error',
+                                        });
+                                    }
+                                );
                         }
                     }
                 },
