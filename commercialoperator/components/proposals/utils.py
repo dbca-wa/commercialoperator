@@ -1648,11 +1648,11 @@ def save_assessor_data_filming(instance, request, viewset):
     serializer.save()
 
     for f in request.FILES:
-        try:
-            document = instance.documents.get(input_name=f)
-        except ProposalDocument.DoesNotExist:
-            document = instance.documents.get_or_create(input_name=f)[0]
-        document.name = str(request.FILES[f])
+        filename = str(request.FILES[f])
+        document = instance.documents.filter(input_name=f, name=filename).first()
+        if document is None:
+            document = instance.documents.create(input_name=f, name=filename)
+        document.name = filename
         if document._file and os.path.isfile(document._file.path):
             os.remove(document._file.path)
         document._file = request.FILES[f]
@@ -1733,11 +1733,11 @@ def save_assessor_data_event(instance, request, viewset):
     serializer.save()
 
     for f in request.FILES:
-        try:
-            document = instance.documents.get(input_name=f)
-        except ProposalDocument.DoesNotExist:
-            document = instance.documents.get_or_create(input_name=f)[0]
-        document.name = str(request.FILES[f])
+        filename = str(request.FILES[f])
+        document = instance.documents.filter(input_name=f, name=filename).first()
+        if document is None:
+            document = instance.documents.create(input_name=f, name=filename)
+        document.name = filename
         if document._file and os.path.isfile(document._file.path):
             os.remove(document._file.path)
         document._file = request.FILES[f]
@@ -1798,11 +1798,11 @@ def save_assessor_data_tclass(instance, request, viewset):
             raise
     # Save Documents
     for f in request.FILES:
-        try:
-            document = instance.documents.get(input_name=f)
-        except ProposalDocument.DoesNotExist:
-            document = instance.documents.get_or_create(input_name=f)[0]
-        document.name = str(request.FILES[f])
+        filename = str(request.FILES[f])
+        document = instance.documents.filter(input_name=f, name=filename).first()
+        if document is None:
+            document = instance.documents.create(input_name=f, name=filename)
+        document.name = filename
         if document._file and os.path.isfile(document._file.path):
             os.remove(document._file.path)
         document._file = request.FILES[f]
