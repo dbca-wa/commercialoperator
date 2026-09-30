@@ -83,6 +83,7 @@ target/
 
 # media
 media/
+private-media/
 
 # Database/fixture dumps
 *.pgdump
@@ -98,18 +99,11 @@ importo.py
 uwsgi*.ini
 *.djcache
 
-# npm locks
-#*-lock.json
+commercialoperator/static/commercialoperator_vue/
 
-#commercialoperator/static/commercialoperator_vue/static/*
-#commercialoperator/static/commercialoperator_vue/static/css/app.css
-#commercialoperator/static/commercialoperator_vue/static/js/app.js
-#commercialoperator/static/commercialoperator_vue/static/js/manifest.js
-#commercialoperator/static/commercialoperator_vue/static/js/vendor.js
-#commercialoperator/static/commercialoperator_vue/static/js/babel-polyfill.js
-#commercialoperator/static/commercialoperator_vue/static/fonts/*
-#commercialoperator/static/commercialoperator_vue/static/img/*
 
 *.csv
 *.xls*
 .DAV
+
+session_store/
