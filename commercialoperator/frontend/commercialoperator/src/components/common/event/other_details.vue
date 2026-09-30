@@ -35,7 +35,6 @@
                                                 class="form-control"
                                                 name="training_date"
                                                 placeholder="DD/MM/YYYY"
-                                                required
                                                 :disabled="proposal.readonly"
                                             />
                                         </div>

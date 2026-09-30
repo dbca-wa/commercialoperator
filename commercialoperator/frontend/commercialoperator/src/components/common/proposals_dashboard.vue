@@ -161,6 +161,10 @@ export default {
             type: Number,
             default: null,
         },
+        internalView: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         let vm = this;
@@ -350,7 +354,10 @@ export default {
                                     links += `<a href='/external/proposal/${full.id}'>Continue</a><br/>`;
                                     links += `<a href='#${full.id}' data-discard-proposal='${full.id}'>Discard</a><br/>`;
                                 } else if (full.can_user_view) {
-                                    links += `<a href='/external/proposal/${full.id}'>View</a><br/>`;
+                                    const viewPath = vm.internalView
+                                        ? 'internal'
+                                        : 'external';
+                                    links += `<a href='/${viewPath}/proposal/${full.id}'>View</a><br/>`;
                                 }
                                 if (
                                     full.customer_status ==

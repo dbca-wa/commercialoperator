@@ -6,7 +6,7 @@
                     :form-collapse="false"
                     label="Activities and Location"
                     index="activities_and_location"
-                    subtitle="(Trails)"
+                    subtitle="(Marine-based activities)"
                 >
                     <div class="">
                         <div class="borderDecoration col-sm-12">
