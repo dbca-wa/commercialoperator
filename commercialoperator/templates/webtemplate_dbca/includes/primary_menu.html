@@ -38,7 +38,7 @@
 {% else %}
     {% if request.user.is_authenticated %}
         <li class="nav-item">
-            <a class="nav-link{% if '/payment' in request.path %} active{% endif %}" href="/external/payment">
+            <a class="nav-link{% if '/external/payment' == request.path %} active{% endif %}" href="/external/payment">
                 Park Entry Fees
             </a>
         </li>
