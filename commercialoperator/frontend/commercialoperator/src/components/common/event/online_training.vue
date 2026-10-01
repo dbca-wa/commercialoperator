@@ -7,26 +7,8 @@
                     index="commercial_event_questionnaire"
                     subtitle=""
                 >
-                    <div
-                        v-if="proposal.applicant_training_completed"
-                        class="form-horizontal col-sm-12"
-                    >
-                        <div v-if="proposal.applicant_type == 'ORG'">
-                            <label style="color: green"
-                                >Your online training has already been completed
-                                this year. Please proceed to pay and submit the
-                                application.</label
-                            >
-                        </div>
-                        <div v-else>
-                            <label style="color: green"
-                                >Your online training has been completed. Please
-                                proceed to pay and submit the
-                                application.</label
-                            >
-                        </div>
-                    </div>
-                    <div v-else>
+                   
+                    <div>
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group row">
                                 <alert
@@ -265,16 +247,24 @@ export default {
     computed: {
         training_doc_url: function () {
             let vm = this;
+            let fallback_url = '';
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
                         vm.global_settings.results[i].key == 'event_online_training_document'
                     ) {
-                        return vm.global_settings.results[i].value;
+                        if (vm.global_settings.results[i].value) {
+                            return vm.global_settings.results[i].value;
+                        }
+                    }
+                    if (
+                        vm.global_settings.results[i].key == 'online_training_document'
+                    ) {
+                        fallback_url = vm.global_settings.results[i].value;
                     }
                 }
             }
-            return '';
+            return fallback_url;
         },
         showError: function () {
             var vm = this;
