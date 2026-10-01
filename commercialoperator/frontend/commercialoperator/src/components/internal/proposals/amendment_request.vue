@@ -62,10 +62,15 @@
                                         <div class="col-sm-9">
                                             <textarea
                                                 id="amendment_text"
-                                                v-model="amendment.text"
+                                                v-model.trim="amendment.text"
                                                 class="form-control"
                                                 name="name"
+                                                required
                                             ></textarea>
+                                            <div class="invalid-feedback">
+                                                Please enter the amendment
+                                                details.
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -143,9 +148,13 @@ export default {
             this.amendment = {
                 reason: '',
                 reason_id: null,
+                text: '',
                 proposal: this.proposal_id,
             };
             this.hasErrors = false;
+            if (this.form) {
+                this.form.classList.remove('was-validated');
+            }
             $(this.$refs.reason).val(null).trigger('change');
             $('.has-error').removeClass('has-error');
         },

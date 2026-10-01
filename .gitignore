@@ -9,6 +9,7 @@ node_modules/
 commercialoperator/cache/*
 .ropeproject/
 tmp/*
+session_store/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
