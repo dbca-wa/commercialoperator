@@ -2,9 +2,11 @@
 {% load static %}
 {% load utils %}
 {% block extra_css %}
-    <link type="text/css"
-          href="{% static 'wl/css/index.css' %}"
-          rel="stylesheet">
+    <link rel="icon"
+          type="image/png"
+          href="{% static 'commercialoperator/img/dpaw_small.png' %}">
+    <link rel="stylesheet"
+          href="{% static 'commercialoperator/css/base.css' %}?v={{ build_tag }}">
 {% endblock extra_css %}
 {% block left_menu_items %}
     <li>
