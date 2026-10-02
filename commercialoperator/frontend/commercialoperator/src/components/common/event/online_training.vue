@@ -7,8 +7,26 @@
                     index="commercial_event_questionnaire"
                     subtitle=""
                 >
-                   
-                    <div>
+                <div
+                        v-if="proposal.applicant_training_completed"
+                        class="form-horizontal col-sm-12"
+                    >
+                        <div v-if="proposal.applicant_type == 'ORG'">
+                            <label style="color: green"
+                                >Your online training has already been completed
+                                this year. Please proceed to pay and submit the
+                                application.</label
+                            >
+                        </div>
+                        <div v-else>
+                            <label style="color: green"
+                                >Your online training has been completed. Please
+                                proceed to pay and submit the
+                                application.</label
+                            >
+                        </div>
+                    </div>
+                    <div v-else>
                         <div class="form-horizontal col-sm-12 borderDecoration">
                             <div class="form-group row">
                                 <alert
