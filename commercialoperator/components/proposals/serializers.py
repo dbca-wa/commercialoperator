@@ -1,79 +1,77 @@
+import logging
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from rest_framework import serializers
+
 from commercialoperator.components.main.models import ApplicationType
-from commercialoperator.components.proposals.mixins import ProposedIssuanceApprovalMixin
-from commercialoperator.components.proposals.models import (
-    ProposalType,
-    Proposal,
-    ProposalUserAction,
-    ProposalLogEntry,
-    Referral,
-    ProposalRequirement,
-    ProposalStandardRequirement,
-    ProposalDeclinedDetails,
-    AmendmentRequest,
-    ProposalApplicantDetails,
-    ProposalActivitiesLand,
-    ProposalActivitiesMarine,
-    ProposalPark,
-    ProposalParkActivity,
-    Vehicle,
-    Vessel,
-    ProposalTrail,
-    QAOfficerReferral,
-    ProposalParkAccess,
-    ProposalTrailSection,
-    ProposalTrailSectionActivity,
-    ProposalParkZoneActivity,
-    ProposalParkZone,
-    ProposalOtherDetails,
-    ProposalAccreditation,
-    ChecklistQuestion,
-    ProposalAssessmentAnswer,
-    ProposalAssessment,
-    RequirementDocument,
-    DistrictProposal,
-    DistrictProposalDeclinedDetails,
-    ProposalInformationStandard,
-    ProposalEmissionStandard,
-)
-from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.main.serializers import (
+    AccessTypeSerializer,
+    ActivitySerializer,
     CommunicationLogEntrySerializer,
     ParkSerializer,
-    ActivitySerializer,
-    AccessTypeSerializer,
     TrailSerializer,
 )
-from commercialoperator.components.proposals.serializers_filming import (
-    ProposalFilmingOtherDetailsSerializer,
-    ProposalFilmingActivitySerializer,
-    ProposalFilmingAccessSerializer,
-    ProposalFilmingEquipmentSerializer,
-)
-from commercialoperator.components.proposals.serializers_event import (
-    ProposalEventOtherDetailsSerializer,
-    ProposalEventManagementSerializer,
-    ProposalEventVehiclesVesselsSerializer,
-    ProposalEventActivitiesSerializer,
-)
+from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.organisations.serializers import (
     OrganisationSerializer,
+)
+from commercialoperator.components.proposals.mixins import ProposedIssuanceApprovalMixin
+from commercialoperator.components.proposals.models import (
+    AmendmentRequest,
+    ChecklistQuestion,
+    DistrictProposal,
+    DistrictProposalDeclinedDetails,
+    Proposal,
+    ProposalAccreditation,
+    ProposalActivitiesLand,
+    ProposalActivitiesMarine,
+    ProposalApplicantDetails,
+    ProposalAssessment,
+    ProposalAssessmentAnswer,
+    ProposalDeclinedDetails,
+    ProposalEmissionStandard,
+    ProposalInformationStandard,
+    ProposalLogEntry,
+    ProposalOtherDetails,
+    ProposalPark,
+    ProposalParkAccess,
+    ProposalParkActivity,
+    ProposalParkZone,
+    ProposalParkZoneActivity,
+    ProposalRequirement,
+    ProposalStandardRequirement,
+    ProposalTrail,
+    ProposalTrailSection,
+    ProposalTrailSectionActivity,
+    ProposalType,
+    ProposalUserAction,
+    QAOfficerReferral,
+    Referral,
+    RequirementDocument,
+    Vehicle,
+    Vessel,
+)
+from commercialoperator.components.proposals.serializers_event import (
+    ProposalEventActivitiesSerializer,
+    ProposalEventManagementSerializer,
+    ProposalEventOtherDetailsSerializer,
+    ProposalEventVehiclesVesselsSerializer,
+)
+from commercialoperator.components.proposals.serializers_filming import (
+    ProposalFilmingAccessSerializer,
+    ProposalFilmingActivitySerializer,
+    ProposalFilmingEquipmentSerializer,
+    ProposalFilmingOtherDetailsSerializer,
+)
+from commercialoperator.components.segregation.serializers import (
+    EmailUserRoSerializer,
 )
 from commercialoperator.components.segregation.utils import (
     retrieve_email_user,
 )
 from commercialoperator.components.users.serializers import UserAddressSerializer
-from commercialoperator.components.segregation.serializers import (
-    SegregationBaseSerializer,
-    EmailUserRoSerializer,
-)
-from rest_framework import serializers
-
-from datetime import datetime
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -311,35 +309,39 @@ class ProposalAccreditationSerializer(serializers.ModelSerializer):
 
     def get_accreditation_type_value(self, obj):
         return obj.get_accreditation_type_display()
-    
+
+
 class ProposalInformationStandardSerializer(serializers.ModelSerializer):
-    information_standard_type_value= serializers.SerializerMethodField()
+    information_standard_type_value = serializers.SerializerMethodField()
 
     class Meta:
         model = ProposalInformationStandard
-        fields=('id',
-                'information_standard_type',
-                'proposal_other_details',
-                'information_standard_type_value',
-                'information_comments',
-                )
+        fields = (
+            "id",
+            "information_standard_type",
+            "proposal_other_details",
+            "information_standard_type_value",
+            "information_comments",
+        )
 
-    def get_information_standard_type_value(self,obj):
+    def get_information_standard_type_value(self, obj):
         return obj.get_information_standard_type_display()
-    
+
+
 class ProposalEmissionStandardSerializer(serializers.ModelSerializer):
-    emission_standard_type_value= serializers.SerializerMethodField()
+    emission_standard_type_value = serializers.SerializerMethodField()
 
     class Meta:
         model = ProposalEmissionStandard
-        fields=('id',
-                'emission_standard_type',
-                'proposal_other_details',
-                'emission_standard_type_value',
-                'emission_comments',
-                )
+        fields = (
+            "id",
+            "emission_standard_type",
+            "proposal_other_details",
+            "emission_standard_type_value",
+            "emission_comments",
+        )
 
-    def get_emission_standard_type_value(self,obj):
+    def get_emission_standard_type_value(self, obj):
         return obj.get_emission_standard_type_display()
 
 
@@ -347,7 +349,9 @@ class ProposalOtherDetailsSerializer(serializers.ModelSerializer):
     nominated_start_date = serializers.DateField(required=False, allow_null=True)
     insurance_expiry = serializers.DateField(required=False, allow_null=True)
     accreditations = ProposalAccreditationSerializer(many=True, read_only=True)
-    information_standards = ProposalInformationStandardSerializer(many=True, read_only=True)
+    information_standards = ProposalInformationStandardSerializer(
+        many=True, read_only=True
+    )
     emission_standards = ProposalEmissionStandardSerializer(many=True, read_only=True)
     preferred_licence_period = serializers.CharField(allow_blank=True, allow_null=True)
     proposed_end_date = serializers.DateField(read_only=True)
@@ -390,7 +394,6 @@ class SaveProposalOtherDetailsSerializer(serializers.ModelSerializer):
 
 
 class ChecklistQuestionSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ChecklistQuestion
         # fields = '__all__'
@@ -501,7 +504,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
             "lodgement_number",
             "lodgement_sequence",
             "can_officer_process",
-            #"allowed_assessors",
+            # "allowed_assessors",
             "proposal_type",
             "is_qa_officer",
             "qaofficer_referrals",
@@ -537,9 +540,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
         return None
 
     def get_documents_url(self, obj):
-        return "/media/{}/proposals/{}/documents/".format(
-            settings.MEDIA_APP_DIR, obj.id
-        )
+        return f"/media/{settings.MEDIA_APP_DIR}/proposals/{obj.id}/documents/"
 
     def get_readonly(self, obj):
         return False
@@ -562,7 +563,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
 
     def get_fee_invoice_url(self, obj):
         return (
-            "/cols/payments/invoice-pdf/{}".format(obj.fee_invoice_reference)
+            f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
             if obj.fee_paid
             else None
         )
@@ -600,7 +601,8 @@ class BaseProposalSerializer(serializers.ModelSerializer):
             and obj.allow_full_discount
             else False
         )
-    
+
+
 class ListProposalSerializer(serializers.ModelSerializer):
     submitter = EmailUserSerializer(source="submitter_id")
     applicant = serializers.SerializerMethodField(read_only=True)
@@ -723,7 +725,7 @@ class ListProposalSerializer(serializers.ModelSerializer):
 
     def get_fee_invoice_url(self, obj):
         return (
-            "/cols/payments/invoice-pdf/{}".format(obj.fee_invoice_reference)
+            f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
             if obj.fee_paid
             else None
         )
@@ -742,9 +744,10 @@ class ListProposalSerializer(serializers.ModelSerializer):
 
     def get_customer_status(self, obj):
         return obj.get_customer_status_display()
-    
+
     def get_review_status(self, obj):
         return obj.get_review_status_display()
+
 
 class ProposalSerializer(BaseProposalSerializer):
     submitter = serializers.CharField(source="submitter.get_full_name")
@@ -760,6 +763,7 @@ class ProposalSerializer(BaseProposalSerializer):
 
     def get_readonly(self, obj):
         return obj.can_user_view
+
 
 class SaveProposalSerializer(BaseProposalSerializer):
     assessor_data = serializers.JSONField(required=False)
@@ -1097,7 +1101,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
 
     def get_fee_invoice_url(self, obj):
         return (
-            "/cols/payments/invoice-pdf/{}".format(obj.fee_invoice_reference)
+            f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
             if obj.fee_paid
             else None
         )
@@ -1619,7 +1623,7 @@ class InternalFilmingProposalSerializer(
 
     def get_fee_invoice_url(self, obj):
         return (
-            "/cols/payments/invoice-pdf/{}".format(obj.fee_invoice_reference)
+            f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
             if obj.fee_paid
             else None
         )
@@ -1874,7 +1878,7 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
 
     def get_fee_invoice_url(self, obj):
         return (
-            "/cols/payments/invoice-pdf/{}".format(obj.fee_invoice_reference)
+            f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
             if obj.fee_paid
             else None
         )
@@ -2030,7 +2034,7 @@ class DistrictProposalSerializer(
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
-        super(DistrictProposalSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["proposal"] = FilmingDistrictProposalSerializer(
             context={"request": self.context["request"]}
         )
@@ -2207,7 +2211,7 @@ class ReferralSerializer(serializers.ModelSerializer):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ReferralSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         try:
             parser_context = kwargs.get("context", {}).get("request", {}).parser_context
