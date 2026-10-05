@@ -268,7 +268,8 @@ export default {
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
-                        vm.global_settings.results[i].key == 'event_online_training_document'
+                        vm.global_settings.results[i].key ==
+                        'event_online_training_document'
                     ) {
                         return vm.global_settings.results[i].value;
                     }
