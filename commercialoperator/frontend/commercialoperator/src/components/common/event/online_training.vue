@@ -26,7 +26,9 @@
                     </div>
                 </div>
                 <div v-else>
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group row">
                             <alert
                                 v-if="showError"
@@ -262,7 +264,8 @@ export default {
                         }
                     }
                     if (
-                        vm.global_settings.results[i].key == 'online_training_document'
+                        vm.global_settings.results[i].key ==
+                        'online_training_document'
                     ) {
                         fallback_url = vm.global_settings.results[i].value;
                     }
