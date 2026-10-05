@@ -2,47 +2,47 @@
 <template lang="html">
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Pre-Event Training"
-                    index="pre_event_training"
-                    subtitle=""
-                >
-                    <div v-if="proposal.event_other_details">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Date of Pre-event training
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div
-                                            ref="training_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_other_details
-                                                        .training_date
-                                                "
-                                                type="date"
-                                                max="2999-12-31"
-                                                class="form-control"
-                                                name="training_date"
-                                                placeholder="DD/MM/YYYY"
-                                                required
-                                                :disabled="proposal.readonly"
-                                            />
-                                        </div>
+            <FormSection
+                :form-collapse="false"
+                label="Pre-Event Training"
+                index="pre_event_training"
+                subtitle=""
+            >
+                <div v-if="proposal.event_other_details">
+                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                        <div class="">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Date of Pre-event training
+                                    </label>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div
+                                        ref="training_date"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_other_details
+                                                    .training_date
+                                            "
+                                            type="date"
+                                            max="2999-12-31"
+                                            class="form-control"
+                                            name="training_date"
+                                            placeholder="DD/MM/YYYY"
+                                            required
+                                            :disabled="proposal.readonly"
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
                     <div class="form-horizontal col-sm-12 border rounded p-3">
                         <div class="">
