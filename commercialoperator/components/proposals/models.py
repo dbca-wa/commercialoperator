@@ -1,53 +1,77 @@
-import json
+import copy
 import datetime
+import json
+import logging
+import subprocess
+from decimal import Decimal as D
+
 from dateutil.relativedelta import relativedelta
-from django.urls import reverse
+from dirtyfields import DirtyFieldsMixin
+from django.conf import settings
+from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models, transaction
+from django.db.models import JSONField, Q
+from django.db.models.signals import pre_delete
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
-from django.db.models.signals import pre_delete
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.validators import MinValueValidator
-from django.core.cache import cache
-
-from rest_framework import status
-
-from django.db.models import JSONField
+from django.urls import reverse
 from django.utils import timezone
-from django.conf import settings
-from taggit.models import TaggedItemBase
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser, Invoice
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.ledger_models import Invoice
 from ledger_api_client.utils import (
     create_basket_session,
     process_create_future_invoice,
 )
-from commercialoperator.components.main.mixins import RevisionedMixin, SanitiseMixin
+from multiselectfield import MultiSelectField
+from rest_framework import status
+from reversion.models import Version
+from taggit.models import TaggedItemBase
 
 from commercialoperator import exceptions
-from commercialoperator.components.organisations.models import Organisation, OrganisationContact
+from commercialoperator.components.main.mixins import RevisionedMixin, SanitiseMixin
 from commercialoperator.components.main.models import (
-    CommunicationsLogEntry,
-    UserAction,
-    Document,
-    Region,
-    District,
-    ApplicationType,
-    Park,
+    AccessType,
     Activity,
     ActivityCategory,
-    AccessType,
-    Trail,
-    Section,
-    Zone,
+    ApplicationType,
+    CommunicationsLogEntry,
+    District,
+    Document,
     LicencePeriod,
+    Park,
+    Region,
+    Section,
+    Trail,
+    UserAction,
+    Zone,
 )
 from commercialoperator.components.main.utils import get_department_user
+from commercialoperator.components.organisations.models import (
+    Organisation,
+    OrganisationContact,
+)
 from commercialoperator.components.proposals.email import (
-    send_referral_email_notification,
-    send_proposal_decline_email_notification,
-    send_proposal_approval_email_notification,
-    send_proposal_awaiting_payment_approval_email_notification,
     send_amendment_email_notification,
+    send_approver_approve_email_notification,
+    send_approver_decline_email_notification,
+    send_district_approver_approve_email_notification,
+    send_district_approver_decline_email_notification,
+    send_district_proposal_approval_email_notification,
+    send_district_proposal_approver_sendback_email_notification,
+    send_district_proposal_decline_email_notification,
+    send_district_proposal_submit_email_notification,
+    send_external_submit_email_notification,
+    send_proposal_approval_email_notification,
+    send_proposal_approver_sendback_email_notification,
+    send_proposal_awaiting_payment_approval_email_notification,
+    send_proposal_decline_email_notification,
+    send_qaofficer_complete_email_notification,
+    send_qaofficer_email_notification,
+    send_referral_complete_email_notification,
+    send_referral_email_notification,
+    send_submit_email_notification,
 )
 from commercialoperator.components.proposals.mixins import MembersEmailMixin
 from commercialoperator.components.segregation.decorators import basic_exception_handler
@@ -58,100 +82,58 @@ from commercialoperator.components.segregation.utils import (
     retrieve_user_groups,
 )
 from commercialoperator.ordered_model import OrderedModel
-from commercialoperator.components.proposals.email import (
-    send_submit_email_notification,
-    send_external_submit_email_notification,
-    send_approver_decline_email_notification,
-    send_approver_approve_email_notification,
-    send_referral_complete_email_notification,
-    send_proposal_approver_sendback_email_notification,
-    send_qaofficer_email_notification,
-    send_qaofficer_complete_email_notification,
-    send_district_proposal_submit_email_notification,
-    send_district_proposal_approver_sendback_email_notification,
-    send_district_approver_decline_email_notification,
-    send_district_approver_approve_email_notification,
-    send_district_proposal_decline_email_notification,
-    send_district_proposal_approval_email_notification,
-)
-import copy
-import subprocess
-from django.db.models import Q
-from reversion.models import Version
-from dirtyfields import DirtyFieldsMixin
-from decimal import Decimal as D
-from multiselectfield import MultiSelectField
-
-import logging
 
 logger = logging.getLogger(__name__)
 
 from commercialoperator.components.main.models import private_storage
 
+
 def update_proposal_doc_filename(instance, filename):
-    return "{}/proposals/{}/documents/{}".format(
-        settings.MEDIA_APP_DIR, instance.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.proposal.id}/documents/{filename}"
 
 
 def update_onhold_doc_filename(instance, filename):
-    return "{}/proposals/{}/on_hold/{}".format(
-        settings.MEDIA_APP_DIR, instance.proposal.id, filename
+    return (
+        f"{settings.MEDIA_APP_DIR}/proposals/{instance.proposal.id}/on_hold/{filename}"
     )
 
 
 def update_qaofficer_doc_filename(instance, filename):
-    return "{}/proposals/{}/qaofficer/{}".format(
-        settings.MEDIA_APP_DIR, instance.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.proposal.id}/qaofficer/{filename}"
 
 
 def update_referral_doc_filename(instance, filename):
-    return "{}/proposals/{}/referral/{}".format(
-        settings.MEDIA_APP_DIR, instance.referral.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.referral.proposal.id}/referral/{filename}"
 
 
 def update_proposal_required_doc_filename(instance, filename):
-    return "{}/proposals/{}/required_documents/{}".format(
-        settings.MEDIA_APP_DIR, instance.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.proposal.id}/required_documents/{filename}"
 
 
 def update_requirement_doc_filename(instance, filename):
-    return "{}/proposals/{}/requirement_documents/{}".format(
-        settings.MEDIA_APP_DIR, instance.requirement.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.requirement.proposal.id}/requirement_documents/{filename}"
 
 
 def update_proposal_comms_log_filename(instance, filename):
-    return "{}/proposals/{}/communications/{}".format(
-        settings.MEDIA_APP_DIR, instance.log_entry.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.log_entry.proposal.id}/communications/{filename}"
 
 
 def update_filming_park_doc_filename(instance, filename):
-    return "{}/proposals/{}/filming_park_documents/{}".format(
-        settings.MEDIA_APP_DIR, instance.filming_park.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.filming_park.proposal.id}/filming_park_documents/{filename}"
 
 
 def update_events_park_doc_filename(instance, filename):
-    return "{}/proposals/{}/events_park_documents/{}".format(
-        settings.MEDIA_APP_DIR, instance.events_park.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.events_park.proposal.id}/events_park_documents/{filename}"
 
 
 def update_vessel_doc_filename(instance, filename):
-    return "{}/proposals/{}/vessels/{}".format(
-        settings.MEDIA_APP_DIR, instance.proposal.id, filename
+    return (
+        f"{settings.MEDIA_APP_DIR}/proposals/{instance.proposal.id}/vessels/{filename}"
     )
 
 
 def update_pre_event_park_doc_filename(instance, filename):
-    return "{}/proposals/{}/pre_event_park_documents/{}".format(
-        settings.MEDIA_APP_DIR, instance.pre_event_park.proposal.id, filename
-    )
+    return f"{settings.MEDIA_APP_DIR}/proposals/{instance.pre_event_park.proposal.id}/pre_event_park_documents/{filename}"
 
 
 def application_type_choicelist():
@@ -170,7 +152,6 @@ def default_proposaltype_schema():
 
 
 class ProposalType(models.Model):
-
     description = models.CharField(max_length=256, blank=True, null=True)
     name = models.CharField(
         verbose_name="Application name (eg. T Class, Filming, Event, E Class)",
@@ -185,7 +166,7 @@ class ProposalType(models.Model):
     version = models.SmallIntegerField(default=1, blank=False, null=False)
 
     def __str__(self):
-        return "{} - v{}".format(self.name, self.version)
+        return f"{self.name} - v{self.version}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -352,11 +333,9 @@ class DefaultDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(DefaultDocument, self).delete()
+            return super().delete()
         logger.info(
-            "Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {}".format(
-                self.name
-            )
+            f"Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {self.name}"
         )
 
 
@@ -364,7 +343,9 @@ class ProposalDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_proposal_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_proposal_doc_filename, max_length=512, storage=private_storage
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -385,7 +366,9 @@ class OnHoldDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="onhold_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_onhold_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_onhold_doc_filename, max_length=512, storage=private_storage
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -405,7 +388,9 @@ class ProposalRequiredDocument(Document):
         "Proposal", related_name="required_documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_required_doc_filename, max_length=512, storage=private_storage
+        upload_to=update_proposal_required_doc_filename,
+        max_length=512,
+        storage=private_storage,
     )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
@@ -423,11 +408,9 @@ class ProposalRequiredDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(ProposalRequiredDocument, self).delete()
+            return super().delete()
         logger.info(
-            "Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {}".format(
-                self.name
-            )
+            f"Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {self.name}"
         )
 
     class Meta:
@@ -438,7 +421,9 @@ class QAOfficerDocument(Document):
     proposal = models.ForeignKey(
         "Proposal", related_name="qaofficer_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_qaofficer_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_qaofficer_doc_filename, max_length=512, storage=private_storage
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -449,11 +434,9 @@ class QAOfficerDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(QAOfficerDocument, self).delete()
+            return super().delete()
         logger.info(
-            "Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {}".format(
-                self.name
-            )
+            f"Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {self.name}"
         )
 
     class Meta:
@@ -464,7 +447,9 @@ class ReferralDocument(Document):
     referral = models.ForeignKey(
         "Referral", related_name="referral_documents", on_delete=models.CASCADE
     )
-    _file = models.FileField(upload_to=update_referral_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_referral_doc_filename, max_length=512, storage=private_storage
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -474,9 +459,7 @@ class ReferralDocument(Document):
         if self.can_delete:
             return super(ProposalDocument, self).delete()
         logger.info(
-            "Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {}".format(
-                self.name
-            )
+            f"Cannot delete existing document object after Application has been submitted (including document submitted before Application pushback to status Draft): {self.name}"
         )
 
     class Meta:
@@ -489,7 +472,11 @@ class RequirementDocument(Document):
         related_name="requirement_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_requirement_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_requirement_doc_filename,
+        max_length=512,
+        storage=private_storage,
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -500,7 +487,7 @@ class RequirementDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(RequirementDocument, self).delete()
+            return super().delete()
 
 
 class ProposalApplicantDetails(SanitiseMixin):
@@ -581,7 +568,6 @@ class ParkEntry(models.Model):
 
 
 class Proposal(DirtyFieldsMixin, RevisionedMixin):
-
     APPLICANT_TYPE_ORGANISATION = "ORG"
     APPLICANT_TYPE_PROXY = "PRX"
     APPLICANT_TYPE_SUBMITTER = "SUB"
@@ -933,18 +919,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def save(self, *args, **kwargs):
         self.update_property_cache(False)
         orig_processing_status = self._original_state["processing_status"]
-        super(Proposal, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         if self.processing_status != orig_processing_status:
-            self.save(
-                version_comment="processing_status: {}".format(self.processing_status)
-            )
+            self.save(version_comment=f"processing_status: {self.processing_status}")
 
         if self.lodgement_number == "" and self.application_type.name != "E Class":
-            new_lodgment_id = "A{0:06d}".format(self.pk)
+            new_lodgment_id = f"A{self.pk:06d}"
             self.lodgement_number = new_lodgment_id
-            self.save(
-                version_comment="processing_status: {}".format(self.processing_status)
-            )
+            self.save(version_comment=f"processing_status: {self.processing_status}")
 
         cache.delete(
             settings.CACHE_KEY_PROPOSAL_KEYWORD_SEARCH.format(
@@ -969,7 +951,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         Get properties which were previously resolved with key.
         """
         try:
-
             self.property_cache[key]
 
         except KeyError:
@@ -1109,7 +1090,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     )
                     lic_disc.reset_date = timezone.now()
                     lic_disc.save()
-                except ObjectDoesNotExist as e:
+                except ObjectDoesNotExist:
                     lic_disc = ApplicationFeeDiscount.objects.create(
                         proposal=self,
                         discount_type=ApplicationFeeDiscount.DISCOUNT_TYPE_LICENCE,
@@ -1170,7 +1151,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def reference(self):
-        return "{}-{}".format(self.lodgement_number, self.lodgement_sequence)
+        return f"{self.lodgement_number}-{self.lodgement_sequence}"
 
     @property
     def reversion_ids(self):
@@ -1219,11 +1200,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         if self.org_applicant:
             return self.org_applicant.name
         elif self.proxy_applicant:
-            return "{} {}".format(
-                self.proxy_applicant.first_name, self.proxy_applicant.last_name
-            )
+            return f"{self.proxy_applicant.first_name} {self.proxy_applicant.last_name}"
         else:
-            return "{} {}".format(self.submitter.first_name, self.submitter.last_name)
+            return f"{self.submitter.first_name} {self.submitter.last_name}"
 
     @property
     def applicant_email(self):
@@ -1241,21 +1220,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def applicant_details(self):
         if self.org_applicant:
-            return "{} \n{}".format(
-                self.org_applicant.organisation.name, self.org_applicant.address
+            return (
+                f"{self.org_applicant.organisation.name} \n{self.org_applicant.address}"
             )
         elif self.proxy_applicant:
-            return "{} {}\n{}".format(
-                self.proxy_applicant.first_name,
-                self.proxy_applicant.last_name,
-                self.proxy_applicant.addresses.all().first(),
-            )
+            return f"{self.proxy_applicant.first_name} {self.proxy_applicant.last_name}\n{self.proxy_applicant.addresses.all().first()}"
         else:
-            return "{} {}\n{}".format(
-                self.submitter.first_name,
-                self.submitter.last_name,
-                self.submitter.addresses.all().first(),
-            )
+            return f"{self.submitter.first_name} {self.submitter.last_name}\n{self.submitter.addresses.all().first()}"
 
     @property
     def applicant_address(self):
@@ -1447,7 +1418,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         fallback_recipient = (
             self.org_applicant.all_admin_emails
             if len(self.org_applicant.all_admin_emails) > 0
-            else submitter.email if submitter else None
+            else submitter.email
+            if submitter
+            else None
         )
         if self.org_applicant:
             try:
@@ -1553,7 +1526,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def permit(self):
         return self.approval.licence_document._file.url if self.approval else None
 
-    #TODO provided id and name only
+    # TODO provided id and name only
     @property
     def allowed_assessors(self):
         if self.processing_status == "with_approver":
@@ -1870,7 +1843,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         zone_activities.append(a.activity_name)
                     selected_parks_activities.append(
                         {
-                            "park": "{} - {}".format(p.park.name, z.zone.name),
+                            "park": f"{p.park.name} - {z.zone.name}",
                             "activities": park_activities,
                         }
                     )
@@ -1883,7 +1856,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     trail_activities.append(ts.activity_name)
                 selected_parks_activities.append(
                     {
-                        "park": "{} - {}".format(t.trail.name, s.section.name),
+                        "park": f"{t.trail.name} - {s.section.name}",
                         "activities": trail_activities,
                     }
                 )
@@ -1920,7 +1893,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             zone_activities.append(a.activity_name)
                         selected_parks_activities.append(
                             {
-                                "park": "{} - {}".format(p.park.name, z.zone.name),
+                                "park": f"{p.park.name} - {z.zone.name}",
                                 "activities": zone_activities,
                             }
                         )
@@ -1933,7 +1906,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         trail_activities.append(ts.activity_name)
                     selected_parks_activities.append(
                         {
-                            "park": "{} - {}".format(t.trail.name, s.section.name),
+                            "park": f"{t.trail.name} - {s.section.name}",
                             "activities": trail_activities,
                         }
                     )
@@ -1947,7 +1920,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         trail_activities.append(ts.activity_name)
                     selected_parks_activities.append(
                         {
-                            "park": "{} - {}".format(t.trail.name, s.section.name),
+                            "park": f"{t.trail.name} - {s.section.name}",
                             "activities": trail_activities,
                         }
                     )
@@ -2110,14 +2083,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 referral = Referral.objects.get(proposal=self, referral=user)
             except:
                 referral = None
-            if referral:
-                return True
-            elif self.__assessor_group() in retrieve_user_groups(
-                "proposalassessorgroup", user.id
-            ):
-                return True
-            elif self.__approver_group() in retrieve_user_groups(
-                "proposalapprovergroup", user.id
+            if (
+                referral
+                or self.__assessor_group()
+                in retrieve_user_groups("proposalassessorgroup", user.id)
+                or self.__approver_group()
+                in retrieve_user_groups("proposalapprovergroup", user.id)
             ):
                 return True
             else:
@@ -2166,13 +2137,17 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     )
                     raise exceptions.ProposalMissingFields(detail=error_text)
 
-                if request.user and isinstance(request.user,EmailUser):
+                if request.user and isinstance(request.user, EmailUser):
                     if not self.submitter:
-                        self.submitter = request.user #NOTE: submitter should already be set
+                        self.submitter = (
+                            request.user
+                        )  # NOTE: submitter should already be set
                         self.save()
-                    #Same org, different submitter
+                    # Same org, different submitter
                     if self.org_applicant:
-                        if OrganisationContact.objects.filter(organisation=self.org_applicant,email=request.user.email).exists():
+                        if OrganisationContact.objects.filter(
+                            organisation=self.org_applicant, email=request.user.email
+                        ).exists():
                             self.submitter = request.user
                             self.save()
 
@@ -2186,11 +2161,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 # Create a log entry for the proposal
                 self.log_user_action(
-                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id), request.user
+                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id),
+                    request.user,
                 )
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id), request.user
+                    ProposalUserAction.ACTION_LODGE_APPLICATION.format(self.id),
+                    request.user,
                 )
 
                 ret1 = send_submit_email_notification(request, self)
@@ -2306,7 +2283,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             # Create a log entry for the proposal
             self.log_user_action(
                 ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
-                    referral.id, self.id, "{}".format(referral_group.name)
+                    referral.id, self.id, f"{referral_group.name}"
                 ),
                 request.user,
             )
@@ -2314,7 +2291,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             applicant_field = getattr(self, self.applicant_field)
             applicant_field.log_user_action(
                 ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
-                    referral.id, self.id, "{}".format(referral_group.name)
+                    referral.id, self.id, f"{referral_group.name}"
                 ),
                 request.user,
             )
@@ -2341,7 +2318,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         self.log_user_action(
                             ProposalUserAction.ACTION_ASSIGN_TO_APPROVER.format(
                                 self.id,
-                                "{}({})".format(officer.get_full_name(), officer.email),
+                                f"{officer.get_full_name()}({officer.email})",
                             ),
                             request.user,
                         )
@@ -2350,7 +2327,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         applicant_field.log_user_action(
                             ProposalUserAction.ACTION_ASSIGN_TO_APPROVER.format(
                                 self.id,
-                                "{}({})".format(officer.get_full_name(), officer.email),
+                                f"{officer.get_full_name()}({officer.email})",
                             ),
                             request.user,
                         )
@@ -2362,7 +2339,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         self.log_user_action(
                             ProposalUserAction.ACTION_ASSIGN_TO_ASSESSOR.format(
                                 self.id,
-                                "{}({})".format(officer.get_full_name(), officer.email),
+                                f"{officer.get_full_name()}({officer.email})",
                             ),
                             request.user,
                         )
@@ -2371,7 +2348,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         applicant_field.log_user_action(
                             ProposalUserAction.ACTION_ASSIGN_TO_ASSESSOR.format(
                                 self.id,
-                                "{}({})".format(officer.get_full_name(), officer.email),
+                                f"{officer.get_full_name()}({officer.email})",
                             ),
                             request.user,
                         )
@@ -2397,7 +2374,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     document.save()
                     d = ProposalDocument.objects.get(id=document.id)
                     self.approval_level_document = d
-                    comment = "Approval Level Document Added: {}".format(document.name)
+                    comment = f"Approval Level Document Added: {document.name}"
                 else:
                     self.approval_level_document = None
                     comment = "Approval Level Document Deleted: {}".format(
@@ -2533,15 +2510,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 user_proposalassessorgroup_set = retrieve_user_groups(
                     "ProposalAssessorGroup", request.user.id
                 )
-                if (
-                    self.__assessor_group()
-                    in user_proposalassessorgroup_set
-                ):
+                if self.__assessor_group() in user_proposalassessorgroup_set:
                     self.processing_status = status
                     self.save(
-                        version_comment="Reissue Approval: {}".format(
-                            self.approval.lodgement_number
-                        )
+                        version_comment=f"Reissue Approval: {self.approval.lodgement_number}"
                     )
                     # self.save()
                     # Create a log entry for the proposal
@@ -2562,18 +2534,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "You cannot change the current status at this time"
                 )
             elif self.approval and self.approval.can_reissue:
-                if (
-                    self.__approver_group()
-                    in retrieve_user_groups(
+                if self.__approver_group() in retrieve_user_groups(
                     "proposalapprovergroup", request.user.id
-                )
                 ):
                     self.processing_status = status
                     # self.save()
                     self.save(
-                        version_comment="Reissue Approval: {}".format(
-                            self.approval.lodgement_number
-                        )
+                        version_comment=f"Reissue Approval: {self.approval.lodgement_number}"
                     )
                     # Create a log entry for the proposal
                     self.log_user_action(
@@ -2611,12 +2578,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.move_to_status(request, "with_approver", approver_comment)
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id), request.user
+                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id),
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id), request.user
+                    ProposalUserAction.ACTION_PROPOSED_DECLINE.format(self.id),
+                    request.user,
                 )
 
                 send_approver_decline_email_notification(reason, request, self)
@@ -2707,12 +2676,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id), request.user
+                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id),
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id), request.user
+                    ProposalUserAction.ACTION_REMOVE_ONHOLD.format(self.id),
+                    request.user,
                 )
 
                 # send_approver_decline_email_notification(reason, request, self)
@@ -2749,12 +2720,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id), request.user
+                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id),
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id), request.user
+                    ProposalUserAction.ACTION_WITH_QA_OFFICER.format(self.id),
+                    request.user,
                 )
 
                 # send_approver_decline_email_notification(reason, request, self)
@@ -2829,12 +2802,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.save()
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id), request.user
+                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id),
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id), request.user
+                    ProposalUserAction.ACTION_PROPOSED_APPROVAL.format(self.id),
+                    request.user,
                 )
 
                 send_approver_approve_email_notification(request, self)
@@ -2868,12 +2843,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 self.customer_status = "approved"
                 # Log proposal action
                 self.log_user_action(
-                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id), request.user
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                    request.user,
                 )
                 # Log entry for organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id), request.user
+                    ProposalUserAction.ACTION_ISSUE_APPROVAL_.format(self.id),
+                    request.user,
                 )
 
                 if self.proposal_type == "renewal":
@@ -2895,9 +2872,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 # send Proposal approval email with attachment
                 # send_proposal_approval_email_notification(self,request)
                 self.save(
-                    version_comment="Final Approval: {}".format(
-                        self.approval.lodgement_number
-                    )
+                    version_comment=f"Final Approval: {self.approval.lodgement_number}"
                 )
                 self.approval.documents.all().update(can_delete=False)
 
@@ -2914,9 +2889,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             or self.processing_status == "with_approver"
         ):
             raise ValidationError(
-                "Licence preview only available when processing status is with_approver. Current status {}".format(
-                    self.processing_status
-                )
+                f"Licence preview only available when processing status is with_approver. Current status {self.processing_status}"
             )
         if not self.can_assess(request.user):
             raise exceptions.ProposalNotAuthorized()
@@ -2962,11 +2935,14 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         try:
             self.proposed_decline_status = False
 
-            if request and not ((
-                self.processing_status == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
-                and self.fee_paid
-            ) or (self.proposal_type == "amendment")):
-
+            if request and not (
+                (
+                    self.processing_status
+                    == Proposal.PROCESSING_STATUS_AWAITING_PAYMENT
+                    and self.fee_paid
+                )
+                or (self.proposal_type == "amendment")
+            ):
                 if not self.can_assess(request.user):
                     raise exceptions.ProposalNotAuthorized()
                 if self.processing_status != "with_approver":
@@ -3000,7 +2976,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 and not self.proposal_type == "amendment"
                 and not self.fee_paid
             ):
-
                 self.processing_status = self.PROCESSING_STATUS_AWAITING_PAYMENT
                 self.customer_status = self.CUSTOMER_STATUS_AWAITING_PAYMENT
                 self.approved_by = request.user
@@ -3027,9 +3002,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         request.user,
                     )
                     self.save(
-                        version_comment="Final Approval - Awaiting Payment, Proposal: {}".format(
-                            self.lodgement_number
-                        )
+                        version_comment=f"Final Approval - Awaiting Payment, Proposal: {self.lodgement_number}"
                     )
 
                 else:
@@ -3083,9 +3056,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             previous_approval.replaced_by = approval
                             previous_approval.save()
 
-                        #NOTE this function originally used request.user - meaning if a user pays on behalf of the actual applicant then the function would be misapplied
-                        #now it uses submitter - in COLS that may be acceptable but at some stage the applicant and the submitter should be distinguised in case an application is submitted on someone's behalf
-                        self.reset_licence_discount(self.submitter) 
+                        # NOTE this function originally used request.user - meaning if a user pays on behalf of the actual applicant then the function would be misapplied
+                        # now it uses submitter - in COLS that may be acceptable but at some stage the applicant and the submitter should be distinguised in case an application is submitted on someone's behalf
+                        self.reset_licence_discount(self.submitter)
 
                 elif self.proposal_type == "amendment":
                     if self.previous_application:
@@ -3128,11 +3101,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             #'extracted_fields' = JSONField(blank=True, null=True)
                         },
                     )
-                    self.reset_licence_discount(self.submitter) 
+                    self.reset_licence_discount(self.submitter)
                 # Generate compliances
                 from commercialoperator.components.compliances.models import (
                     Compliance,
-                    ComplianceUserAction,
                 )
 
                 if created:
@@ -3147,8 +3119,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 c.delete()
                     # Log creation
                     # Generate the document
-                    #NOTE this function originally used request.user - meaning if a user pays on behalf of the actual applicant then the function would be misapplied
-                    #now it uses submitter - in COLS that may be acceptable but at some stage the applicant and the submitter should be distinguised in case an application is submitted on someone's behalf
+                    # NOTE this function originally used request.user - meaning if a user pays on behalf of the actual applicant then the function would be misapplied
+                    # now it uses submitter - in COLS that may be acceptable but at some stage the applicant and the submitter should be distinguised in case an application is submitted on someone's behalf
                     approval.generate_doc(self.submitter)
                     self.generate_compliances(approval, request)
                     # send the doc and log in approval and org
@@ -3179,9 +3151,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 # send Proposal approval email with attachment
                 send_proposal_approval_email_notification(self, request)
                 self.save(
-                    version_comment="Final Approval: {}".format(
-                        self.approval.lodgement_number
-                    )
+                    version_comment=f"Final Approval: {self.approval.lodgement_number}"
                 )
                 self.approval.documents.all().update(can_delete=False)
 
@@ -3196,6 +3166,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     ):
 
         from dateutil.relativedelta import relativedelta
+
         from commercialoperator.components.bookings.models import FilmingFee
         from commercialoperator.components.bookings.utils import (
             create_filming_fee_lines,
@@ -3213,7 +3184,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 logger.info("Creating filming fee invoice")
 
                 deferred_payment_date = timezone.now() + relativedelta(months=1)
-                
+
                 reference = self.lodgement_number
 
                 basket_params = {
@@ -3225,9 +3196,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "booking_reference": reference,
                     "booking_reference_link": reference,
                     "fallback_url": request.build_absolute_uri("/"),
-                    'no_payment': False,
+                    "no_payment": False,
                 }
-                
+
                 basket_hash = create_basket_session(
                     request, request.user.id, basket_params
                 )
@@ -3235,8 +3206,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 basket_hash_split = basket_hash.split("|")
 
                 invoice_name = self.applicant_obj.name
-                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(return_preload_url_ns,kwargs={"reference": self.lodgement_number})
-                
+                return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(
+                    return_preload_url_ns, kwargs={"reference": self.lodgement_number}
+                )
+
                 due_date = None
                 future_invoice_response = process_create_future_invoice(
                     basket_hash_split[0],
@@ -3247,7 +3220,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 )
                 if future_invoice_response.get("status") != status.HTTP_200_OK:
                     raise ValidationError(
-                        f"Failed to create filming fee invoice: {future_invoice_response.get("message")}"
+                        f"Failed to create filming fee invoice: {future_invoice_response.get('message')}"
                     )
 
                 future_invoice = future_invoice_response.get("data", {})
@@ -3267,7 +3240,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
             except Exception as e:
                 logger.error("Failed to create filming fee confirmation")
-                logger.error("{}".format(e))
+                logger.error(f"{e}")
 
         return filming_fee
 
@@ -3326,7 +3299,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                             approval=approval,
                             requirement=req,
                         )
-                        compliance.log_user_action( 
+                        compliance.log_user_action(
                             ComplianceUserAction.ACTION_CREATE.format(compliance.id),
                             request.user if request else self.submitter,
                         )
@@ -3339,7 +3312,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 # Monthly
                                 elif req.recurrence_pattern == 2:
                                     current_date += timedelta(weeks=4)
-                                    pass
                                 # Yearly
                                 elif req.recurrence_pattern == 3:
                                     current_date += timedelta(days=365)
@@ -3380,11 +3352,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         "A renewal/ amendment for this licence has already been lodged and is awaiting review."
                     )
             except Proposal.DoesNotExist:
-
-                if not (self.approval and self.approval.renewal_document and self.approval.renewal_sent and self.approval.can_renew):
-                    raise ValidationError(
-                        "The licence cannot be renewed yet."
-                    )
+                if not (
+                    self.approval
+                    and self.approval.renewal_document
+                    and self.approval.renewal_sent
+                    and self.approval.can_renew
+                ):
+                    raise ValidationError("The licence cannot be renewed yet.")
 
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
@@ -3398,9 +3372,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     proposal.submitter = request.user
                 else:
                     proposal.submitter = previous_proposal.submitter
-                #Same org, different submitter
+                # Same org, different submitter
                 if previous_proposal.org_applicant:
-                    if OrganisationContact.objects.filter(organisation=previous_proposal.org_applicant,email=request.user.email).exists():
+                    if OrganisationContact.objects.filter(
+                        organisation=previous_proposal.org_applicant,
+                        email=request.user.email,
+                    ).exists():
                         proposal.submitter = request.user
                 proposal.previous_application = self
                 proposal.proposed_issuance_approval = None
@@ -3430,7 +3407,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     )
                     proposal.other_details.save()
                 if proposal.application_type.name == ApplicationType.FILMING:
-
                     proposal.filming_other_details.insurance_expiry = None
                     proposal.filming_other_details.save()
                     proposal.filming_activity.commencement_date = None
@@ -3444,7 +3420,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     proposal.fee_invoice_reference = None
 
                 if proposal.application_type.name == ApplicationType.EVENT:
-
                     proposal.event_other_details.insurance_expiry = None
                     proposal.event_other_details.save()
                     proposal.event_activity.commencement_date = None
@@ -3481,23 +3456,19 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     ):
                         requirement_document.requirement = requirement
                         requirement_document.id = None
-                        requirement_document._file.name = (
-                            "{}/proposals/{}/requirement_documents/{}".format(
-                                settings.MEDIA_APP_DIR,
-                                proposal.id,
-                                requirement_document.name,
-                            )
-                        )
+                        requirement_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/requirement_documents/{requirement_document.name}"
                         requirement_document.can_delete = True
                         requirement_document.save()
                         # Create a log entry for the proposal
                 self.log_user_action(
-                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id), request.user
+                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),
+                    request.user,
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id), request.user
+                    ProposalUserAction.ACTION_RENEW_PROPOSAL.format(self.id),
+                    request.user,
                 )
                 # Log entry for approval
                 from commercialoperator.components.approvals.models import (
@@ -3509,9 +3480,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     request.user,
                 )
                 proposal.save(
-                    version_comment="New Amendment/Renewal Application created, from origin {}".format(
-                        proposal.previous_application_id
-                    )
+                    version_comment=f"New Amendment/Renewal Application created, from origin {proposal.previous_application_id}"
                 )
                 # proposal.save()
             return proposal
@@ -3530,12 +3499,9 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                         "An amendment for this licence has already been lodged and is awaiting review."
                     )
             except Proposal.DoesNotExist:
-
                 if not (self.approval and self.approval.can_amend):
-                    raise ValidationError(
-                        "The licence cannot be amended at this time."
-                    )
-                
+                    raise ValidationError("The licence cannot be amended at this time.")
+
                 previous_proposal = Proposal.objects.get(id=self.id)
                 proposal = clone_proposal_with_status_reset(previous_proposal)
                 proposal.proposal_type = "amendment"
@@ -3553,9 +3519,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     proposal.submitter = request.user
                 else:
                     proposal.submitter = previous_proposal.submitter
-                #Same org, different submitter
+                # Same org, different submitter
                 if previous_proposal.org_applicant:
-                    if OrganisationContact.objects.filter(organisation=previous_proposal.org_applicant,email=request.user.email).exists():
+                    if OrganisationContact.objects.filter(
+                        organisation=previous_proposal.org_applicant,
+                        email=request.user.email,
+                    ).exists():
                         proposal.submitter = request.user
                 proposal.previous_application = self
                 if proposal.application_type.name == ApplicationType.TCLASS:
@@ -3583,23 +3552,19 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     ):
                         requirement_document.requirement = requirement
                         requirement_document.id = None
-                        requirement_document._file.name = (
-                            "{}/proposals/{}/requirement_documents/{}".format(
-                                settings.MEDIA_APP_DIR,
-                                proposal.id,
-                                requirement_document.name,
-                            )
-                        )
+                        requirement_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/requirement_documents/{requirement_document.name}"
                         requirement_document.can_delete = True
                         requirement_document.save()
                         # Create a log entry for the proposal
                 self.log_user_action(
-                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id), request.user
+                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id),
+                    request.user,
                 )
                 # Create a log entry for the organisation
                 applicant_field = getattr(self, self.applicant_field)
                 applicant_field.log_user_action(
-                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id), request.user
+                    ProposalUserAction.ACTION_AMEND_PROPOSAL.format(self.id),
+                    request.user,
                 )
                 # Log entry for approval
                 from commercialoperator.components.approvals.models import (
@@ -3611,9 +3576,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     request.user,
                 )
                 proposal.save(
-                    version_comment="New Amendment/Renewal Application created, from origin {}".format(
-                        proposal.previous_application_id
-                    )
+                    version_comment=f"New Amendment/Renewal Application created, from origin {proposal.previous_application_id}"
                 )
                 # proposal.save()
             return proposal
@@ -3695,7 +3658,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                 )  # Delete all the requirements
                                 from commercialoperator.components.compliances.models import (
                                     Compliance,
-                                    ComplianceUserAction,
                                 )
 
                                 due_compliances = Compliance.objects.filter(
@@ -3785,7 +3747,6 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                                     )  # Delete all the requirements
                                     from commercialoperator.components.compliances.models import (
                                         Compliance,
-                                        ComplianceUserAction,
                                     )
 
                                     due_compliances = Compliance.objects.filter(
@@ -3825,9 +3786,12 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 proposal.submitter = request.user
             else:
                 proposal.submitter = previous_proposal.submitter
-            #Same org, different submitter
+            # Same org, different submitter
             if previous_proposal.org_applicant:
-                if OrganisationContact.objects.filter(organisation=previous_proposal.org_applicant,email=request.user.email).exists():
+                if OrganisationContact.objects.filter(
+                    organisation=previous_proposal.org_applicant,
+                    email=request.user.email,
+                ).exists():
                     proposal.submitter = request.user
             # proposal.previous_application = self
             proposal.proposed_issuance_approval = None
@@ -3901,13 +3865,7 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 ):
                     requirement_document.requirement = requirement
                     requirement_document.id = None
-                    requirement_document._file.name = (
-                        "{}/proposals/{}/requirement_documents/{}".format(
-                            settings.MEDIA_APP_DIR,
-                            proposal.id,
-                            requirement_document.name,
-                        )
-                    )
+                    requirement_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/requirement_documents/{requirement_document.name}"
                     requirement_document.can_delete = True
                     requirement_document.save()
             return proposal
@@ -3932,11 +3890,7 @@ class ApplicationFeeDiscount(RevisionedMixin):
     reset_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return "{} - {}% - {}".format(
-            self.get_discount_type_display(),
-            self.discount,
-            self.proposal.fee_invoice_reference,
-        )
+        return f"{self.get_discount_type_display()} - {self.discount}% - {self.proposal.fee_invoice_reference}"
 
     @property
     def invoice(self):
@@ -3963,7 +3917,9 @@ class ProposalLogDocument(Document):
         "ProposalLogEntry", related_name="documents", on_delete=models.CASCADE
     )
     _file = models.FileField(
-        upload_to=update_proposal_comms_log_filename, max_length=512, storage=private_storage
+        upload_to=update_proposal_comms_log_filename,
+        max_length=512,
+        storage=private_storage,
     )
 
     class Meta:
@@ -3976,7 +3932,7 @@ class ProposalLogEntry(CommunicationsLogEntry):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.reference, self.subject)
+        return f"{self.reference} - {self.subject}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -3985,7 +3941,7 @@ class ProposalLogEntry(CommunicationsLogEntry):
         # save the application reference if the reference not provided
         if not self.reference:
             self.reference = self.proposal.reference
-        super(ProposalLogEntry, self).save(**kwargs)
+        super().save(**kwargs)
 
 
 def default_proposalotherdetails_mooring():
@@ -4074,12 +4030,11 @@ class ProposalOtherDetails(SanitiseMixin):
 
 
 class ProposalAccreditation(SanitiseMixin):
-
     ACCREDITATION_TYPE_CHOICES = (
         ("no", "None"),
         ("atap", "QTA"),
         ("eco_certification", "Eco Certification"),
-        #("narta", "NARTA"),
+        # ("narta", "NARTA"),
         ("other", "Other"),
     )
 
@@ -4099,53 +4054,72 @@ class ProposalAccreditation(SanitiseMixin):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.accreditation_type, self.comments)
+        return f"{self.accreditation_type} - {self.comments}"
 
     class Meta:
         app_label = "commercialoperator"
 
     def save(self, *args, **kwargs):
-        super(ProposalAccreditation, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         cache.delete(settings.CACHE_KEY_ACCREDITATION_CHOICES)
+
 
 class ProposalInformationStandard(models.Model):
     INFORMATION_STANDARD_TYPE_CHOICES = (
-        ('no', 'None'),
-        ('tourism_council', 'Tourism Council WA'),
-        ('eco_tourism', 'Eco Tourism Australia'),
-        ('other', 'Other')
+        ("no", "None"),
+        ("tourism_council", "Tourism Council WA"),
+        ("eco_tourism", "Eco Tourism Australia"),
+        ("other", "Other"),
     )
 
-    information_standard_type = models.CharField('Information Standard', max_length=40, choices=INFORMATION_STANDARD_TYPE_CHOICES,
-                                       default=INFORMATION_STANDARD_TYPE_CHOICES[0][0])
-    information_comments=models.TextField(blank=True)
-    proposal_other_details = models.ForeignKey(ProposalOtherDetails, related_name='information_standards', null=True, on_delete=models.CASCADE)
+    information_standard_type = models.CharField(
+        "Information Standard",
+        max_length=40,
+        choices=INFORMATION_STANDARD_TYPE_CHOICES,
+        default=INFORMATION_STANDARD_TYPE_CHOICES[0][0],
+    )
+    information_comments = models.TextField(blank=True)
+    proposal_other_details = models.ForeignKey(
+        ProposalOtherDetails,
+        related_name="information_standards",
+        null=True,
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
-        return '{} - {}'.format(self.information_standard_type, self.information_comments)
+        return f"{self.information_standard_type} - {self.information_comments}"
 
     class Meta:
-        app_label = 'commercialoperator'
+        app_label = "commercialoperator"
+
 
 class ProposalEmissionStandard(models.Model):
     EMISSION_STANDARD_TYPE_CHOICES = (
-        ('no', 'None'),
-        ('tourism_council', 'Tourism Council WA'),
-        ('eco_tourism', 'Eco Tourism Australia'),
-        ('other', 'Other')
+        ("no", "None"),
+        ("tourism_council", "Tourism Council WA"),
+        ("eco_tourism", "Eco Tourism Australia"),
+        ("other", "Other"),
     )
 
-    emission_standard_type = models.CharField('Emission Standard', max_length=40, choices=EMISSION_STANDARD_TYPE_CHOICES,
-                                       default=EMISSION_STANDARD_TYPE_CHOICES[0][0])
-    emission_comments=models.TextField(blank=True)
-    proposal_other_details = models.ForeignKey(ProposalOtherDetails, related_name='emission_standards', null=True, on_delete=models.CASCADE)
+    emission_standard_type = models.CharField(
+        "Emission Standard",
+        max_length=40,
+        choices=EMISSION_STANDARD_TYPE_CHOICES,
+        default=EMISSION_STANDARD_TYPE_CHOICES[0][0],
+    )
+    emission_comments = models.TextField(blank=True)
+    proposal_other_details = models.ForeignKey(
+        ProposalOtherDetails,
+        related_name="emission_standards",
+        null=True,
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
-        return '{} - {}'.format(self.emission_standard_type, self.emission_comments)
+        return f"{self.emission_standard_type} - {self.emission_comments}"
 
     class Meta:
-        app_label = 'commercialoperator'
-
+        app_label = "commercialoperator"
 
 
 class ProposalPark(models.Model):
@@ -4267,7 +4241,7 @@ class ProposalParkZoneActivity(models.Model):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.activity.name, self.park_zone.zone.name)
+        return f"{self.activity.name} - {self.park_zone.zone.name}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -4311,7 +4285,7 @@ class ProposalTrailSection(models.Model):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.proposal_trail, self.section.name)
+        return f"{self.proposal_trail} - {self.section.name}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -4331,7 +4305,7 @@ class ProposalTrailSectionActivity(models.Model):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.trail_section, self.activity.name)
+        return f"{self.trail_section} - {self.activity.name}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -4355,7 +4329,7 @@ class Vehicle(SanitiseMixin):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.rego, self.access_type)
+        return f"{self.rego} - {self.access_type}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -4386,7 +4360,7 @@ class Vessel(SanitiseMixin):
     )
 
     def __str__(self):
-        return "{} - {}".format(self.spv_no, self.nominated_vessel)
+        return f"{self.spv_no} - {self.nominated_vessel}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -4404,7 +4378,7 @@ class ProposalRequest(SanitiseMixin):
     officer = models.ForeignKey(EmailUser, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "{} - {}".format(self.subject, self.text)
+        return f"{self.subject} - {self.text}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -4438,7 +4412,7 @@ class AmendmentReason(SanitiseMixin):
         return self.reason
 
     def save(self, *args, **kwargs):
-        super(AmendmentReason, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         cache.delete(settings.CACHE_KEY_AMENDMENT_REQUEST_REASON_CHOICES)
 
 
@@ -4554,6 +4528,7 @@ class ProposalStandardRequirement(RevisionedMixin):
         app_label = "commercialoperator"
         verbose_name = "Application Standard Requirement"
         verbose_name_plural = "Application Standard Requirements"
+
 
 class ProposalUserAction(UserAction):
     ACTION_CREATE_CUSTOMER_ = "Create customer {}"
@@ -4757,7 +4732,6 @@ class QAOfficerGroup(models.Model, MembersPropertiesMixin):
 
 
 class Referral(RevisionedMixin):
-
     SENT_CHOICES = ((1, "Sent From Assessor"), (2, "Sent From Referral"))
     PROCESSING_STATUS_CHOICES = (
         ("with_referral", "Awaiting"),
@@ -4819,7 +4793,7 @@ class Referral(RevisionedMixin):
         ordering = ("-lodged_on",)
 
     def __str__(self):
-        return "Application {} - Referral {}".format(self.proposal.id, self.id)
+        return f"Application {self.proposal.id} - Referral {self.id}"
 
     # Methods
     @property
@@ -4842,7 +4816,7 @@ class Referral(RevisionedMixin):
         else:
             return None
 
-    #TODO refactor or remove this (always returns True)
+    # TODO refactor or remove this (always returns True)
     @property
     def can_be_completed(self):
         return True
@@ -4890,7 +4864,7 @@ class Referral(RevisionedMixin):
                         ProposalUserAction.ACTION_REFERRAL_ASSIGN_TO_ASSESSOR.format(
                             self.id,
                             self.proposal.id,
-                            "{}({})".format(officer.get_full_name(), officer.email),
+                            f"{officer.get_full_name()}({officer.email})",
                         ),
                         request.user,
                     )
@@ -4948,7 +4922,7 @@ class Referral(RevisionedMixin):
             # Create a log entry for the proposal
             self.proposal.log_user_action(
                 ProposalUserAction.ACTION_REMIND_REFERRAL.format(
-                    self.id, self.proposal.id, "{}".format(self.referral_group.name)
+                    self.id, self.proposal.id, f"{self.referral_group.name}"
                 ),
                 request.user,
             )
@@ -4956,7 +4930,7 @@ class Referral(RevisionedMixin):
             applicant_field = getattr(self.proposal, self.proposal.applicant_field)
             applicant_field.log_user_action(
                 ProposalUserAction.ACTION_REMIND_REFERRAL.format(
-                    self.id, self.proposal.id, "{}".format(self.referral_group.name)
+                    self.id, self.proposal.id, f"{self.referral_group.name}"
                 ),
                 request.user,
             )
@@ -4976,7 +4950,7 @@ class Referral(RevisionedMixin):
         # Create a log entry for the proposal
         self.proposal.log_user_action(
             ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
-                self.id, self.proposal.id, "{}".format(self.referral_group.name)
+                self.id, self.proposal.id, f"{self.referral_group.name}"
             ),
             request.user,
         )
@@ -4984,7 +4958,7 @@ class Referral(RevisionedMixin):
         applicant_field = getattr(self.proposal, self.proposal.applicant_field)
         applicant_field.log_user_action(
             ProposalUserAction.ACTION_RESEND_REFERRAL_TO.format(
-                self.id, self.proposal.id, "{}".format(self.referral_group.name)
+                self.id, self.proposal.id, f"{self.referral_group.name}"
             ),
             request.user,
         )
@@ -5004,9 +4978,7 @@ class Referral(RevisionedMixin):
         self.processing_status = "completed"
         self.referral = request.user
         self.referral_text = (
-            request.user.get_full_name()
-            + ": "
-            + request.data.get("referral_comment")
+            request.user.get_full_name() + ": " + request.data.get("referral_comment")
         )
         self.add_referral_document(request)
         self.save()
@@ -5015,7 +4987,7 @@ class Referral(RevisionedMixin):
                 request.user.get_full_name(),
                 self.id,
                 self.proposal.id,
-                "{}".format(self.referral_group.name),
+                f"{self.referral_group.name}",
             ),
             request.user,
         )
@@ -5025,12 +4997,11 @@ class Referral(RevisionedMixin):
                 request.user.get_full_name(),
                 self.id,
                 self.proposal.id,
-                "{}".format(self.referral_group.name),
+                f"{self.referral_group.name}",
             ),
             request.user,
         )
         send_referral_complete_email_notification(self, request)
-
 
     def add_referral_document(self, request):
         with transaction.atomic():
@@ -5057,7 +5028,7 @@ class Referral(RevisionedMixin):
                         d = ReferralDocument.objects.get(id=document.id)
                         # self.referral_document = d
                         self.document = d
-                        comment = "Referral Document Added: {}".format(document.name)
+                        comment = f"Referral Document Added: {document.name}"
                     else:
                         # self.referral_document = None
                         self.document = None
@@ -5147,7 +5118,7 @@ class Referral(RevisionedMixin):
                         ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
                             referral.id,
                             self.proposal.id,
-                            "{}({})".format(user.get_full_name(), user.email),
+                            f"{user.get_full_name()}({user.email})",
                         ),
                         request.user,
                     )
@@ -5159,7 +5130,7 @@ class Referral(RevisionedMixin):
                         ProposalUserAction.ACTION_SEND_REFERRAL_TO.format(
                             referral.id,
                             self.proposal.id,
-                            "{}({})".format(user.get_full_name(), user.email),
+                            f"{user.get_full_name()}({user.email})",
                         ),
                         request.user,
                     )
@@ -5265,7 +5236,6 @@ class ProposalRequirement(OrderedModel):
             if self.referral_group:
                 group = ReferralRecipientGroup.objects.filter(id=self.referral_group.id)
 
-                
                 user_referralrecipientgroup_set = retrieve_user_groups(
                     "ReferralRecipientGroup", user.id
                 )
@@ -5313,7 +5283,6 @@ class ProposalRequirement(OrderedModel):
                 self.save()
             except:
                 raise
-        return
 
 
 class ChecklistQuestion(RevisionedMixin):
@@ -5476,9 +5445,7 @@ class QAOfficerReferral(RevisionedMixin):
         ordering = ("-lodged_on",)
 
     def __str__(self):
-        return "Application {} - QA Officer referral {}".format(
-            self.proposal.id, self.id
-        )
+        return f"Application {self.proposal.id} - QA Officer referral {self.id}"
 
     # Methods
     @property
@@ -5576,44 +5543,32 @@ def clone_proposal_with_status_reset(proposal, copy_requirement_documents=False)
 
 def clone_documents(proposal, original_proposal, media_prefix):
     for proposal_document in ProposalDocument.objects.filter(proposal_id=proposal.id):
-        proposal_document._file.name = "{}/proposals/{}/documents/{}".format(
-            settings.MEDIA_APP_DIR, proposal.id, proposal_document.name
-        )
+        proposal_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/documents/{proposal_document.name}"
         proposal_document.can_delete = True
         proposal_document.save()
 
     for proposal_required_document in ProposalRequiredDocument.objects.filter(
         proposal_id=proposal.id
     ):
-        proposal_required_document._file.name = (
-            "{}/proposals/{}/required_documents/{}".format(
-                settings.MEDIA_APP_DIR, proposal.id, proposal_required_document.name
-            )
-        )
+        proposal_required_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/required_documents/{proposal_required_document.name}"
         proposal_required_document.can_delete = True
         proposal_required_document.save()
 
     for referral in proposal.referrals.all():
         for referral_document in ReferralDocument.objects.filter(referral=referral):
-            referral_document._file.name = "{}/proposals/{}/referral/{}".format(
-                settings.MEDIA_APP_DIR, proposal.id, referral_document.name
-            )
+            referral_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/referral/{referral_document.name}"
             referral_document.can_delete = True
             referral_document.save()
 
     for qa_officer_document in QAOfficerDocument.objects.filter(
         proposal_id=proposal.id
     ):
-        qa_officer_document._file.name = "{}/proposals/{}/qaofficer/{}".format(
-            settings.MEDIA_APP_DIR, proposal.id, qa_officer_document.name
-        )
+        qa_officer_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/qaofficer/{qa_officer_document.name}"
         qa_officer_document.can_delete = True
         qa_officer_document.save()
 
     for onhold_document in OnHoldDocument.objects.filter(proposal_id=proposal.id):
-        onhold_document._file.name = "{}/proposals/{}/on_hold/{}".format(
-            settings.MEDIA_APP_DIR, proposal.id, onhold_document.name
-        )
+        onhold_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/on_hold/{onhold_document.name}"
         onhold_document.can_delete = True
         onhold_document.save()
 
@@ -5621,11 +5576,7 @@ def clone_documents(proposal, original_proposal, media_prefix):
         for requirement_document in RequirementDocument.objects.filter(
             requirement=requirement
         ):
-            requirement_document._file.name = (
-                "{}/proposals/{}/requirement_documents/{}".format(
-                    settings.MEDIA_APP_DIR, proposal.id, requirement_document.name
-                )
-            )
+            requirement_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/requirement_documents/{requirement_document.name}"
             requirement_document.can_delete = True
             requirement_document.save()
 
@@ -5639,11 +5590,9 @@ def clone_documents(proposal, original_proposal, media_prefix):
         log_entry_document.save()
 
     # copy documents on file system and reset can_delete flag
-    media_dir = "{}/{}".format(media_prefix, settings.MEDIA_APP_DIR)
+    media_dir = f"{media_prefix}/{settings.MEDIA_APP_DIR}"
     subprocess.call(
-        "cp -pr {0}/proposals/{1} {0}/proposals/{2}".format(
-            media_dir, original_proposal.id, proposal.id
-        ),
+        f"cp -pr {media_dir}/proposals/{original_proposal.id} {media_dir}/proposals/{proposal.id}",
         shell=True,
     )
 
@@ -5654,9 +5603,7 @@ def _clone_documents(proposal, original_proposal, media_prefix):
     ):
         proposal_document.proposal = proposal
         proposal_document.id = None
-        proposal_document._file.name = "{}/proposals/{}/documents/{}".format(
-            settings.MEDIA_APP_DIR, proposal.id, proposal_document.name
-        )
+        proposal_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/documents/{proposal_document.name}"
         proposal_document.can_delete = True
         proposal_document.save()
 
@@ -5665,20 +5612,14 @@ def _clone_documents(proposal, original_proposal, media_prefix):
     ):
         proposal_required_document.proposal = proposal
         proposal_required_document.id = None
-        proposal_required_document._file.name = (
-            "{}/proposals/{}/required_documents/{}".format(
-                settings.MEDIA_APP_DIR, proposal.id, proposal_required_document.name
-            )
-        )
+        proposal_required_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/required_documents/{proposal_required_document.name}"
         proposal_required_document.can_delete = True
         proposal_required_document.save()
 
     # copy documents on file system and reset can_delete flag
-    media_dir = "{}/{}".format(media_prefix, settings.MEDIA_APP_DIR)
+    media_dir = f"{media_prefix}/{settings.MEDIA_APP_DIR}"
     subprocess.call(
-        "cp -pr {0}/proposals/{1} {0}/proposals/{2}".format(
-            media_dir, original_proposal.id, proposal.id
-        ),
+        f"cp -pr {media_dir}/proposals/{original_proposal.id} {media_dir}/proposals/{proposal.id}",
         shell=True,
     )
 
@@ -5689,20 +5630,14 @@ def _clone_requirement_documents(proposal, original_proposal, media_prefix):
     ):
         proposal_required_document.proposal = proposal
         proposal_required_document.id = None
-        proposal_required_document._file.name = (
-            "{}/proposals/{}/required_documents/{}".format(
-                settings.MEDIA_APP_DIR, proposal.id, proposal_required_document.name
-            )
-        )
+        proposal_required_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/required_documents/{proposal_required_document.name}"
         proposal_required_document.can_delete = True
         proposal_required_document.save()
 
     # copy documents on file system and reset can_delete flag
-    media_dir = "{}/{}".format(media_prefix, settings.MEDIA_APP_DIR)
+    media_dir = f"{media_prefix}/{settings.MEDIA_APP_DIR}"
     subprocess.call(
-        "cp -pr {0}/proposals/{1} {0}/proposals/{2}".format(
-            media_dir, original_proposal.id, proposal.id
-        ),
+        f"cp -pr {media_dir}/proposals/{original_proposal.id} {media_dir}/proposals/{proposal.id}",
         shell=True,
     )
 
@@ -5724,12 +5659,11 @@ def duplicate_object(self):
     for field in self._meta.get_fields():
         if field.name in ["proposal", "approval"]:
             print("Continuing ...")
-            pass
         elif field.one_to_many:
             # One to many fields are backward relationships where many child objects are related to the
             # parent (i.e. SelectedPhrases). Enumerate them and save a list so we can copy them after
             # duplicating our parent object.
-            print("Found a one-to-many field: {}".format(field.name))
+            print(f"Found a one-to-many field: {field.name}")
 
             # 'field' is a ManyToOneRel which is not iterable, we need to get the object attribute itself
             related_object_manager = getattr(self, field.name)
@@ -5741,24 +5675,24 @@ def duplicate_object(self):
         elif field.many_to_one:
             # In testing so far, these relationships are preserved when the parent object is copied,
             # so they don't need to be copied separately.
-            print("Found a many-to-one field: {}".format(field.name))
+            print(f"Found a many-to-one field: {field.name}")
 
         elif field.many_to_many:
             # Many to many fields are relationships where many parent objects can be related to many
             # child objects. Because of this the child objects don't need to be copied when we copy
             # the parent, we just need to re-create the relationship to them on the copied parent.
-            print("Found a many-to-many field: {}".format(field.name))
+            print(f"Found a many-to-many field: {field.name}")
             related_object_manager = getattr(self, field.name)
             relations = list(related_object_manager.all())
             if relations:
-                print(" - {} relations to set".format(len(relations)))
+                print(f" - {len(relations)} relations to set")
                 relations_to_set[field.name] = relations
 
     # Duplicate the parent object
     self.pk = None
     self.lodgement_number = ""
     self.save()
-    print("Copied parent object {}".format(str(self)))
+    print(f"Copied parent object {self!s}")
 
     # Copy the one-to-many child objects and relate them to the copied parent
     for related_object in related_objects_to_copy:
@@ -5784,7 +5718,7 @@ def duplicate_object(self):
 
                 text = str(related_object)
                 text = (text[:40] + "..") if len(text) > 40 else text
-                print("|- Copied child object {}".format(text))
+                print(f"|- Copied child object {text}")
 
     # Set the many-to-many relations on the copied parent
     for field_name, relations in relations_to_set.items():
@@ -5795,9 +5729,7 @@ def duplicate_object(self):
         for relation in relations:
             text_relations.append(str(relation))
         print(
-            "|- Set {} many-to-many relations on {} {}".format(
-                len(relations), field_name, text_relations
-            )
+            f"|- Set {len(relations)} many-to-many relations on {field_name} {text_relations}"
         )
 
     return self
@@ -5810,7 +5742,6 @@ def duplicate_tclass(p):
     print("new proposal", p)
 
     for park in original_proposal.parks.all():
-
         original_park = copy.deepcopy(park)
         park.id = None
         park.proposal = p
@@ -5900,7 +5831,6 @@ def duplicate_filming(p):
     print("new proposal", p)
 
     for park in original_proposal.filming_parks.all():
-
         original_park = copy.deepcopy(park)
         park.id = None
         park.proposal = p
@@ -5910,11 +5840,7 @@ def duplicate_filming(p):
         ):
             park_document.filming_park = park
             park_document.id = None
-            park_document._file.name = (
-                "{}/proposals/{}/filming_park_documents/{}".format(
-                    settings.MEDIA_APP_DIR, p.id, park_document.name
-                )
-            )
+            park_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{p.id}/filming_park_documents/{park_document.name}"
             park_document.can_delete = True
             park_document.save()
 
@@ -5994,7 +5920,6 @@ def duplicate_event(p):
     print("new proposal", p)
 
     for park in original_proposal.events_parks.all():
-
         original_park = copy.deepcopy(park)
         park.id = None
         park.proposal = p
@@ -6008,16 +5933,11 @@ def duplicate_event(p):
         ):
             park_document.events_park = park
             park_document.id = None
-            park_document._file.name = (
-                "{}/proposals/{}/events_park_documents/{}".format(
-                    settings.MEDIA_APP_DIR, p.id, park_document.name
-                )
-            )
+            park_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{p.id}/events_park_documents/{park_document.name}"
             park_document.can_delete = True
             park_document.save()
 
     for park in original_proposal.pre_event_parks.all():
-
         original_park = copy.deepcopy(park)
         park.id = None
         park.proposal = p
@@ -6027,11 +5947,7 @@ def duplicate_event(p):
         ):
             park_document.pre_event_park = park
             park_document.id = None
-            park_document._file.name = (
-                "{}/proposals/{}/pre_event_park_documents/{}".format(
-                    settings.MEDIA_APP_DIR, p.id, park_document.name
-                )
-            )
+            park_document._file.name = f"{settings.MEDIA_APP_DIR}/proposals/{p.id}/pre_event_park_documents/{park_document.name}"
             park_document.can_delete = True
             park_document.save()
 
@@ -6121,7 +6037,12 @@ def search_reference(reference_number):
     from commercialoperator.components.approvals.models import Approval
     from commercialoperator.components.compliances.models import Compliance
 
-    proposal_list = (Proposal.objects.all().exclude(application_type__name="E Class").exclude(migrated=True).exclude(processing_status__in=["discarded"]))
+    proposal_list = (
+        Proposal.objects.all()
+        .exclude(application_type__name="E Class")
+        .exclude(migrated=True)
+        .exclude(processing_status__in=["discarded"])
+    )
     approval_list = (
         Approval.objects.all()
         .order_by("lodgement_number", "-issue_date")
@@ -6149,6 +6070,7 @@ def search_reference(reference_number):
         return record
     else:
         raise ValidationError("Record with provided reference number does not exist")
+
 
 # --------------------------------------------------------------------------------------
 # Filming Models Start
@@ -6246,7 +6168,7 @@ class ProposalFilmingActivity(SanitiseMixin):
     # pdswa_location=models.BooleanField('Event location within PDSWA',default=False)
 
     def __str__(self):
-        return "{}".format(self.activity_title)
+        return f"{self.activity_title}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -6289,7 +6211,7 @@ class ProposalFilmingAccess(SanitiseMixin):
     )
 
     def __str__(self):
-        return "{}".format(self.proposal)
+        return f"{self.proposal}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -6315,7 +6237,7 @@ class ProposalFilmingEquipment(SanitiseMixin):
     )
 
     def __str__(self):
-        return "{}".format(self.num_cameras)
+        return f"{self.num_cameras}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -6339,14 +6261,13 @@ class ProposalFilmingOtherDetails(SanitiseMixin):
     )
 
     def __str__(self):
-        return "{}".format(self.safety_details)
+        return f"{self.safety_details}"
 
     class Meta:
         app_label = "commercialoperator"
 
 
 class ProposalFilmingParks(SanitiseMixin):
-
     proposal = models.ForeignKey(
         Proposal, related_name="filming_parks", null=True, on_delete=models.CASCADE
     )
@@ -6360,7 +6281,7 @@ class ProposalFilmingParks(SanitiseMixin):
     to_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return "{}".format(self.proposal)
+        return f"{self.proposal}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -6417,7 +6338,6 @@ class ProposalFilmingParks(SanitiseMixin):
                         return False
 
                 else:
-
                     check_group = DistrictProposalAssessorGroup.objects.filter(
                         district__name=self.park.district.name
                     ).distinct()
@@ -6469,7 +6389,6 @@ class ProposalFilmingParks(SanitiseMixin):
                 self.save()
             except:
                 raise
-        return
 
 
 class FilmingParkDocument(Document):
@@ -6478,7 +6397,11 @@ class FilmingParkDocument(Document):
         related_name="filming_park_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_filming_park_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_filming_park_doc_filename,
+        max_length=512,
+        storage=private_storage,
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -6492,7 +6415,7 @@ class FilmingParkDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(FilmingParkDocument, self).delete()
+            return super().delete()
 
 
 # Internal Workflow models - Filming application
@@ -6523,7 +6446,6 @@ class DistrictProposalAssessorGroup(models.Model, MembersEmailMixin):
                 raise ValidationError(
                     "Only default can have no district set for District assessor group. Please specifiy region"
                 )
-        #
         else:
             if default and self.default:
                 raise ValidationError(
@@ -6566,7 +6488,6 @@ class DistrictProposalApproverGroup(models.Model, MembersEmailMixin):
 
 
 class DistrictProposal(SanitiseMixin):
-
     PROCESSING_STATUS_WITH_ASSESSOR = "with_assessor"
     PROCESSING_STATUS_WITH_REFERRAL = "with_referral"
     PROCESSING_STATUS_WITH_ASSESSOR_REQUIREMENTS = "with_assessor_requirements"
@@ -6620,7 +6541,7 @@ class DistrictProposal(SanitiseMixin):
     proposed_decline_status = models.BooleanField(default=False)
 
     def __str__(self):
-        return "{}".format(self.proposal)
+        return f"{self.proposal}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -6804,7 +6725,7 @@ class DistrictProposal(SanitiseMixin):
                             ProposalUserAction.ACTION_ASSIGN_TO_DISTRICT_APPROVER.format(
                                 self.id,
                                 self.proposal.id,
-                                "{}({})".format(officer.get_full_name(), officer.email),
+                                f"{officer.get_full_name()}({officer.email})",
                             ),
                             request.user,
                         )
@@ -6817,7 +6738,7 @@ class DistrictProposal(SanitiseMixin):
                             ProposalUserAction.ACTION_ASSIGN_TO_DISTRICT_ASSESSOR.format(
                                 self.id,
                                 self.proposal.id,
-                                "{}({})".format(officer.get_full_name(), officer.email),
+                                f"{officer.get_full_name()}({officer.email})",
                             ),
                             request.user,
                         )
@@ -7074,9 +6995,7 @@ class DistrictProposal(SanitiseMixin):
         try:
             if self.processing_status != "with_approver":
                 raise ValidationError(
-                    "Licence preview only available when processing status is with_approver. Current status {}".format(
-                        self.processing_status
-                    )
+                    f"Licence preview only available when processing status is with_approver. Current status {self.processing_status}"
                 )
             if not self.can_assess(request.user):
                 raise exceptions.ProposalNotAuthorized()
@@ -7250,7 +7169,6 @@ class DistrictProposal(SanitiseMixin):
                     # Generate compliances
                     from commercialoperator.components.compliances.models import (
                         Compliance,
-                        ComplianceUserAction,
                     )
 
                     # When first district proposal is created and Approval object is created (not updated) for Amendment proposal, delete all the future compliancs linked to previous application.
@@ -7350,9 +7268,7 @@ class DistrictProposal(SanitiseMixin):
                     self, approval, request
                 )
                 self.proposal.save(
-                    version_comment="Final District Approval: {} for District Proposal: {}".format(
-                        self.proposal.approval.lodgement_number, self.id
-                    )
+                    version_comment=f"Final District Approval: {self.proposal.approval.lodgement_number} for District Proposal: {self.id}"
                 )
                 self.proposal.approval.documents.all().update(can_delete=False)
 
@@ -7456,7 +7372,6 @@ class DistrictProposal(SanitiseMixin):
                                 # Monthly
                                 elif req.recurrence_pattern == 2:
                                     current_date += timedelta(weeks=4)
-                                    pass
                                 # Yearly
                                 elif req.recurrence_pattern == 3:
                                     current_date += timedelta(days=365)
@@ -7517,7 +7432,7 @@ class ProposalEventActivities(SanitiseMixin):
     pdswa_location = models.BooleanField("Event location within PDSWA", default=False)
 
     def __str__(self):
-        return "{}".format(self.event_name)
+        return f"{self.event_name}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -7576,7 +7491,7 @@ class ProposalEventManagement(SanitiseMixin):
     other_info = models.TextField(blank=True)
 
     def __str__(self):
-        return "{}".format(self.num_participants)
+        return f"{self.num_participants}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -7592,7 +7507,7 @@ class ProposalEventVehiclesVessels(models.Model):
     )
 
     def __str__(self):
-        return "{}".format(self.hired_or_owned)
+        return f"{self.hired_or_owned}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -7613,14 +7528,13 @@ class ProposalEventOtherDetails(SanitiseMixin):
     other_comments = models.TextField("Other comments", blank=True, null=True)
 
     def __str__(self):
-        return "{}".format(self.training_date)
+        return f"{self.training_date}"
 
     class Meta:
         app_label = "commercialoperator"
 
 
 class ProposalEventsParks(SanitiseMixin):
-
     proposal = models.ForeignKey(
         Proposal, related_name="events_parks", null=True, on_delete=models.CASCADE
     )
@@ -7631,7 +7545,7 @@ class ProposalEventsParks(SanitiseMixin):
     event_activities = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return "{}".format(self.park)
+        return f"{self.park}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -7663,7 +7577,6 @@ class ProposalEventsParks(SanitiseMixin):
                 self.save()
             except:
                 raise
-        return
 
 
 class AbseilingClimbingActivity(SanitiseMixin):
@@ -7692,7 +7605,11 @@ class EventsParkDocument(Document):
         related_name="events_park_documents",
         on_delete=models.CASCADE,
     )
-    _file = models.FileField(upload_to=update_events_park_doc_filename, max_length=512, storage=private_storage)
+    _file = models.FileField(
+        upload_to=update_events_park_doc_filename,
+        max_length=512,
+        storage=private_storage,
+    )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
         default=True
@@ -7706,11 +7623,10 @@ class EventsParkDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(EventsParkDocument, self).delete()
+            return super().delete()
 
 
 class ProposalPreEventsParks(SanitiseMixin):
-    
     proposal = models.ForeignKey(
         Proposal, related_name="pre_event_parks", null=True, on_delete=models.CASCADE
     )
@@ -7720,7 +7636,7 @@ class ProposalPreEventsParks(SanitiseMixin):
     activities = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return "{}".format(self.park)
+        return f"{self.park}"
 
     class Meta:
         app_label = "commercialoperator"
@@ -7747,7 +7663,6 @@ class ProposalPreEventsParks(SanitiseMixin):
                 self.save()
             except:
                 raise
-        return
 
 
 class PreEventsParkDocument(Document):
@@ -7757,7 +7672,9 @@ class PreEventsParkDocument(Document):
         on_delete=models.CASCADE,
     )
     _file = models.FileField(
-        upload_to=update_pre_event_park_doc_filename, max_length=512, storage=private_storage
+        upload_to=update_pre_event_park_doc_filename,
+        max_length=512,
+        storage=private_storage,
     )
     input_name = models.CharField(max_length=255, null=True, blank=True)
     can_delete = models.BooleanField(
@@ -7772,11 +7689,10 @@ class PreEventsParkDocument(Document):
 
     def delete(self):
         if self.can_delete:
-            return super(PreEventsParkDocument, self).delete()
+            return super().delete()
 
 
 class ProposalEventsTrails(SanitiseMixin):
-
     proposal = models.ForeignKey(
         Proposal, related_name="events_trails", null=True, on_delete=models.CASCADE
     )
@@ -7790,7 +7706,7 @@ class ProposalEventsTrails(SanitiseMixin):
     event_trail_activities = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return "{}".format(self.trail)
+        return f"{self.trail}"
 
     class Meta:
         app_label = "commercialoperator"
