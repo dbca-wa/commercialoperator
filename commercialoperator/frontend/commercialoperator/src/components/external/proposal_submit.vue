@@ -5,7 +5,7 @@
                 <div class="row">
                     <div
                         v-if="isProposal"
-                        class="col-sm-6 offset-3 border rounded p-3"
+                        class="col-sm-6 offset-3 border rounded p-3 mb-3"
                     >
                         <div
                             v-if="
@@ -67,7 +67,10 @@
                             >Back to home</router-link
                         >
                     </div>
-                    <div v-else class="col-sm-6 offset-3 border rounded p-3">
+                    <div
+                        v-else
+                        class="col-sm-6 offset-3 border rounded p-3 mb-3"
+                    >
                         <strong
                             >Sorry it looks like there isn't any application
                             currently in your session.</strong

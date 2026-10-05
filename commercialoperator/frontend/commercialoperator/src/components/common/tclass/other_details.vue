@@ -9,7 +9,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <label class="control-label"
                             >Select which tourism accreditation you have
                             achieved and attach a copy of your certificate.
@@ -79,7 +81,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <label class=""
                             >Select which provider you have used to complete
                             your assessments and provide a link to your publicly
@@ -197,7 +201,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-3">
@@ -299,7 +305,9 @@
                 subtitle="(marine-based activities)"
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -370,7 +378,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -457,7 +467,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -511,7 +523,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="row">
                             <div class="col-sm-6">
                                 <label
@@ -645,7 +659,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">

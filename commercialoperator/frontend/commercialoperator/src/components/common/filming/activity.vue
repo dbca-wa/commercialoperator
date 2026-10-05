@@ -10,7 +10,7 @@
             >
                 <div class="">
                     <div
-                        class="form-horizontal col-sm-12 border rounded p-3"
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
                         style="z-index: 0"
                     >
                         <div class="form-group">

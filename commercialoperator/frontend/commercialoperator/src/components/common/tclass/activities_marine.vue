@@ -9,7 +9,7 @@
                 subtitle="(Trails)"
             >
                 <div class="">
-                    <div class="col-sm-12 border rounded p-3">
+                    <div class="col-sm-12 border rounded p-3 mb-3">
                         <form v-if="park_error_list">
                             <div class="col-sm-12">
                                 <div v-for="e in park_error_list" :key="e">
@@ -44,7 +44,7 @@
                         </form>
                     </div>
 
-                    <div class="col-sm-12 border rounded p-3">
+                    <div class="col-sm-12 border rounded p-3 mb-3">
                         <form>
                             <div
                                 v-if="marine_park_options.length"
@@ -77,7 +77,7 @@
                     <div class="row"></div>
                     <div class="row"></div>
                     <div class="row"></div>
-                    <div class="col-sm-12 border rounded p-3">
+                    <div class="col-sm-12 border rounded p-3 mb-3">
                         <div v-for="rd in required_documents_list" :key="rd.id">
                             <div v-if="rd.can_view">
                                 <label for="label" v-html="rd.question"></label>
@@ -98,7 +98,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <label class="control-label"
                             >You have selected vessel access for one or more
                             parks. Provide details of each vessel you plan to

@@ -17,7 +17,9 @@
                     >
                 </div>
                 <div>
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="row">
                             <alert
                                 v-if="showError"

@@ -8,7 +8,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="">
                             <div class="row">&nbsp;</div>
                             <div class="">
@@ -30,7 +32,9 @@
                         </div>
                     </div>
 
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <label class="control-label"
                             >Provide details of every vessel you plan to use
                             when accessing the parks for the event</label
