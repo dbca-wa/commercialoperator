@@ -8,7 +8,7 @@
                     index="activities_and_location"
                     subtitle="(Parks)"
                 >
-                    <div class="borderDecoration col-sm-12">
+                    <div class="col-sm-12 border rounded p-3">
                         <form v-if="park_error_list">
                             <div class="col-sm-12">
                                 <div v-for="e in park_error_list" :key="e">
@@ -44,7 +44,7 @@
                         </form>
                     </div>
 
-                    <div class="borderDecoration col-sm-12">
+                    <div class="col-sm-12 border rounded p-3">
                         <form>
                             <div
                                 v-if="land_activity_options.length"
@@ -72,7 +72,7 @@
                         </form>
                     </div>
 
-                    <div class="borderDecoration col-sm-12">
+                    <div class="col-sm-12 border rounded p-3">
                         <form>
                             <div v-if="park_options.length" class="col-sm-12">
                                 <div>
@@ -98,7 +98,7 @@
                         </form>
                     </div>
 
-                    <div class="borderDecoration col-sm-12">
+                    <div class="col-sm-12 border rounded p-3">
                         <div v-for="rd in required_documents_list" :key="rd.id">
                             <div v-if="rd.can_view">
                                 <label for="label" v-html="rd.question"></label>
@@ -119,7 +119,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="borderDecoration col-sm-12">
+                    <div class="col-sm-12 border rounded p-3">
                         <label class="control-label"
                             >Provide details of every vehicle you plan to use
                             when accessing the parks. 'Hire vehicle' can be
@@ -142,7 +142,7 @@
                     subtitle="(Trails)"
                 >
                     <div>
-                        <div class="borderDecoration col-sm-12">
+                        <div class="col-sm-12 border rounded p-3">
                             <form v-if="trail_error_list">
                                 <div class="col-sm-12">
                                     <div v-for="e in trail_error_list" :key="e">
@@ -180,7 +180,7 @@
                             </form>
                         </div>
 
-                        <div class="borderDecoration col-sm-12">
+                        <div class="col-sm-12 border rounded p-3">
                             <form>
                                 <div
                                     v-if="trail_options.length"
@@ -1514,12 +1514,7 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 5px;
-    margin-top: 5px;
-}
+
 .just-padding {
     padding: 15px;
 }

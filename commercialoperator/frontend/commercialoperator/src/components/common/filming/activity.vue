@@ -2,426 +2,414 @@
 <template lang="html">
     <div id="activityInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Filming Details"
-                    index="filming_details"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div
-                            class="form-horizontal col-sm-12 borderDecoration"
-                            style="z-index: 0"
-                        >
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="filming_activity_commencement_date"
-                                            >Period of proposed filming/
-                                            photography</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <div
-                                            ref="commencement_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-if="proposal.filming_activity"
-                                                id="filming_activity_commencement_date"
-                                                v-model="
-                                                    proposal.filming_activity
-                                                        .commencement_date
-                                                "
-                                                class="form-control"
-                                                type="date"
-                                                max="2999-12-31"
-                                                name="commencement_date"
-                                                placeholder="Commencement date"
-                                                required
-                                                :disabled="
-                                                    !canEditPeriod ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                            />
-                                        </div>
-                                        <label
-                                            class="control-label small-label"
-                                            for="commencement_date"
-                                            >Commencement date</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <!-- <div class="col-sm-3"> -->
-                                        <!-- </div> -->
-                                        <div
-                                            ref="completion_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-if="proposal.filming_activity"
-                                                v-model="
-                                                    proposal.filming_activity
-                                                        .completion_date
-                                                "
-                                                type="date"
-                                                max="2999-12-31"
-                                                class="form-control"
-                                                name="completion_date"
-                                                placeholder="Completion date"
-                                                required
-                                                :disabled="
-                                                    !canEditPeriod ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                            />
-                                        </div>
-                                        <label
-                                            class="control-label small-label"
-                                            for="completion_date"
-                                            >Completion date
-                                        </label>
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Filming Details"
+                index="filming_details"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3"
+                        style="z-index: 0"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="filming_activity_commencement_date"
+                                        >Period of proposed filming/
+                                        photography</label
+                                    >
                                 </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="filming_activity_title"
-                                            >Title of film/ name of program/
-                                            name of product</label
-                                        >
-                                    </div>
+                                <div class="col-sm-3">
                                     <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
+                                        ref="commencement_date"
+                                        class="input-group date"
+                                        style="width: 70%"
                                     >
                                         <input
                                             v-if="proposal.filming_activity"
-                                            id="filming_activity_title"
+                                            id="filming_activity_commencement_date"
                                             v-model="
                                                 proposal.filming_activity
-                                                    .activity_title
+                                                    .commencement_date
                                             "
-                                            type="text"
                                             class="form-control"
-                                            name="Activity title"
-                                            placeholder=""
-                                            :disabled="proposal.readonly"
+                                            type="date"
+                                            max="2999-12-31"
+                                            name="commencement_date"
+                                            placeholder="Commencement date"
+                                            required
+                                            :disabled="
+                                                !canEditPeriod ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
                                         />
                                     </div>
+                                    <label
+                                        class="control-label small-label"
+                                        for="commencement_date"
+                                        >Commencement date</label
+                                    >
                                 </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="filming_activity_previous_contact_person"
-                                            >Previous contact person in the
-                                            Department</label
-                                        >
-                                    </div>
+                                <div class="col-sm-3">
+                                    <!-- <div class="col-sm-3"> -->
+                                    <!-- </div> -->
                                     <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
+                                        ref="completion_date"
+                                        class="input-group date"
+                                        style="width: 70%"
                                     >
                                         <input
                                             v-if="proposal.filming_activity"
-                                            id="filming_activity_previous_contact_person"
                                             v-model="
                                                 proposal.filming_activity
-                                                    .previous_contact_person
+                                                    .completion_date
                                             "
-                                            type="text"
+                                            type="date"
+                                            max="2999-12-31"
                                             class="form-control"
-                                            name="Previous contact Person"
-                                            placeholder=""
-                                            :disabled="proposal.readonly"
+                                            name="completion_date"
+                                            placeholder="Completion date"
+                                            required
+                                            :disabled="
+                                                !canEditPeriod ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
                                         />
                                     </div>
+                                    <label
+                                        class="control-label small-label"
+                                        for="completion_date"
+                                        >Completion date
+                                    </label>
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="filming_activity_sponsorship_choices"
-                                            >Does the film have Tourism WA
-                                            sponsorship</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="filming_activity_title"
+                                        >Title of film/ name of program/ name of
+                                        product</label
                                     >
-                                        <ul
-                                            id="filming_activity_sponsorship_choices"
-                                            class="list-inline"
-                                        >
-                                            <li
-                                                v-for="s in sponsorship_choices"
-                                                :key="s.key"
-                                                class="form-check list-inline-item"
-                                            >
-                                                <input
-                                                    v-if="
-                                                        proposal.filming_activity
-                                                    "
-                                                    ref="Radio"
-                                                    v-model="
-                                                        proposal
-                                                            .filming_activity
-                                                            .sponsorship
-                                                    "
-                                                    class="form-check-input"
-                                                    type="radio"
-                                                    :value="s.key"
-                                                    data-parsley-required
-                                                    :disabled="
-                                                        proposal.readonly
-                                                    "
-                                                    name="sponsorship"
-                                                    @click="
-                                                        selectFilmType(
-                                                            $event,
-                                                            s
-                                                        )
-                                                    "
-                                                />
-                                                {{ s.value }}
-                                            </li>
-                                        </ul>
-                                    </div>
                                 </div>
                                 <div
-                                    v-if="
-                                        proposal.filming_activity &&
-                                        proposal.filming_activity.sponsorship ==
-                                            'other'
-                                    "
-                                    class="row"
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
                                 >
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="filming_activity_sponsorship_choices"
-                                            >Details</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <textarea
-                                            v-if="proposal.filming_activity"
-                                            id="filming_activity_sponsorship_details"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .sponsorship_details
-                                            "
-                                            class="form-control"
-                                            :disabled="proposal.readonly"
-                                            style="width: 80%"
-                                        ></textarea>
-                                    </div>
+                                    <input
+                                        v-if="proposal.filming_activity"
+                                        id="filming_activity_title"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .activity_title
+                                        "
+                                        type="text"
+                                        class="form-control"
+                                        name="Activity title"
+                                        placeholder=""
+                                        :disabled="proposal.readonly"
+                                    />
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="filming_activity_production_description"
-                                            >Description of production</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <textarea
-                                            v-if="proposal.filming_activity"
-                                            id="filming_activity_production_description"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .production_description
-                                            "
-                                            class="form-control"
-                                            :disabled="proposal.readonly"
-                                            style="width: 80%"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="film_type_select"
-                                            >Type of film to be
-                                            undertaken</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <select
-                                            v-if="proposal.filming_activity"
-                                            id="film_type_select"
-                                            ref="film_type_select"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .film_type
-                                            "
-                                            style="width: 100%"
-                                            class="form-control input-sm"
-                                            multiple
-                                            :disabled="!canEditPeriod"
-                                        >
-                                            <option
-                                                v-for="f in film_type_choices"
-                                                :key="f.key"
-                                                :value="f.key"
-                                            >
-                                                {{ f.value }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="filmPurposeSelect"
-                                            >Purpose of still or motion
-                                            film</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <select
-                                            v-if="proposal.filming_activity"
-                                            id="filmPurposeSelect"
-                                            ref="filmPurposeSelect"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .film_purpose
-                                            "
-                                            style="width: 100%"
-                                            class="form-control input-sm"
-                                            multiple
-                                            :disabled="proposal.readonly"
-                                        >
-                                            <option
-                                                v-for="p in purpose_choices"
-                                                :key="p.key"
-                                                :value="p.key"
-                                            >
-                                                {{ p.value }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div v-if="showPurposeOtherDetails" class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="filming_activity_film_purpose_details"
-                                            >Please provide details</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <textarea
-                                            id="filming_activity_film_purpose_details"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .film_purpose_details
-                                            "
-                                            class="form-control"
-                                            :disabled="proposal.readonly"
-                                            style="width: 80%"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="filmUsageSelect"
-                                            >How will the still or motion film
-                                            be used or shown</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <select
-                                            v-if="proposal.filming_activity"
-                                            id="filmUsageSelect"
-                                            ref="filmUsageSelect"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .film_usage
-                                            "
-                                            style="width: 100%"
-                                            class="form-control input-sm"
-                                            multiple
-                                            :disabled="proposal.readonly"
-                                        >
-                                            <option
-                                                v-for="u in film_usage_choices"
-                                                :key="u.key"
-                                                :value="u.key"
-                                            >
-                                                {{ u.value }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div v-if="showUsageDetails" class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-right"
-                                            for="filming_activity_film_usage_details"
-                                            >Please specify
-                                        </label>
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <textarea
-                                            id="filming_activity_film_usage_details"
-                                            v-model="
-                                                proposal.filming_activity
-                                                    .film_usage_details
-                                            "
-                                            class="form-control"
-                                            :disabled="proposal.readonly"
-                                            style="width: 80%"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">&nbsp;</div>
                             </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="filming_activity_previous_contact_person"
+                                        >Previous contact person in the
+                                        Department</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <input
+                                        v-if="proposal.filming_activity"
+                                        id="filming_activity_previous_contact_person"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .previous_contact_person
+                                        "
+                                        type="text"
+                                        class="form-control"
+                                        name="Previous contact Person"
+                                        placeholder=""
+                                        :disabled="proposal.readonly"
+                                    />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="filming_activity_sponsorship_choices"
+                                        >Does the film have Tourism WA
+                                        sponsorship</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <ul
+                                        id="filming_activity_sponsorship_choices"
+                                        class="list-inline"
+                                    >
+                                        <li
+                                            v-for="s in sponsorship_choices"
+                                            :key="s.key"
+                                            class="form-check list-inline-item"
+                                        >
+                                            <input
+                                                v-if="proposal.filming_activity"
+                                                ref="Radio"
+                                                v-model="
+                                                    proposal.filming_activity
+                                                        .sponsorship
+                                                "
+                                                class="form-check-input"
+                                                type="radio"
+                                                :value="s.key"
+                                                data-parsley-required
+                                                :disabled="proposal.readonly"
+                                                name="sponsorship"
+                                                @click="
+                                                    selectFilmType($event, s)
+                                                "
+                                            />
+                                            {{ s.value }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div
+                                v-if="
+                                    proposal.filming_activity &&
+                                    proposal.filming_activity.sponsorship ==
+                                        'other'
+                                "
+                                class="row"
+                            >
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="filming_activity_sponsorship_choices"
+                                        >Details</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <textarea
+                                        v-if="proposal.filming_activity"
+                                        id="filming_activity_sponsorship_details"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .sponsorship_details
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                        style="width: 80%"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="filming_activity_production_description"
+                                        >Description of production</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <textarea
+                                        v-if="proposal.filming_activity"
+                                        id="filming_activity_production_description"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .production_description
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                        style="width: 80%"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="film_type_select"
+                                        >Type of film to be undertaken</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <select
+                                        v-if="proposal.filming_activity"
+                                        id="film_type_select"
+                                        ref="film_type_select"
+                                        v-model="
+                                            proposal.filming_activity.film_type
+                                        "
+                                        style="width: 100%"
+                                        class="form-control input-sm"
+                                        multiple
+                                        :disabled="!canEditPeriod"
+                                    >
+                                        <option
+                                            v-for="f in film_type_choices"
+                                            :key="f.key"
+                                            :value="f.key"
+                                        >
+                                            {{ f.value }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="filmPurposeSelect"
+                                        >Purpose of still or motion film</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <select
+                                        v-if="proposal.filming_activity"
+                                        id="filmPurposeSelect"
+                                        ref="filmPurposeSelect"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .film_purpose
+                                        "
+                                        style="width: 100%"
+                                        class="form-control input-sm"
+                                        multiple
+                                        :disabled="proposal.readonly"
+                                    >
+                                        <option
+                                            v-for="p in purpose_choices"
+                                            :key="p.key"
+                                            :value="p.key"
+                                        >
+                                            {{ p.value }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div v-if="showPurposeOtherDetails" class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="filming_activity_film_purpose_details"
+                                        >Please provide details</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <textarea
+                                        id="filming_activity_film_purpose_details"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .film_purpose_details
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                        style="width: 80%"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="filmUsageSelect"
+                                        >How will the still or motion film be
+                                        used or shown</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <select
+                                        v-if="proposal.filming_activity"
+                                        id="filmUsageSelect"
+                                        ref="filmUsageSelect"
+                                        v-model="
+                                            proposal.filming_activity.film_usage
+                                        "
+                                        style="width: 100%"
+                                        class="form-control input-sm"
+                                        multiple
+                                        :disabled="proposal.readonly"
+                                    >
+                                        <option
+                                            v-for="u in film_usage_choices"
+                                            :key="u.key"
+                                            :value="u.key"
+                                        >
+                                            {{ u.value }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div v-if="showUsageDetails" class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-right"
+                                        for="filming_activity_film_usage_details"
+                                        >Please specify
+                                    </label>
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <textarea
+                                        id="filming_activity_film_usage_details"
+                                        v-model="
+                                            proposal.filming_activity
+                                                .film_usage_details
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                        style="width: 80%"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">&nbsp;</div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -430,7 +418,7 @@
 import FormSection from '@/components/forms/section_toggle.vue';
 import { helpers } from '@/utils/hooks.js';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'FilmingActivity',
     components: {

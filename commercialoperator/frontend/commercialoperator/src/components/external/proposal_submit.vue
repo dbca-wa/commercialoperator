@@ -5,7 +5,7 @@
                 <div class="row">
                     <div
                         v-if="isProposal"
-                        class="col-sm-6 offset-3 borderDecoration"
+                        class="col-sm-6 offset-3 border rounded p-3"
                     >
                         <div
                             v-if="
@@ -67,7 +67,7 @@
                             >Back to home</router-link
                         >
                     </div>
-                    <div v-else class="col-sm-6 offset-3 borderDecoration">
+                    <div v-else class="col-sm-6 offset-3 border rounded p-3">
                         <strong
                             >Sorry it looks like there isn't any application
                             currently in your session.</strong
@@ -133,12 +133,3 @@ export default {
     },
 };
 </script>
-
-<style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 50px;
-    margin-top: 70px;
-}
-</style>

@@ -1,211 +1,214 @@
 <template lang="html">
     <div class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Commercial Event Questionnaire"
-                    index="commercial_event_questionnaire"
-                    subtitle=""
+            <FormSection
+                :form-collapse="false"
+                label="Commercial Event Questionnaire"
+                index="commercial_event_questionnaire"
+                subtitle=""
+            >
+                <div
+                    v-if="proposal.applicant_training_completed"
+                    class="form-horizontal col-sm-12"
                 >
-                   
-                    <div>
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group row">
-                                <alert
-                                    v-if="showError"
-                                    type="danger"
-                                    style="color: red"
-                                    ><strong>{{ errorString }}</strong></alert
+                    <div v-if="proposal.applicant_type == 'ORG'">
+                        <label style="color: green"
+                            >Your online training has already been completed
+                            this year. Please proceed to pay and submit the
+                            application.</label
+                        >
+                    </div>
+                    <div v-else>
+                        <label style="color: green"
+                            >Your online training has been completed. Please
+                            proceed to pay and submit the application.</label
+                        >
+                    </div>
+                </div>
+                <div v-else>
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                        <div class="form-group row">
+                            <alert
+                                v-if="showError"
+                                type="danger"
+                                style="color: red"
+                                ><strong>{{ errorString }}</strong></alert
+                            >
+                        </div>
+                        <div class="form-group row mb-3">
+                            <label v-if="training_doc_url" class="control-label"
+                                >Complete the questionnaire below. The
+                                Commercial Event Training Program with
+                                information to help you can be downloaded
+                                <a :href="training_doc_url" target="_blank"
+                                    >here</a
+                                >.</label
+                            >
+                            <label v-else class="control-label"
+                                >Complete the questionnaire below. The
+                                Commercial Event Training Program with
+                                information to help you can be downloaded
+                                here.</label
+                            >
+                        </div>
+                        <div class="form-group row">
+                            <form class="form-horizontal">
+                                <ul
+                                    v-for="q in questions"
+                                    :key="q.id"
+                                    class="list-unstyled row"
                                 >
-                            </div>
-                            <div class="form-group row mb-3">
-                                <label
-                                    v-if="training_doc_url"
-                                    class="control-label"
-                                    >Complete the questionnaire below.
-                                    The Commercial Event Training Program with information to help you can be downloaded
-                                    <a :href="training_doc_url" target="_blank"
-                                        >here</a
-                                    >.</label
-                                >
-                                <label v-else class="control-label"
-                                    >Complete the questionnaire below.
-                                    The Commercial Event Training Program with information to help you can be downloaded here.</label
-                                >
-                            </div>
-                            <div class="form-group row">
-                                <form class="form-horizontal">
-                                    <ul
-                                        v-for="q in questions"
-                                        :key="q.id"
-                                        class="list-unstyled row"
-                                    >
-                                        <li class="row">
-                                            <div class="col-sm-6">
-                                                <label
-                                                    class="control-label"
-                                                    style="text-align: left"
-                                                    >{{
-                                                        q.question_text
-                                                    }}</label
-                                                >
-                                            </div>
-                                            <ul class="list-inline col-sm-6">
-                                                <li
-                                                    v-if="q.answer_one"
-                                                    class="list-inline-item"
-                                                >
-                                                    <input
-                                                        :id="answer_one + q.id"
-                                                        ref="Checkbox"
-                                                        v-model="q.selected"
-                                                        class="form-check-input"
-                                                        type="radio"
-                                                        :name="'option' + q.id"
-                                                        :value="answer_one"
-                                                        data-parsley-required
-                                                        :disabled="
-                                                            proposal.readonly
-                                                        "
-                                                    />
-                                                    {{ q.answer_one }}
-                                                </li>
-                                                <br />
-                                                <li
-                                                    v-if="q.answer_two"
-                                                    class="list-inline-item"
-                                                >
-                                                    <input
-                                                        :id="answer_two + q.id"
-                                                        ref="Checkbox"
-                                                        v-model="q.selected"
-                                                        class="form-check-input"
-                                                        type="radio"
-                                                        :name="'option' + q.id"
-                                                        :value="answer_two"
-                                                        data-parsley-required
-                                                        :disabled="
-                                                            proposal.readonly
-                                                        "
-                                                    />
-                                                    {{ q.answer_two }}
-                                                </li>
-                                                <br />
-                                                <li
-                                                    v-if="q.answer_three"
-                                                    class="list-inline-item"
-                                                >
-                                                    <input
-                                                        :id="
-                                                            answer_three + q.id
-                                                        "
-                                                        ref="Checkbox"
-                                                        v-model="q.selected"
-                                                        class="form-check-input"
-                                                        type="radio"
-                                                        :value="answer_three"
-                                                        :name="'option' + q.id"
-                                                        data-parsley-required
-                                                        :disabled="
-                                                            proposal.readonly
-                                                        "
-                                                    />
-                                                    {{ q.answer_three }}
-                                                </li>
-                                                <br />
-                                                <li
-                                                    v-if="q.answer_four"
-                                                    class="list-inline-item"
-                                                >
-                                                    <input
-                                                        :id="answer_four + q.id"
-                                                        ref="Checkbox"
-                                                        v-model="q.selected"
-                                                        class="form-check-input"
-                                                        type="radio"
-                                                        :value="answer_four"
-                                                        :name="'option' + q.id"
-                                                        data-parsley-required
-                                                        :disabled="
-                                                            proposal.readonly
-                                                        "
-                                                    />
-                                                    {{ q.answer_four }}
-                                                </li>
-                                                <br
-                                                    v-if="
-                                                        showResult &&
-                                                        q.is_correct
+                                    <li class="row">
+                                        <div class="col-sm-6">
+                                            <label
+                                                class="control-label"
+                                                style="text-align: left"
+                                                >{{ q.question_text }}</label
+                                            >
+                                        </div>
+                                        <ul class="list-inline col-sm-6">
+                                            <li
+                                                v-if="q.answer_one"
+                                                class="list-inline-item"
+                                            >
+                                                <input
+                                                    :id="answer_one + q.id"
+                                                    ref="Checkbox"
+                                                    v-model="q.selected"
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    :name="'option' + q.id"
+                                                    :value="answer_one"
+                                                    data-parsley-required
+                                                    :disabled="
+                                                        proposal.readonly
                                                     "
                                                 />
-                                                <li
-                                                    v-if="
-                                                        showResult &&
-                                                        q.is_correct
-                                                    "
-                                                    class="list-inline"
-                                                >
-                                                    <label style="color: green"
-                                                        ><i
-                                                            class="fas fa-check"
-                                                        ></i
-                                                        >Correct</label
-                                                    >
-                                                </li>
-                                                <br
-                                                    v-if="
-                                                        !q.is_correct &&
-                                                        showResult
+                                                {{ q.answer_one }}
+                                            </li>
+                                            <br />
+                                            <li
+                                                v-if="q.answer_two"
+                                                class="list-inline-item"
+                                            >
+                                                <input
+                                                    :id="answer_two + q.id"
+                                                    ref="Checkbox"
+                                                    v-model="q.selected"
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    :name="'option' + q.id"
+                                                    :value="answer_two"
+                                                    data-parsley-required
+                                                    :disabled="
+                                                        proposal.readonly
                                                     "
                                                 />
-                                                <li
-                                                    v-if="
-                                                        !q.is_correct &&
-                                                        showResult
+                                                {{ q.answer_two }}
+                                            </li>
+                                            <br />
+                                            <li
+                                                v-if="q.answer_three"
+                                                class="list-inline-item"
+                                            >
+                                                <input
+                                                    :id="answer_three + q.id"
+                                                    ref="Checkbox"
+                                                    v-model="q.selected"
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    :value="answer_three"
+                                                    :name="'option' + q.id"
+                                                    data-parsley-required
+                                                    :disabled="
+                                                        proposal.readonly
                                                     "
-                                                    class="list-inline"
+                                                />
+                                                {{ q.answer_three }}
+                                            </li>
+                                            <br />
+                                            <li
+                                                v-if="q.answer_four"
+                                                class="list-inline-item"
+                                            >
+                                                <input
+                                                    :id="answer_four + q.id"
+                                                    ref="Checkbox"
+                                                    v-model="q.selected"
+                                                    class="form-check-input"
+                                                    type="radio"
+                                                    :value="answer_four"
+                                                    :name="'option' + q.id"
+                                                    data-parsley-required
+                                                    :disabled="
+                                                        proposal.readonly
+                                                    "
+                                                />
+                                                {{ q.answer_four }}
+                                            </li>
+                                            <br
+                                                v-if="
+                                                    showResult && q.is_correct
+                                                "
+                                            />
+                                            <li
+                                                v-if="
+                                                    showResult && q.is_correct
+                                                "
+                                                class="list-inline"
+                                            >
+                                                <label style="color: green"
+                                                    ><i class="fas fa-check"></i
+                                                    >Correct</label
                                                 >
-                                                    <label style="color: red"
-                                                        ><i
-                                                            class="fas fa-xmark"
-                                                        ></i
-                                                        >Incorrect</label
-                                                    >
-                                                </li>
-                                                <br v-if="showAnswer" />
-                                                <li
-                                                    v-if="showAnswer"
-                                                    class="list-inline"
+                                            </li>
+                                            <br
+                                                v-if="
+                                                    !q.is_correct && showResult
+                                                "
+                                            />
+                                            <li
+                                                v-if="
+                                                    !q.is_correct && showResult
+                                                "
+                                                class="list-inline"
+                                            >
+                                                <label style="color: red"
+                                                    ><i class="fas fa-xmark"></i
+                                                    >Incorrect</label
                                                 >
-                                                    <label
-                                                        style="color: blue"
-                                                        >{{
-                                                            q.correct_answer_value
-                                                        }}</label
-                                                    >
-                                                </li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-                                </form>
-                            </div>
-                            <div class="form-group row">
-                                <div class="col-sm-12">
-                                    <input
-                                        v-if="
-                                            !proposal.applicant_training_completed &&
-                                            !proposal.readonly
-                                        "
-                                        type="button"
-                                        class="btn btn-primary pull-right"
-                                        value="Check Answers"
-                                        @click.prevent="checkAnswers"
-                                    />
-                                </div>
+                                            </li>
+                                            <br v-if="showAnswer" />
+                                            <li
+                                                v-if="showAnswer"
+                                                class="list-inline"
+                                            >
+                                                <label style="color: blue">{{
+                                                    q.correct_answer_value
+                                                }}</label>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </form>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <input
+                                    v-if="
+                                        !proposal.applicant_training_completed &&
+                                        !proposal.readonly
+                                    "
+                                    type="button"
+                                    class="btn btn-primary pull-right"
+                                    value="Check Answers"
+                                    @click.prevent="checkAnswers"
+                                />
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -251,7 +254,8 @@ export default {
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
-                        vm.global_settings.results[i].key == 'event_online_training_document'
+                        vm.global_settings.results[i].key ==
+                        'event_online_training_document'
                     ) {
                         if (vm.global_settings.results[i].value) {
                             return vm.global_settings.results[i].value;

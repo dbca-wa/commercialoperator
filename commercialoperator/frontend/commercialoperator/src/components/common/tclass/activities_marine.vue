@@ -2,136 +2,125 @@
 <template lang="html">
     <div class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Activities and Location"
-                    index="activities_and_location"
-                    subtitle="(Marine-based activities)"
-                >
-                    <div class="">
-                        <div class="borderDecoration col-sm-12">
-                            <form v-if="park_error_list">
-                                <div class="col-sm-12">
-                                    <div v-for="e in park_error_list" :key="e">
-                                        <label style="color: orange">{{
-                                            e
-                                        }}</label>
-                                    </div>
-                                </div>
-                            </form>
-                            <form>
-                                <div
-                                    v-if="marine_activity_options.length"
-                                    class="col-sm-12"
-                                >
-                                    <div>
-                                        <label class="control-label"
-                                            >Select the required
-                                            activities</label
-                                        >
-                                        <TreeSelect
-                                            v-model="selected_activities"
-                                            :proposal="proposal"
-                                            :options="marine_activity_options"
-                                            :default_expand_level="1"
-                                            :disabled="!canEditActivities"
-                                        ></TreeSelect>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    <div v-if="isLoading" class="col-sm-12">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        Loading
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="borderDecoration col-sm-12">
-                            <form>
-                                <div
-                                    v-if="marine_park_options.length"
-                                    class="col-sm-12"
-                                >
-                                    <div>
-                                        <label class="control-label"
-                                            >Select the parks for which the
-                                            activities are required</label
-                                        >
-                                        <TreeSelect
-                                            v-model="selected_zone_ids"
-                                            :proposal="proposal"
-                                            :options="marine_park_options"
-                                            :default_expand_level="0"
-                                            :allow_edit="true"
-                                            :disabled="!canEditActivities"
-                                        ></TreeSelect>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    <div v-if="isLoading" class="col-sm-12">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        Loading
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="row"></div>
-                        <div class="row"></div>
-                        <div class="row"></div>
-                        <div class="borderDecoration col-sm-12">
-                            <div
-                                v-for="rd in required_documents_list"
-                                :key="rd.id"
-                            >
-                                <div v-if="rd.can_view">
-                                    <label
-                                        for="label"
-                                        v-html="rd.question"
-                                    ></label>
-                                    <FileField
-                                        :id="
-                                            'proposal' +
-                                            proposal.id +
-                                            'req_doc' +
-                                            rd.id
-                                        "
-                                        :proposal_id="proposal.id"
-                                        :is-repeatable="true"
-                                        :name="'req_doc' + rd.id"
-                                        :required_doc_id="rd.id"
-                                        label="Add Document"
-                                        :readonly="!canEditActivities"
-                                    ></FileField>
+            <FormSection
+                :form-collapse="false"
+                label="Activities and Location"
+                index="activities_and_location"
+                subtitle="(Trails)"
+            >
+                <div class="">
+                    <div class="col-sm-12 border rounded p-3">
+                        <form v-if="park_error_list">
+                            <div class="col-sm-12">
+                                <div v-for="e in park_error_list" :key="e">
+                                    <label style="color: orange">{{ e }}</label>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <label class="control-label"
-                                >You have selected vessel access for one or more
-                                parks. Provide details of each vessel you plan
-                                to use.</label
+                        </form>
+                        <form>
+                            <div
+                                v-if="marine_activity_options.length"
+                                class="col-sm-12"
                             >
-                            <VesselTable
-                                ref="vessel_table"
-                                :url="vessels_url"
-                                :proposal="proposal"
-                            ></VesselTable>
-                        </div>
-                        <div class="form-horizontal col-sm-12"></div>
+                                <div>
+                                    <label class="control-label"
+                                        >Select the required activities</label
+                                    >
+                                    <TreeSelect
+                                        v-model="selected_activities"
+                                        :proposal="proposal"
+                                        :options="marine_activity_options"
+                                        :default_expand_level="1"
+                                        :disabled="!canEditActivities"
+                                    ></TreeSelect>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div v-if="isLoading" class="col-sm-12">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    Loading
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </FormSection>
-                <div>
-                    <editMarineParkActivities
-                        ref="edit_activities"
-                        :proposal="proposal"
-                        :can-edit-activities="canEditActivities"
-                        @refreshSelectionFromResponse="
-                            refreshSelectionFromResponse
-                        "
-                    ></editMarineParkActivities>
+
+                    <div class="col-sm-12 border rounded p-3">
+                        <form>
+                            <div
+                                v-if="marine_park_options.length"
+                                class="col-sm-12"
+                            >
+                                <div>
+                                    <label class="control-label"
+                                        >Select the parks for which the
+                                        activities are required</label
+                                    >
+                                    <TreeSelect
+                                        v-model="selected_zone_ids"
+                                        :proposal="proposal"
+                                        :options="marine_park_options"
+                                        :default_expand_level="0"
+                                        :allow_edit="true"
+                                        :disabled="!canEditActivities"
+                                    ></TreeSelect>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <div v-if="isLoading" class="col-sm-12">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    Loading
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="row"></div>
+                    <div class="row"></div>
+                    <div class="row"></div>
+                    <div class="col-sm-12 border rounded p-3">
+                        <div v-for="rd in required_documents_list" :key="rd.id">
+                            <div v-if="rd.can_view">
+                                <label for="label" v-html="rd.question"></label>
+                                <FileField
+                                    :id="
+                                        'proposal' +
+                                        proposal.id +
+                                        'req_doc' +
+                                        rd.id
+                                    "
+                                    :proposal_id="proposal.id"
+                                    :is-repeatable="true"
+                                    :name="'req_doc' + rd.id"
+                                    :required_doc_id="rd.id"
+                                    label="Add Document"
+                                    :readonly="!canEditActivities"
+                                ></FileField>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                        <label class="control-label"
+                            >You have selected vessel access for one or more
+                            parks. Provide details of each vessel you plan to
+                            use.</label
+                        >
+                        <VesselTable
+                            ref="vessel_table"
+                            :url="vessels_url"
+                            :proposal="proposal"
+                        ></VesselTable>
+                    </div>
+                    <div class="form-horizontal col-sm-12"></div>
                 </div>
+            </FormSection>
+            <div>
+                <editMarineParkActivities
+                    ref="edit_activities"
+                    :proposal="proposal"
+                    :can-edit-activities="canEditActivities"
+                    @refreshSelectionFromResponse="refreshSelectionFromResponse"
+                ></editMarineParkActivities>
+            </div>
         </div>
     </div>
 </template>
@@ -144,7 +133,7 @@ import FileField from './required_docs.vue';
 import TreeSelect from '@/components/forms/treeview.vue';
 import { api_endpoints, helpers, utils } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'ActivitiesMarine',
     components: {
@@ -877,12 +866,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 5px;
-    margin-top: 5px;
-}
 .just-padding {
     padding: 15px;
 }
