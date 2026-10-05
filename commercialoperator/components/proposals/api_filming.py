@@ -21,6 +21,9 @@ from commercialoperator.components.proposals.serializers_filming import (
 
 from commercialoperator.helpers import is_internal
 from django.core.exceptions import PermissionDenied
+from commercialoperator.components.segregation.utils import (
+    retrieve_delegate_organisation_ids,
+)
 
 import logging
 logger = logging.getLogger(__name__)
@@ -36,7 +39,7 @@ class ProposalFilmingParksViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
         if is_internal(self.request):
             return ProposalFilmingParks.objects.all().order_by("id")
         else:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            user_orgs = retrieve_delegate_organisation_ids(user.id)
             return ProposalFilmingParks.objects.filter(
                 Q(proposal_id__org_applicant_id__in=user_orgs)
                 | Q(proposal_id__submitter=user)

@@ -216,6 +216,10 @@ export default {
             type: Number,
             default: null,
         },
+        internalView: {
+            type: Boolean,
+            default: false,
+        },
         disabled: {
             type: Boolean,
             default: false,
@@ -544,8 +548,11 @@ export default {
                                 }
                             } else {
                                 //External Dashboard actions.
+                                const viewPath = vm.internalView
+                                    ? 'internal'
+                                    : 'external';
                                 if (full.can_reissue) {
-                                    links += `<a href='/external/approval/${full.id}'>View</a><br/>`;
+                                    links += `<a href='/${viewPath}/approval/${full.id}'>View</a><br/>`;
                                     if (full.can_action) {
                                         if (full.is_lawful_authority) {
                                             if (
@@ -572,7 +579,7 @@ export default {
                                         links += `<a href='#${full.id}' data-renew-approval='${full.current_proposal}'>Renew</a><br/>`;
                                     }
                                 } else {
-                                    links += `<a href='/external/approval/${full.id}'>View</a><br/>`;
+                                    links += `<a href='/${viewPath}/approval/${full.id}'>View</a><br/>`;
                                 }
                             }
                             return links;

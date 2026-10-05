@@ -237,7 +237,6 @@ export default {
         delete_document: function (file) {
             /* deletes, previously saved file, from the server */
             let vm = this;
-            vm.show_spinner = true;
             var data = { id: file.id, name: file.name };
 
             swal.fire({
@@ -249,8 +248,11 @@ export default {
                 confirmButtonColor: '#d9534f',
             }).then(
                 (swalresult) => {
-                    if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(vm.delete_url, {
+                    if (!swalresult.isConfirmed) {
+                        return;
+                    }
+                    vm.show_spinner = true;
+                    helpers.fetchUrl(vm.delete_url, {
                             method: 'POST',
                             body: JSON.stringify(data),
                             headers: {
@@ -259,15 +261,15 @@ export default {
                         })
                         .then(
                             (response) => {
-                                vm.uploaded_documents = response;
                                 vm.$emit('refreshFromResponse', response);
-                                vm.show_spinner = false;
                             },
                             (err) => {
                                 console.log(err);
                             }
-                        );
-                    }
+                        )
+                        .finally(() => {
+                            vm.show_spinner = false;
+                        });
                 },
             );
         },

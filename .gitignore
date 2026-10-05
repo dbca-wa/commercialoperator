@@ -9,6 +9,7 @@ node_modules/
 commercialoperator/cache/*
 .ropeproject/
 tmp/*
+session_store/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -101,20 +102,8 @@ importo.py
 uwsgi*.ini
 *.djcache
 
-# npm locks
-#*-lock.json
+commercialoperator/static/commercialoperator_vue/
 
-#commercialoperator/static/commercialoperator_vue/static/*
-#commercialoperator/static/commercialoperator_vue/static/css/app.css
-#commercialoperator/static/commercialoperator_vue/static/js/app.js
-#commercialoperator/static/commercialoperator_vue/static/js/manifest.js
-#commercialoperator/static/commercialoperator_vue/static/js/vendor.js
-#commercialoperator/static/commercialoperator_vue/static/js/babel-polyfill.js
-#commercialoperator/static/commercialoperator_vue/static/fonts/*
-#commercialoperator/static/commercialoperator_vue/static/img/*
-
-# npm build files
-commercialoperator/static/commercialoperator_vue/*
 
 *.csv
 *.xls*
@@ -125,3 +114,5 @@ datasets/
 
 sri-manifest.json
 sri-files/*
+
+session_store/

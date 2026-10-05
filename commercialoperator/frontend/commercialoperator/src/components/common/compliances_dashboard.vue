@@ -139,6 +139,10 @@ export default {
             type: Number,
             default: null,
         },
+        internalView: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         let vm = this;
@@ -331,8 +335,11 @@ export default {
                                     }
                                 }
                             } else {
+                                const viewPath = vm.internalView
+                                    ? 'internal'
+                                    : 'external';
                                 if (full.can_user_view) {
-                                    links += `<a href='/external/compliance/${full.id}'>View</a><br/>`;
+                                    links += `<a href='/${viewPath}/compliance/${full.id}'>View</a><br/>`;
                                 } else {
                                     links += `<a href='/external/compliance/${full.id}'>Submit</a><br/>`;
                                 }

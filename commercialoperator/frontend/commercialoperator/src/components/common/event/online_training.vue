@@ -250,17 +250,25 @@ export default {
     computed: {
         training_doc_url: function () {
             let vm = this;
+            let fallback_url = '';
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
                     if (
                         vm.global_settings.results[i].key ==
                         'event_online_training_document'
                     ) {
-                        return vm.global_settings.results[i].value;
+                        if (vm.global_settings.results[i].value) {
+                            return vm.global_settings.results[i].value;
+                        }
+                    }
+                    if (
+                        vm.global_settings.results[i].key == 'online_training_document'
+                    ) {
+                        fallback_url = vm.global_settings.results[i].value;
                     }
                 }
             }
-            return '';
+            return fallback_url;
         },
         showError: function () {
             var vm = this;
