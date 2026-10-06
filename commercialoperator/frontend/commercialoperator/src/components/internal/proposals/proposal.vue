@@ -987,13 +987,12 @@
                                     >
                                         <div
                                             v-if="hasAssessorMode"
-                                            class="navbar navbar-nav navbar-fixed-bottom ms-auto align-items-end"
-                                            style="background-color: #f5f5f5"
+                                            class="navbar navbar-expand-lg bg-light fixed-bottom border-top"
                                         >
-                                            <div>
+                                            <div class="container pb-0">
                                                 <div
                                                     v-if="hasAssessorMode"
-                                                    class="container-fluid"
+                                                    class="w-100 d-flex justify-content-end align-items-center"
                                                 >
                                                     <button
                                                         v-if="savingProposal"
@@ -1729,6 +1728,10 @@ export default {
             formData.append(
                 'marine_parks_activities',
                 JSON.stringify(vm.proposal.marine_parks_activities)
+            );
+            formData.append(
+                'other_details',
+                JSON.stringify(vm.proposal.other_details)
             );
             helpers
                 .fetchUrl(vm.proposal_form_url, {
