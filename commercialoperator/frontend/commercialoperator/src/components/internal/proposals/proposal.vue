@@ -987,13 +987,12 @@
                                     >
                                         <div
                                             v-if="hasAssessorMode"
-                                            class="navbar navbar-nav navbar-fixed-bottom ms-auto align-items-end"
-                                            style="background-color: #f5f5f5"
+                                            class="navbar navbar-expand-lg bg-light fixed-bottom border-top"
                                         >
-                                            <div>
+                                            <div class="container pb-0">
                                                 <div
                                                     v-if="hasAssessorMode"
-                                                    class="container-fluid"
+                                                    class="w-100 d-flex justify-content-end align-items-center"
                                                 >
                                                     <button
                                                         v-if="savingProposal"
