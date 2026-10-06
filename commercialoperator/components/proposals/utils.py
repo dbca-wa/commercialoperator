@@ -1783,7 +1783,8 @@ def save_assessor_data_tclass(instance, request, viewset):
         marine_parks_activities = json.loads(
             request.data.get("marine_parks_activities")
         )
-    except:
+        other_details = json.loads(request.data.get("other_details"))
+    except json.JSONDecodeError, TypeError, ValueError:
         select_parks_activities = request.POST.get("selected_parks_activities", None)
         if select_parks_activities:
             select_parks_activities = json.loads(select_parks_activities)
@@ -1793,27 +1794,23 @@ def save_assessor_data_tclass(instance, request, viewset):
         marine_parks_activities = request.POST.get("marine_parks_activities", None)
         if marine_parks_activities:
             marine_parks_activities = json.loads(marine_parks_activities)
+        other_details = request.POST.get("other_details", None)
+        if other_details:
+            other_details = json.loads(other_details)
     if select_parks_activities or len(select_parks_activities) == 0:
-        try:
-            save_park_activity_data(
-                instance, select_parks_activities, request, assessor_save
-            )
-        except:
-            raise
+        save_park_activity_data(
+            instance, select_parks_activities, request, assessor_save
+        )
     if select_trails_activities or len(select_trails_activities) == 0:
-        try:
-            save_trail_section_activity_data(
-                instance, select_trails_activities, request
-            )
-        except:
-            raise
+        save_trail_section_activity_data(instance, select_trails_activities, request)
+
     if marine_parks_activities or len(marine_parks_activities) == 0:
-        try:
-            save_park_zone_activity_data(
-                instance, marine_parks_activities, request, assessor_save
-            )
-        except:
-            raise
+        save_park_zone_activity_data(
+            instance, marine_parks_activities, request, assessor_save
+        )
+    if other_details or len(other_details) == 0:
+        save_other_details_data(instance, other_details, assessor_save)
+
     # Save Documents
     for f in request.FILES:
         filename = str(request.FILES[f])
