@@ -35,7 +35,7 @@
                                         type="checkbox"
                                         :value="c.key"
                                         data-parsley-required
-                                        :disabled="proposal.readonly"
+                                        :disabled="!canEditAssessorOtherDetails"
                                         @click="selectAccreditation($event, c)"
                                         :checked="selected_accreditations.includes(c.key)"
                                     />
@@ -60,8 +60,8 @@
                                         :ref="accreditation.accreditation_type"
                                         :accreditation="accreditation"
                                         :proposal_id="proposal.id"
-                                        :readonly="proposal.readonly"
-                                        :can-edit-activities="canEditActivities"
+                                        :readonly="!canEditAssessorOtherDetails"
+                                        :can-edit-activities="canEditAssessorOtherDetails"
                                     ></Accreditation>
                                 </div>
                             </div>
@@ -94,14 +94,14 @@
                                     :checked="selected_information_standards.includes(c.key)" 
                                     :value="c.key" 
                                     data-parsley-required 
-                                    :disabled="proposal.readonly" 
+                                    :disabled="!canEditAssessorOtherDetails"
                                 />
                                         {{ c.value }}
                             </li>
                         </ul>
                         <div v-for=" information_standard in proposal.other_details.information_standards">
                             <div v-if="!information_standard.is_deleted" class="col-sm-12">
-                                <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="proposal.readonly" id="information_standard" :ref="information_standard.accreditation_type" :canEditActivities="canEditActivities"></InformationStandard >
+                                <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="information_standard" :ref="information_standard.information_standard_type" :canEditActivities="canEditAssessorOtherDetails"></InformationStandard >
                             </div>
                         </div>
                         <label class="control-label">Tourism Emissions Reduction Standard</label>
@@ -111,13 +111,13 @@
                                 class="form-check list-inline-item"
                                 :key="c.key"
                             >
-                                <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" :checked="selected_emission_standards.includes(c.key)" :value="c.key" data-parsley-required :disabled="proposal.readonly" />
+                                <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" :checked="selected_emission_standards.includes(c.key)" :value="c.key" data-parsley-required :disabled="!canEditAssessorOtherDetails" />
                                         {{ c.value }}
                             </li>
                         </ul>
                         <div v-for=" emission_standard in proposal.other_details.emission_standards">
                             <div v-if="!emission_standard.is_deleted " class="col-sm-12">
-                                <EmissionStandard :emission_standard="emission_standard":proposal_id="proposal.id" :readonly="proposal.readonly" id="emission_standard" :ref="emission_standard.accreditation_type" :canEditActivities="canEditActivities"></EmissionStandard >
+                                <EmissionStandard :emission_standard="emission_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="emission_standard" :ref="emission_standard.emission_standard_type" :canEditActivities="canEditAssessorOtherDetails"></EmissionStandard >
                             </div>
                         </div>
                     </div>
@@ -663,6 +663,11 @@ export default {
         };
     },
     computed: {
+        canEditAssessorOtherDetails: function () {
+            return !this.proposal.readonly ||
+                (this.proposal.can_edit_period &&
+                    !this.proposal.pending_amendment_request);
+        },
         deed_poll_url: function () {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
@@ -986,7 +991,7 @@ export default {
                     if(found==false){
                     var data={
                         'information_standard_type': info_standard_type.key,
-                        'comments':'',
+                        'information_comments':'',
                         'proposal_other_details': vm.proposal.other_details.id,
                         'is_deleted': false,
                         'information_standard_type_value': info_standard_type.value
@@ -1036,7 +1041,7 @@ export default {
                         if(found==false){
                         var data={
                             'emission_standard_type': emission_standard_type.key,
-                            'comments':'',
+                            'emission_comments':'',
                             'proposal_other_details': vm.proposal.other_details.id,
                             'is_deleted': false,
                             'emission_standard_type_value': emission_standard_type.value
