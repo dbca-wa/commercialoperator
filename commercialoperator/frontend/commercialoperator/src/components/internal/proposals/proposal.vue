@@ -1729,6 +1729,10 @@ export default {
                 'marine_parks_activities',
                 JSON.stringify(vm.proposal.marine_parks_activities)
             );
+            formData.append(
+                'other_details',
+                JSON.stringify(vm.proposal.other_details)
+            );
             helpers
                 .fetchUrl(vm.proposal_form_url, {
                     method: 'POST',
