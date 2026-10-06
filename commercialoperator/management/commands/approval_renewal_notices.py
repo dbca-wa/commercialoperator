@@ -1,119 +1,94 @@
+import logging
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.conf import settings
-from commercialoperator.components.approvals.models import Approval, NotificationPeriod
+
 from commercialoperator.components.approvals.email import (
     send_approval_renewal_email_notification,
 )
+from commercialoperator.components.approvals.models import Approval, NotificationPeriod
 from commercialoperator.components.main.models import ApplicationType, LicencePeriod
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-
-
-from dateutil.relativedelta import relativedelta
-
-import traceback
-
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Send Approval renewal notice when approval is due to expire, date specified in <notification_period_list> ([3,6,12] etc) (Excludes E Class, Filming, Event licences)"
+    help = (
+        "Send Approval renewal notice when approval is due to expire, date specified in "
+        "<notification_period_list> ([3,6,12] etc) (Excludes E Class, Filming, Event licences)"
+    )
 
     def handle(self, *args, **options):
-        try:
-            user = EmailUser.objects.get(email=settings.CRON_EMAIL)
-        except:
-            user = EmailUser.objects.create(email=settings.CRON_EMAIL, password="")
-
         errors = []
         updates = []
-        today = timezone.localtime(timezone.now()).date()
-        # today = date(2023,9,30)
-        last_week = today - relativedelta(weeks=1)
 
-        # Only TClass Licences can be renewed
-        # also checking expiry since last week to catch renewals/notifications missed by previous recent script runs
-        notification_conditions = {
-            #'expiry_date__range': [last_week, today],
-            "expiry_date__gt": today,
-            "replaced_by__isnull": True,
-            "current_proposal__application_type__name__in": [ApplicationType.TCLASS],
-        }
+        today = timezone.localdate()
+        last_week = today - timedelta(days=7)
 
-        # TClass '2 month' licences cannot be renewed
-        exclude_conditions = {
-            "current_proposal__other_details__preferred_licence_period": LicencePeriod.LICENCE_PERIOD_2_MONTHS,
-        }
-
-        qs = Approval.objects.filter(**notification_conditions).exclude(
-            **exclude_conditions
+        # Filter eligible approvals directly in the database
+        approvals = Approval.objects.filter(
+            expiry_date__gt=today,
+            replaced_by__isnull=True,
+            status__in=[
+                Approval.APPROVAL_STATUS_CURRENT,
+                Approval.APPROVAL_STATUS_SUSPENDED,
+            ],
+            current_proposal__application_type__name=ApplicationType.TCLASS,
+        ).exclude(
+            current_proposal__other_details__preferred_licence_period=LicencePeriod.LICENCE_PERIOD_2_MONTHS
         )
-        # qs = Approval.objects.filter(lodgement_number='L000633')
 
-        logger.info("{}".format(qs))
-        for idx, a in enumerate(qs):
-            if a.status == "current" or a.status == "suspended":
-                try:
-                    # Send periodic renewal notification, if notification_date has arrived
-                    notification_date = self.get_notification_date(a, last_week, today)
-                    if notification_date:
-                        np, created = NotificationPeriod.objects.get_or_create(
-                            approval=a, notification_date=notification_date
-                        )
+        for approval in approvals:
+            try:
+                # Send periodic renewal notification if a notification date falls in the current window
+                notification_date = self.get_notification_date(
+                    approval, start_date=last_week, end_date=today
+                )
 
-                        if created:
-                            # notification has not been previously sent for this notification_date
-                            send_approval_renewal_email_notification(a)
-                            np.notification_sent = True
-                            np.save()
-                            logger.info(
-                                "Renewal notification reminder notice sent for Approval {}".format(
-                                    a.id
-                                )
-                            )
-                            updates.append(a.lodgement_number)
-                            # print(idx, a, a.current_proposal.other_details.preferred_licence_period, notification_date, a.expiry_date)
-
-                        # double check that renewal_sent and renewal_document also exists - if notif'n is sent, then renewal_doc should also exist
-                        if a.renewal_document is None:
-                            a.generate_renewal_doc()
-
-                        if not a.renewal_sent:
-                            a.renewal_sent = True
-                            a.save()
-                            # print(idx, a, a.current_proposal.other_details.preferred_licence_period, a.renew_months, a.renew_enable_date, a.expiry_date, a.renewal_document, a.renewal_sent)
-
-                except Exception as e:
-                    err_msg = "Error sending renewal notification notice for Approval {}".format(
-                        a.lodgement_number
+                if notification_date:
+                    np, created = NotificationPeriod.objects.get_or_create(
+                        approval=approval, notification_date=notification_date
                     )
-                    logger.error("{}\n{}".format(err_msg, str(e)))
-                    logger.error("{}".format(traceback.format_exc()))
-                    errors.append(err_msg)
 
+                    if created:
+                        send_approval_renewal_email_notification(approval)
+                        np.notification_sent = True
+                        np.save()
+
+                        logger.info(
+                            f"Renewal notification reminder notice sent for Approval {approval.id}"
+                        )
+                        updates.append(approval.lodgement_number)
+
+                    # Ensure renewal document and flag exist alongside the notification
+                    if approval.renewal_document is None:
+                        approval.generate_renewal_doc()
+
+                    if not approval.renewal_sent:
+                        approval.renewal_sent = True
+                        approval.save()
+
+            except Exception:
+                err_msg = f"Error sending renewal notification notice for Approval {approval.lodgement_number}"
+                logger.exception(err_msg)
+                errors.append(err_msg)
+
+        # Output / Log summary
         cmd_name = __name__.split(".")[-1].replace("_", " ").upper()
-        err_str = (
-            '<strong style="color: red;">Errors: {}</strong>'.format(len(errors))
-            if len(errors) > 0
-            else '<strong style="color: green;">Errors: 0</strong>'
-        )
-        msg = "<p>{} completed. Errors: {}. IDs updated: {}.</p>".format(
-            cmd_name, err_str, updates
-        )
+        err_color = "red" if errors else "green"
+        err_str = f'<strong style="color: {err_color};">Errors: {len(errors)}</strong>'
+        msg = f"<p>{cmd_name} completed. Errors: {err_str}. IDs updated: {updates}.</p>"
+
         logger.info(msg)
-        print(msg)  # will redirect to cron_tasks.log file, by the parent script
+        self.stdout.write(msg)
 
     def get_notification_date(self, approval, start_date, end_date):
-        # check if notification_date is near ('near' will catch failed cron jobs and run in the next day(s)
-        current_notifications_dates = [
-            dt
-            for dt in approval._notification_dates(end_date)
-            if start_date <= dt <= end_date
-        ]
-        return (
-            current_notifications_dates[0]
-            if len(current_notifications_dates) > 0
-            else None
+        """
+        Returns the first notification date that falls between start_date and end_date, or None.
+        """
+        notification_dates = approval._notification_dates(end_date) or []
+        return next(
+            (dt for dt in notification_dates if start_date <= dt <= end_date),
+            None,
         )

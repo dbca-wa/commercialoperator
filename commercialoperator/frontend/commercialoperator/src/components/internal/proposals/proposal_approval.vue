@@ -35,108 +35,94 @@
             </div>
         </template>
         <div class="col-md-12">
-            <div class="row">
-                    <FormSection
-                        :form-collapse="false"
-                        :label="!isFinalised ? 'Proposed Decision' : 'Decision'"
-                        index="proposed_decision"
-                        subtitle=""
-                    >
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <template
-                                    v-if="!proposal.proposed_decline_status"
-                                >
-                                    <template v-if="isFinalised">
-                                        <div
-                                            v-if="
-                                                proposal.proposed_issuance_approval
-                                            "
+            <FormSection
+                :form-collapse="false"
+                :label="!isFinalised ? 'Proposed Decision' : 'Decision'"
+                index="proposed_decision"
+                subtitle=""
+            >
+                <div class="row">
+                    <div class="col-sm-12">
+                        <template v-if="!proposal.proposed_decline_status">
+                            <template v-if="isFinalised">
+                                <div v-if="proposal.proposed_issuance_approval">
+                                    <p>
+                                        <strong>Decision: Issue</strong>
+                                    </p>
+                                    <p>
+                                        <strong
+                                            >Start date:
+                                            {{
+                                                proposal
+                                                    .proposed_issuance_approval
+                                                    .start_date
+                                            }}</strong
                                         >
-                                            <p>
-                                                <strong>Decision: Issue</strong>
-                                            </p>
-                                            <p>
-                                                <strong
-                                                    >Start date:
-                                                    {{
-                                                        proposal
-                                                            .proposed_issuance_approval
-                                                            .start_date
-                                                    }}</strong
-                                                >
-                                            </p>
-                                            <p>
-                                                <strong
-                                                    >Expiry date:
-                                                    {{
-                                                        proposal
-                                                            .proposed_issuance_approval
-                                                            .expiry_date
-                                                    }}</strong
-                                                >
-                                            </p>
-                                            <p>
-                                                <strong
-                                                    >CC emails:
-                                                    {{
-                                                        proposal
-                                                            .proposed_issuance_approval
-                                                            .cc_email
-                                                    }}</strong
-                                                >
-                                            </p>
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <p>
-                                            <strong
-                                                >Proposed decision:
-                                                Issue</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Proposed start date:
-                                                {{
-                                                    proposal
-                                                        .proposed_issuance_approval
-                                                        .start_date
-                                                }}</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Proposed expiry date:
-                                                {{
-                                                    proposal
-                                                        .proposed_issuance_approval
-                                                        .expiry_date
-                                                }}</strong
-                                            >
-                                        </p>
-                                        <p>
-                                            <strong
-                                                >Proposed cc emails:
-                                                {{
-                                                    proposal
-                                                        .proposed_issuance_approval
-                                                        .cc_email
-                                                }}</strong
-                                            >
-                                        </p>
-                                    </template>
-                                </template>
-                                <template v-else>
-                                    <strong v-if="!isFinalised"
-                                        >Proposed decision: Decline</strong
+                                    </p>
+                                    <p>
+                                        <strong
+                                            >Expiry date:
+                                            {{
+                                                proposal
+                                                    .proposed_issuance_approval
+                                                    .expiry_date
+                                            }}</strong
+                                        >
+                                    </p>
+                                    <p>
+                                        <strong
+                                            >CC emails:
+                                            {{
+                                                proposal
+                                                    .proposed_issuance_approval
+                                                    .cc_email
+                                            }}</strong
+                                        >
+                                    </p>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <p>
+                                    <strong>Proposed decision: Issue</strong>
+                                </p>
+                                <p>
+                                    <strong
+                                        >Proposed start date:
+                                        {{
+                                            proposal.proposed_issuance_approval
+                                                .start_date
+                                        }}</strong
                                     >
-                                    <strong v-else>Decision: Decline</strong>
-                                </template>
-                            </div>
-                        </div>
-                    </FormSection>
-            </div>
+                                </p>
+                                <p>
+                                    <strong
+                                        >Proposed expiry date:
+                                        {{
+                                            proposal.proposed_issuance_approval
+                                                .expiry_date
+                                        }}</strong
+                                    >
+                                </p>
+                                <p>
+                                    <strong
+                                        >Proposed cc emails:
+                                        {{
+                                            proposal.proposed_issuance_approval
+                                                .cc_email
+                                        }}</strong
+                                    >
+                                </p>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <strong v-if="!isFinalised"
+                                >Proposed decision: Decline</strong
+                            >
+                            <strong v-else>Decision: Decline</strong>
+                        </template>
+                    </div>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -144,7 +130,7 @@
 import { api_endpoints, helpers } from '@/utils/hooks';
 import FormSection from '@/components/forms/section_toggle.vue';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'InternalProposalRequirements',
     components: {
@@ -251,10 +237,10 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'Remove Requirement',
                 confirmButtonColor: '#d9534f',
-            }).then(
-                (swalresult) => {
-                    if (swalresult.isConfirmed) {
-                        helpers.fetchUrl(
+            }).then((swalresult) => {
+                if (swalresult.isConfirmed) {
+                    helpers
+                        .fetchUrl(
                             helpers.add_endpoint_json(
                                 api_endpoints.proposal_requirements,
                                 _id
@@ -274,9 +260,8 @@ export default {
                                 console.log(error);
                             }
                         );
-                    }
-                },
-            );
+                }
+            });
         },
     },
 };
