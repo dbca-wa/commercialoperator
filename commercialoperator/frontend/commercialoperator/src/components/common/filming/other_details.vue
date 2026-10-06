@@ -2,100 +2,37 @@
 <template lang="html">
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Safety"
-                    index="safety"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row" style="margin-bottom: 5px">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >What steps have been taken to
-                                            ensure the safety of your filming
-                                            party?
-                                            <small>
-                                                (Provide details of your safety
-                                                and communication equipment
-                                                and/or attach a copy of your
-                                                safety and risk management
-                                                plan)</small
-                                            >
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div
-                                            ref="safety_details"
-                                            class="input-group date"
-                                            style="width: 70%"
+            <FormSection
+                :form-collapse="false"
+                label="Safety"
+                index="safety"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row" style="margin-bottom: 5px">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >What steps have been taken to ensure
+                                        the safety of your filming party?
+                                        <small>
+                                            (Provide details of your safety and
+                                            communication equipment and/or
+                                            attach a copy of your safety and
+                                            risk management plan)</small
                                         >
-                                            <textarea
-                                                v-if="
-                                                    proposal.filming_other_details
-                                                "
-                                                v-model="
-                                                    proposal
-                                                        .filming_other_details
-                                                        .safety_details
-                                                "
-                                                type="text"
-                                                class="form-control"
-                                                name="safety_details"
-                                                :disabled="
-                                                    proposal.readonly ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                            ></textarea>
-                                        </div>
-                                    </div>
+                                    </label>
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="true"
-                                            name="filming_safety_details"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </FormSection>
-        </div>
-        <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Other"
-                    index="other"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label
-                                            >Provide any additional information
-                                            to support your application. If you
-                                            would like to access a park that is
-                                            not listed in the previous sections,
-                                            please include here.</label
-                                        >
-                                    </div>
-                                </div>
-                                <div class="row">
+                                <div class="col-sm-6">
                                     <div
-                                        class="col-sm-12"
-                                        style="margin-bottom: 5px"
+                                        ref="safety_details"
+                                        class="input-group date"
+                                        style="width: 70%"
                                     >
                                         <textarea
                                             v-if="
@@ -103,249 +40,341 @@
                                             "
                                             v-model="
                                                 proposal.filming_other_details
-                                                    .other_comments
+                                                    .safety_details
                                             "
+                                            type="text"
                                             class="form-control"
-                                            :disabled="proposal.readonly"
+                                            name="safety_details"
+                                            :disabled="
+                                                proposal.readonly ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
                                         ></textarea>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="true"
-                                            name="filming_other_details"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="true"
+                                        name="filming_safety_details"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
+        </div>
+        <div class="col-sm-12">
+            <FormSection
+                :form-collapse="false"
+                label="Other"
+                index="other"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >Provide any additional information to
+                                        support your application. If you would
+                                        like to access a park that is not listed
+                                        in the previous sections, please include
+                                        here.</label
+                                    >
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div
+                                    class="col-sm-12"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <textarea
+                                        v-if="proposal.filming_other_details"
+                                        v-model="
+                                            proposal.filming_other_details
+                                                .other_comments
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="true"
+                                        name="filming_other_details"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
         </div>
 
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Payment of Fees and Charges"
-                    index="payment_of_fees_and_charges"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label
-                                            >Depending on the filming operation,
-                                            fees and charges may apply. Please
-                                            see commercial filming
-                                            <a
-                                                :href="fees_and_charges"
-                                                target="_blank"
-                                                >website</a
-                                            >
-                                            for information on fees and
-                                            charges.</label
+            <FormSection
+                :form-collapse="false"
+                label="Payment of Fees and Charges"
+                index="payment_of_fees_and_charges"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >Depending on the filming operation,
+                                        fees and charges may apply. Please see
+                                        commercial filming
+                                        <a
+                                            :href="fees_and_charges"
+                                            target="_blank"
+                                            >website</a
                                         >
-                                    </div>
+                                        for information on fees and
+                                        charges.</label
+                                    >
                                 </div>
-                                <div class="row">&nbsp;</div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div
+                                v-if="
+                                    proposal.filming_other_details &&
+                                    proposal.filming_other_details
+                                        .camping_fee_waived
+                                "
+                                class="row"
+                            >
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >For how many people
+                                    </label>
+                                </div>
                                 <div
-                                    v-if="
-                                        proposal.filming_other_details &&
-                                        proposal.filming_other_details
-                                            .camping_fee_waived
-                                    "
-                                    class="row"
+                                    class="col-sm-6"
+                                    style="margin-bottom: 5px"
                                 >
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >For how many people
-                                        </label>
-                                    </div>
                                     <div
                                         class="col-sm-6"
                                         style="margin-bottom: 5px"
                                     >
-                                        <div
-                                            class="col-sm-6"
-                                            style="margin-bottom: 5px"
-                                        >
-                                            <input
-                                                v-if="
-                                                    proposal.filming_other_details
-                                                "
-                                                v-model="
-                                                    proposal
-                                                        .filming_other_details
-                                                        .fee_waived_num_people
-                                                "
-                                                type="text"
-                                                class="form-control"
-                                                name="num_cameras"
-                                                placeholder=""
-                                                :disabled="proposal.readonly"
-                                            />
-                                        </div>
+                                        <input
+                                            v-if="
+                                                proposal.filming_other_details
+                                            "
+                                            v-model="
+                                                proposal.filming_other_details
+                                                    .fee_waived_num_people
+                                            "
+                                            type="text"
+                                            class="form-control"
+                                            name="num_cameras"
+                                            placeholder=""
+                                            :disabled="proposal.readonly"
+                                        />
                                     </div>
                                 </div>
-                                <div
-                                    v-if="
-                                        proposal.filming_other_details &&
-                                        proposal.filming_other_details
-                                            .camping_fee_waived
-                                    "
-                                    class="row"
-                                >
-                                    <div class="col-sm-12">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Make sure that you have a copy of
-                                            the licence or lawful authority if
-                                            issued. Camping gess may still
-                                            apply.</label
-                                        >
-                                    </div>
+                            </div>
+                            <div
+                                v-if="
+                                    proposal.filming_other_details &&
+                                    proposal.filming_other_details
+                                        .camping_fee_waived
+                                "
+                                class="row"
+                            >
+                                <div class="col-sm-12">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Make sure that you have a copy of the
+                                        licence or lawful authority if issued.
+                                        Camping gess may still apply.</label
+                                    >
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Insurance"
-                    index="insurance"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label>
-                                            <ol type="a">
-                                                <li>
-                                                    Attach your policy for
-                                                    public liability insurance
-                                                    that covers the areas and
-                                                    operations allowed under the
-                                                    filming authority, and in
-                                                    the name of the applicant to
-                                                    the extent of its rights and
-                                                    interests, for a sum of not
-                                                    less than AU$10 million per
-                                                    event.
-                                                </li>
-                                                <li>
-                                                    It is a requirement of all
-                                                    filming authority holders to
-                                                    maintain appropriate public
-                                                    liability insurance.
-                                                </li>
-                                            </ol></label
-                                        >
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Insurance"
+                index="insurance"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label>
+                                        <ol type="a">
+                                            <li>
+                                                Attach your policy for public
+                                                liability insurance that covers
+                                                the areas and operations allowed
+                                                under the filming authority, and
+                                                in the name of the applicant to
+                                                the extent of its rights and
+                                                interests, for a sum of not less
+                                                than AU$10 million per event.
+                                            </li>
+                                            <li>
+                                                It is a requirement of all
+                                                filming authority holders to
+                                                maintain appropriate public
+                                                liability insurance.
+                                            </li>
+                                        </ol></label
+                                    >
                                 </div>
+                            </div>
 
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Certificate of currency
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="currency_doc"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="false"
-                                            name="currency_certificate"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Expiry Date
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <div
-                                            ref="insurance_expiry"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-if="
-                                                    proposal.filming_other_details
-                                                "
-                                                v-model="
-                                                    proposal
-                                                        .filming_other_details
-                                                        .insurance_expiry
-                                                "
-                                                type="date"
-                                                class="form-control"
-                                                name="insurance_expiry"
-                                                max="2999-12-31"
-                                                placeholder="DD/MM/YYYY"
-                                                required
-                                                :disabled="proposal.readonly"
-                                            />
-                                        </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Certificate of currency
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="currency_doc"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="false"
+                                        name="currency_certificate"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Expiry Date
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div
+                                        ref="insurance_expiry"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-if="
+                                                proposal.filming_other_details
+                                            "
+                                            v-model="
+                                                proposal.filming_other_details
+                                                    .insurance_expiry
+                                            "
+                                            type="date"
+                                            class="form-control"
+                                            name="insurance_expiry"
+                                            max="2999-12-31"
+                                            placeholder="DD/MM/YYYY"
+                                            required
+                                            :disabled="proposal.readonly"
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Deed Poll"
-                    index="deed_poll"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label>It is a requirement of all filming authority holders to sign a Deed Poll to release and indemnify the State of Western Australia. </label>
-                                        <label>Please note: Electronic signatures cannot be accepted. This includes images of handwritten signatures pasted into the document, or signatures typed into a text box.</label>
-                                        <label v-if="deed_poll_url">Click <a :href="deed_poll_url" target="_blank">here</a> to download the Deed Poll. The Deed Poll must be printed, signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the Deed Poll document below.</label>
-                                        <label v-else>Click here to download the deed poll. The Deed Poll must be printed, signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the Deed Poll document below.</label>
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Deed Poll"
+                index="deed_poll"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >It is a requirement of all filming
+                                        authority holders to sign a Deed Poll to
+                                        release and indemnify the State of
+                                        Western Australia.
+                                    </label>
+                                    <label
+                                        >Please note: Electronic signatures
+                                        cannot be accepted. This includes images
+                                        of handwritten signatures pasted into
+                                        the document, or signatures typed into a
+                                        text box.</label
+                                    >
+                                    <label v-if="deed_poll_url"
+                                        >Click
+                                        <a :href="deed_poll_url" target="_blank"
+                                            >here</a
+                                        >
+                                        to download the Deed Poll. The Deed Poll
+                                        must be printed, signed in the correct
+                                        section, be dated and have a witness
+                                        signature when stipulated. Once signed
+                                        and dated, please attach the Deed Poll
+                                        document below.</label
+                                    >
+                                    <label v-else
+                                        >Click here to download the deed poll.
+                                        The Deed Poll must be printed, signed in
+                                        the correct section, be dated and have a
+                                        witness signature when stipulated. Once
+                                        signed and dated, please attach the Deed
+                                        Poll document below.</label
+                                    >
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="deed_poll_doc"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="false"
-                                            name="deed_poll"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="deed_poll_doc"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="false"
+                                        name="deed_poll"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -394,7 +423,9 @@ export default {
                     if (vm.global_settings.results[i].key == 'deed_poll') {
                         fallback_url = vm.global_settings.results[i].value;
                     }
-                    if (vm.global_settings.results[i].key == 'deed_poll_filming') {
+                    if (
+                        vm.global_settings.results[i].key == 'deed_poll_filming'
+                    ) {
                         specific_url = vm.global_settings.results[i].value;
                     }
                 }
@@ -405,7 +436,10 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'credit_facility_link') {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'credit_facility_link'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
@@ -416,7 +450,9 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'fees_and_charges') {
+                    if (
+                        vm.global_settings.results[i].key == 'fees_and_charges'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }

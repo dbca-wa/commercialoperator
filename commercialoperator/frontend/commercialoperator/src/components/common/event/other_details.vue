@@ -2,389 +2,441 @@
 <template lang="html">
     <div id="otherInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Pre-Event Training"
-                    index="pre_event_training"
-                    subtitle=""
-                >
-                    <div v-if="proposal.event_other_details">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Date of Pre-event training
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div
-                                            ref="training_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_other_details
-                                                        .training_date
-                                                "
-                                                type="date"
-                                                max="2999-12-31"
-                                                class="form-control"
-                                                name="training_date"
-                                                placeholder="DD/MM/YYYY"
-                                                :disabled="proposal.readonly"
-                                            />
-                                        </div>
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Pre-Event Training"
+                index="pre_event_training"
+                subtitle=""
+            >
+                <div v-if="proposal.event_other_details">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Date of Pre-event training
+                                    </label>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <label class="col-sm-12" for="Name"
-                                        >List the parks (terrestrial and/or
-                                        marine) where this Pre-event training is
-                                        proposed to occur. Please attach a
-                                        detailed itinerary</label
-                                    >
-                                    <PreEventParksTable
-                                        ref="pre_event_parks_table"
-                                        :url="pre_event_parks_url"
-                                        :proposal="proposal"
-                                    ></PreEventParksTable>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                            </div>
-                        </div>
-
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Number of Participants
-                                            expected</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div
-                                            ref="participants_number"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_other_details
-                                                        .participants_number
-                                                "
-                                                type="number"
-                                                class="form-control"
-                                                name="participants_number"
-                                                :disabled="
-                                                    proposal.readonly ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                                onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189"
-                                                @paste.prevent
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Number of officials</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div
-                                            ref="officials_number"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_other_details
-                                                        .officials_number
-                                                "
-                                                type="number"
-                                                class="form-control"
-                                                name="officials_number"
-                                                :disabled="
-                                                    proposal.readonly ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                                onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189"
-                                                @paste.prevent
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Number of support vehicles/
-                                            vessels</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div
-                                            ref="support_vehicle_number"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_other_details
-                                                        .support_vehicle_number
-                                                "
-                                                type="number"
-                                                class="form-control"
-                                                name="support_vehicle_number"
-                                                :disabled="
-                                                    proposal.readonly ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                                onkeydown="return event.keyCode !== 69 && event.keyCode !== 187 && event.keyCode !== 189"
-                                                @paste.prevent
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                            </div>
-                        </div>
-                    </div>
-                </FormSection>
-        </div>
-
-        <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Other"
-                    index="other"
-                    subtitle=""
-                >
-                    <div v-if="proposal.event_other_details">
-                        <div class="form-horizontal col-sm-12">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label
-                                            >Provide any additional information
-                                            to support your application. If you
-                                            would like to access a park that is
-                                            not listed in the previous sections,
-                                            please include here.</label
-                                        >
-                                    </div>
-                                </div>
-                                <div class="row">
+                                <div class="col-sm-6">
                                     <div
-                                        class="col-sm-12"
-                                        style="margin-bottom: 5px"
+                                        ref="training_date"
+                                        class="input-group date"
+                                        style="width: 70%"
                                     >
-                                        <textarea
+                                        <input
                                             v-model="
                                                 proposal.event_other_details
-                                                    .other_comments
+                                                    .training_date
                                             "
+                                            type="date"
+                                            max="2999-12-31"
                                             class="form-control"
+                                            name="training_date"
+                                            placeholder="DD/MM/YYYY"
+                                            required
                                             :disabled="proposal.readonly"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="true"
-                                            name="event_other_details"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="">
+                            <div class="row">
+                                <label class="col-sm-12" for="Name"
+                                    >List the parks (terrestrial and/or marine)
+                                    where this Pre-event training is proposed to
+                                    occur. Please attach a detailed
+                                    itinerary</label
+                                >
+                                <PreEventParksTable
+                                    ref="pre_event_parks_table"
+                                    :url="pre_event_parks_url"
+                                    :proposal="proposal"
+                                ></PreEventParksTable>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Number of Participants expected</label
+                                    >
+                                </div>
+                                <div class="col-sm-6">
+                                    <div
+                                        ref="participants_number"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_other_details
+                                                    .participants_number
+                                            "
+                                            type="number"
+                                            class="form-control"
+                                            name="participants_number"
+                                            :disabled="
+                                                proposal.readonly ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
+                                            onkeydown="
+                                                return (
+                                                    event.keyCode !== 69 &&
+                                                    event.keyCode !== 187 &&
+                                                    event.keyCode !== 189
+                                                );
+                                            "
+                                            @paste.prevent
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Number of officials</label
+                                    >
+                                </div>
+                                <div class="col-sm-6">
+                                    <div
+                                        ref="officials_number"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_other_details
+                                                    .officials_number
+                                            "
+                                            type="number"
+                                            class="form-control"
+                                            name="officials_number"
+                                            :disabled="
+                                                proposal.readonly ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
+                                            onkeydown="
+                                                return (
+                                                    event.keyCode !== 69 &&
+                                                    event.keyCode !== 187 &&
+                                                    event.keyCode !== 189
+                                                );
+                                            "
+                                            @paste.prevent
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Number of support vehicles/
+                                        vessels</label
+                                    >
+                                </div>
+                                <div class="col-sm-6">
+                                    <div
+                                        ref="support_vehicle_number"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_other_details
+                                                    .support_vehicle_number
+                                            "
+                                            type="number"
+                                            class="form-control"
+                                            name="support_vehicle_number"
+                                            :disabled="
+                                                proposal.readonly ||
+                                                proposal.pending_amendment_request ||
+                                                proposal.is_amendment_proposal
+                                            "
+                                            onkeydown="
+                                                return (
+                                                    event.keyCode !== 69 &&
+                                                    event.keyCode !== 187 &&
+                                                    event.keyCode !== 189
+                                                );
+                                            "
+                                            @paste.prevent
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
         </div>
 
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Payment of Fees and Charges"
-                    index="payment_of_fees_and_charges"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label
-                                            >Please note a licence charge
-                                            applies to commercial events which
-                                            is payable in addition to the
-                                            application fees. Please see the
-                                            department
-                                            <a
-                                                :href="fees_and_charges"
-                                                target="_blank"
-                                                >website</a
-                                            >
-                                            for further information on
-                                            applicable fees and charges and how
-                                            they are paid.</label
-                                        >
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Other"
+                index="other"
+                subtitle=""
+            >
+                <div v-if="proposal.event_other_details">
+                    <div class="form-horizontal col-sm-12">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >Provide any additional information to
+                                        support your application. If you would
+                                        like to access a park that is not listed
+                                        in the previous sections, please include
+                                        here.</label
+                                    >
                                 </div>
-                                <div class="row">&nbsp;</div>
+                            </div>
+                            <div class="row">
+                                <div
+                                    class="col-sm-12"
+                                    style="margin-bottom: 5px"
+                                >
+                                    <textarea
+                                        v-model="
+                                            proposal.event_other_details
+                                                .other_comments
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="true"
+                                        name="event_other_details"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
 
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Insurance"
-                    index="insurance"
-                    subtitle=""
-                >
-                    <div v-if="proposal.event_other_details">
-                        <div class="form-horizontal col-sm-12">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label>
-                                            <ol type="a">
-                                                <li>
-                                                    Attach your policy for
-                                                    public liability insurance
-                                                    that covers the areas and
-                                                    operations allowed under the
-                                                    licence, and in the name of
-                                                    the applicant to the extent
-                                                    of its rights and interests,
-                                                    for a sum of not less than
-                                                    AU$10 million per event.
-                                                </li>
-                                                <li>
-                                                    It is a requirement of all
-                                                    licenced operators to
-                                                    maintain appropriate public
-                                                    liability insurance.
-                                                </li>
-                                            </ol></label
+            <FormSection
+                :form-collapse="false"
+                label="Payment of Fees and Charges"
+                index="payment_of_fees_and_charges"
+                subtitle=""
+            >
+                <div class="">
+                    <div class="form-horizontal col-sm-12">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >Please note a licence charge applies to
+                                        commercial events which is payable in
+                                        addition to the application fees. Please
+                                        see the department
+                                        <a
+                                            :href="fees_and_charges"
+                                            target="_blank"
+                                            >website</a
                                         >
-                                    </div>
+                                        for further information on applicable
+                                        fees and charges and how they are
+                                        paid.</label
+                                    >
                                 </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
+        </div>
 
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Certificate of currency
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="currency_doc"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="false"
-                                            name="currency_certificate"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Expiry Date
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <div
-                                            ref="insurance_expiry"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.event_other_details
-                                                        .insurance_expiry
-                                                "
-                                                type="date"
-                                                class="form-control"
-                                                name="insurance_expiry"
-                                                max="2999-12-31"
-                                                placeholder="DD/MM/YYYY"
-                                                required
-                                                :disabled="proposal.readonly"
-                                            />
-                                        </div>
+        <div class="col-sm-12">
+            <FormSection
+                :form-collapse="false"
+                label="Insurance"
+                index="insurance"
+                subtitle=""
+            >
+                <div v-if="proposal.event_other_details">
+                    <div class="form-horizontal col-sm-12">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label>
+                                        <ol type="a">
+                                            <li>
+                                                Attach your policy for public
+                                                liability insurance that covers
+                                                the areas and operations allowed
+                                                under the licence, and in the
+                                                name of the applicant to the
+                                                extent of its rights and
+                                                interests, for a sum of not less
+                                                than AU$10 million per event.
+                                            </li>
+                                            <li>
+                                                It is a requirement of all
+                                                licenced operators to maintain
+                                                appropriate public liability
+                                                insurance.
+                                            </li>
+                                        </ol></label
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Certificate of currency
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="currency_doc"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="false"
+                                        name="currency_certificate"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Expiry Date
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div
+                                        ref="insurance_expiry"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.event_other_details
+                                                    .insurance_expiry
+                                            "
+                                            type="date"
+                                            class="form-control"
+                                            name="insurance_expiry"
+                                            max="2999-12-31"
+                                            placeholder="DD/MM/YYYY"
+                                            required
+                                            :disabled="proposal.readonly"
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Deed Poll"
-                    index="deed_poll"
-                    subtitle=""
-                >
-                    <div v-if="proposal">
-                        <div class="form-horizontal col-sm-12">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label>It is a requirement of all commercial operations licence holders to sign a Deed Poll to release and indemnify the State of Western Australia.</label> 
-                                        <label>Please note: Electronic signatures cannot be accepted. This includes images of handwritten signatures pasted into the document, or signatures typed into a text box. </label>
-                                        <label v-if="deed_poll_url">Click <a :href="deed_poll_url" target="_blank">here</a> to download the Deed Poll. The Deed Poll must be printed, signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the Deed Poll document below.</label>
-                                        <label v-else>Please click here to download the Deed Poll. The Deed Poll must be printed, signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the Deed Poll document below.</label>
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Deed Poll"
+                index="deed_poll"
+                subtitle=""
+            >
+                <div v-if="proposal">
+                    <div class="form-horizontal col-sm-12">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >It is a requirement of all commercial
+                                        operations licence holders to sign a
+                                        Deed Poll to release and indemnify the
+                                        State of Western Australia.</label
+                                    >
+                                    <label
+                                        >Please note: Electronic signatures
+                                        cannot be accepted. This includes images
+                                        of handwritten signatures pasted into
+                                        the document, or signatures typed into a
+                                        text box.
+                                    </label>
+                                    <label v-if="deed_poll_url"
+                                        >Click
+                                        <a :href="deed_poll_url" target="_blank"
+                                            >here</a
+                                        >
+                                        to download the Deed Poll. The Deed Poll
+                                        must be printed, signed in the correct
+                                        section, be dated and have a witness
+                                        signature when stipulated. Once signed
+                                        and dated, please attach the Deed Poll
+                                        document below.</label
+                                    >
+                                    <label v-else
+                                        >Please click here to download the Deed
+                                        Poll. The Deed Poll must be printed,
+                                        signed in the correct section, be dated
+                                        and have a witness signature when
+                                        stipulated. Once signed and dated,
+                                        please attach the Deed Poll document
+                                        below.</label
+                                    >
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="deed_poll_doc"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="false"
-                                            name="deed_poll"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="deed_poll_doc"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="false"
+                                        name="deed_poll"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -395,7 +447,7 @@ import PreEventParksTable from './pre_event_parks_table.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     components: {
         FormSection,
@@ -445,7 +497,9 @@ export default {
                     if (vm.global_settings.results[i].key == 'deed_poll') {
                         fallback_url = vm.global_settings.results[i].value;
                     }
-                    if (vm.global_settings.results[i].key == 'deed_poll_event') {
+                    if (
+                        vm.global_settings.results[i].key == 'deed_poll_event'
+                    ) {
                         specific_url = vm.global_settings.results[i].value;
                     }
                 }
@@ -456,7 +510,10 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'credit_facility_link') {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'credit_facility_link'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
@@ -467,7 +524,10 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'event_fees_and_charges') {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'event_fees_and_charges'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
@@ -704,12 +764,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 5px;
-    margin-top: 5px;
-}
 fieldset.scheduler-border {
     border: 1px groove #ddd !important;
     padding: 0 1.4em 1.4em 1.4em !important;

@@ -9,18 +9,31 @@
         >
             <div class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="parkForm">
-                        <alert v-if="showError" type="danger"
+                    <form
+                        ref="parkForm"
+                        class="form-horizontal"
+                        name="parkForm"
+                        novalidate
+                        @submit.prevent="ok"
+                    >
+                        <alert v-if="hasErrors" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
                         <div class="col-sm-12">
-                            <div class="form-group">
+                            <!-- Trail Selection -->
+                            <div
+                                class="form-group"
+                                :class="{ 'has-error': errors.events_trail_id }"
+                            >
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
-                                            >Trail</label
+                                            for="events_trail"
+                                            >Trail
+                                            <span class="text-danger"
+                                                >*</span
+                                            ></label
                                         >
                                     </div>
                                     <div
@@ -30,9 +43,17 @@
                                         <select
                                             ref="events_trail"
                                             v-model="events_trail_id"
-                                            class="form-control"
+                                            class="form-select"
+                                            :class="{
+                                                'is-invalid':
+                                                    errors.events_trail_id,
+                                            }"
                                             name="event_trail_new"
+                                            @change="onTrailChange"
                                         >
+                                            <option value="" disabled selected>
+                                                Select a Trail
+                                            </option>
                                             <option
                                                 v-for="t in trails_list"
                                                 :key="t.id"
@@ -41,16 +62,30 @@
                                                 {{ t.name }}
                                             </option>
                                         </select>
+                                        <div
+                                            v-if="errors.events_trail_id"
+                                            class="invalid-feedback d-block text-start"
+                                        >
+                                            {{ errors.events_trail_id }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="form-group">
+
+                            <!-- Section Selection -->
+                            <div
+                                class="form-group"
+                                :class="{ 'has-error': errors.section_id }"
+                            >
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
-                                            >Sections</label
+                                            for="events_section"
+                                            >Sections
+                                            <span class="text-danger"
+                                                >*</span
+                                            ></label
                                         >
                                     </div>
                                     <div
@@ -60,9 +95,17 @@
                                         <select
                                             ref="events_section"
                                             v-model="section_id"
-                                            class="form-control"
+                                            class="form-select"
+                                            :class="{
+                                                'is-invalid': errors.section_id,
+                                            }"
                                             name="event_trail_section"
+                                            :disabled="!events_trail_id"
+                                            @change="errors.section_id = null"
                                         >
+                                            <option value="" disabled selected>
+                                                Select a Section
+                                            </option>
                                             <option
                                                 v-for="s in trail_list_filter"
                                                 :key="s.id"
@@ -71,20 +114,36 @@
                                                 {{ s.name }}
                                             </option>
                                         </select>
+                                        <div
+                                            v-if="errors.section_id"
+                                            class="invalid-feedback d-block text-start"
+                                        >
+                                            {{ errors.section_id }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <!-- Activity Types -->
+                            <div
+                                class="form-group"
+                                :class="{
+                                    'has-error': errors.event_trail_activities,
+                                }"
+                            >
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
-                                            >Activity Types</label
+                                            for="pre_event_name"
+                                            >Activity Types
+                                            <span
+                                                v-if="!is_internal"
+                                                class="text-danger"
+                                                >*</span
+                                            ></label
                                         >
                                     </div>
-
                                     <div class="col-sm-9">
                                         <input
                                             v-model="
@@ -92,19 +151,35 @@
                                             "
                                             type="text"
                                             class="form-control"
+                                            :class="{
+                                                'is-invalid':
+                                                    errors.event_trail_activities,
+                                            }"
                                             name="pre_event_name"
                                             :readonly="is_internal"
+                                            placeholder="Enter one or more activity types"
+                                            @input="
+                                                errors.event_trail_activities =
+                                                    null
+                                            "
                                         />
+                                        <div
+                                            v-if="errors.event_trail_activities"
+                                            class="invalid-feedback d-block text-start"
+                                        >
+                                            {{ errors.event_trail_activities }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Activity Types (Internal) -->
                             <div v-if="is_internal" class="form-group">
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <label
                                             class="control-label pull-left"
-                                            for="Name"
+                                            for="trail_activities_select"
                                             >Activity Types (internal)
                                         </label>
                                     </div>
@@ -165,20 +240,18 @@ import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
 import $ from 'jquery';
+
 export default {
-    // eslint-disable-next-line vue/component-definition-name-casing
-    name: 'Edit-Trail-Activity-Event',
+    name: 'EditTrailActivityEvent',
     components: {
         modal,
         alert,
     },
     props: {
-        // eslint-disable-next-line vue/prop-name-casing
         is_internal: {
             type: Boolean,
             default: false,
         },
-        // eslint-disable-next-line vue/prop-name-casing
         trail_action: {
             type: String,
             default: 'edit',
@@ -187,56 +260,42 @@ export default {
     data: function () {
         return {
             isModalOpen: false,
-            form: null,
-            trail: Object,
-            trail_id: Number,
-            section_id: Number,
-            events_trail_id: Number,
+            trail: {},
+            trail_id: null,
+            section_id: '',
+            events_trail_id: '',
             state: 'proposed_park',
             issuingPark: false,
             trails_list: [],
             section_list: [],
             trail_activities: [],
             selected_activities: [],
-            validation_form: null,
             hasErrors: false,
             errorString: '',
             successString: '',
             success: false,
             dateFormat: 'YYYY-MM-DD',
             localTrailAction: JSON.parse(JSON.stringify(this.trail_action)),
+            errors: {
+                events_trail_id: null,
+                section_id: null,
+                event_trail_activities: null,
+            },
         };
     },
     computed: {
-        showError: function () {
-            var vm = this;
-            return vm.hasErrors;
-        },
         title: function () {
-            return this.localTrailAction == 'add'
+            return this.localTrailAction === 'add'
                 ? 'Add a new Trail'
                 : 'Edit a Trail';
         },
-        delete_url: function () {
-            return this.park_id
-                ? '/api/proposal_events_trails/' +
-                      this.park_id +
-                      '/delete_document/'
-                : '';
-        },
         trail_list_filter: function () {
-            let trail_list = [];
-            var vm = this;
-            for (var i = 0; i < vm.trails_list.length; i++) {
-                if (vm.trails_list[i].id == vm.events_trail_id) {
-                    //vm.section_list = vm.trails_list[i].sections;
-                    //vm.section_list = helpers.copyObject(vm.trails_list[i].sections)
-                    return vm.trails_list[i].sections;
+            for (var i = 0; i < this.trails_list.length; i++) {
+                if (this.trails_list[i].id == this.events_trail_id) {
+                    return this.trails_list[i].sections || [];
                 }
             }
-
-            // Note: I added this return statement. It didn't exist before.
-            return trail_list;
+            return [];
         },
     },
     watch: {
@@ -250,20 +309,54 @@ export default {
     mounted: function () {
         let vm = this;
         vm.fetchAllTrails();
-        vm.form = document.forms.parkForm;
-        vm.addFormValidations();
         this.$nextTick(() => {
             vm.eventListeners();
         });
     },
     methods: {
-        refreshFromResponse: function (updated_docs) {
-            this.park.events_trail_documents = updated_docs;
+        validateForm: function () {
+            this.errors = {
+                events_trail_id: null,
+                section_id: null,
+                event_trail_activities: null,
+            };
+            let isValid = true;
+            let missingFields = [];
+
+            if (!this.events_trail_id) {
+                this.errors.events_trail_id = 'Please select a trail.';
+                missingFields.push('Trail');
+                isValid = false;
+            }
+
+            if (!this.section_id) {
+                this.errors.section_id = 'Please select a trail section.';
+                missingFields.push('Section');
+                isValid = false;
+            }
+
+            if (!this.is_internal) {
+                if (
+                    !this.trail.event_trail_activities ||
+                    !this.trail.event_trail_activities.trim()
+                ) {
+                    this.errors.event_trail_activities =
+                        'Please enter one or more activity types.';
+                    missingFields.push('Activity Types');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        },
+        onTrailChange: function () {
+            this.errors.events_trail_id = null;
+            this.section_id = '';
+            this.fetchSections();
         },
         ok: function () {
-            let vm = this;
-            if ($(vm.form).valid()) {
-                vm.sendData();
+            if (this.validateForm()) {
+                this.sendData();
             }
         },
         cancel: function () {
@@ -273,53 +366,31 @@ export default {
             this.isModalOpen = false;
             this.trail = {};
             this.hasErrors = false;
-            $('.has-error').removeClass('has-error');
+            this.errorString = '';
+            this.errors = {
+                events_trail_id: null,
+                section_id: null,
+                event_trail_activities: null,
+            };
             $(this.$refs.trail_activities_select).val(null).trigger('change');
-            $(this.$refs.events_trail).val(null).trigger('change');
-            $(this.$refs.events_section).val(null).trigger('change');
             this.selected_activities = [];
             this.section_list = [];
-            this.events_trail_id = null;
-            this.section_id = null;
-            this.validation_form.resetForm();
-        },
-        fetchContact: function (id) {
-            let vm = this;
-            helpers.fetchUrl(api_endpoints.contact(id)).then(
-                (response) => {
-                    vm.contact = response;
-                    vm.isModalOpen = true;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
-        },
-
-        fetchAllTrails_orig: function () {
-            let vm = this;
-            helpers.fetchUrl(api_endpoints.trails).then(
-                (response) => {
-                    vm.trails_list = response;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
+            this.events_trail_id = '';
+            this.section_id = '';
         },
         fetchAllTrails: function () {
             let vm = this;
             helpers.fetchUrl(api_endpoints.event_trail_container).then(
                 (response) => {
-                    vm.trails_list = response['trails'];
-                    vm.trail_activities = response['event_activity_types'];
+                    vm.trails_list = response['trails'] || [];
+                    vm.trail_activities =
+                        response['event_activity_types'] || [];
                 },
                 (error) => {
-                    console.log(error);
+                    console.error(error);
                 }
             );
         },
-
         fetchTrail: function (vid) {
             let vm = this;
             helpers
@@ -334,18 +405,9 @@ export default {
                         vm.trail = res;
                         if (vm.trail.trail) {
                             vm.events_trail_id = vm.trail.trail.id;
-                            if (vm.trail.section) {
-                                vm.section_id = vm.trail.section.id;
-                            }
-
-                            $(vm.$refs.events_trail)
-                                .val(vm.trail.trail.id)
-                                .trigger('change');
                             vm.fetchSections();
                             if (vm.trail.section) {
-                                $(vm.$refs.events_section)
-                                    .val(vm.trail.section.id)
-                                    .trigger('change');
+                                vm.section_id = vm.trail.section.id;
                             }
                         }
                         if (vm.trail.activities_assessor) {
@@ -357,16 +419,13 @@ export default {
                         }
                     },
                     (err) => {
-                        console.log(err);
+                        console.error(err);
                     }
                 );
         },
-
         fetchSections: function () {
-            /* Searches for dictionary in list */
             let vm = this;
             vm.section_list = [];
-            $(this.$refs.events_section).val(null).trigger('change');
             for (var i = 0; i < vm.trails_list.length; i++) {
                 if (vm.trails_list[i].id == vm.events_trail_id) {
                     vm.section_list = helpers.copyObject(
@@ -374,15 +433,14 @@ export default {
                     );
                 }
             }
-            $(vm.$refs.events_section).val(vm.section_list).trigger('change');
         },
         sendData: function () {
             let vm = this;
             vm.hasErrors = false;
-            if (vm.events_trail_id != null) {
+            if (vm.events_trail_id) {
                 vm.trail.trail = vm.events_trail_id;
             }
-            if (vm.section_id != null) {
+            if (vm.section_id) {
                 vm.trail.section = vm.section_id;
             }
             vm.trail.activities_assessor = vm.selected_activities;
@@ -447,68 +505,8 @@ export default {
                     );
             }
         },
-        addFormValidations: function () {
-            let vm = this;
-            vm.validation_form = $(vm.form).validate({
-                rules: {},
-                messages: {},
-                showErrors: function (errorMap, errorList) {
-                    $.each(this.validElements(), function (index, element) {
-                        var $element = $(element);
-                        $element
-                            .attr('data-original-title', '')
-                            .parents('.form-group')
-                            .removeClass('has-error');
-                    });
-                    // destroy tooltips on valid elements
-                    // $('.' + this.settings.validClass).tooltip('destroy');
-                    // add or update tooltips
-                    for (var i = 0; i < errorList.length; i++) {
-                        var error = errorList[i];
-                        $(error.element)
-                            .tooltip({
-                                trigger: 'focus',
-                            })
-                            .attr('data-original-title', error.message)
-                            .parents('.form-group')
-                            .addClass('has-error');
-                    }
-                },
-            });
-        },
         eventListeners: function () {
             let vm = this;
-            // $(vm.$refs.events_trail)
-            //     .select2({
-            //         theme: 'bootstrap-5',
-            //         allowClear: true,
-            //         placeholder: 'Select Park',
-            //         dropdownParent: $('#events_trail_modal'),
-            //     })
-            //     .on('select2:select', function (e) {
-            //         var selected = $(e.currentTarget);
-            //         vm.events_trail_id = selected.val();
-            //     })
-            //     .on('select2:unselect', function (e) {
-            //         var selected = $(e.currentTarget);
-            //         vm.events_trail_id = selected.val();
-            //     });
-            // $(vm.$refs.events_section)
-            //     .select2({
-            //         theme: 'bootstrap-5',
-            //         allowClear: true,
-            //         placeholder: 'Select section',
-            //         dropdownParent: $('#events_section_modal'),
-            //     })
-            //     .on('select2:select', function (e) {
-            //         var selected = $(e.currentTarget);
-            //         vm.section_id = selected.val();
-            //     })
-            //     .on('select2:unselect', function (e) {
-            //         var selected = $(e.currentTarget);
-            //         vm.section_id = selected.val();
-            //     });
-            //Initialise select2 for Activity types
             $(vm.$refs.trail_activities_select)
                 .select2({
                     theme: 'bootstrap-5',
@@ -516,17 +514,11 @@ export default {
                     placeholder: 'Select Activities',
                     dropdownParent: $('#trail_activities_select_modal'),
                 })
-                .on('select2:select', function (e) {
+                .on('select2:select select2:unselect', function (e) {
                     var selected = $(e.currentTarget);
-                    vm.selected_activities = selected.val();
-                })
-                .on('select2:unselect', function (e) {
-                    var selected = $(e.currentTarget);
-                    vm.selected_activities = selected.val();
+                    vm.selected_activities = selected.val() || [];
                 });
         },
     },
 };
 </script>
-
-<style lang="css"></style>

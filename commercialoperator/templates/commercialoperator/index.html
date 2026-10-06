@@ -2,9 +2,11 @@
 {% load static %}
 {% load utils %}
 {% block extra_css %}
-    <link type="text/css"
-          href="{% static 'wl/css/index.css' %}"
-          rel="stylesheet">
+    <link rel="icon"
+          type="image/png"
+          href="{% static 'commercialoperator/img/dpaw_small.png' %}">
+    <link rel="stylesheet"
+          href="{% static 'commercialoperator/css/base.css' %}?v={{ build_tag }}">
 {% endblock extra_css %}
 {% block left_menu_items %}
     <li>
@@ -18,10 +20,10 @@
 {% endblock messages %}
 {% block content %}
     <div class="container">
-        <div class="row">
+        <div class="row m-2 g-3">
             <div class="col-md-8">
-                <h2>Welcome to the {% system_name %} System</h2>
-                <p class="w-75">
+                <h2 class="mb-3">Welcome to the {% system_name %} System</h2>
+                <p>
                     Login to the system to apply for a licence, to comply with a licence or condition or to view and update your details.
                 </p>
             </div>

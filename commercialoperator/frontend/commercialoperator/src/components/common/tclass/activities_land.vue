@@ -2,34 +2,165 @@
 <template lang="html">
     <div class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Activities and Location"
-                    index="activities_and_location"
-                    subtitle="(Parks)"
-                >
-                    <div class="borderDecoration col-sm-12">
-                        <form v-if="park_error_list">
+            <FormSection
+                :form-collapse="false"
+                label="Activities and Location"
+                index="activities_and_location"
+                subtitle="(Parks)"
+            >
+                <div class="col-sm-12 border rounded p-3 mb-3">
+                    <form v-if="park_error_list">
+                        <div class="col-sm-12">
+                            <div v-for="e in park_error_list" :key="e">
+                                <label style="color: orange">{{ e }}</label>
+                            </div>
+                        </div>
+                    </form>
+                    <form>
+                        <div
+                            v-if="land_access_options.length"
+                            class="col-sm-12"
+                        >
+                            <div>
+                                <label class="control-label"
+                                    >Select the required access</label
+                                >
+                                <TreeSelect
+                                    ref="selected_access"
+                                    v-model="selected_access"
+                                    :proposal="proposal"
+                                    :options="land_access_options"
+                                    :default_expand_level="1"
+                                    :disabled="!canEditActivities"
+                                ></TreeSelect>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div v-if="isLoading" class="col-sm-12">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-sm-12 border rounded p-3 mb-3">
+                    <form>
+                        <div
+                            v-if="land_activity_options.length"
+                            class="col-sm-12"
+                        >
+                            <div>
+                                <label class="control-label"
+                                    >Select the required activities</label
+                                >
+                                <TreeSelect
+                                    v-model="selected_activities"
+                                    :proposal="proposal"
+                                    :options="land_activity_options"
+                                    :default_expand_level="1"
+                                    :disabled="!canEditActivities"
+                                ></TreeSelect>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div v-if="isLoading" class="col-sm-12">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-sm-12 border rounded p-3 mb-3">
+                    <form>
+                        <div v-if="park_options.length" class="col-sm-12">
+                            <div>
+                                <label class="control-label"
+                                    >Select Parks</label
+                                >
+                                <TreeSelect
+                                    v-model="selected_parks"
+                                    :proposal="proposal"
+                                    :options="park_options"
+                                    :default_expand_level="1"
+                                    :allow_edit="true"
+                                    :disabled="!canEditActivities"
+                                ></TreeSelect>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div v-if="isLoading" class="col-sm-12">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-sm-12 border rounded p-3 mb-3">
+                    <div v-for="rd in required_documents_list" :key="rd.id">
+                        <div v-if="rd.can_view">
+                            <label for="label" v-html="rd.question"></label>
+                            <FileField
+                                :id="
+                                    'proposal' + proposal.id + 'req_doc' + rd.id
+                                "
+                                :proposal_id="proposal.id"
+                                :is-repeatable="true"
+                                :name="'req_doc' + rd.id"
+                                :required_doc_id="rd.id"
+                                label="Add Document"
+                                :readonly="!canEditActivities"
+                            ></FileField>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-12 border rounded p-3 mb-3">
+                    <label class="control-label"
+                        >Provide details of every vehicle you plan to use when
+                        accessing the parks. 'Hire vehicle' can be entered as
+                        the vehicle registration if the hire vehicle details are
+                        not yet known.</label
+                    >
+                    <VehicleTable
+                        ref="vehicles_table"
+                        :url="vehicles_url"
+                        :proposal="proposal"
+                        :access_types="land_access_types"
+                    ></VehicleTable>
+                </div>
+            </FormSection>
+
+            <FormSection
+                :form-collapse="false"
+                label="Activities and Location"
+                index="activities_and_location"
+                subtitle="(Trails)"
+            >
+                <div>
+                    <div class="col-sm-12 border rounded p-3 mb-3">
+                        <form v-if="trail_error_list">
                             <div class="col-sm-12">
-                                <div v-for="e in park_error_list" :key="e">
+                                <div v-for="e in trail_error_list" :key="e">
                                     <label style="color: orange">{{ e }}</label>
                                 </div>
                             </div>
                         </form>
                         <form>
                             <div
-                                v-if="land_access_options.length"
+                                v-if="trail_activity_options.length"
                                 class="col-sm-12"
                             >
                                 <div>
                                     <label class="control-label"
-                                        >Select the required access</label
+                                        >Select the required activities for
+                                        trails</label
                                     >
                                     <TreeSelect
-                                        ref="selected_access"
-                                        v-model="selected_access"
+                                        v-model="trail_activities"
                                         :proposal="proposal"
-                                        :options="land_access_options"
+                                        :options="trail_activity_options"
                                         :default_expand_level="1"
                                         :disabled="!canEditActivities"
                                     ></TreeSelect>
@@ -44,46 +175,19 @@
                         </form>
                     </div>
 
-                    <div class="borderDecoration col-sm-12">
+                    <div class="col-sm-12 border rounded p-3 mb-3">
                         <form>
-                            <div
-                                v-if="land_activity_options.length"
-                                class="col-sm-12"
-                            >
+                            <div v-if="trail_options.length" class="col-sm-12">
                                 <div>
                                     <label class="control-label"
-                                        >Select the required activities</label
+                                        >Select the long distance trails</label
                                     >
                                     <TreeSelect
-                                        v-model="selected_activities"
+                                        v-model="selected_trail_ids"
                                         :proposal="proposal"
-                                        :options="land_activity_options"
+                                        :options="trail_options"
                                         :default_expand_level="1"
-                                        :disabled="!canEditActivities"
-                                    ></TreeSelect>
-                                </div>
-                            </div>
-                            <div v-else>
-                                <div v-if="isLoading" class="col-sm-12">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    Loading
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="borderDecoration col-sm-12">
-                        <form>
-                            <div v-if="park_options.length" class="col-sm-12">
-                                <div>
-                                    <label class="control-label"
-                                        >Select Parks</label
-                                    >
-                                    <TreeSelect
-                                        v-model="selected_parks"
-                                        :proposal="proposal"
-                                        :options="park_options"
-                                        :default_expand_level="1"
+                                        open_direction="top"
                                         :allow_edit="true"
                                         :disabled="!canEditActivities"
                                     ></TreeSelect>
@@ -97,121 +201,8 @@
                             </div>
                         </form>
                     </div>
-
-                    <div class="borderDecoration col-sm-12">
-                        <div v-for="rd in required_documents_list" :key="rd.id">
-                            <div v-if="rd.can_view">
-                                <label for="label" v-html="rd.question"></label>
-                                <FileField
-                                    :id="
-                                        'proposal' +
-                                        proposal.id +
-                                        'req_doc' +
-                                        rd.id
-                                    "
-                                    :proposal_id="proposal.id"
-                                    :is-repeatable="true"
-                                    :name="'req_doc' + rd.id"
-                                    :required_doc_id="rd.id"
-                                    label="Add Document"
-                                    :readonly="!canEditActivities"
-                                ></FileField>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="borderDecoration col-sm-12">
-                        <label class="control-label"
-                            >Provide details of every vehicle you plan to use
-                            when accessing the parks. 'Hire vehicle' can be
-                            entered as the vehicle registration if the hire
-                            vehicle details are not yet known.</label
-                        >
-                        <VehicleTable
-                            ref="vehicles_table"
-                            :url="vehicles_url"
-                            :proposal="proposal"
-                            :access_types="land_access_types"
-                        ></VehicleTable>
-                    </div>
-                </FormSection>
-
-                <FormSection
-                    :form-collapse="false"
-                    label="Activities and Location"
-                    index="activities_and_location"
-                    subtitle="(Trails)"
-                >
-                    <div>
-                        <div class="borderDecoration col-sm-12">
-                            <form v-if="trail_error_list">
-                                <div class="col-sm-12">
-                                    <div v-for="e in trail_error_list" :key="e">
-                                        <label style="color: orange">{{
-                                            e
-                                        }}</label>
-                                    </div>
-                                </div>
-                            </form>
-                            <form>
-                                <div
-                                    v-if="trail_activity_options.length"
-                                    class="col-sm-12"
-                                >
-                                    <div>
-                                        <label class="control-label"
-                                            >Select the required activities for
-                                            trails</label
-                                        >
-                                        <TreeSelect
-                                            v-model="trail_activities"
-                                            :proposal="proposal"
-                                            :options="trail_activity_options"
-                                            :default_expand_level="1"
-                                            :disabled="!canEditActivities"
-                                        ></TreeSelect>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    <div v-if="isLoading" class="col-sm-12">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        Loading
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="borderDecoration col-sm-12">
-                            <form>
-                                <div
-                                    v-if="trail_options.length"
-                                    class="col-sm-12"
-                                >
-                                    <div>
-                                        <label class="control-label"
-                                            >Select the long distance
-                                            trails</label
-                                        >
-                                        <TreeSelect
-                                            v-model="selected_trail_ids"
-                                            :proposal="proposal"
-                                            :options="trail_options"
-                                            :default_expand_level="1"
-                                            open_direction="top"
-                                            :allow_edit="true"
-                                            :disabled="!canEditActivities"
-                                        ></TreeSelect>
-                                    </div>
-                                </div>
-                                <div v-else>
-                                    <div v-if="isLoading" class="col-sm-12">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        Loading
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </FormSection>
+                </div>
+            </FormSection>
 
             <div>
                 <editParkActivities
@@ -242,7 +233,7 @@ import FileField from './required_docs.vue';
 import TreeSelect from '@/components/forms/treeview.vue';
 import { api_endpoints, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'ActivitiesLand',
     components: {
@@ -334,9 +325,7 @@ export default {
 
                 vm.selected_trails = [];
                 for (var i = 0; i < selectedTrailIds.length; i++) {
-                    var data = vm.get_selected_trail_data(
-                        selectedTrailIds[i]
-                    );
+                    var data = vm.get_selected_trail_data(selectedTrailIds[i]);
                     if (data !== null) {
                         vm.selected_trails.push(data);
                     }
@@ -359,7 +348,9 @@ export default {
                 }
                 vm.selected_trail_ids_before = [...selectedTrailIds];
 
-                var current_activities = vm.normalizeIdArray(vm.trail_activities);
+                var current_activities = vm.normalizeIdArray(
+                    vm.trail_activities
+                );
 
                 if (vm.selected_trails_activities.length == 0) {
                     for (let i = 0; i < vm.selected_trails.length; i++) {
@@ -848,9 +839,7 @@ export default {
         $('a[data-bs-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'fa-chevron-down fa-chevron-up'
-                );
+                $(chev).toggleClass('fa-chevron-down fa-chevron-up');
             }, 100);
         });
     },
@@ -1371,7 +1360,9 @@ export default {
                 },
             ]);
             for (var j = 0; j < vm.selected_trails_activities.length; j++) {
-                if (vm.selected_trails_activities[j].trail == normalisedTrailId) {
+                if (
+                    vm.selected_trails_activities[j].trail == normalisedTrailId
+                ) {
                     vm.selected_trails_activities[j].activities =
                         normalisedActivities.length > 0
                             ? normalisedActivities[0].activities
@@ -1391,7 +1382,10 @@ export default {
             return values
                 .map((value) => this.normalizeId(value))
                 .filter((value, index, array) => {
-                    return Number.isInteger(value) && array.indexOf(value) === index;
+                    return (
+                        Number.isInteger(value) &&
+                        array.indexOf(value) === index
+                    );
                 });
         },
         normalizeTrailActivitiesPayload: function (payload) {
@@ -1415,7 +1409,9 @@ export default {
                     }
                     sectionActivities.push({
                         section: sectionId,
-                        activities: this.normalizeIdArray(sections[j].activities),
+                        activities: this.normalizeIdArray(
+                            sections[j].activities
+                        ),
                     });
                 }
 
@@ -1475,7 +1471,8 @@ export default {
                     ) {
                         trail_activities.push(
                             vm.normalizeId(
-                                trails[i].sections[j].trail_activities[k].activity
+                                trails[i].sections[j].trail_activities[k]
+                                    .activity
                             )
                         );
                     }
@@ -1514,12 +1511,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 5px;
-    margin-top: 5px;
-}
 .just-padding {
     padding: 15px;
 }

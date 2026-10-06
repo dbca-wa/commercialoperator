@@ -1,48 +1,52 @@
 <template lang="html">
     <div id="vehiclesVesselsInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Vehicles/Vessels"
-                    index="vehicles_vessels"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
+            <FormSection
+                :form-collapse="false"
+                label="Vehicles/Vessels"
+                index="vehicles_vessels"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="">
+                            <div class="row">&nbsp;</div>
                             <div class="">
-                                <div class="row">&nbsp;</div>
-                                <div class="">
-                                    <label class=""
-                                        >Provide details of every vehicle you
-                                        plan to use when accessing the parks.
-                                        'Hire vehicle' can be entered as the
-                                        vehicle registration if the hire vehicle
-                                        details are not yet known.</label
-                                    >
-                                    <VehicleTable
-                                        ref="vehicles_table"
-                                        :url="vehicles_url"
-                                        :proposal="proposal"
-                                        :access_types="access_types"
-                                    ></VehicleTable>
-                                </div>
-                                <div class="row">&nbsp;</div>
+                                <label class=""
+                                    >Provide details of every vehicle you plan
+                                    to use when accessing the parks. 'Hire
+                                    vehicle' can be entered as the vehicle
+                                    registration if the hire vehicle details are
+                                    not yet known.</label
+                                >
+                                <VehicleTable
+                                    ref="vehicles_table"
+                                    :url="vehicles_url"
+                                    :proposal="proposal"
+                                    :access_types="access_types"
+                                ></VehicleTable>
                             </div>
-                        </div>
-
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <label class="control-label"
-                                >Provide details of every vessel you plan to use
-                                when accessing the parks for the event</label
-                            >
-                            <VesselTable
-                                ref="vessel_table"
-                                :url="vessels_url"
-                                :proposal="proposal"
-                            ></VesselTable>
+                            <div class="row">&nbsp;</div>
                         </div>
                     </div>
-                </FormSection>
+
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <label class="control-label"
+                            >Provide details of every vessel you plan to use
+                            when accessing the parks for the event</label
+                        >
+                        <VesselTable
+                            ref="vessel_table"
+                            :url="vessels_url"
+                            :proposal="proposal"
+                        ></VesselTable>
+                    </div>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -101,12 +105,3 @@ export default {
     },
 };
 </script>
-
-<style lang="css" scoped>
-.borderDecoration {
-    border: 1px solid;
-    border-radius: 5px;
-    padding: 5px;
-    margin-top: 5px;
-}
-</style>

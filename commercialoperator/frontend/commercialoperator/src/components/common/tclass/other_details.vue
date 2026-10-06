@@ -2,26 +2,34 @@
 <template lang="html">
     <div id="userInfo" class="row">
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Tourism Accreditation"
-                    index="tourism_accreditation"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <label class="control-label"
-                                >Select which tourism accreditation you
-                                have achieved and attach a copy of your certificate.
-                                <a
-                                    href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees"
-                                    target="_blank"
-                                    ><i
-                                        class="fas fa-circle-question"
-                                        style="color: blue"
-                                        >&nbsp;</i
-                                    ></a
-                                ></label
+            <FormSection
+                :form-collapse="false"
+                label="Tourism Accreditation"
+                index="tourism_accreditation"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <label class="control-label"
+                            >Select which tourism accreditation you have
+                            achieved and attach a copy of your certificate.
+                            <a
+                                href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees"
+                                target="_blank"
+                                ><i
+                                    class="fas fa-circle-question"
+                                    style="color: blue"
+                                    >&nbsp;</i
+                                ></a
+                            ></label
+                        >
+                        <ul class="list-inline">
+                            <li
+                                v-for="c in accreditation_choices"
+                                :key="c.key"
+                                class="form-check list-inline-item"
                             >
                             <ul class="list-inline">
                                 <li
@@ -43,9 +51,12 @@
                                 </li>
                             </ul>
                             <div
-                                v-for="accreditation in proposal.other_details
-                                    .accreditations"
-                                :key="accreditation.id"
+                                v-if="
+                                    !accreditation.is_deleted &&
+                                    accreditation.accreditation_type != 'no' &&
+                                    accreditation.accreditation_type != 'narta'
+                                "
+                                class="col-sm-12"
                             >
                                 <div
                                     v-if="
@@ -67,7 +78,8 @@
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
         <div class="col-sm-12">
             <FormSection
@@ -76,13 +88,29 @@
                 index="tourism_accessibility_emission_standards"
                 subtitle=""
             >
-                <div class="" >                        
-                    <div class="form-horizontal col-sm-12 borderDecoration">
-                        <label class="">Select which provider you have used to complete your assessments and provide a link to your publicly available information. Click  <a :href="tourism_standards_link" target="_blank"><i class="fas fa-circle-question" style="color:blue">&nbsp;</i></a> for more information.</label>
-                        <label class="">Accessible Tourism Information Standard</label>
-                        <ul class="list-inline"  >
-                            <li 
-                                v-for="c in information_standard_choices" 
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <label class=""
+                            >Select which provider you have used to complete
+                            your assessments and provide a link to your publicly
+                            available information. Click
+                            <a :href="tourism_standards_link" target="_blank"
+                                ><i
+                                    class="fas fa-circle-question"
+                                    style="color: blue"
+                                    >&nbsp;</i
+                                ></a
+                            >
+                            for more information.</label
+                        >
+                        <label class=""
+                            >Accessible Tourism Information Standard</label
+                        >
+                        <ul class="list-inline">
+                            <li
+                                v-for="c in information_standard_choices"
                                 class="form-check list-inline-item"
                                 :key="c.key"
                             >
@@ -96,7 +124,7 @@
                                     data-parsley-required 
                                     :disabled="!canEditAssessorOtherDetails"
                                 />
-                                        {{ c.value }}
+                                {{ c.value }}
                             </li>
                         </ul>
                         <div v-for=" information_standard in proposal.other_details.information_standards">
@@ -104,10 +132,12 @@
                                 <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="information_standard" :ref="information_standard.information_standard_type" :canEditActivities="canEditAssessorOtherDetails"></InformationStandard >
                             </div>
                         </div>
-                        <label class="control-label">Tourism Emissions Reduction Standard</label>
-                        <ul class="list-inline"  >
-                            <li 
-                                v-for="c in emission_standard_choices" 
+                        <label class="control-label"
+                            >Tourism Emissions Reduction Standard</label
+                        >
+                        <ul class="list-inline">
+                            <li
+                                v-for="c in emission_standard_choices"
                                 class="form-check list-inline-item"
                                 :key="c.key"
                             >
@@ -122,493 +152,532 @@
                         </div>
                     </div>
                 </div>
-          </FormSection>           
-    </div>
+            </FormSection>
+        </div>
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Licence Term"
-                    index="licence_term"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Preferred licence term</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="
-                                            margin-bottom: 5px;
-                                            width: 53% !important;
+            <FormSection
+                :form-collapse="false"
+                label="Licence Term"
+                index="licence_term"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Preferred licence term</label
+                                    >
+                                </div>
+                                <div
+                                    class="col-sm-9"
+                                    style="
+                                        margin-bottom: 5px;
+                                        width: 53% !important;
+                                    "
+                                >
+                                    <select
+                                        ref="preferred_licence_period"
+                                        v-model="
+                                            proposal.other_details
+                                                .preferred_licence_period
+                                        "
+                                        class="form-control"
+                                        :disabled="
+                                            proposal.readonly ||
+                                            proposal.pending_amendment_request ||
+                                            proposal.is_amendment_proposal
                                         "
                                     >
-                                        <select
-                                            ref="preferred_licence_period"
+                                        <option
+                                            v-for="l in licence_period_choices"
+                                            :key="l.key"
+                                            :value="l.key"
+                                        >
+                                            {{ l.value }}
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Nominated start date</label
+                                    >
+                                </div>
+                                <div class="col-sm-9">
+                                    <div
+                                        ref="nominated_start_date"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
                                             v-model="
                                                 proposal.other_details
-                                                    .preferred_licence_period
+                                                    .nominated_start_date
                                             "
+                                            type="date"
                                             class="form-control"
+                                            name="nominated_start_date"
+                                            max="2999-12-31"
+                                            placeholder="DD/MM/YYYY"
+                                            required
                                             :disabled="
                                                 proposal.readonly ||
                                                 proposal.pending_amendment_request ||
                                                 proposal.is_amendment_proposal
                                             "
-                                        >
-                                            <option
-                                                v-for="l in licence_period_choices"
-                                                :key="l.key"
-                                                :value="l.key"
-                                            >
-                                                {{ l.value }}
-                                            </option>
-                                        </select>
+                                        />
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Nominated start date</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <div
-                                            ref="nominated_start_date"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.other_details
-                                                        .nominated_start_date
-                                                "
-                                                type="date"
-                                                class="form-control"
-                                                name="nominated_start_date"
-                                                max="2999-12-31"
-                                                placeholder="DD/MM/YYYY"
-                                                required
-                                                :disabled="
-                                                    proposal.readonly ||
-                                                    proposal.pending_amendment_request ||
-                                                    proposal.is_amendment_proposal
-                                                "
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">&nbsp;</div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        Application and licence fee information
-                                        <a
-                                            href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees"
-                                            target="_blank"
-                                            ><i
-                                                class="fas fa-circle-question"
-                                                style="color: blue"
-                                                >&nbsp;</i
-                                            ></a
-                                        >
-                                    </div>
+                            </div>
+                            <div class="row">&nbsp;</div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    Application and licence fee information
+                                    <a
+                                        href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees"
+                                        target="_blank"
+                                        ><i
+                                            class="fas fa-circle-question"
+                                            style="color: blue"
+                                            >&nbsp;</i
+                                        ></a
+                                    >
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Moorings"
-                    index="moorings"
-                    subtitle="(marine-based activities)"
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label
-                                            >Provide the mooring number or GPS
-                                            coordinates for any mooring within a
-                                            marine reserve your operation will
-                                            use.</label
-                                        >
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Moorings"
+                index="moorings"
+                subtitle="(marine-based activities)"
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >Provide the mooring number or GPS
+                                        coordinates for any mooring within a
+                                        marine reserve your operation will
+                                        use.</label
+                                    >
+                                </div>
+                            </div>
+                            <div
+                                v-for="(m, index) in proposal.other_details
+                                    .mooring"
+                                :key="index"
+                                class="row"
+                            >
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Mooring number or GPS
+                                        coordinates</label
+                                    >
                                 </div>
                                 <div
-                                    v-for="(m, index) in proposal.other_details
-                                        .mooring"
-                                    :key="index"
-                                    class="row"
+                                    class="col-sm-9"
+                                    style="margin-bottom: 5px"
                                 >
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Mooring number or GPS
-                                            coordinates</label
-                                        >
-                                    </div>
-                                    <div
-                                        class="col-sm-9"
-                                        style="margin-bottom: 5px"
-                                    >
-                                        <input
-                                            v-model="
-                                                proposal.other_details.mooring[
-                                                    index
-                                                ]
-                                            "
-                                            type="text"
-                                            class="form-control"
-                                            name="Mooring number"
-                                            placeholder=""
-                                            :disabled="proposal.readonly"
-                                        />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <span
-                                            ><a
-                                                v-if="!proposal.readonly"
-                                                target="_blank"
-                                                class="control-label pull-left"
-                                                style="cursor: pointer"
-                                                @click="addMooring()"
-                                                >Add another mooring</a
-                                            ></span
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </FormSection>
-        </div>
-        <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Insurance"
-                    index="insurance"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label>
-                                            <ol type="a">
-                                                <li>
-                                                    Attach your policy for
-                                                    public liability insurance
-                                                    that covers the areas and
-                                                    operations allowed under the
-                                                    licence, and in the name of
-                                                    the applicant to the extent
-                                                    of its rights and interests,
-                                                    for a sum of not less than
-                                                    AU$10 million per event.
-                                                </li>
-                                                <li>
-                                                    It is a requirement of all
-                                                    licenced operators to
-                                                    maintain appropriate public
-                                                    liability insurance.
-                                                </li>
-                                            </ol></label
-                                        >
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Certificate of currency
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="currency_doc"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="false"
-                                            name="currency_certificate"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Expiry Date
-                                        </label>
-                                    </div>
-                                    <div class="col-sm-3">
-                                        <div
-                                            ref="insurance_expiry"
-                                            class="input-group date"
-                                            style="width: 70%"
-                                        >
-                                            <input
-                                                v-model="
-                                                    proposal.other_details
-                                                        .insurance_expiry
-                                                "
-                                                type="date"
-                                                class="form-control"
-                                                name="insurance_expiry"
-                                                max="2999-12-31"
-                                                placeholder="DD/MM/YYYY"
-                                                required
-                                                :disabled="proposal.readonly"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </FormSection>
-        </div>
-        <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Other"
-                    index="other"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label
-                                            >Provide information to support your
-                                            application. This may include
-                                            brochures, itineraries or other
-                                            advertising material.</label
-                                        >
-                                        <label
-                                            >If you would like to apply for a
-                                            park or activity that is not listed
-                                            in the previous sections, please
-                                            include details.</label
-                                        >
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <textarea
-                                            v-model="
-                                                proposal.other_details
-                                                    .other_comments
-                                            "
-                                            class="form-control"
-                                            :disabled="proposal.readonly"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="true"
-                                            name="other_details"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </FormSection>
-        </div>
-        <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Park Entry and Camping Fees"
-                    index="park_entry_fees"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <label
-                                        class="control-label pull-left"
-                                        for="Name"
-                                        >Do you require credit facilities for
-                                        payment of fees</label
-                                    >
-                                </div>
-                                <div class="col-sm-3">
-                                    <label>
-                                        <input
-                                            ref="credit_fees_yes"
-                                            v-model="
-                                                proposal.other_details
-                                                    .credit_fees
-                                            "
-                                            type="radio"
-                                            value="true"
-                                            :disabled="proposal.readonly"
-                                            @change="handleSelectionChange"
-                                        />Yes
-                                    </label>
-                                </div>
-                                <div class="col-sm-3">
-                                    <label>
-                                        <input
-                                            v-model="
-                                                proposal.other_details
-                                                    .credit_fees
-                                            "
-                                            type="radio"
-                                            value="false"
-                                            :disabled="proposal.readonly"
-                                            @change="handleSelectionChange"
-                                        />No
-                                    </label>
-                                </div>
-                                <div id="show_credit_link" class="hidden">
-                                    <div class="col-sm-6"></div>
-                                    <div class="col-sm-6">
-                                        <label class=""
-                                            ><a
-                                                :href="credit_facility_link"
-                                                target="_blank"
-                                                >Link</a
-                                            ></label
-                                        >
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <label
-                                        class="control-label pull-left"
-                                        for="Name"
-                                        >Do you require Cash / Credit Payment
-                                        Docket books?</label
-                                    >
-                                </div>
-                                <div class="col-sm-3">
-                                    <label>
-                                        <input
-                                            ref="docket_books_yes"
-                                            v-model="
-                                                proposal.other_details
-                                                    .credit_docket_books
-                                            "
-                                            type="radio"
-                                            value="true"
-                                            :disabled="proposal.readonly"
-                                            @change="handleRadioChange"
-                                        />Yes
-                                    </label>
-                                </div>
-                                <div class="col-sm-3">
-                                    <label>
-                                        <input
-                                            v-model="
-                                                proposal.other_details
-                                                    .credit_docket_books
-                                            "
-                                            type="radio"
-                                            value="false"
-                                            :disabled="proposal.readonly"
-                                            @change="handleRadioChange"
-                                        />No
-                                    </label>
-                                </div>
-                            </div>
-                            <div>
-                                <div id="show_docket" class="hidden">
-                                    <div class="col-sm-6">
-                                        <label
-                                            class="control-label pull-left"
-                                            for="Name"
-                                            >Number of docket books</label
-                                        >
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <input
-                                            v-model="
-                                                proposal.other_details
-                                                    .docket_books_number
-                                            "
-                                            type="text"
-                                            class="form-control"
-                                            name="docket_books_number"
-                                            placeholder=""
-                                            :disabled="proposal.readonly"
-                                        />
-                                    </div>
+                                    <input
+                                        v-model="
+                                            proposal.other_details.mooring[
+                                                index
+                                            ]
+                                        "
+                                        type="text"
+                                        class="form-control"
+                                        name="Mooring number"
+                                        placeholder=""
+                                        :disabled="proposal.readonly"
+                                    />
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <label
-                                        >Did you know you can use this system to
-                                        pay park entry fees? Click on the Park
-                                        Entry Fees page above.</label
+                                    <span
+                                        ><a
+                                            v-if="!proposal.readonly"
+                                            target="_blank"
+                                            class="control-label pull-left"
+                                            style="cursor: pointer"
+                                            @click="addMooring()"
+                                            >Add another mooring</a
+                                        ></span
                                     >
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
         </div>
         <div class="col-sm-12">
-                <FormSection
-                    :form-collapse="false"
-                    label="Deed Poll"
-                    index="dee_poll"
-                    subtitle=""
-                >
-                    <div class="">
-                        <div class="form-horizontal col-sm-12 borderDecoration">
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <label>It is a requirement of all commercial operations licence holders to sign a Deed Poll to release and indemnify the State of Western Australia.</label> 
-                                        <label>Please note: Electronic signatures cannot be accepted. This includes images of handwritten signatures pasted into the document, or signatures typed into a text box. </label>
-                                        <label v-if="deed_poll_url">Click <a :href="deed_poll_url" target="_blank">here</a> to download the Deed Poll. The Deed Poll must be printed, signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the Deed Poll document below.</label>
-                                        <label v-else>Please click here to download the Deed Poll. The Deed Poll must be printed, signed in the correct section, be dated and have a witness signature when stipulated. Once signed and dated, please attach the Deed Poll document below.</label>
-                                    </div>
+            <FormSection
+                :form-collapse="false"
+                label="Insurance"
+                index="insurance"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label>
+                                        <ol type="a">
+                                            <li>
+                                                Attach your policy for public
+                                                liability insurance that covers
+                                                the areas and operations allowed
+                                                under the licence, and in the
+                                                name of the applicant to the
+                                                extent of its rights and
+                                                interests, for a sum of not less
+                                                than AU$10 million per event.
+                                            </li>
+                                            <li>
+                                                It is a requirement of all
+                                                licenced operators to maintain
+                                                appropriate public liability
+                                                insurance.
+                                            </li>
+                                        </ol></label
+                                    >
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <FileField
-                                            :id="'proposal' + proposal.id"
-                                            ref="deed_poll_doc"
-                                            :proposal_id="proposal.id"
-                                            :is-repeatable="false"
-                                            name="deed_poll"
-                                            :readonly="!canEditActivities"
-                                        ></FileField>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Certificate of currency
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="currency_doc"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="false"
+                                        name="currency_certificate"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                                <div class="col-sm-3">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Expiry Date
+                                    </label>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div
+                                        ref="insurance_expiry"
+                                        class="input-group date"
+                                        style="width: 70%"
+                                    >
+                                        <input
+                                            v-model="
+                                                proposal.other_details
+                                                    .insurance_expiry
+                                            "
+                                            type="date"
+                                            class="form-control"
+                                            name="insurance_expiry"
+                                            max="2999-12-31"
+                                            placeholder="DD/MM/YYYY"
+                                            required
+                                            :disabled="proposal.readonly"
+                                        />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </FormSection>
+                </div>
+            </FormSection>
+        </div>
+        <div class="col-sm-12">
+            <FormSection
+                :form-collapse="false"
+                label="Other"
+                index="other"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >Provide information to support your
+                                        application. This may include brochures,
+                                        itineraries or other advertising
+                                        material.</label
+                                    >
+                                    <label
+                                        >If you would like to apply for a park
+                                        or activity that is not listed in the
+                                        previous sections, please include
+                                        details.</label
+                                    >
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <textarea
+                                        v-model="
+                                            proposal.other_details
+                                                .other_comments
+                                        "
+                                        class="form-control"
+                                        :disabled="proposal.readonly"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="true"
+                                        name="other_details"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
+        </div>
+        <div class="col-sm-12">
+            <FormSection
+                :form-collapse="false"
+                label="Park Entry and Camping Fees"
+                index="park_entry_fees"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label
+                                    class="control-label pull-left"
+                                    for="Name"
+                                    >Do you require credit facilities for
+                                    payment of fees</label
+                                >
+                            </div>
+                            <div class="col-sm-3">
+                                <label>
+                                    <input
+                                        ref="credit_fees_yes"
+                                        v-model="
+                                            proposal.other_details.credit_fees
+                                        "
+                                        type="radio"
+                                        value="true"
+                                        :disabled="proposal.readonly"
+                                        @change="handleSelectionChange"
+                                    />Yes
+                                </label>
+                            </div>
+                            <div class="col-sm-3">
+                                <label>
+                                    <input
+                                        v-model="
+                                            proposal.other_details.credit_fees
+                                        "
+                                        type="radio"
+                                        value="false"
+                                        :disabled="proposal.readonly"
+                                        @change="handleSelectionChange"
+                                    />No
+                                </label>
+                            </div>
+                            <div id="show_credit_link" class="hidden">
+                                <div class="col-sm-6"></div>
+                                <div class="col-sm-6">
+                                    <label class=""
+                                        ><a
+                                            :href="credit_facility_link"
+                                            target="_blank"
+                                            >Link</a
+                                        ></label
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label
+                                    class="control-label pull-left"
+                                    for="Name"
+                                    >Do you require Cash / Credit Payment Docket
+                                    books?</label
+                                >
+                            </div>
+                            <div class="col-sm-3">
+                                <label>
+                                    <input
+                                        ref="docket_books_yes"
+                                        v-model="
+                                            proposal.other_details
+                                                .credit_docket_books
+                                        "
+                                        type="radio"
+                                        value="true"
+                                        :disabled="proposal.readonly"
+                                        @change="handleRadioChange"
+                                    />Yes
+                                </label>
+                            </div>
+                            <div class="col-sm-3">
+                                <label>
+                                    <input
+                                        v-model="
+                                            proposal.other_details
+                                                .credit_docket_books
+                                        "
+                                        type="radio"
+                                        value="false"
+                                        :disabled="proposal.readonly"
+                                        @change="handleRadioChange"
+                                    />No
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <div id="show_docket" class="hidden">
+                                <div class="col-sm-6">
+                                    <label
+                                        class="control-label pull-left"
+                                        for="Name"
+                                        >Number of docket books</label
+                                    >
+                                </div>
+                                <div class="col-sm-6">
+                                    <input
+                                        v-model="
+                                            proposal.other_details
+                                                .docket_books_number
+                                        "
+                                        type="text"
+                                        class="form-control"
+                                        name="docket_books_number"
+                                        placeholder=""
+                                        :disabled="proposal.readonly"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <label
+                                    >Did you know you can use this system to pay
+                                    park entry fees? Click on the Park Entry
+                                    Fees page above.</label
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
+        </div>
+        <div class="col-sm-12">
+            <FormSection
+                :form-collapse="false"
+                label="Deed Poll"
+                index="dee_poll"
+                subtitle=""
+            >
+                <div class="">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <label
+                                        >It is a requirement of all commercial
+                                        operations licence holders to sign a
+                                        Deed Poll to release and indemnify the
+                                        State of Western Australia.</label
+                                    >
+                                    <label
+                                        >Please note: Electronic signatures
+                                        cannot be accepted. This includes images
+                                        of handwritten signatures pasted into
+                                        the document, or signatures typed into a
+                                        text box.
+                                    </label>
+                                    <label v-if="deed_poll_url"
+                                        >Click
+                                        <a :href="deed_poll_url" target="_blank"
+                                            >here</a
+                                        >
+                                        to download the Deed Poll. The Deed Poll
+                                        must be printed, signed in the correct
+                                        section, be dated and have a witness
+                                        signature when stipulated. Once signed
+                                        and dated, please attach the Deed Poll
+                                        document below.</label
+                                    >
+                                    <label v-else
+                                        >Please click here to download the Deed
+                                        Poll. The Deed Poll must be printed,
+                                        signed in the correct section, be dated
+                                        and have a witness signature when
+                                        stipulated. Once signed and dated,
+                                        please attach the Deed Poll document
+                                        below.</label
+                                    >
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <FileField
+                                        :id="'proposal' + proposal.id"
+                                        ref="deed_poll_doc"
+                                        :proposal_id="proposal.id"
+                                        :is-repeatable="false"
+                                        name="deed_poll"
+                                        :readonly="!canEditActivities"
+                                    ></FileField>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </FormSection>
         </div>
     </div>
 </template>
@@ -616,12 +685,12 @@
 <script>
 import FormSection from '@/components/forms/section_toggle.vue';
 import Accreditation from './accreditation_type.vue';
-import InformationStandard from './information_standard.vue'
-import EmissionStandard from './emission_standard.vue'
+import InformationStandard from './information_standard.vue';
+import EmissionStandard from './emission_standard.vue';
 import FileField from '@/components/forms/filefield.vue';
 import { helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     components: {
         FormSection,
@@ -653,10 +722,10 @@ export default {
             accreditation_choices: [],
             accreditation_type: [],
             selected_accreditations: [],
-            information_standard_choices:[],
-            selected_information_standards:[],
-            emission_standard_choices:[],
-            selected_emission_standards:[],
+            information_standard_choices: [],
+            selected_information_standards: [],
+            emission_standard_choices: [],
+            selected_emission_standards: [],
             licence_period_choices: [],
             mooring: [''],
             global_settings: [],
@@ -683,24 +752,30 @@ export default {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
                 for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'credit_facility_link') {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'credit_facility_link'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
             }
             return '';
         },
-        tourism_standards_link: function(){
-            let vm=this;
-            if(vm.global_settings && vm.global_settings.results){
-                for(var i=0; i<vm.global_settings.results.length; i++){
-                    if(vm.global_settings.results[i].key=='tourism_standards_link'){
+        tourism_standards_link: function () {
+            let vm = this;
+            if (vm.global_settings && vm.global_settings.results) {
+                for (var i = 0; i < vm.global_settings.results.length; i++) {
+                    if (
+                        vm.global_settings.results[i].key ==
+                        'tourism_standards_link'
+                    ) {
                         return vm.global_settings.results[i].value;
                     }
                 }
             }
             return '';
-        }
+        },
     },
     watch: {
         accreditation_type: {
@@ -825,17 +900,21 @@ export default {
                 }
             );
         },
-        fetchTourismStandards: function(){
-                let vm = this;
-                
-                helpers.fetchUrl('/api/tourism_standard_choices.json').then((response) => {
+        fetchTourismStandards: function () {
+            let vm = this;
+
+            helpers.fetchUrl('/api/tourism_standard_choices.json').then(
+                (response) => {
                     //vm.tourism_standard_choices = response.body;
-                    vm.information_standard_choices = response.information_standard_choices;
-                    vm.emission_standard_choices = response.emission_standard_choices;
-                    
-                },(error) => {
+                    vm.information_standard_choices =
+                        response.information_standard_choices;
+                    vm.emission_standard_choices =
+                        response.emission_standard_choices;
+                },
+                (error) => {
                     console.log(error);
-                } );
+                }
+            );
         },
         fetchLicencePeriodChoices: function () {
             let vm = this;
@@ -886,32 +965,59 @@ export default {
                 }
             }
         },
-        checkProposalInformationStandard: function(){
-                let vm= this;
-                vm.selected_information_standards=[];
-                if(vm.proposal && vm.proposal.other_details){
-                    for(var i=0; i<vm.proposal.other_details.information_standards.length; i++){
-                        vm.proposal.other_details.information_standards[i].is_deleted=false;
-                        if(!vm.selected_information_standards.includes(vm.proposal.other_details.information_standards[i].information_standard_type)){
-                            vm.selected_information_standards.push(vm.proposal.other_details.information_standards[i].information_standard_type);
-                        }
+        checkProposalInformationStandard: function () {
+            let vm = this;
+            vm.selected_information_standards = [];
+            if (vm.proposal && vm.proposal.other_details) {
+                for (
+                    var i = 0;
+                    i < vm.proposal.other_details.information_standards.length;
+                    i++
+                ) {
+                    vm.proposal.other_details.information_standards[
+                        i
+                    ].is_deleted = false;
+                    if (
+                        !vm.selected_information_standards.includes(
+                            vm.proposal.other_details.information_standards[i]
+                                .information_standard_type
+                        )
+                    ) {
+                        vm.selected_information_standards.push(
+                            vm.proposal.other_details.information_standards[i]
+                                .information_standard_type
+                        );
                     }
                 }
+            }
         },
-        checkProposalEmissionStandard: function(){
-                let vm= this;
-                vm.selected_emission_standards=[];
-                if(vm.proposal && vm.proposal.other_details){
-                    for(var i=0; i<vm.proposal.other_details.emission_standards.length; i++){
-                        vm.proposal.other_details.emission_standards[i].is_deleted=false;
-                        if(!vm.selected_emission_standards.includes(vm.proposal.other_details.emission_standards[i].emission_standard_type)){
-                            vm.selected_emission_standards.push(vm.proposal.other_details.emission_standards[i].emission_standard_type);
-                        }
+        checkProposalEmissionStandard: function () {
+            let vm = this;
+            vm.selected_emission_standards = [];
+            if (vm.proposal && vm.proposal.other_details) {
+                for (
+                    var i = 0;
+                    i < vm.proposal.other_details.emission_standards.length;
+                    i++
+                ) {
+                    vm.proposal.other_details.emission_standards[i].is_deleted =
+                        false;
+                    if (
+                        !vm.selected_emission_standards.includes(
+                            vm.proposal.other_details.emission_standards[i]
+                                .emission_standard_type
+                        )
+                    ) {
+                        vm.selected_emission_standards.push(
+                            vm.proposal.other_details.emission_standards[i]
+                                .emission_standard_type
+                        );
                     }
                 }
+            }
         },
         selectAccreditation: function (e, accreditation_type) {
-            console.log("selectAccreditation")
+            console.log('selectAccreditation');
             let vm = this;
             if (e.target.checked) {
                 var found = false;
@@ -929,7 +1035,7 @@ export default {
                             false;
                     }
                 }
-                console.log(found)
+                console.log(found);
                 if (!found) {
                     var data = {
                         accreditation_type: accreditation_type.key,
@@ -945,7 +1051,9 @@ export default {
                     acc.push(data);
                     vm.proposal.other_details.accreditations = acc;
                 }
-                if (!vm.selected_accreditations.includes(accreditation_type.key)) {
+                if (
+                    !vm.selected_accreditations.includes(accreditation_type.key)
+                ) {
                     vm.selected_accreditations.push(accreditation_type.key);
                 }
             } else {
@@ -996,34 +1104,64 @@ export default {
                         'is_deleted': false,
                         'information_standard_type_value': info_standard_type.value
                     }
-                    var acc=helpers.copyObject(vm.proposal.other_details.information_standards);
-                    acc.push(data);
-                    vm.proposal.other_details.information_standards=acc;
-                    }
-                    if(!vm.selected_information_standards.includes(info_standard_type.key)){
-                        vm.selected_information_standards.push(info_standard_type.key);
-                    }
                 }
-                else{
-                    for(var i=0;i<vm.proposal.other_details.information_standards.length; i++)
-                    {
-
-                        if(vm.proposal.other_details.information_standards[i].information_standard_type==info_standard_type.key)
-                        {
-                            if(vm.proposal.other_details.information_standards[i].id){
-                                //console.log('yes')
-                                var acc=helpers.copyObject(vm.proposal.other_details.information_standards);
-                                acc[i].is_deleted=true;
-                                vm.proposal.other_details.information_standards=acc;
-                            }
-                            else{
-                                var acc=helpers.copyObject(vm.proposal.other_details.information_standards);
-                                acc.splice(i,1);
-                                vm.proposal.other_details.information_standards=acc;
-                            }
+                if (found == false) {
+                    var data = {
+                        information_standard_type: info_standard_type.key,
+                        comments: '',
+                        proposal_other_details: vm.proposal.other_details.id,
+                        is_deleted: false,
+                        information_standard_type_value:
+                            info_standard_type.value,
+                    };
+                    var acc = helpers.copyObject(
+                        vm.proposal.other_details.information_standards
+                    );
+                    acc.push(data);
+                    vm.proposal.other_details.information_standards = acc;
+                }
+                if (
+                    !vm.selected_information_standards.includes(
+                        info_standard_type.key
+                    )
+                ) {
+                    vm.selected_information_standards.push(
+                        info_standard_type.key
+                    );
+                }
+            } else {
+                for (
+                    var i = 0;
+                    i < vm.proposal.other_details.information_standards.length;
+                    i++
+                ) {
+                    if (
+                        vm.proposal.other_details.information_standards[i]
+                            .information_standard_type == info_standard_type.key
+                    ) {
+                        if (
+                            vm.proposal.other_details.information_standards[i]
+                                .id
+                        ) {
+                            //console.log('yes')
+                            var acc = helpers.copyObject(
+                                vm.proposal.other_details.information_standards
+                            );
+                            acc[i].is_deleted = true;
+                            vm.proposal.other_details.information_standards =
+                                acc;
+                        } else {
+                            var acc = helpers.copyObject(
+                                vm.proposal.other_details.information_standards
+                            );
+                            acc.splice(i, 1);
+                            vm.proposal.other_details.information_standards =
+                                acc;
                         }
                     }
-                    vm.selected_information_standards = vm.selected_information_standards.filter(
+                }
+                vm.selected_information_standards =
+                    vm.selected_information_standards.filter(
                         (item) => item !== info_standard_type.key
                     );
                 }
@@ -1054,29 +1192,65 @@ export default {
                             vm.selected_emission_standards.push(emission_standard_type.key);
                         }
                     }
-                    else{
-                        for(var i=0;i<vm.proposal.other_details.emission_standards.length; i++)
-                        {
-    
-                            if(vm.proposal.other_details.emission_standards[i].emission_standard_type==emission_standard_type.key)
-                            {
-                                if(vm.proposal.other_details.emission_standards[i].id){
-                                    //console.log('yes')
-                                    var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
-                                    acc[i].is_deleted=true;
-                                    vm.proposal.other_details.emission_standards=acc;
-                                }
-                                else{
-                                    var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
-                                    acc.splice(i,1);
-                                    vm.proposal.other_details.emission_standards=acc;
-                                }
-                            }
+                }
+                if (found == false) {
+                    var data = {
+                        emission_standard_type: emission_standard_type.key,
+                        comments: '',
+                        proposal_other_details: vm.proposal.other_details.id,
+                        is_deleted: false,
+                        emission_standard_type_value:
+                            emission_standard_type.value,
+                    };
+                    var acc = helpers.copyObject(
+                        vm.proposal.other_details.emission_standards
+                    );
+                    acc.push(data);
+                    vm.proposal.other_details.emission_standards = acc;
+                }
+                if (
+                    !vm.selected_emission_standards.includes(
+                        emission_standard_type.key
+                    )
+                ) {
+                    vm.selected_emission_standards.push(
+                        emission_standard_type.key
+                    );
+                }
+            } else {
+                for (
+                    var i = 0;
+                    i < vm.proposal.other_details.emission_standards.length;
+                    i++
+                ) {
+                    if (
+                        vm.proposal.other_details.emission_standards[i]
+                            .emission_standard_type ==
+                        emission_standard_type.key
+                    ) {
+                        if (
+                            vm.proposal.other_details.emission_standards[i].id
+                        ) {
+                            //console.log('yes')
+                            var acc = helpers.copyObject(
+                                vm.proposal.other_details.emission_standards
+                            );
+                            acc[i].is_deleted = true;
+                            vm.proposal.other_details.emission_standards = acc;
+                        } else {
+                            var acc = helpers.copyObject(
+                                vm.proposal.other_details.emission_standards
+                            );
+                            acc.splice(i, 1);
+                            vm.proposal.other_details.emission_standards = acc;
                         }
-                        vm.selected_emission_standards = vm.selected_emission_standards.filter(
-                            (item) => item !== emission_standard_type.key
-                        );
                     }
+                }
+                vm.selected_emission_standards =
+                    vm.selected_emission_standards.filter(
+                        (item) => item !== emission_standard_type.key
+                    );
+            }
         },
         eventListeners: function () {
             let vm = this;

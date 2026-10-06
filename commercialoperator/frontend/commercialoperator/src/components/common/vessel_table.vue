@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="row">
-                <div v-if="!proposal.readonly" class="col-md-3">
+                <div v-if="canEditVessels" class="col-md-3">
                     <input
                         type="button"
                         style="margin-top: 25px"
@@ -35,7 +35,7 @@ import datatable from '@/utils/vue/datatable.vue';
 import editVessel from './edit_vessel.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'VesselTableDash',
     components: {
@@ -150,7 +150,7 @@ export default {
                         searchable: false,
                         mRender: function (data, type, full) {
                             let links = '';
-                            if (!vm.proposal.readonly) {
+                            if (vm.canEditVessels) {
                                 links += `<a href='#${full.id}' data-edit-vessel='${full.id}'>Edit Vessel</a><br/>`;
                                 links += `<a href='#${full.id}' data-discard-vessel='${full.id}'>Discard</a><br/>`;
                             }
@@ -165,6 +165,12 @@ export default {
     computed: {
         is_external: function () {
             return this.level == 'external';
+        },
+        canEditVessels: function () {
+            return (
+                !this.proposal.readonly ||
+                Boolean(this.proposal.can_edit_vessels)
+            );
         },
     },
     watch: {},
