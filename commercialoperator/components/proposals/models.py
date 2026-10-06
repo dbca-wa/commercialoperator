@@ -2083,6 +2083,18 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         else:
             return False
 
+    def can_edit_licence_term(self, user):
+        if (
+            self.processing_status == Proposal.PROCESSING_STATUS_WITH_ASSESSOR
+            or self.processing_status
+            == Proposal.PROCESSING_STATUS_WITH_ASSESSOR_REQUIREMENTS
+        ):
+            return self.__assessor_group() in retrieve_user_groups(
+                "proposalassessorgroup", user.id
+            )
+        else:
+            return False
+
     def assessor_comments_view(self, user):
 
         if (
