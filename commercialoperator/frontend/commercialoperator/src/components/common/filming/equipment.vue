@@ -8,7 +8,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group col-sm-12">
                             <div class="row">
                                 <div class="col-sm-6">
@@ -80,7 +82,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <VesselTable
                             ref="vessel_table"
                             :url="vessels_url"
@@ -88,7 +92,9 @@
                         ></VesselTable>
                     </div>
 
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="row">&nbsp;</div>
                         <div class="row">
                             <div class="col-sm-6">
@@ -222,7 +228,9 @@
                         <div class="row">&nbsp;</div>
                     </div>
 
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="row">&nbsp;</div>
                         <div class="row">
                             <div class="col-sm-6">

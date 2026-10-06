@@ -8,7 +8,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="">
                                 <div class="col-sm-12">
@@ -42,7 +44,7 @@
                         </div>
                     </div>
 
-                    <div class="col-sm-12 border rounded p-3">
+                    <div class="col-sm-12 border rounded p-3 mb-3">
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-6">

@@ -9,7 +9,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row" style="margin-bottom: 5px">
                                 <div class="col-sm-6">
@@ -76,7 +78,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -130,7 +134,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -220,7 +226,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
@@ -310,7 +318,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div class="form-horizontal col-sm-12 border rounded py-3">
+                    <div
+                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
+                    >
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
