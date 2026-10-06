@@ -1134,6 +1134,17 @@ def save_park_zone_activity_data(
         )
 
 
+def save_other_details_data(instance, other_details, assessor_save=False):
+    if not assessor_save:
+        return
+    
+    serializer = SaveProposalOtherDetailsSerializer(
+        instance=instance.other_details, data=other_details
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+
 def save_proponent_data(instance, request, viewset, parks=None, trails=None):
     if instance.application_type.name == ApplicationType.FILMING:
         save_proponent_data_filming(instance, request, viewset, parks=None, trails=None)
