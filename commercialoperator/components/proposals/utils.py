@@ -55,6 +55,8 @@ from commercialoperator.components.proposals.serializers import (
     ProposalEmissionStandardSerializer,
     ProposalInformationStandardSerializer,
     ProposalOtherDetailsSerializer,
+    SaveProposalOtherDetailsSerializer,
+    SaveInternalFilmingProposalSerializer,
     SaveInternalEventProposalSerializer,
     SaveInternalFilmingProposalSerializer,
     SaveProposalOtherDetailsSerializer,
@@ -1385,8 +1387,10 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                         instance.other_details.information_standards.filter(
                             id=info["id"]
                         ).update(
-                            information_standard_type=info["information_standard_type"],
-                            information_comments=info["comments"],
+                            information_standard_type=info[
+                                "information_standard_type"
+                            ],
+                            information_comments=info.get("information_comments", ""),
                         )
                     except Exception as e:
                         logger.error(
@@ -1434,7 +1438,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                             id=info["id"]
                         ).update(
                             emission_standard_type=info["emission_standard_type"],
-                            emission_comments=info["comments"],
+                            emission_comments=info.get("emission_comments", ""),
                         )
                     except Exception as e:
                         logger.error(
@@ -1741,6 +1745,13 @@ def save_assessor_data_event(instance, request, viewset):
     # End Save Documents
 
 
+def can_edit_tclass_assessor_details(instance, user):
+    return (
+        instance.can_edit_period(user)
+        and not instance.pending_amendment_request
+    )
+
+
 @transaction.atomic
 def save_assessor_data_tclass(instance, request, viewset):
     data = {}
@@ -1748,6 +1759,121 @@ def save_assessor_data_tclass(instance, request, viewset):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     # Save activities
+
+    schema = request.data.get("schema")
+    if schema:
+        try:
+            proposal_data = json.loads(schema)
+        except (TypeError, ValueError) as exc:
+            raise ValidationError("Invalid proposal schema.") from exc
+        if not isinstance(proposal_data, dict):
+            raise ValidationError("Invalid proposal schema.")
+        other_details_data = proposal_data.get("other_details", {})
+        if not isinstance(other_details_data, dict):
+            raise ValidationError("Invalid other details.")
+        can_edit_other_details = can_edit_tclass_assessor_details(
+            instance, request.user
+        )
+        can_edit_licence_period = (
+            can_edit_other_details and not instance.is_amendment_proposal
+        )
+        if "preferred_licence_period" in other_details_data:
+            preferred_licence_period = other_details_data["preferred_licence_period"]
+            if (
+                preferred_licence_period
+                != instance.other_details.preferred_licence_period
+            ):
+                if not can_edit_licence_period:
+                    raise ValidationError(
+                        "You do not have permission to change the preferred licence term."
+                    )
+                other_details_serializer = SaveProposalOtherDetailsSerializer(
+                    instance.other_details,
+                    data={"preferred_licence_period": preferred_licence_period},
+                    partial=True,
+                )
+                other_details_serializer.is_valid(raise_exception=True)
+                other_details_serializer.save()
+
+        for relation, serializer_class, type_field, editable_fields in (
+            (
+                "accreditations",
+                ProposalAccreditationSerializer,
+                "accreditation_type",
+                ("accreditation_expiry", "comments"),
+            ),
+            (
+                "information_standards",
+                ProposalInformationStandardSerializer,
+                "information_standard_type",
+                ("information_comments",),
+            ),
+            (
+                "emission_standards",
+                ProposalEmissionStandardSerializer,
+                "emission_standard_type",
+                ("emission_comments",),
+            ),
+        ):
+            if relation not in other_details_data:
+                continue
+            items = other_details_data[relation]
+            if not isinstance(items, list):
+                raise ValidationError(f"Invalid {relation}.")
+            existing = getattr(instance.other_details, relation)
+            seen_ids = set()
+            seen_types = set()
+            for item in items:
+                if not isinstance(item, dict):
+                    raise ValidationError(f"Invalid {relation} item.")
+                item_id = item.get("id")
+                if item_id is not None:
+                    try:
+                        record = existing.get(id=item_id)
+                    except (existing.model.DoesNotExist, ValueError, TypeError) as exc:
+                        raise ValidationError(f"Invalid {relation} id.") from exc
+                    if record.pk in seen_ids or item.get(type_field) != getattr(
+                        record, type_field
+                    ):
+                        raise ValidationError(f"Invalid {relation} item.")
+                    seen_ids.add(record.pk)
+                else:
+                    record = None
+                if item.get("is_deleted"):
+                    if record:
+                        if not can_edit_other_details:
+                            raise ValidationError(
+                                f"You do not have permission to change {relation}."
+                            )
+                        record.delete()
+                    continue
+                record_type = item.get(type_field)
+                if not record_type or record_type in seen_types:
+                    raise ValidationError(f"Invalid {relation} type.")
+                seen_types.add(record_type)
+                data = {field: item[field] for field in editable_fields if field in item}
+                if record is None:
+                    if not can_edit_other_details:
+                        raise ValidationError(
+                            f"You do not have permission to change {relation}."
+                        )
+                    if existing.filter(**{type_field: record_type}).exists():
+                        raise ValidationError(f"Duplicate {relation} type.")
+                    data[type_field] = record_type
+                    data["proposal_other_details"] = instance.other_details.pk
+                    entry_serializer = serializer_class(data=data)
+                else:
+                    saved = serializer_class(record).data
+                    changed = any(item[field] != saved[field] for field in data)
+                    if not changed:
+                        continue
+                    if not can_edit_other_details:
+                        raise ValidationError(
+                            f"You do not have permission to change {relation}."
+                        )
+                    entry_serializer = serializer_class(record, data=data, partial=True)
+                entry_serializer.is_valid(raise_exception=True)
+                entry_serializer.save()
 
     assessor_save = True
     try:

@@ -25,6 +25,7 @@ from commercialoperator.components.proposals.utils import (
     searchKeyWords,
     search_in_emailuser_fields,
     search_organisation_properties,
+    can_edit_tclass_assessor_details,
 )
 from commercialoperator.components.proposals.models import (
     search_reference,
@@ -892,12 +893,45 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
             action = request.POST.get("action")
             section = request.POST.get("input_name")
+            if action in ("delete", "hide") and "document_id" in request.POST:
+                document = instance.documents.get(id=request.POST["document_id"])
+                section = document.input_name
+
+            if (
+                action in ("save", "delete", "hide")
+                and instance.application_type.name == ApplicationType.TCLASS
+                and is_internal(request)
+                and instance.processing_status != Proposal.PROCESSING_STATUS_DRAFT
+                and section
+                and section.startswith(
+                    ("accreditation", "information_standard", "emission_standard")
+                )
+            ):
+                valid_sections = {
+                    "accreditation" + choice[0]
+                    for choice in ProposalAccreditation.ACCREDITATION_TYPE_CHOICES
+                }
+                valid_sections.update(
+                    "information_standard" + choice[0]
+                    for choice in ProposalInformationStandard.INFORMATION_STANDARD_TYPE_CHOICES
+                )
+                valid_sections.update(
+                    "emission_standard" + choice[0]
+                    for choice in ProposalEmissionStandard.EMISSION_STANDARD_TYPE_CHOICES
+                )
+                if (
+                    section not in valid_sections
+                    or not can_edit_tclass_assessor_details(
+                        instance, request.user
+                    )
+                    or not user_can_edit(request, instance)
+                ):
+                    raise serializers.ValidationError(
+                        "You do not have permission to change this document."
+                    )
             
             if user_can_edit(request,instance):
                 if action == "delete" and "document_id" in request.POST:
-                    document_id = request.POST.get("document_id")
-                    document = instance.documents.get(id=document_id)
-
                     if (
                         document._file
                         and os.path.isfile(document._file.path)

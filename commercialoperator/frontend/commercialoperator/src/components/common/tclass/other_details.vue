@@ -29,26 +29,25 @@
                                 :key="c.key"
                                 class="form-check list-inline-item"
                             >
-                                <input
-                                    ref="Checkbox"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    :value="c.key"
-                                    data-parsley-required
-                                    :disabled="proposal.readonly"
-                                    :checked="
-                                        selected_accreditations.includes(c.key)
-                                    "
-                                    @click="selectAccreditation($event, c)"
-                                />
-                                {{ c.value }}
-                            </li>
-                        </ul>
-                        <div
-                            v-for="accreditation in proposal.other_details
-                                .accreditations"
-                            :key="accreditation.id"
-                        >
+                            <ul class="list-inline">
+                                <li
+                                    v-for="c in accreditation_choices"
+                                    :key="c.key"
+                                    class="form-check list-inline-item"
+                                >
+                                    <input
+                                        ref="Checkbox"
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        :value="c.key"
+                                        data-parsley-required
+                                        :disabled="!canEditAssessorOtherDetails"
+                                        @click="selectAccreditation($event, c)"
+                                        :checked="selected_accreditations.includes(c.key)"
+                                    />
+                                    {{ c.value }}
+                                </li>
+                            </ul>
                             <div
                                 v-if="
                                     !accreditation.is_deleted &&
@@ -57,14 +56,23 @@
                                 "
                                 class="col-sm-12"
                             >
-                                <Accreditation
-                                    id="accreditation"
-                                    :ref="accreditation.accreditation_type"
-                                    :accreditation="accreditation"
-                                    :proposal_id="proposal.id"
-                                    :readonly="proposal.readonly"
-                                    :can-edit-activities="canEditActivities"
-                                ></Accreditation>
+                                <div
+                                    v-if="
+                                        !accreditation.is_deleted &&
+                                        accreditation.accreditation_type != 'no' &&
+                                        accreditation.accreditation_type != 'narta'
+                                    "
+                                    class="col-sm-12"
+                                >
+                                    <Accreditation
+                                        id="accreditation"
+                                        :ref="accreditation.accreditation_type"
+                                        :accreditation="accreditation"
+                                        :proposal_id="proposal.id"
+                                        :readonly="!canEditAssessorOtherDetails"
+                                        :can-edit-activities="canEditAssessorOtherDetails"
+                                    ></Accreditation>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -107,43 +115,22 @@
                                 :key="c.key"
                                 class="form-check list-inline-item"
                             >
-                                <input
-                                    ref="Checkbox"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    :checked="
-                                        selected_information_standards.includes(
-                                            c.key
-                                        )
-                                    "
-                                    :value="c.key"
-                                    data-parsley-required
-                                    :disabled="proposal.readonly"
-                                    @click="
-                                        selectInformationStandard($event, c)
-                                    "
+                                <input  
+                                    class="form-check-input" 
+                                    ref="Checkbox" 
+                                    type="checkbox" 
+                                    @click="selectInformationStandard($event, c)" 
+                                    :checked="selected_information_standards.includes(c.key)" 
+                                    :value="c.key" 
+                                    data-parsley-required 
+                                    :disabled="!canEditAssessorOtherDetails"
                                 />
                                 {{ c.value }}
                             </li>
                         </ul>
-                        <div
-                            v-for="information_standard in proposal
-                                .other_details.information_standards"
-                        >
-                            <div
-                                v-if="!information_standard.is_deleted"
-                                class="col-sm-12"
-                            >
-                                <InformationStandard
-                                    id="information_standard"
-                                    :ref="
-                                        information_standard.accreditation_type
-                                    "
-                                    :information_standard="information_standard"
-                                    :proposal_id="proposal.id"
-                                    :readonly="proposal.readonly"
-                                    :can-edit-activities="canEditActivities"
-                                ></InformationStandard>
+                        <div v-for=" information_standard in proposal.other_details.information_standards">
+                            <div v-if="!information_standard.is_deleted" class="col-sm-12">
+                                <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="information_standard" :ref="information_standard.information_standard_type" :canEditActivities="canEditAssessorOtherDetails"></InformationStandard >
                             </div>
                         </div>
                         <label class="form-label fw-bold mb-3"
@@ -155,39 +142,13 @@
                                 :key="c.key"
                                 class="form-check list-inline-item"
                             >
-                                <input
-                                    ref="Checkbox"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    :checked="
-                                        selected_emission_standards.includes(
-                                            c.key
-                                        )
-                                    "
-                                    :value="c.key"
-                                    data-parsley-required
-                                    :disabled="proposal.readonly"
-                                    @click="selectEmissionStandard($event, c)"
-                                />
-                                {{ c.value }}
+                                <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" :checked="selected_emission_standards.includes(c.key)" :value="c.key" data-parsley-required :disabled="!canEditAssessorOtherDetails" />
+                                        {{ c.value }}
                             </li>
                         </ul>
-                        <div
-                            v-for="emission_standard in proposal.other_details
-                                .emission_standards"
-                        >
-                            <div
-                                v-if="!emission_standard.is_deleted"
-                                class="col-sm-12"
-                            >
-                                <EmissionStandard
-                                    id="emission_standard"
-                                    :ref="emission_standard.accreditation_type"
-                                    :emission_standard="emission_standard"
-                                    :proposal_id="proposal.id"
-                                    :readonly="proposal.readonly"
-                                    :can-edit-activities="canEditActivities"
-                                ></EmissionStandard>
+                        <div v-for=" emission_standard in proposal.other_details.emission_standards">
+                            <div v-if="!emission_standard.is_deleted " class="col-sm-12">
+                                <EmissionStandard :emission_standard="emission_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="emission_standard" :ref="emission_standard.emission_standard_type" :canEditActivities="canEditAssessorOtherDetails"></EmissionStandard >
                             </div>
                         </div>
                     </div>
@@ -787,6 +748,11 @@ export default {
         };
     },
     computed: {
+        canEditAssessorOtherDetails: function () {
+            return !this.proposal.readonly ||
+                (this.proposal.can_edit_period &&
+                    !this.proposal.pending_amendment_request);
+        },
         deed_poll_url: function () {
             let vm = this;
             if (vm.global_settings && vm.global_settings.results) {
@@ -1157,23 +1123,23 @@ export default {
                 );
             }
         },
-        selectInformationStandard: function (e, info_standard_type) {
-            let vm = this;
-            if (e.target.checked) {
-                var found = false;
-                for (
-                    var i = 0;
-                    i < vm.proposal.other_details.information_standards.length;
-                    i++
-                ) {
-                    if (
-                        vm.proposal.other_details.information_standards[i]
-                            .information_standard_type == info_standard_type.key
-                    ) {
-                        found = true;
-                        vm.proposal.other_details.information_standards[
-                            i
-                        ].is_deleted = false;
+        selectInformationStandard: function(e, info_standard_type){
+                let vm=this;
+                if(e.target.checked){
+                    var found=false;
+                    for(var i=0;i<vm.proposal.other_details.information_standards.length; i++){
+                        if(vm.proposal.other_details.information_standards[i].information_standard_type==info_standard_type.key){
+                            found=true;
+                            vm.proposal.other_details.information_standards[i].is_deleted=false;
+                        }
+                    }
+                    if(found==false){
+                    var data={
+                        'information_standard_type': info_standard_type.key,
+                        'information_comments':'',
+                        'proposal_other_details': vm.proposal.other_details.id,
+                        'is_deleted': false,
+                        'information_standard_type_value': info_standard_type.value
                     }
                 }
                 if (found == false) {
@@ -1235,26 +1201,33 @@ export default {
                     vm.selected_information_standards.filter(
                         (item) => item !== info_standard_type.key
                     );
-            }
-        },
-        selectEmissionStandard: function (e, emission_standard_type) {
-            let vm = this;
-            if (e.target.checked) {
-                var found = false;
-                for (
-                    var i = 0;
-                    i < vm.proposal.other_details.emission_standards.length;
-                    i++
-                ) {
-                    if (
-                        vm.proposal.other_details.emission_standards[i]
-                            .emission_standard_type ==
-                        emission_standard_type.key
-                    ) {
-                        found = true;
-                        vm.proposal.other_details.emission_standards[
-                            i
-                        ].is_deleted = false;
+                }
+            },
+            selectEmissionStandard: function(e, emission_standard_type){
+                    let vm=this;
+                    if(e.target.checked){
+                        var found=false;
+                        for(var i=0;i<vm.proposal.other_details.emission_standards.length; i++){
+                            if(vm.proposal.other_details.emission_standards[i].emission_standard_type==emission_standard_type.key){
+                                found=true;
+                                vm.proposal.other_details.emission_standards[i].is_deleted=false;
+                            }
+                        }
+                        if(found==false){
+                        var data={
+                            'emission_standard_type': emission_standard_type.key,
+                            'emission_comments':'',
+                            'proposal_other_details': vm.proposal.other_details.id,
+                            'is_deleted': false,
+                            'emission_standard_type_value': emission_standard_type.value
+                        }
+                        var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
+                        acc.push(data);
+                        vm.proposal.other_details.emission_standards=acc;
+                        }
+                        if(!vm.selected_emission_standards.includes(emission_standard_type.key)){
+                            vm.selected_emission_standards.push(emission_standard_type.key);
+                        }
                     }
                 }
                 if (found == false) {
