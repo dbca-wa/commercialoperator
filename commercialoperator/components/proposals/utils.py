@@ -1,73 +1,73 @@
 import json
+import logging
+import os
 import re
-from django.db import transaction
-from django.db.models import Q, Value
-from django.db.models.functions import Concat, Coalesce
-from django.db.models import QuerySet
-from django.utils import timezone
+from datetime import datetime
+
+from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.conf import settings
+from django.db import transaction
+from django.db.models import Q, QuerySet, Value
+from django.db.models.functions import Coalesce, Concat
+from django.utils import timezone
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+
+from commercialoperator.components.approvals.models import Approval
+from commercialoperator.components.main.models import (
+    AccessType,
+    Activity,
+    Park,
+    Section,
+    Trail,
+    Zone,
+)
+from commercialoperator.components.organisations.models import (
+    Organisation,
+    OrganisationContact,
+)
+from commercialoperator.components.proposals.email import (
+    send_external_submit_email_notification,
+    send_submit_email_notification,
+)
 from commercialoperator.components.proposals.models import (
+    ChecklistQuestion,
     ProposalAccreditation,
-    ProposalDocument,
-    ProposalFilmingActivity,
-    ProposalPark,
-    ProposalParkActivity,
-    ProposalParkAccess,
-    ProposalTrail,
-    ProposalTrailSectionActivity,
-    ProposalTrailSection,
-    ProposalParkZone,
-    ProposalParkZoneActivity,
-    ProposalOtherDetails,
-    ProposalUserAction,
     ProposalAssessment,
     ProposalAssessmentAnswer,
-    ChecklistQuestion,
-)
-from commercialoperator.components.proposals.serializers_event import (
-    ProposalEventOtherDetailsSerializer,
-    ProposalEventManagementSerializer,
-    ProposalEventActivitiesSerializer,
-    ProposalEventVehiclesVesselsSerializer,
-)
-from commercialoperator.components.approvals.models import Approval
-from commercialoperator.components.proposals.email import (
-    send_submit_email_notification,
-    send_external_submit_email_notification,
+    ProposalFilmingActivity,
+    ProposalOtherDetails,
+    ProposalPark,
+    ProposalParkAccess,
+    ProposalParkActivity,
+    ProposalParkZone,
+    ProposalParkZoneActivity,
+    ProposalTrail,
+    ProposalTrailSection,
+    ProposalTrailSectionActivity,
+    ProposalUserAction,
 )
 from commercialoperator.components.proposals.serializers import (
     InternalEventProposalSerializer,
     InternalFilmingProposalSerializer,
     InternalProposalSerializer,
-    SaveProposalSerializer,
     ProposalAccreditationSerializer,
+    ProposalEmissionStandardSerializer,
+    ProposalInformationStandardSerializer,
     ProposalOtherDetailsSerializer,
     SaveProposalOtherDetailsSerializer,
     SaveInternalFilmingProposalSerializer,
     SaveInternalEventProposalSerializer,
-    ProposalInformationStandardSerializer,
-    ProposalEmissionStandardSerializer,
+    SaveInternalFilmingProposalSerializer,
+    SaveProposalOtherDetailsSerializer,
+    SaveProposalSerializer,
 )
-from commercialoperator.components.main.models import (
-    Activity,
-    Park,
-    AccessType,
-    Trail,
-    Section,
-    Zone,
+from commercialoperator.components.proposals.serializers_event import (
+    ProposalEventActivitiesSerializer,
+    ProposalEventManagementSerializer,
+    ProposalEventOtherDetailsSerializer,
+    ProposalEventVehiclesVesselsSerializer,
 )
-from commercialoperator.components.organisations.models import Organisation, OrganisationContact
-
-import traceback
-import os
-from datetime import datetime
-
-
-import logging
-
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.utils import QuerySetChain
 
@@ -90,34 +90,27 @@ def create_data_from_form(
     if assessor_data:
         assessor_fields_search = AssessorDataSearch()
         comment_fields_search = CommentDataSearch()
-    try:
-        for item in schema:
-            data.update(_create_data_from_item(item, post_data, file_data, 0, ""))
-            # _create_data_from_item(item, post_data, file_data, 0, '')
-            special_fields_search.extract_special_fields(
+
+    for item in schema:
+        data.update(_create_data_from_item(item, post_data, file_data, 0, ""))
+        # _create_data_from_item(item, post_data, file_data, 0, '')
+        special_fields_search.extract_special_fields(item, post_data, file_data, 0, "")
+        if assessor_data:
+            assessor_fields_search.extract_special_fields(
                 item, post_data, file_data, 0, ""
             )
-            if assessor_data:
-                assessor_fields_search.extract_special_fields(
-                    item, post_data, file_data, 0, ""
-                )
-                comment_fields_search.extract_special_fields(
-                    item, post_data, file_data, 0, ""
-                )
-        special_fields_list = special_fields_search.special_fields
-        if assessor_data:
-            assessor_data_list = assessor_fields_search.assessor_data
-            comment_data_list = comment_fields_search.comment_data
-    except:
-        traceback.print_exc()
+            comment_fields_search.extract_special_fields(
+                item, post_data, file_data, 0, ""
+            )
+    special_fields_list = special_fields_search.special_fields
+    if assessor_data:
+        assessor_data_list = assessor_fields_search.assessor_data
+        comment_data_list = comment_fields_search.comment_data
+
     if assessor_data:
         return [data], special_fields_list, assessor_data_list, comment_data_list
 
     return [data], special_fields_list
-
-
-def _extend_item_name(name, suffix, repetition):
-    return "{}{}-{}".format(name, suffix, repetition)
 
 
 def _create_data_from_item(item, post_data, file_data, repetition, suffix):
@@ -129,7 +122,7 @@ def _create_data_from_item(item, post_data, file_data, repetition, suffix):
         raise Exception("Missing name in item %s" % item["label"])
 
     if "children" not in item:
-        if item["type"] in ["checkbox" "declaration"]:
+        if item["type"] in ["checkboxdeclaration"]:
             # item_data[item['name']] = post_data[item['name']]
             item_data[item["name"]] = extended_item_name in post_data
         elif item["type"] == "file":
@@ -167,7 +160,7 @@ def _create_data_from_item(item, post_data, file_data, repetition, suffix):
             )
 
     if "conditions" in item:
-        for condition in item["conditions"].keys():
+        for condition in item["conditions"]:
             for child in item["conditions"][condition]:
                 item_data.update(
                     _create_data_from_item(
@@ -182,18 +175,19 @@ def generate_item_data(
     item_name, item, item_data, post_data, file_data, repetition, suffix
 ):
     item_data_list = []
-    for rep in xrange(0, repetition):
+    for rep in range(repetition):
         child_data = {}
         for child_item in item.get("children"):
             child_data.update(
                 _create_data_from_item(
-                    child_item, post_data, file_data, 0, "{}-{}".format(suffix, rep)
+                    child_item, post_data, file_data, 0, f"{suffix}-{rep}"
                 )
             )
         item_data_list.append(child_data)
 
         item_data[item["name"]] = item_data_list
     return item_data
+
 
 def request_has_filters(request) -> bool:
     """
@@ -213,17 +207,27 @@ def request_has_filters(request) -> bool:
         return True
 
     # Processing status
-    status = (params.get("datatable_filter_processing_status") or params.get("processing_status") or "").strip()
+    status = (
+        params.get("datatable_filter_processing_status")
+        or params.get("processing_status")
+        or ""
+    ).strip()
     if status and status.lower() != "all":
         return True
 
     # Application type (license type)
-    app_type_name = (params.get("datatable_filter_application_type__name") or params.get("license_type") or "").strip()
+    app_type_name = (
+        params.get("datatable_filter_application_type__name")
+        or params.get("license_type")
+        or ""
+    ).strip()
     if app_type_name and app_type_name.lower() != "all":
         return True
 
     # Submitter selection
-    submitter_email = (params.get("datatable_filter_submitter__email") or params.get("submitter") or "").strip()
+    submitter_email = (
+        params.get("datatable_filter_submitter__email") or params.get("submitter") or ""
+    ).strip()
     if submitter_email and submitter_email.lower() != "all":
         return True
 
@@ -246,6 +250,7 @@ def request_has_filters(request) -> bool:
         return True
     return False
 
+
 def _get_params(request) -> dict:
     """
     Extract query params from either DRF Request or Django HttpRequest.
@@ -258,6 +263,7 @@ def _get_params(request) -> dict:
     # As a fallback, assume dict-like
     return getattr(request, "params", {}) or {}
 
+
 def _is_datetime_field(qs: QuerySet, field_name: str) -> bool:
     """
     Inspect model meta to decide if field_name is a DateTimeField.
@@ -268,7 +274,8 @@ def _is_datetime_field(qs: QuerySet, field_name: str) -> bool:
         return field.get_internal_type() == "DateTimeField"
     except Exception:
         return False
-    
+
+
 def search_in_emailuser_fields(search_value: str) -> list[int]:
     """
     Search `search_value` in EmailUser fields: email, first_name, last_name, and full name.
@@ -283,48 +290,39 @@ def search_in_emailuser_fields(search_value: str) -> list[int]:
         return []
 
     full_name_expr = Concat(
-        Coalesce('first_name', Value('')),
-        Value(' '),
-        Coalesce('last_name', Value('')),
+        Coalesce("first_name", Value("")),
+        Value(" "),
+        Coalesce("last_name", Value("")),
     )
 
     q = (
-        Q(email__icontains=search_value) |
-        Q(first_name__icontains=search_value) |
-        Q(last_name__icontains=search_value) |
-        Q(full_name__icontains=search_value)  # annotated below
+        Q(email__icontains=search_value)
+        | Q(first_name__icontains=search_value)
+        | Q(last_name__icontains=search_value)
+        | Q(full_name__icontains=search_value)  # annotated below
     )
 
     return list(
-        EmailUser.objects
-        .annotate(full_name=full_name_expr)
+        EmailUser.objects.annotate(full_name=full_name_expr)
         .filter(q)
-        .values_list('id', flat=True)
+        .values_list("id", flat=True)
         .distinct()
     )
+
 
 def search_organisation_properties(search_value, search_abn=False):
 
     if search_abn:
-        q = (
-            Q(property_cache__name__icontains=search_value) |
-            Q(property_cache__abn__icontains=search_value)
+        q = Q(property_cache__name__icontains=search_value) | Q(
+            property_cache__abn__icontains=search_value
         )
     else:
-        q = (
-            Q(property_cache__name__icontains=search_value)
-        )
+        q = Q(property_cache__name__icontains=search_value)
+
+    return list(Organisation.objects.filter(q).values_list("id", flat=True).distinct())
 
 
-    return  list(
-        Organisation.objects
-        .filter(q)
-        .values_list('id', flat=True)
-        .distinct()
-    )
-
-class AssessorDataSearch(object):
-
+class AssessorDataSearch:
     def __init__(self, lookup_field="canBeEditedByAssessor"):
         self.lookup_field = lookup_field
         self.assessor_data = []
@@ -338,7 +336,7 @@ class AssessorDataSearch(object):
         if values:
             for v in values:
                 for k, v in v.items():
-                    parts = k.split("{}-".format(item))
+                    parts = k.split(f"{item}-")
                     if len(parts) > 1:
                         # split parts to see if referall
                         ref_parts = parts[1].split("Referral-")
@@ -412,12 +410,12 @@ class AssessorDataSearch(object):
         self, item_name, item, item_data, post_data, file_data, repetition, suffix
     ):
         item_data_list = []
-        for rep in xrange(0, repetition):
+        for rep in range(repetition):
             child_data = {}
             for child_item in item.get("children"):
                 child_data.update(
                     self.extract_special_fields(
-                        child_item, post_data, file_data, 0, "{}-{}".format(suffix, rep)
+                        child_item, post_data, file_data, 0, f"{suffix}-{rep}"
                     )
                 )
             item_data_list.append(child_data)
@@ -426,8 +424,7 @@ class AssessorDataSearch(object):
         return item_data
 
 
-class CommentDataSearch(object):
-
+class CommentDataSearch:
     def __init__(self, lookup_field="canBeEditedByAssessor"):
         self.lookup_field = lookup_field
         self.comment_data = {}
@@ -441,11 +438,11 @@ class CommentDataSearch(object):
         if values:
             for v in values:
                 for k, v in v.items():
-                    parts = k.split("{}".format(item))
+                    parts = k.split(f"{item}")
                     if len(parts) > 1:
                         ref_parts = parts[1].split("-comment-field")
                         if len(ref_parts) > 1:
-                            res = {"{}".format(item): v}
+                            res = {f"{item}": v}
         return res
 
     def extract_special_fields(self, item, post_data, file_data, repetition, suffix):
@@ -491,12 +488,12 @@ class CommentDataSearch(object):
         self, item_name, item, item_data, post_data, file_data, repetition, suffix
     ):
         item_data_list = []
-        for rep in xrange(0, repetition):
+        for rep in range(repetition):
             child_data = {}
             for child_item in item.get("children"):
                 child_data.update(
                     self.extract_special_fields(
-                        child_item, post_data, file_data, 0, "{}-{}".format(suffix, rep)
+                        child_item, post_data, file_data, 0, f"{suffix}-{rep}"
                     )
                 )
             item_data_list.append(child_data)
@@ -505,8 +502,7 @@ class CommentDataSearch(object):
         return item_data
 
 
-class SpecialFieldsSearch(object):
-
+class SpecialFieldsSearch:
     def __init__(self, lookable_fields):
         self.lookable_fields = lookable_fields
         self.special_fields = {}
@@ -520,7 +516,7 @@ class SpecialFieldsSearch(object):
 
         if "children" not in item:
             for f in self.lookable_fields:
-                if item["type"] in ["checkbox" "declaration"]:
+                if item["type"] in ["checkboxdeclaration"]:
                     val = None
                     val = item.get(f, None)
                     if val:
@@ -569,12 +565,12 @@ class SpecialFieldsSearch(object):
         self, item_name, item, item_data, post_data, file_data, repetition, suffix
     ):
         item_data_list = []
-        for rep in xrange(0, repetition):
+        for rep in range(repetition):
             child_data = {}
             for child_item in item.get("children"):
                 child_data.update(
                     self.extract_special_fields(
-                        child_item, post_data, file_data, 0, "{}-{}".format(suffix, rep)
+                        child_item, post_data, file_data, 0, f"{suffix}-{rep}"
                     )
                 )
             item_data_list.append(child_data)
@@ -617,9 +613,7 @@ def save_park_activity_data(
                 park_id = park.park_id
                 park.delete()
                 instance.log_user_action(
-                    ProposalUserAction.ACTION_UNLINK_PARK.format(
-                        park_id, instance.id
-                    ),
+                    ProposalUserAction.ACTION_UNLINK_PARK.format(park_id, instance.id),
                     request.user,
                 )
         return
@@ -646,7 +640,9 @@ def save_park_activity_data(
                                     proposal_park=park, activity_id=a
                                 )
                                 if ppa.exists():
-                                    logger.info(f"Found activity {ppa.first()} not allowed for this park: {park}. Deleting it from proposal {instance}.")
+                                    logger.info(
+                                        f"Found activity {ppa.first()} not allowed for this park: {park}. Deleting it from proposal {instance}."
+                                    )
                                     ppa.delete()
                         else:
                             try:
@@ -830,7 +826,9 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
         )
         if trail_created:
             instance.log_user_action(
-                ProposalUserAction.ACTION_LINK_TRAIL.format(trail.trail.id, instance.id),
+                ProposalUserAction.ACTION_LINK_TRAIL.format(
+                    trail.trail.id, instance.id
+                ),
                 request.user,
             )
 
@@ -903,9 +901,7 @@ def save_trail_section_activity_data(instance, select_trails_activities, request
                     request.user,
                 )
 
-        existing_section_ids = set(
-            trail.sections.values_list("section_id", flat=True)
-        )
+        existing_section_ids = set(trail.sections.values_list("section_id", flat=True))
         for section_id in existing_section_ids.difference(selected_section_ids):
             ProposalTrailSection.objects.filter(
                 proposal_trail=trail,
@@ -1135,6 +1131,17 @@ def save_park_zone_activity_data(
         )
 
 
+def save_other_details_data(instance, other_details, assessor_save=False):
+    if not assessor_save:
+        return
+    
+    serializer = SaveProposalOtherDetailsSerializer(
+        instance=instance.other_details, data=other_details
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+
 def save_proponent_data(instance, request, viewset, parks=None, trails=None):
     if instance.application_type.name == ApplicationType.FILMING:
         save_proponent_data_filming(instance, request, viewset, parks=None, trails=None)
@@ -1147,10 +1154,10 @@ def save_proponent_data(instance, request, viewset, parks=None, trails=None):
 from commercialoperator.components.main.models import ApplicationType
 from commercialoperator.components.proposals.models import ProposalFilmingOtherDetails
 from commercialoperator.components.proposals.serializers_filming import (
-    ProposalFilmingOtherDetailsSerializer,
-    ProposalFilmingActivitySerializer,
     ProposalFilmingAccessSerializer,
+    ProposalFilmingActivitySerializer,
     ProposalFilmingEquipmentSerializer,
+    ProposalFilmingOtherDetailsSerializer,
 )
 
 
@@ -1162,7 +1169,6 @@ def save_proponent_data_filming(instance, request, viewset, parks=None, trails=N
         schema = request.data.get("schema")
     except:
         schema = request.POST.get("schema")
-    import json
 
     sc = json.loads(schema)
     filming_activity_data = sc["filming_activity"]
@@ -1212,7 +1218,6 @@ def save_proponent_data_event(instance, request, viewset, parks=None, trails=Non
         schema = request.data.get("schema")
     except:
         schema = request.POST.get("schema")
-    import json
 
     sc = json.loads(schema)
     event_activity_data = sc["event_activity"]
@@ -1257,7 +1262,6 @@ def save_proponent_data_event(instance, request, viewset, parks=None, trails=Non
 
     if select_trails_activities or len(select_trails_activities) == 0:
         try:
-
             save_trail_section_activity_data(
                 instance, select_trails_activities, request
             )
@@ -1278,7 +1282,6 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
         schema = request.data.get("schema")
     except:
         schema = request.POST.get("schema")
-    import json
 
     sc = json.loads(schema)
     other_details_data = sc["other_details"]
@@ -1346,9 +1349,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                         )
                     except Exception as e:
                         logger.error(
-                            "An error occurred while updating Accreditations {}".format(
-                                e
-                            )
+                            f"An error occurred while updating Accreditations {e}"
                         )
                 else:
                     serializer = ProposalAccreditationSerializer(data=acc)
@@ -1361,9 +1362,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                 serializer.save()
             else:
                 logger.warning(
-                    "Possible duplicate Accreditation Type for Application {}".format(
-                        instance.lodgement_number
-                    )
+                    f"Possible duplicate Accreditation Type for Application {instance.lodgement_number}"
                 )
     # Save information standards data
     if "information_standards" in other_details_data:
@@ -1395,9 +1394,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                         )
                     except Exception as e:
                         logger.error(
-                            "An error occurred while updating Information Standards {}".format(
-                                e
-                            )
+                            f"An error occurred while updating Information Standards {e}"
                         )
                 else:
                     serializer = ProposalInformationStandardSerializer(data=info)
@@ -1416,9 +1413,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                 serializer.save()
             else:
                 logger.warning(
-                    "Possible duplicate Information Standard Type for Application {}".format(
-                        instance.lodgement_number
-                    )
+                    f"Possible duplicate Information Standard Type for Application {instance.lodgement_number}"
                 )
 
     # Save emission standards data
@@ -1447,9 +1442,7 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                         )
                     except Exception as e:
                         logger.error(
-                            "An error occurred while updating Emission Standards {}".format(
-                                e
-                            )
+                            f"An error occurred while updating Emission Standards {e}"
                         )
                 else:
                     serializer = ProposalEmissionStandardSerializer(data=info)
@@ -1468,13 +1461,10 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
                 serializer.save()
             else:
                 logger.warning(
-                    "Possible duplicate Emission Standard Type for Application {}".format(
-                        instance.lodgement_number
-                    )
+                    f"Possible duplicate Emission Standard Type for Application {instance.lodgement_number}"
                 )
     if select_parks_activities or len(select_parks_activities) == 0:
         try:
-
             save_park_activity_data(instance, select_parks_activities, request)
 
         except:
@@ -1482,7 +1472,6 @@ def save_proponent_data_tclass(instance, request, viewset, parks=None, trails=No
 
     if select_trails_activities or len(select_trails_activities) == 0:
         try:
-
             save_trail_section_activity_data(
                 instance, select_trails_activities, request
             )
@@ -1513,13 +1502,17 @@ def save_assessor_data(instance, request, viewset):
 @transaction.atomic
 def proposal_submit(proposal, request=None):
     if proposal.can_user_edit:
-        if request and request.user and isinstance(request.user,EmailUser):
+        if request and request.user and isinstance(request.user, EmailUser):
             if not proposal.submitter:
-                proposal.submitter = request.user #NOTE: submitter should already be set
+                proposal.submitter = (
+                    request.user
+                )  # NOTE: submitter should already be set
                 proposal.save()
-            #Same org, different submitter
+            # Same org, different submitter
             if proposal.org_applicant:
-                if OrganisationContact.objects.filter(organisation=proposal.org_applicant,email=request.user.email).exists():
+                if OrganisationContact.objects.filter(
+                    organisation=proposal.org_applicant, email=request.user.email
+                ).exists():
                     proposal.submitter = request.user
                     proposal.save()
         proposal.lodgement_date = timezone.now()
@@ -1533,14 +1526,16 @@ def proposal_submit(proposal, request=None):
 
         # Create a log entry for the proposal
         proposal.log_user_action(
-            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), proposal.submitter
+            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id),
+            proposal.submitter,
         )
         # Create a log entry for the organisation
         applicant_field = getattr(proposal, proposal.applicant_field)
         applicant_field.log_user_action(
-            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id), proposal.submitter
+            ProposalUserAction.ACTION_LODGE_APPLICATION.format(proposal.id),
+            proposal.submitter,
         )
-        #NOTE: request=None works fine with these email functions
+        # NOTE: request=None works fine with these email functions
         ret1 = send_submit_email_notification(request, proposal)
         ret2 = send_external_submit_email_notification(request, proposal)
 
@@ -1601,7 +1596,6 @@ def save_assessor_data_filming(instance, request, viewset):
         schema = request.data.get("schema")
     except:
         schema = request.POST.get("schema")
-    import json
 
     sc = json.loads(schema)
     filming_activity_data = sc["filming_activity"]
@@ -1674,7 +1668,6 @@ def save_assessor_data_event(instance, request, viewset):
         schema = request.data.get("schema")
     except:
         schema = request.POST.get("schema")
-    import json
 
     sc = json.loads(schema)
     event_activity_data = sc["event_activity"]
@@ -1717,7 +1710,6 @@ def save_assessor_data_event(instance, request, viewset):
 
     if select_trails_activities or len(select_trails_activities) == 0:
         try:
-
             save_trail_section_activity_data(
                 instance, select_trails_activities, request
             )
@@ -1767,7 +1759,6 @@ def save_assessor_data_tclass(instance, request, viewset):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     # Save activities
-    import json
 
     schema = request.data.get("schema")
     if schema:
@@ -1895,7 +1886,8 @@ def save_assessor_data_tclass(instance, request, viewset):
         marine_parks_activities = json.loads(
             request.data.get("marine_parks_activities")
         )
-    except:
+        other_details = json.loads(request.data.get("other_details"))
+    except json.JSONDecodeError, TypeError, ValueError:
         select_parks_activities = request.POST.get("selected_parks_activities", None)
         if select_parks_activities:
             select_parks_activities = json.loads(select_parks_activities)
@@ -1905,27 +1897,23 @@ def save_assessor_data_tclass(instance, request, viewset):
         marine_parks_activities = request.POST.get("marine_parks_activities", None)
         if marine_parks_activities:
             marine_parks_activities = json.loads(marine_parks_activities)
+        other_details = request.POST.get("other_details", None)
+        if other_details:
+            other_details = json.loads(other_details)
     if select_parks_activities or len(select_parks_activities) == 0:
-        try:
-            save_park_activity_data(
-                instance, select_parks_activities, request, assessor_save
-            )
-        except:
-            raise
+        save_park_activity_data(
+            instance, select_parks_activities, request, assessor_save
+        )
     if select_trails_activities or len(select_trails_activities) == 0:
-        try:
-            save_trail_section_activity_data(
-                instance, select_trails_activities, request
-            )
-        except:
-            raise
+        save_trail_section_activity_data(instance, select_trails_activities, request)
+
     if marine_parks_activities or len(marine_parks_activities) == 0:
-        try:
-            save_park_zone_activity_data(
-                instance, marine_parks_activities, request, assessor_save
-            )
-        except:
-            raise
+        save_park_zone_activity_data(
+            instance, marine_parks_activities, request, assessor_save
+        )
+    if other_details or len(other_details) == 0:
+        save_other_details_data(instance, other_details, assessor_save)
+
     # Save Documents
     for f in request.FILES:
         filename = str(request.FILES[f])
@@ -1940,20 +1928,18 @@ def save_assessor_data_tclass(instance, request, viewset):
     # End Save Documents
 
 
-from commercialoperator.components.proposals.models import (
-    Proposal,
-    Referral,
-    AmendmentRequest,
-    ProposalDeclinedDetails,
-)
-from commercialoperator.components.approvals.models import Approval
-from commercialoperator.components.compliances.models import Compliance
-from commercialoperator.components.bookings.models import ApplicationFee, Booking
-
-from commercialoperator.components.proposals import email as proposal_email
 from commercialoperator.components.approvals import email as approval_email
-from commercialoperator.components.compliances import email as compliance_email
 from commercialoperator.components.bookings import email as booking_email
+from commercialoperator.components.bookings.models import ApplicationFee, Booking
+from commercialoperator.components.compliances import email as compliance_email
+from commercialoperator.components.compliances.models import Compliance
+from commercialoperator.components.proposals import email as proposal_email
+from commercialoperator.components.proposals.models import (
+    AmendmentRequest,
+    Proposal,
+    ProposalDeclinedDetails,
+    Referral,
+)
 
 
 def test_proposal_emails(request):
@@ -2088,32 +2074,27 @@ def get_cached_proposal_submitters(view, queryset=None):
     submitters = cache.get(cache_key)
 
     if submitters is None:
-        
         # 1) Collect unique submitter IDs from the proposals queryset
         submitter_ids = (
-            queryset
-            .filter(submitter__isnull=False)
+            queryset.filter(submitter__isnull=False)
             .distinct()
             .values_list("submitter_id", flat=True)
-            
         )
 
         # 2) Fetch the EmailUser records for those IDs
         users_qs = (
-            EmailUser.objects
-            .filter(id__in=submitter_ids)
-            .order_by("email")               # ordering to match original intent
+            EmailUser.objects.filter(id__in=submitter_ids)
+            .order_by("email")  # ordering to match original intent
             .values("email", "first_name", "last_name")
         )
 
         submitters = [
             {
                 "email": u["email"],
-                "search_term": f'{u["first_name"]} {u["last_name"]} ({u["email"]})',
+                "search_term": f"{u['first_name']} {u['last_name']} ({u['email']})",
             }
             for u in users_qs
         ]
-
 
         cache.set(
             cache_key,
@@ -2123,29 +2104,38 @@ def get_cached_proposal_submitters(view, queryset=None):
 
     return submitters
 
+
 def get_proposal_processing_status():
     return [
-                { "value": 'draft', "name": 'Draft' },
-                { "value": 'with_assessor', "name": 'With Assessor' },
-                { "value": 'on_hold', "name": 'On Hold' },
-                { "value": 'with_qa_officer', "name": 'With QA Officer' },
-                { "value": 'with_referral', "name": 'With Referral' },
-                {"value": 'with_assessor_requirements',"name": 'With Assessor (Requirements)',},
-                { "value": 'with_approver', "name": 'With Approver' },
-                { "value": 'approved', "name": 'Approved' },
-                { "value": 'declined', "name": 'Declined' },
-                { "value": 'discarded', "name": 'Discarded' },
-                { "value": 'awaiting_payment', "name": 'Awaiting Payment' },
-            ]
+        {"value": "draft", "name": "Draft"},
+        {"value": "with_assessor", "name": "With Assessor"},
+        {"value": "on_hold", "name": "On Hold"},
+        {"value": "with_qa_officer", "name": "With QA Officer"},
+        {"value": "with_referral", "name": "With Referral"},
+        {
+            "value": "with_assessor_requirements",
+            "name": "With Assessor (Requirements)",
+        },
+        {"value": "with_approver", "name": "With Approver"},
+        {"value": "approved", "name": "Approved"},
+        {"value": "declined", "name": "Declined"},
+        {"value": "discarded", "name": "Discarded"},
+        {"value": "awaiting_payment", "name": "Awaiting Payment"},
+    ]
+
 
 def get_district_proposal_processing_status():
     return [
-                { "value": 'approved', "name": 'Approved' },
-                { "value": 'declined', "name": 'Declined' },
-                { "value": 'with_approver', "name": 'With Approver' },
-                { "value": 'with_assessor', "name": 'With Assessor' },
-                {"value": 'with_assessor_requirements',"name": 'With Assessor (Requirements)',},   
-            ]
+        {"value": "approved", "name": "Approved"},
+        {"value": "declined", "name": "Declined"},
+        {"value": "with_approver", "name": "With Approver"},
+        {"value": "with_assessor", "name": "With Assessor"},
+        {
+            "value": "with_assessor_requirements",
+            "name": "With Assessor (Requirements)",
+        },
+    ]
+
 
 def get_cached_proposal_processing_status(view, queryset=None):
     if not queryset:
@@ -2184,11 +2174,11 @@ def get_chained_list(
     searchCompliance,
     is_internal=True,
 ):
+    from commercialoperator.components.approvals.models import Approval
+    from commercialoperator.components.compliances.models import Compliance
     from commercialoperator.utils import (
         getChoiceFieldRegex,
     )
-    from commercialoperator.components.approvals.models import Approval
-    from commercialoperator.components.compliances.models import Compliance
 
     application_types = [
         ApplicationType.TCLASS,
@@ -2226,7 +2216,7 @@ def get_chained_list(
         # convert the search words in to two regex values - one for text one for json values
         search_words_regex = "(?:" + "|".join(searchWords) + ")"
         filter_regex = (
-            '.*".*":\s"(\\\\"|[^"])*' + search_words_regex + '(\\\\"|[^"])*".*'
+            '.*".*":\\s"(\\\\"|[^"])*' + search_words_regex + '(\\\\"|[^"])*".*'
         )
 
         # three searchable fields use choices: accreditation, film_type, and film_purpose
@@ -2385,7 +2375,9 @@ def paginate_chained_list(context, request, chained_list, searchWords):
 
     # Fast path: no keyword filtering requested. Paginate DB-backed queryset first.
     if not has_search_words:
-        chained_list_paginated = paginator.paginate_queryset(chained_list, request, context)
+        chained_list_paginated = paginator.paginate_queryset(
+            chained_list, request, context
+        )
 
         for entry in chained_list_paginated:
             if isinstance(entry, Proposal):
@@ -2452,7 +2444,11 @@ def paginate_chained_list(context, request, chained_list, searchWords):
                             "text": "",
                         }
                     ]
-                if has_search_words and not results and matches_search(entry.lodgement_number):
+                if (
+                    has_search_words
+                    and not results
+                    and matches_search(entry.lodgement_number)
+                ):
                     results = [
                         {
                             "number": entry.lodgement_number,
@@ -2491,8 +2487,14 @@ def paginate_chained_list(context, request, chained_list, searchWords):
                 compliance_number_match = matches_search(entry.lodgement_number)
                 approval_number_match = matches_search(entry.approval.lodgement_number)
                 proponent_match = matches_search(entry.proposal.applicant)
-                if has_search_words and not results and (
-                    compliance_number_match or approval_number_match or proponent_match
+                if (
+                    has_search_words
+                    and not results
+                    and (
+                        compliance_number_match
+                        or approval_number_match
+                        or proponent_match
+                    )
                 ):
                     results = [
                         {
@@ -2513,9 +2515,9 @@ def paginate_chained_list(context, request, chained_list, searchWords):
 
     # Apply pagination after secondary filtering so page size and counts stay aligned.
     # DataTables paginator needs count hints on the view when paginating a plain list.
-    setattr(context, "_datatables_filtered_count", len(return_list))
+    context._datatables_filtered_count = len(return_list)
     if not hasattr(context, "_datatables_total_count"):
-        setattr(context, "_datatables_total_count", len(return_list))
+        context._datatables_total_count = len(return_list)
     return paginator.paginate_queryset(return_list, request, context)
 
 

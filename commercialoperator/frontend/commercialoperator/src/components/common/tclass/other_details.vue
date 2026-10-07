@@ -9,10 +9,8 @@
                 subtitle=""
             >
                 <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
-                        <label class="control-label"
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                        <label class="control-label fw-bold mb-3"
                             >Select which tourism accreditation you have
                             achieved and attach a copy of your certificate.
                             <a
@@ -25,7 +23,7 @@
                                 ></a
                             ></label
                         >
-                        <ul class="list-inline">
+                        <ul class="list-inline ms-3">
                             <li
                                 v-for="c in accreditation_choices"
                                 :key="c.key"
@@ -89,30 +87,33 @@
                 subtitle=""
             >
                 <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
-                        <label class=""
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                        <label class="form-label fw-bold mb-3"
                             >Select which provider you have used to complete
                             your assessments and provide a link to your publicly
-                            available information. Click
-                            <a :href="tourism_standards_link" target="_blank"
-                                ><i
-                                    class="fas fa-circle-question"
-                                    style="color: blue"
-                                    >&nbsp;</i
-                                ></a
-                            >
-                            for more information.</label
+                            available information.
+                            <span class="fw-normal"
+                                >Click
+                                <a
+                                    :href="tourism_standards_link"
+                                    target="_blank"
+                                    ><i
+                                        class="fas fa-circle-question"
+                                        style="color: blue"
+                                        >&nbsp;</i
+                                    ></a
+                                >
+                                for more information.</span
+                            ></label
                         >
-                        <label class=""
+                        <label class="form-label fw-bold mb-3"
                             >Accessible Tourism Information Standard</label
                         >
-                        <ul class="list-inline">
+                        <ul class="list-inline ms-3">
                             <li
                                 v-for="c in information_standard_choices"
-                                class="form-check list-inline-item"
                                 :key="c.key"
+                                class="form-check list-inline-item"
                             >
                                 <input  
                                     class="form-check-input" 
@@ -132,14 +133,14 @@
                                 <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="information_standard" :ref="information_standard.information_standard_type" :canEditActivities="canEditAssessorOtherDetails"></InformationStandard >
                             </div>
                         </div>
-                        <label class="control-label"
+                        <label class="form-label fw-bold mb-3"
                             >Tourism Emissions Reduction Standard</label
                         >
-                        <ul class="list-inline">
+                        <ul class="list-inline ms-3">
                             <li
                                 v-for="c in emission_standard_choices"
-                                class="form-check list-inline-item"
                                 :key="c.key"
+                                class="form-check list-inline-item"
                             >
                                 <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" :checked="selected_emission_standards.includes(c.key)" :value="c.key" data-parsley-required :disabled="!canEditAssessorOtherDetails" />
                                         {{ c.value }}
@@ -161,99 +162,122 @@
                 index="licence_term"
                 subtitle=""
             >
-                <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
-                        <div class="form-group">
-                            <div class="row">
-                                <div class="col-sm-3">
-                                    <label
-                                        class="control-label pull-left"
-                                        for="Name"
-                                        >Preferred licence term</label
-                                    >
-                                </div>
-                                <div
-                                    class="col-sm-9"
-                                    style="
-                                        margin-bottom: 5px;
-                                        width: 53% !important;
-                                    "
+                <div class="row mb-3">
+                    <div class="col-sm-3">
+                        <label class="control-label pull-left" for="Name"
+                            >Preferred licence term</label
+                        >
+                    </div>
+                    <div class="col-sm-3">
+                        <select
+                            ref="preferred_licence_period"
+                            v-model="
+                                proposal.other_details.preferred_licence_period
+                            "
+                            class="form-control"
+                            :disabled="!canEditLicenceTerm"
+                        >
+                            <option
+                                v-for="l in licence_period_choices"
+                                :key="l.key"
+                                :value="l.key"
+                            >
+                                {{ l.value }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <template v-if="canEditLicenceTerm && licenceTermChanged">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                style="display: none"
+                            >
+                                <symbol
+                                    id="exclamation-triangle-fill"
+                                    fill="currentColor"
+                                    viewBox="0 0 16 16"
                                 >
-                                    <select
-                                        ref="preferred_licence_period"
-                                        v-model="
-                                            proposal.other_details
-                                                .preferred_licence_period
-                                        "
-                                        class="form-control"
-                                        :disabled="
-                                            proposal.readonly ||
-                                            proposal.pending_amendment_request ||
-                                            proposal.is_amendment_proposal
-                                        "
-                                    >
-                                        <option
-                                            v-for="l in licence_period_choices"
-                                            :key="l.key"
-                                            :value="l.key"
-                                        >
-                                            {{ l.value }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-3">
-                                    <label
-                                        class="control-label pull-left"
-                                        for="Name"
-                                        >Nominated start date</label
-                                    >
-                                </div>
-                                <div class="col-sm-9">
-                                    <div
-                                        ref="nominated_start_date"
-                                        class="input-group date"
-                                        style="width: 70%"
-                                    >
-                                        <input
-                                            v-model="
-                                                proposal.other_details
-                                                    .nominated_start_date
-                                            "
-                                            type="date"
-                                            class="form-control"
-                                            name="nominated_start_date"
-                                            max="2999-12-31"
-                                            placeholder="DD/MM/YYYY"
-                                            required
-                                            :disabled="
-                                                proposal.readonly ||
-                                                proposal.pending_amendment_request ||
-                                                proposal.is_amendment_proposal
-                                            "
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">&nbsp;</div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    Application and licence fee information
-                                    <a
-                                        href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees"
-                                        target="_blank"
-                                        ><i
-                                            class="fas fa-circle-question"
-                                            style="color: blue"
-                                            >&nbsp;</i
-                                        ></a
-                                    >
+                                    <path
+                                        d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"
+                                    />
+                                </symbol>
+                            </svg>
+                            <div
+                                class="alert alert-warning d-flex align-items-center py-3 m-0"
+                                role="alert"
+                            >
+                                <svg
+                                    class="bi flex-shrink-0 me-3"
+                                    width="24"
+                                    height="24"
+                                    role="img"
+                                    aria-label="Warning:"
+                                >
+                                    <use
+                                        xlink:href="#exclamation-triangle-fill"
+                                    />
+                                </svg>
+                                <div>
+                                    <p class="mb-1">
+                                        Where a change in licence term results
+                                        in additional licence charges being
+                                        payable, these charges should be
+                                        processed manually outside the system.
+                                    </p>
+                                    <p class="mb-0">
+                                        Please record the payment receipt
+                                        recorded in the communications log.
+                                    </p>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </template>
+                <div class="row mb-3 border-bottom pb-3">
+                    <div class="col-sm-3">
+                        <label class="control-label pull-left" for="Name"
+                            >Nominated start date</label
+                        >
+                    </div>
+                    <div class="col-sm-3">
+                        <div
+                            ref="nominated_start_date"
+                            class="input-group date"
+                        >
+                            <input
+                                v-model="
+                                    proposal.other_details.nominated_start_date
+                                "
+                                type="date"
+                                class="form-control"
+                                name="nominated_start_date"
+                                max="2999-12-31"
+                                placeholder="DD/MM/YYYY"
+                                required
+                                :disabled="
+                                    proposal.readonly ||
+                                    proposal.pending_amendment_request ||
+                                    proposal.is_amendment_proposal
+                                "
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        Application and licence fee information
+                        <a
+                            href="https://parks.dpaw.wa.gov.au/for-business/training-accreditation-insurance-fees"
+                            target="_blank"
+                            ><i
+                                class="fas fa-circle-question"
+                                style="color: blue"
+                                >&nbsp;</i
+                            ></a
+                        >
                     </div>
                 </div>
             </FormSection>
@@ -265,68 +289,48 @@
                 index="moorings"
                 subtitle="(marine-based activities)"
             >
-                <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
-                        <div class="form-group">
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <label
-                                        >Provide the mooring number or GPS
-                                        coordinates for any mooring within a
-                                        marine reserve your operation will
-                                        use.</label
-                                    >
-                                </div>
-                            </div>
-                            <div
-                                v-for="(m, index) in proposal.other_details
-                                    .mooring"
-                                :key="index"
-                                class="row"
-                            >
-                                <div class="col-sm-3">
-                                    <label
-                                        class="control-label pull-left"
-                                        for="Name"
-                                        >Mooring number or GPS
-                                        coordinates</label
-                                    >
-                                </div>
-                                <div
-                                    class="col-sm-9"
-                                    style="margin-bottom: 5px"
-                                >
-                                    <input
-                                        v-model="
-                                            proposal.other_details.mooring[
-                                                index
-                                            ]
-                                        "
-                                        type="text"
-                                        class="form-control"
-                                        name="Mooring number"
-                                        placeholder=""
-                                        :disabled="proposal.readonly"
-                                    />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <span
-                                        ><a
-                                            v-if="!proposal.readonly"
-                                            target="_blank"
-                                            class="control-label pull-left"
-                                            style="cursor: pointer"
-                                            @click="addMooring()"
-                                            >Add another mooring</a
-                                        ></span
-                                    >
-                                </div>
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label class="form-label fw-bold mb-3"
+                            >Provide the mooring number or GPS coordinates for
+                            any mooring within a marine reserve your operation
+                            will use.</label
+                        >
+                    </div>
+                </div>
+                <div
+                    v-for="(m, index) in proposal.other_details.mooring"
+                    :key="index"
+                    class="row"
+                >
+                    <div class="col-sm-5">
+                        <label class="control-label pull-left" for="Name"
+                            >Mooring number or GPS coordinates</label
+                        >
+                    </div>
+                    <div class="col-sm-7">
+                        <input
+                            v-model="proposal.other_details.mooring[index]"
+                            type="text"
+                            class="form-control"
+                            name="Mooring number"
+                            placeholder=""
+                            :disabled="proposal.readonly"
+                        />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <span
+                            ><a
+                                v-if="!proposal.readonly"
+                                target="_blank"
+                                class="control-label pull-left"
+                                style="cursor: pointer"
+                                @click="addMooring()"
+                                >Add another mooring</a
+                            ></span
+                        >
                     </div>
                 </div>
             </FormSection>
@@ -339,15 +343,13 @@
                 subtitle=""
             >
                 <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <label>
                                         <ol type="a">
-                                            <li>
+                                            <li class="mb-3">
                                                 Attach your policy for public
                                                 liability insurance that covers
                                                 the areas and operations allowed
@@ -376,7 +378,7 @@
                                         >Certificate of currency
                                     </label>
                                 </div>
-                                <div class="col-sm-3">
+                                <div class="col-sm-9">
                                     <FileField
                                         :id="'proposal' + proposal.id"
                                         ref="currency_doc"
@@ -386,6 +388,8 @@
                                         :readonly="!canEditActivities"
                                     ></FileField>
                                 </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-sm-3">
                                     <label
                                         class="control-label pull-left"
@@ -428,27 +432,25 @@
                 subtitle=""
             >
                 <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
                         <div class="form-group">
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-12">
-                                    <label
+                                    <label class="form-label fw-bold mb-3"
                                         >Provide information to support your
                                         application. This may include brochures,
                                         itineraries or other advertising
                                         material.</label
                                     >
-                                    <label
-                                        >If you would like to apply for a park
+                                    <label class="small"
+                                        >* If you would like to apply for a park
                                         or activity that is not listed in the
                                         previous sections, please include
                                         details.</label
                                     >
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row mb-3">
                                 <div class="col-sm-12">
                                     <textarea
                                         v-model="
@@ -457,6 +459,7 @@
                                         "
                                         class="form-control"
                                         :disabled="proposal.readonly"
+                                        rows="7"
                                     ></textarea>
                                 </div>
                             </div>
@@ -484,11 +487,9 @@
                 subtitle=""
             >
                 <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
-                        <div class="row">
-                            <div class="col-sm-6">
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
+                        <div class="row mb-3">
+                            <div class="col-sm-8">
                                 <label
                                     class="control-label pull-left"
                                     for="Name"
@@ -496,7 +497,7 @@
                                     payment of fees</label
                                 >
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <label>
                                     <input
                                         ref="credit_fees_yes"
@@ -510,7 +511,7 @@
                                     />Yes
                                 </label>
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <label>
                                     <input
                                         v-model="
@@ -523,21 +524,24 @@
                                     />No
                                 </label>
                             </div>
-                            <div id="show_credit_link" class="hidden">
-                                <div class="col-sm-6"></div>
-                                <div class="col-sm-6">
-                                    <label class=""
-                                        ><a
-                                            :href="credit_facility_link"
-                                            target="_blank"
-                                            >Link</a
-                                        ></label
-                                    >
-                                </div>
+                        </div>
+                        <div id="show_credit_link" class="row mb-3 hidden">
+                            <div class="col">
+                                <label class=""
+                                    ><a
+                                        class="me-2"
+                                        :href="credit_facility_link"
+                                        target="_blank"
+                                        >Credit Card Facility Information
+                                        Link</a
+                                    ><i
+                                        class="bi bi-arrow-up-right-square me-2"
+                                    ></i
+                                ></label>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-6">
+                        <div class="row mb-3">
+                            <div class="col-sm-8">
                                 <label
                                     class="control-label pull-left"
                                     for="Name"
@@ -545,7 +549,7 @@
                                     books?</label
                                 >
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <label>
                                     <input
                                         ref="docket_books_yes"
@@ -560,7 +564,7 @@
                                     />Yes
                                 </label>
                             </div>
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <label>
                                     <input
                                         v-model="
@@ -577,14 +581,14 @@
                         </div>
                         <div>
                             <div id="show_docket" class="hidden">
-                                <div class="col-sm-6">
+                                <div class="col-sm-8">
                                     <label
                                         class="control-label pull-left"
                                         for="Name"
                                         >Number of docket books</label
                                     >
                                 </div>
-                                <div class="col-sm-6">
+                                <div class="col-sm-4">
                                     <input
                                         v-model="
                                             proposal.other_details
@@ -599,12 +603,20 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-sm-12">
                                 <label
-                                    >Did you know you can use this system to pay
-                                    park entry fees? Click on the Park Entry
-                                    Fees page above.</label
+                                    >Did you know you can use this system to
+                                    <a
+                                        class="me-2"
+                                        href="/external/payment"
+                                        target="_blank"
+                                        >pay park entry fees</a
+                                    >
+                                    <i
+                                        class="bi bi-arrow-up-right-square me-2"
+                                    ></i
+                                    >?</label
                                 >
                             </div>
                         </div>
@@ -620,26 +632,26 @@
                 subtitle=""
             >
                 <div class="">
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
+                    <div class="form-horizontal col-sm-12 border rounded p-3">
                         <div class="form-group">
                             <div class="row">
                                 <div class="col-sm-12">
-                                    <label
+                                    <label class="form-label fw-bold mb-3"
                                         >It is a requirement of all commercial
                                         operations licence holders to sign a
                                         Deed Poll to release and indemnify the
                                         State of Western Australia.</label
                                     >
-                                    <label
+                                    <label class="form-label fw-bold mb-3"
                                         >Please note: Electronic signatures
                                         cannot be accepted. This includes images
                                         of handwritten signatures pasted into
                                         the document, or signatures typed into a
                                         text box.
                                     </label>
-                                    <label v-if="deed_poll_url"
+                                    <label
+                                        v-if="deed_poll_url"
+                                        class="form-label fw-bold mb-3"
                                         >Click
                                         <a :href="deed_poll_url" target="_blank"
                                             >here</a
@@ -651,7 +663,9 @@
                                         and dated, please attach the Deed Poll
                                         document below.</label
                                     >
-                                    <label v-else
+                                    <label
+                                        v-else
+                                        class="form-label fw-bold mb-3"
                                         >Please click here to download the Deed
                                         Poll. The Deed Poll must be printed,
                                         signed in the correct section, be dated
@@ -729,6 +743,8 @@ export default {
             licence_period_choices: [],
             mooring: [''],
             global_settings: [],
+            originalLicenceTerm: null,
+            licenceTermChanged: false,
         };
     },
     computed: {
@@ -776,6 +792,14 @@ export default {
             }
             return '';
         },
+        canEditLicenceTerm: function () {
+            return (
+                !this.proposal.readonly ||
+                !this.proposal.pending_amendment_request ||
+                !this.proposal.is_amendment_proposal ||
+                this.proposal.can_edit_licence_term
+            );
+        },
     },
     watch: {
         accreditation_type: {
@@ -785,6 +809,17 @@ export default {
                     this.accreditation_type.key;
             },
             deep: true,
+        },
+        // 2. Wrap the deep nested path in strings to tell Vue exactly what to watch
+        'proposal.other_details.preferred_licence_period': {
+            handler(newVal, oldVal) {
+                if (!this.proposal?.other_details) return;
+
+                if (oldVal === undefined) {
+                    return;
+                }
+                this.licenceTermChanged = this.originalLicenceTerm != newVal;
+            },
         },
     },
     mounted: function () {
@@ -807,6 +842,8 @@ export default {
                 'insurance_expiry'
             );
         });
+        vm.originalLicenceTerm =
+            vm.proposal.other_details.preferred_licence_period;
     },
     methods: {
         handleRadioChange: function (e) {
@@ -1282,18 +1319,6 @@ export default {
 </script>
 
 <style lang="css" scoped>
-fieldset.scheduler-border {
-    border: 1px groove #ddd !important;
-    padding: 0 1.4em 1.4em 1.4em !important;
-    margin: 0 0 1.5em 0 !important;
-    -webkit-box-shadow: 0px 0px 0px 0px #000;
-    box-shadow: 0px 0px 0px 0px #000;
-}
-legend.scheduler-border {
-    width: inherit; /* Or auto */
-    padding: 0 10px; /* To give a bit of padding on the left and right */
-    border-bottom: none;
-}
 .hidden {
     display: none;
 }
