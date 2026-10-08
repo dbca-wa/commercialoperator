@@ -8,10 +8,6 @@
                 subtitle=""
             >
                 <div
-                    v-if="proposal.applicant_training_completed"
-                    class="form-horizontal col-sm-12"
-                >
-                <div
                         v-if="proposal.applicant_training_completed"
                         class="form-horizontal col-sm-12"
                     >
@@ -54,6 +50,13 @@
                                     >Complete the questionnaire below.
                                     The Commercial Event Training Program with information to help you can be downloaded here.</label
                                 >
+                                <div class="row mt-3">
+                                    <form>
+                                        <ul
+                                            v-for="q in questions"
+                                            :key="q.id"
+                                            class="list-unstyled col-sm-12"
+                                        >
                                     <li class="row">
                                         <div class="col-sm-6">
                                             <label
@@ -184,9 +187,10 @@
                                                 }}</label>
                                             </li>
                                         </ul>
-                                    </li>
-                                </ul>
-                            </form>
+                                        </li>
+                                        </ul>
+                                    </form>
+                                </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-sm-12">

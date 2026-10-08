@@ -373,7 +373,13 @@ class ProposalEventsTrailsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelM
             proposal = Proposal.objects.get(id=json.loads(request.data.get("data"))["proposal"])
             if not proposal or not user_can_edit(request, proposal):
                 raise PermissionDenied
-            
+            # check if the trail already exists for this proposal
+            existing_trail = ProposalEventsTrails.objects.filter(
+                proposal=proposal,
+                trail=json.loads(request.data.get("data")).get("trail")
+            ).first()
+            if existing_trail:
+                raise serializers.ValidationError("A trail with this name already exists for this proposal.")
             serializer = SaveProposalEventsTrailsSerializer(
                 data=json.loads(request.data.get("data"))
             )

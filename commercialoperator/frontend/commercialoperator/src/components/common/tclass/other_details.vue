@@ -29,50 +29,39 @@
                                 :key="c.key"
                                 class="form-check list-inline-item"
                             >
-                            <ul class="list-inline">
-                                <li
-                                    v-for="c in accreditation_choices"
-                                    :key="c.key"
-                                    class="form-check list-inline-item"
-                                >
-                                    <input
-                                        ref="Checkbox"
-                                        class="form-check-input"
-                                        type="checkbox"
-                                        :value="c.key"
-                                        data-parsley-required
-                                        :disabled="!canEditAssessorOtherDetails"
-                                        @click="selectAccreditation($event, c)"
-                                        :checked="selected_accreditations.includes(c.key)"
-                                    />
-                                    {{ c.value }}
-                                </li>
-                            </ul>
+                                <input
+                                    ref="Checkbox"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="c.key"
+                                    data-parsley-required
+                                    :disabled="!canEditAssessorOtherDetails"
+                                    @click="selectAccreditation($event, c)"
+                                    :checked="selected_accreditations.includes(c.key)"
+                                />
+                                {{ c.value }}
+                            </li>
+                        </ul>
+                        <div
+                            v-for="accreditation in proposal.other_details.accreditations"
+                            :key="accreditation.id || accreditation.accreditation_type"
+                            class="col-sm-12"
+                        >
                             <div
                                 v-if="
                                     !accreditation.is_deleted &&
                                     accreditation.accreditation_type != 'no' &&
                                     accreditation.accreditation_type != 'narta'
                                 "
-                                class="col-sm-12"
                             >
-                                <div
-                                    v-if="
-                                        !accreditation.is_deleted &&
-                                        accreditation.accreditation_type != 'no' &&
-                                        accreditation.accreditation_type != 'narta'
-                                    "
-                                    class="col-sm-12"
-                                >
-                                    <Accreditation
-                                        id="accreditation"
-                                        :ref="accreditation.accreditation_type"
-                                        :accreditation="accreditation"
-                                        :proposal_id="proposal.id"
-                                        :readonly="!canEditAssessorOtherDetails"
-                                        :can-edit-activities="canEditAssessorOtherDetails"
-                                    ></Accreditation>
-                                </div>
+                                <Accreditation
+                                    id="accreditation"
+                                    :ref="accreditation.accreditation_type"
+                                    :accreditation="accreditation"
+                                    :proposal_id="proposal.id"
+                                    :readonly="!canEditAssessorOtherDetails"
+                                    :can-edit-activities="canEditAssessorOtherDetails"
+                                ></Accreditation>
                             </div>
                         </div>
                     </div>
@@ -1123,39 +1112,39 @@ export default {
                 );
             }
         },
-        selectInformationStandard: function(e, info_standard_type){
-                let vm=this;
-                if(e.target.checked){
-                    var found=false;
-                    for(var i=0;i<vm.proposal.other_details.information_standards.length; i++){
-                        if(vm.proposal.other_details.information_standards[i].information_standard_type==info_standard_type.key){
-                            found=true;
-                            vm.proposal.other_details.information_standards[i].is_deleted=false;
-                        }
-                    }
-                    if(found==false){
-                    var data={
-                        'information_standard_type': info_standard_type.key,
-                        'information_comments':'',
-                        'proposal_other_details': vm.proposal.other_details.id,
-                        'is_deleted': false,
-                        'information_standard_type_value': info_standard_type.value
+        selectInformationStandard: function (e, info_standard_type) {
+            let vm = this;
+            if (e.target.checked) {
+                let found = false;
+                for (
+                    let i = 0;
+                    i < vm.proposal.other_details.information_standards.length;
+                    i++
+                ) {
+                    if (
+                        vm.proposal.other_details.information_standards[i]
+                            .information_standard_type == info_standard_type.key
+                    ) {
+                        found = true;
+                        vm.proposal.other_details.information_standards[
+                            i
+                        ].is_deleted = false;
                     }
                 }
-                if (found == false) {
-                    var data = {
+                if (!found) {
+                    const data = {
                         information_standard_type: info_standard_type.key,
-                        comments: '',
+                        information_comments: '',
                         proposal_other_details: vm.proposal.other_details.id,
                         is_deleted: false,
                         information_standard_type_value:
                             info_standard_type.value,
                     };
-                    var acc = helpers.copyObject(
+                    const standards = helpers.copyObject(
                         vm.proposal.other_details.information_standards
                     );
-                    acc.push(data);
-                    vm.proposal.other_details.information_standards = acc;
+                    standards.push(data);
+                    vm.proposal.other_details.information_standards = standards;
                 }
                 if (
                     !vm.selected_information_standards.includes(
@@ -1168,7 +1157,7 @@ export default {
                 }
             } else {
                 for (
-                    var i = 0;
+                    let i = 0;
                     i < vm.proposal.other_details.information_standards.length;
                     i++
                 ) {
@@ -1180,20 +1169,19 @@ export default {
                             vm.proposal.other_details.information_standards[i]
                                 .id
                         ) {
-                            //console.log('yes')
-                            var acc = helpers.copyObject(
+                            const standards = helpers.copyObject(
                                 vm.proposal.other_details.information_standards
                             );
-                            acc[i].is_deleted = true;
+                            standards[i].is_deleted = true;
                             vm.proposal.other_details.information_standards =
-                                acc;
+                                standards;
                         } else {
-                            var acc = helpers.copyObject(
+                            const standards = helpers.copyObject(
                                 vm.proposal.other_details.information_standards
                             );
-                            acc.splice(i, 1);
+                            standards.splice(i, 1);
                             vm.proposal.other_details.information_standards =
-                                acc;
+                                standards;
                         }
                     }
                 }
@@ -1201,49 +1189,42 @@ export default {
                     vm.selected_information_standards.filter(
                         (item) => item !== info_standard_type.key
                     );
-                }
-            },
-            selectEmissionStandard: function(e, emission_standard_type){
-                    let vm=this;
-                    if(e.target.checked){
-                        var found=false;
-                        for(var i=0;i<vm.proposal.other_details.emission_standards.length; i++){
-                            if(vm.proposal.other_details.emission_standards[i].emission_standard_type==emission_standard_type.key){
-                                found=true;
-                                vm.proposal.other_details.emission_standards[i].is_deleted=false;
-                            }
-                        }
-                        if(found==false){
-                        var data={
-                            'emission_standard_type': emission_standard_type.key,
-                            'emission_comments':'',
-                            'proposal_other_details': vm.proposal.other_details.id,
-                            'is_deleted': false,
-                            'emission_standard_type_value': emission_standard_type.value
-                        }
-                        var acc=helpers.copyObject(vm.proposal.other_details.emission_standards);
-                        acc.push(data);
-                        vm.proposal.other_details.emission_standards=acc;
-                        }
-                        if(!vm.selected_emission_standards.includes(emission_standard_type.key)){
-                            vm.selected_emission_standards.push(emission_standard_type.key);
-                        }
+            }
+        },
+        selectEmissionStandard: function (e, emission_standard_type) {
+            let vm = this;
+            if (e.target.checked) {
+                let found = false;
+                for (
+                    let i = 0;
+                    i < vm.proposal.other_details.emission_standards.length;
+                    i++
+                ) {
+                    if (
+                        vm.proposal.other_details.emission_standards[i]
+                            .emission_standard_type ==
+                        emission_standard_type.key
+                    ) {
+                        found = true;
+                        vm.proposal.other_details.emission_standards[
+                            i
+                        ].is_deleted = false;
                     }
                 }
-                if (found == false) {
-                    var data = {
+                if (!found) {
+                    const data = {
                         emission_standard_type: emission_standard_type.key,
-                        comments: '',
+                        emission_comments: '',
                         proposal_other_details: vm.proposal.other_details.id,
                         is_deleted: false,
                         emission_standard_type_value:
                             emission_standard_type.value,
                     };
-                    var acc = helpers.copyObject(
+                    const standards = helpers.copyObject(
                         vm.proposal.other_details.emission_standards
                     );
-                    acc.push(data);
-                    vm.proposal.other_details.emission_standards = acc;
+                    standards.push(data);
+                    vm.proposal.other_details.emission_standards = standards;
                 }
                 if (
                     !vm.selected_emission_standards.includes(
@@ -1256,7 +1237,7 @@ export default {
                 }
             } else {
                 for (
-                    var i = 0;
+                    let i = 0;
                     i < vm.proposal.other_details.emission_standards.length;
                     i++
                 ) {
@@ -1268,18 +1249,19 @@ export default {
                         if (
                             vm.proposal.other_details.emission_standards[i].id
                         ) {
-                            //console.log('yes')
-                            var acc = helpers.copyObject(
+                            const standards = helpers.copyObject(
                                 vm.proposal.other_details.emission_standards
                             );
-                            acc[i].is_deleted = true;
-                            vm.proposal.other_details.emission_standards = acc;
+                            standards[i].is_deleted = true;
+                            vm.proposal.other_details.emission_standards =
+                                standards;
                         } else {
-                            var acc = helpers.copyObject(
+                            const standards = helpers.copyObject(
                                 vm.proposal.other_details.emission_standards
                             );
-                            acc.splice(i, 1);
-                            vm.proposal.other_details.emission_standards = acc;
+                            standards.splice(i, 1);
+                            vm.proposal.other_details.emission_standards =
+                                standards;
                         }
                     }
                 }
