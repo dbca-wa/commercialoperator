@@ -8,6 +8,7 @@ from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.managed_models import SystemGroup
 
 from commercialoperator import helpers
+from commercialoperator.admin_permissions import AdminGroupPermissionMixin
 
 admin.site.index_template = "admin-index.html"
 admin.site.site_header = "Commercial Operator Admin"
@@ -15,7 +16,7 @@ admin.autodiscover()
 
 
 @admin.register(EmailUser)
-class EmailUserAdmin(admin.ModelAdmin):
+class EmailUserAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = (
         "email",
         "first_name",
@@ -40,7 +41,7 @@ class EmailUserAdmin(admin.ModelAdmin):
         return False
 
 
-class CustomSystemGroupAdmin(SystemGroupAdmin):
+class CustomSystemGroupAdmin(AdminGroupPermissionMixin, SystemGroupAdmin):
     """
     Overriding the SystemGroupAdmin from ledger.accounts.admin, to remove ledger_permissions
     selection field for DjangoAdmin SystemGroup on Admin page

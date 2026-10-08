@@ -1,5 +1,6 @@
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.admin_permissions import AdminGroupPermissionMixin
 from commercialoperator.components.proposals import models
 from commercialoperator.components.bookings.models import (
     ApplicationFee,
@@ -36,25 +37,25 @@ from commercialoperator.components.segregation.models import (
 )
 # Commented since COLS does not use schema - so will not require direct editing by user in Admin (although a ProposalType is still required for ApplicationType)
 # @admin.register(models.ProposalType)
-class ProposalTypeAdmin(admin.ModelAdmin):
+class ProposalTypeAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "description", "version"]
     ordering = ("name", "-version")
     list_filter = ("name",)
     # exclude=("site",)
 
 
-class ProposalDocumentInline(admin.TabularInline):
+class ProposalDocumentInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = models.ProposalDocument
     extra = 0
 
 
 @admin.register(models.AmendmentReason)
-class AmendmentReasonAdmin(admin.ModelAdmin):
+class AmendmentReasonAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["reason"]
 
 
 @admin.register(models.Proposal)
-class ProposalAdmin(VersionAdmin):
+class ProposalAdmin(AdminGroupPermissionMixin, VersionAdmin):
     raw_id_fields = (
         "submitter",
         "org_applicant",
@@ -70,7 +71,7 @@ class ProposalAdmin(VersionAdmin):
     search_fields = ["id", "lodgement_number", "processing_status"]
 
 
-class ProposalAssessorGroupMembersInline(admin.TabularInline):
+class ProposalAssessorGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = ProposalAssessorGroupMembers
     extra = 0
     #can_delete = False
@@ -80,7 +81,7 @@ class ProposalAssessorGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.ProposalAssessorGroup)
-class ProposalAssessorGroupAdmin(admin.ModelAdmin):
+class ProposalAssessorGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "default"]
     form = forms.ProposalAssessorGroupAdminForm
     readonly_fields = [
@@ -116,7 +117,7 @@ class ProposalAssessorGroupAdmin(admin.ModelAdmin):
         return super(ProposalAssessorGroupAdmin, self).has_add_permission(request)
 
 
-class ProposalApproverGroupMembersInline(admin.TabularInline):
+class ProposalApproverGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = ProposalApproverGroupMembers
     extra = 0
     #can_delete = False
@@ -126,7 +127,7 @@ class ProposalApproverGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.ProposalApproverGroup)
-class ProposalApproverGroupAdmin(admin.ModelAdmin):
+class ProposalApproverGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "default"]
     form = forms.ProposalApproverGroupAdminForm
 
@@ -160,7 +161,7 @@ class ProposalApproverGroupAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.ProposalStandardRequirement)
-class ProposalStandardRequirementAdmin(admin.ModelAdmin):
+class ProposalStandardRequirementAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         "code",
         "text",
@@ -172,7 +173,7 @@ class ProposalStandardRequirementAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.ChecklistQuestion)
-class ChecklistQuestionAdmin(admin.ModelAdmin):
+class ChecklistQuestionAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         "text",
         "application_type",
@@ -185,7 +186,7 @@ class ChecklistQuestionAdmin(admin.ModelAdmin):
 
 
 @admin.register(SystemMaintenance)
-class SystemMaintenanceAdmin(admin.ModelAdmin):
+class SystemMaintenanceAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "description", "start_date", "end_date", "duration"]
     ordering = ("start_date",)
     readonly_fields = ("duration",)
@@ -193,7 +194,7 @@ class SystemMaintenanceAdmin(admin.ModelAdmin):
 
 
 @admin.register(ApplicationType)
-class ApplicationTypeAdmin(admin.ModelAdmin):
+class ApplicationTypeAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         "name",
         "order",
@@ -275,7 +276,7 @@ class ApplicationTypeAdmin(admin.ModelAdmin):
 #            return ['visible']
 
 
-class NotificationMonthInline(admin.TabularInline):
+class NotificationMonthInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = NotificationMonth
     extra = 0
     max_num = 12
@@ -283,7 +284,7 @@ class NotificationMonthInline(admin.TabularInline):
 
 
 @admin.register(LicencePeriod)
-class LicencePeriodAdmin(admin.ModelAdmin):
+class LicencePeriodAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     inlines = [
         NotificationMonthInline,
     ]
@@ -293,7 +294,7 @@ class LicencePeriodAdmin(admin.ModelAdmin):
         return list(obj.notification_months_tolist)
 
 
-class OracleCodeInline(admin.TabularInline):
+class OracleCodeInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = OracleCode
     exclude = ["archive_date"]
     extra = 3
@@ -302,7 +303,7 @@ class OracleCodeInline(admin.TabularInline):
 
 
 @admin.register(Park)
-class ParkAdmin(admin.ModelAdmin):
+class ParkAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     inlines = [
         OracleCodeInline,
     ]
@@ -313,34 +314,34 @@ class ParkAdmin(admin.ModelAdmin):
 
 
 @admin.register(Trail)
-class TrailAdmin(admin.ModelAdmin):
+class TrailAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "code"]
     filter_horizontal = ("allowed_activities",)
     ordering = ("name",)
 
 
 @admin.register(Section)
-class SectionAdmin(admin.ModelAdmin):
+class SectionAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "visible", "trail", "doc_url"]
     ordering = ("name",)
 
 
 @admin.register(Zone)
-class ZoneAdmin(admin.ModelAdmin):
+class ZoneAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "visible", "park"]
     filter_horizontal = ("allowed_activities",)
     ordering = ("name",)
 
 
 @admin.register(models.Vehicle)
-class VehicleAdmin(admin.ModelAdmin):
+class VehicleAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["access_type", "capacity", "rego", "license", "rego_expiry"]
     search_fields = ["access_type__name", "rego", "license"]
     ordering = ("access_type",)
 
 
 @admin.register(models.Vessel)
-class VesselAdmin(admin.ModelAdmin):
+class VesselAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         "nominated_vessel",
         "spv_no",
@@ -360,37 +361,37 @@ class VesselAdmin(admin.ModelAdmin):
 
 
 @admin.register(RequiredDocument)
-class RequiredDocumentAdmin(admin.ModelAdmin):
+class RequiredDocumentAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["park", "activity", "question"]
     # filter_horizontal = ('allowed_activities',)
     # ordering = ('name',)
 
 
 @admin.register(ActivityCategory)
-class ActivityCategory(admin.ModelAdmin):
+class ActivityCategory(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "visible", "activity_type"]
     ordering = ("name",)
 
 
 @admin.register(Activity)
-class Activity(admin.ModelAdmin):
+class Activity(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "visible", "activity_category"]
     ordering = ("name",)
 
 
 @admin.register(AccessType)
-class VehicleAdmin(admin.ModelAdmin):
+class VehicleAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["id", "name", "visible"]
     ordering = ("id",)
 
 
 @admin.register(GlobalSettings)
-class GlobalSettingsAdmin(admin.ModelAdmin):
+class GlobalSettingsAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["key", "value"]
     ordering = ("key",)
 
 
-class ReferralRecipientGroupMembersInline(admin.TabularInline):
+class ReferralRecipientGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = ReferralRecipientGroupMembers
     extra = 0
     #can_delete = False
@@ -400,7 +401,7 @@ class ReferralRecipientGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.ReferralRecipientGroup)
-class ReferralRecipientGroupAdmin(admin.ModelAdmin):
+class ReferralRecipientGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     filter_horizontal = ("members",)
     list_display = ["name"]
     exclude = ("site",)
@@ -419,7 +420,7 @@ class ReferralRecipientGroupAdmin(admin.ModelAdmin):
         )
 
 
-class QAOfficerGroupMembersInline(admin.TabularInline):
+class QAOfficerGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = QAOfficerGroupMembers
     extra = 0
     #can_delete = False
@@ -429,7 +430,7 @@ class QAOfficerGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.QAOfficerGroup)
-class QAOfficerGroupAdmin(admin.ModelAdmin):
+class QAOfficerGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     filter_horizontal = ("members",)
     list_display = ["name"]
     exclude = ("site",)
@@ -453,7 +454,7 @@ class QAOfficerGroupAdmin(admin.ModelAdmin):
 
 
 @admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         "question_text",
         "answer_one",
@@ -466,19 +467,19 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 @admin.register(ApplicationFee)
-class ApplicationFeeAdmin(admin.ModelAdmin):
+class ApplicationFeeAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     raw_id_fields = ("proposal", "created_by")
     list_display = ("id", "proposal__lodgement_number", "created_by", "payment_type", "cost")
     search_fields = ("id", "proposal__lodgement_number")
 
 @admin.register(ApplicationFeeInvoice)
-class SectionAdmin(admin.ModelAdmin):
+class SectionAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [f.name for f in ApplicationFeeInvoice._meta.fields]
     raw_id_fields = ("application_fee",)
     search_fields = ("id","invoice_reference",)
 
 
-class DistrictProposalAssessorGroupMembersInline(admin.TabularInline):
+class DistrictProposalAssessorGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = DistrictProposalAssessorGroupMembers
     extra = 0
     #can_delete = False
@@ -488,7 +489,7 @@ class DistrictProposalAssessorGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.DistrictProposalAssessorGroup)
-class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
+class DistrictProposalAssessorGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "default"]
     form = forms.DistrictProposalAssessorGroupAdminForm
     fields = (
@@ -515,7 +516,7 @@ class DistrictProposalAssessorGroupAdmin(admin.ModelAdmin):
         )
 
 
-class DistrictProposalApproverGroupMembersInline(admin.TabularInline):
+class DistrictProposalApproverGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = DistrictProposalApproverGroupMembers
     extra = 0
     #can_delete = False
@@ -525,7 +526,7 @@ class DistrictProposalApproverGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.DistrictProposalApproverGroup)
-class DistrictProposalApproverGroupAdmin(admin.ModelAdmin):
+class DistrictProposalApproverGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "default"]
     form = forms.DistrictProposalApproverGroupAdminForm
     fields = (

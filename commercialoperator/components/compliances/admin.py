@@ -1,4 +1,5 @@
 from django.contrib import admin
+from commercialoperator.admin_permissions import AdminGroupPermissionMixin
 from commercialoperator.components.compliances import models
 # Register your models here.
 
@@ -11,6 +12,5 @@ from commercialoperator.components.compliances import models
 #    list_display = ['status']
 
 @admin.register(models.ComplianceAmendmentReason)
-class ComplianceAmendmentReasonAdmin(admin.ModelAdmin):
+class ComplianceAmendmentReasonAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ['reason']
-
