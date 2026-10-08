@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.forms import ModelForm
 
+from commercialoperator.admin_permissions import AdminGroupPermissionMixin
 from commercialoperator.components.main.models import FileExtensionWhitelist, JobQueue
 
 @admin.register(FileExtensionWhitelist)
-class FileExtensionWhitelistAdmin(admin.ModelAdmin):
+class FileExtensionWhitelistAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     fields = (
         "name",
         "model",
@@ -16,7 +17,7 @@ class FileExtensionWhitelistAdmin(admin.ModelAdmin):
     form = ModelForm
 
 @admin.register(JobQueue)
-class JobQueueAdmin(admin.ModelAdmin):
+class JobQueueAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         'id',
         'user',
