@@ -1737,6 +1737,7 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
     can_edit_activities = serializers.SerializerMethodField()
     can_edit_period = serializers.SerializerMethodField()
     can_edit_vessels = serializers.SerializerMethodField()
+    can_edit_vehicles = serializers.SerializerMethodField()
     current_assessor = serializers.SerializerMethodField()
     assessor_data = serializers.SerializerMethodField()
     latest_referrals = ProposalReferralSerializer(many=True)
@@ -1816,6 +1817,7 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
             "can_edit_activities",
             "can_edit_period",
             "can_edit_vessels",
+            "can_edit_vehicles",
             "reversion_ids",
             "assessor_assessment",
             "referral_assessments",
@@ -1871,6 +1873,13 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
         )
         return obj.can_edit_vessels(user)
+
+    def get_can_edit_vehicles(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
+        return obj.can_edit_vehicles(user)
 
     def get_readonly(self, obj):
         return True

@@ -1,11 +1,10 @@
 <template id="vehicle_table">
     <div class="row">
         <div class="col-sm-12">
-            <div class="row">
-                <div v-if="!proposal.readonly" class="col-md-3">
+            <div class="row my-3">
+                <div v-if="canEditVehicles" class="col-md-3">
                     <input
                         type="button"
-                        style="margin-top: 25px"
                         class="btn btn-primary"
                         value="Add new vehicle"
                         @click.prevent="newVehicle"
@@ -27,6 +26,7 @@
         <editVehicle
             ref="edit_vehicle"
             :access_types="access_types"
+            :proposal_id="proposal.id"
             @refreshFromResponse="refreshFromResponse"
         ></editVehicle>
     </div>
@@ -36,7 +36,7 @@ import datatable from '@/utils/vue/datatable.vue';
 import editVehicle from './edit_vehicle.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'VehicleTableDash',
     components: {
@@ -139,7 +139,7 @@ export default {
                         searchable: false,
                         mRender: function (data, type, full) {
                             let links = '';
-                            if (!vm.proposal.readonly) {
+                            if (vm.canEditVehicles) {
                                 links += `<a href='#${full.id}' data-edit-vehicle='${full.id}'>Edit Vehicle</a><br/>`;
                                 links += `<a href='#${full.id}' data-discard-vehicle='${full.id}'>Discard</a><br/>`;
                             }
@@ -155,8 +155,13 @@ export default {
         is_external: function () {
             return this.level == 'external';
         },
+        canEditVehicles: function () {
+            return (
+                !this.proposal.readonly ||
+                Boolean(this.proposal.can_edit_vehicles)
+            );
+        },
     },
-    watch: {},
     mounted: function () {
         let vm = this;
         vm.fetchFilterLists();
@@ -172,22 +177,10 @@ export default {
     methods: {
         fetchFilterLists: function () {},
         newVehicle: function () {
-            let vm = this;
-            this.$refs.edit_vehicle.vehicle_id = null;
-            var new_vehicle_another = {
-                access_type: null,
-                capacity: '',
-                rego: '',
-                rego_expiry: null,
-                license: '',
-                proposal: vm.proposal.id,
-            };
-            this.$refs.edit_vehicle.vehicle = new_vehicle_another;
             this.$refs.edit_vehicle.localVehicleAction = 'add';
             this.$refs.edit_vehicle.isModalOpen = true;
         },
         editVehicle: function (id) {
-            this.$refs.edit_vehicle.vehicle_id = id;
             this.$refs.edit_vehicle.fetchVehicle(id);
             this.$refs.edit_vehicle.isModalOpen = true;
         },
@@ -258,4 +251,3 @@ export default {
     },
 };
 </script>
-<style scoped></style>

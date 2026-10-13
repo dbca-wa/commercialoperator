@@ -1,11 +1,10 @@
 <template id="vessel_table">
     <div class="row">
         <div class="col-sm-12">
-            <div class="row">
+            <div class="row my-3">
                 <div v-if="canEditVessels" class="col-md-3">
                     <input
                         type="button"
-                        style="margin-top: 25px"
                         class="btn btn-primary"
                         value="Add new vessel"
                         @click.prevent="newVessel"
@@ -14,7 +13,7 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-12" style="margin-top: 25px">
+                <div class="col-lg-12">
                     <datatable
                         :id="datatable_id"
                         ref="vessel_datatable"
