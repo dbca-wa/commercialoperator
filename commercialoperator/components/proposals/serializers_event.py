@@ -1,21 +1,23 @@
-from commercialoperator.components.proposals.models import (
-    ProposalEventActivities,
-    ProposalEventManagement,
-    ProposalEventVehiclesVessels,
-    ProposalEventOtherDetails,
-    ProposalEventsParks,
-    EventsParkDocument,
-    AbseilingClimbingActivity,
-    PreEventsParkDocument,
-    ProposalPreEventsParks,
-    ProposalEventsTrails,
-)
+from rest_framework import serializers
+
+from commercialoperator.components.main.models import Section, Trail
 from commercialoperator.components.main.serializers import (
     ParkFilterSerializer,
-    TrailSerializer,
     SectionSerializer,
+    TrailSerializer,
 )
-from rest_framework import serializers
+from commercialoperator.components.proposals.models import (
+    AbseilingClimbingActivity,
+    EventsParkDocument,
+    PreEventsParkDocument,
+    ProposalEventActivities,
+    ProposalEventManagement,
+    ProposalEventOtherDetails,
+    ProposalEventsParks,
+    ProposalEventsTrails,
+    ProposalEventVehiclesVessels,
+    ProposalPreEventsParks,
+)
 
 
 class ProposalEventActivitiesSerializer(serializers.ModelSerializer):
@@ -53,14 +55,12 @@ class ProposalEventActivitiesSerializer(serializers.ModelSerializer):
 
 
 class ProposalEventManagementSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ProposalEventManagement
         fields = "__all__"
 
 
 class ProposalEventVehiclesVesselsSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ProposalEventVehiclesVessels
         fields = "__all__"
@@ -132,7 +132,6 @@ class SaveProposalEventsParksSerializer(serializers.ModelSerializer):
                 {"park": "This park has already been added."}
             )
         return attrs
-
 
 
 class AbseilingClimbingActivitySerializer(serializers.ModelSerializer):
@@ -213,7 +212,37 @@ class ProposalEventsTrailsSerializer(serializers.ModelSerializer):
 
 
 class SaveProposalEventsTrailsSerializer(serializers.ModelSerializer):
-    # park=ParkFilterSerializer()
+    trail = serializers.PrimaryKeyRelatedField(
+        queryset=Trail.objects.all(),
+        required=True,
+        allow_null=False,
+        error_messages={
+            "required": "Please select a trail.",
+            "blank": "Please select a trail.",
+            "null": "Please select a trail.",
+            "does_not_exist": "The selected trail does not exist.",
+        },
+    )
+    section = serializers.PrimaryKeyRelatedField(
+        queryset=Section.objects.all(),
+        required=True,
+        allow_null=False,
+        error_messages={
+            "required": "Please select a trail section.",
+            "blank": "Please select a trail section.",
+            "null": "Please select a trail section.",
+            "does_not_exist": "The selected trail section does not exist.",
+        },
+    )
+    event_trail_activities = serializers.CharField(
+        required=True,
+        allow_null=False,
+        error_messages={
+            "required": "Please enter one or more activity types.",
+            "blank": "Please enter one or more activity types.",
+        },
+    )
+
     class Meta:
         model = ProposalEventsTrails
         fields = (

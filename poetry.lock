@@ -853,25 +853,6 @@ files = [
 Django = ">=2.2"
 
 [[package]]
-name = "django-ckeditor-5"
-version = "0.2.20"
-description = "CKEditor 5 for Django."
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "django_ckeditor_5-0.2.20-py3-none-any.whl", hash = "sha256:dfff659822fb8d42f55b43265cb51bf8b1e0797dc850e0bf5547644daeaa3fff"},
-    {file = "django_ckeditor_5-0.2.20.tar.gz", hash = "sha256:7c3d67cc8bbce3564108578b8fafe8e752c6ad4fbf45b1ffee821045ba2c0e96"},
-]
-
-[package.dependencies]
-Django = ">=4.2"
-Pillow = "*"
-
-[package.extras]
-dev = ["bandit[toml] (==1.8.2)", "black (==25.1.0)", "codespell (==2.4.1)", "coverage (==7.6.10)", "mypy (==1.15.0)", "mypy-extensions (==1.0.0)", "pytest (==8.3.4)", "pytest-cov (==6.0.0)", "pytest-django (==4.9.0)", "pytest-mock (==3.14.0)", "safety (==3.2.14)", "tox (==4.23.2)", "tox-gh-actions (==3.2.0)", "types-setuptools (==75.8.0.20250110)", "typing_extensions (==4.12.2)"]
-
-[[package]]
 name = "django-confy"
 version = "1.0.4"
 description = "Django project configuration helpers"
@@ -3693,24 +3674,6 @@ reference = "HEAD"
 resolved_reference = "1bf561a3ee89f609e5f4e3cab3028fec210b4b21"
 
 [[package]]
-name = "werkzeug"
-version = "3.1.8"
-description = "The comprehensive WSGI web application library."
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "werkzeug-3.1.8-py3-none-any.whl", hash = "sha256:63a77fb8892bf28ebc3178683445222aa500e48ebad5ec77b0ad80f8726b1f50"},
-    {file = "werkzeug-3.1.8.tar.gz", hash = "sha256:9bad61a4268dac112f1c5cd4630a56ede601b6ed420300677a869083d70a4c44"},
-]
-
-[package.dependencies]
-markupsafe = ">=2.1.1"
-
-[package.extras]
-watchdog = ["watchdog (>=2.3)"]
-
-[[package]]
 name = "whitenoise"
 version = "6.12.0"
 description = "Radically simplified static file serving for WSGI applications"
@@ -3860,4 +3823,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.14"
-content-hash = "8e7c0ece7e7098e864741bfdd8c9e0e93b6beeb6092a52dd19c7a736af1a4713"
+content-hash = "7854008e57b98bc556d20d40864867da0359d80cf6d970d1bb4d134f3432485f"

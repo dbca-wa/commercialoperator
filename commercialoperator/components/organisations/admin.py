@@ -1,6 +1,7 @@
 from tabnanny import verbose
 from django.contrib import admin
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from commercialoperator.admin_permissions import AdminGroupPermissionMixin
 from commercialoperator.components.organisations import models
 from commercialoperator.components.organisations.forms import (
     OrganisationAccessGroupAdminForm,
@@ -8,7 +9,7 @@ from commercialoperator.components.organisations.forms import (
 from commercialoperator.components.segregation.models import OrganisationAccessGroupMembers
 
 
-class UserDelegationAdminInline(admin.TabularInline):
+class UserDelegationAdminInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = models.UserDelegation
     extra = 0
     raw_id_fields = ("user",)
@@ -17,7 +18,7 @@ class UserDelegationAdminInline(admin.TabularInline):
 
 
 @admin.register(models.Organisation)
-class OrganisationAdmin(admin.ModelAdmin):
+class OrganisationAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = [
         "organisation_id",
         "admin_pin_one",
@@ -37,14 +38,14 @@ class OrganisationAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.OrganisationRequest)
-class OrganisationRequestAdmin(admin.ModelAdmin):
+class OrganisationRequestAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     list_display = ["name", "requester_id", "abn", "status"]
     search_fields= ["name", "abn", "status"]
     raw_id_fields = ["requester", "assigned_officer"]
     ordering = ["-lodgement_date"]
 
 
-class OrganisationAccessGroupMembersInline(admin.TabularInline):
+class OrganisationAccessGroupMembersInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = OrganisationAccessGroupMembers
     extra = 0
     raw_id_fields = ["emailuser"]
@@ -53,7 +54,7 @@ class OrganisationAccessGroupMembersInline(admin.TabularInline):
 
 
 @admin.register(models.OrganisationAccessGroup)
-class OrganisationAccessGroupAdmin(admin.ModelAdmin):
+class OrganisationAccessGroupAdmin(AdminGroupPermissionMixin, admin.ModelAdmin):
     filter_horizontal = ("members",)
     form = OrganisationAccessGroupAdminForm
     exclude = ("site",)

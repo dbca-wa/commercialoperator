@@ -1,13 +1,14 @@
 from django.contrib import admin
+from commercialoperator.admin_permissions import AdminGroupPermissionMixin
 from commercialoperator.components.approvals import models
 from reversion.admin import VersionAdmin
 
-class ApprovalDocumentInline(admin.TabularInline):
+class ApprovalDocumentInline(AdminGroupPermissionMixin, admin.TabularInline):
     model = models.ApprovalDocument
     extra = 0
 
 @admin.register(models.Approval)
-class ApprovalAdmin(VersionAdmin):
+class ApprovalAdmin(AdminGroupPermissionMixin, VersionAdmin):
     raw_id_fields = (
         "submitter",
         "org_applicant",

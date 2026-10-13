@@ -8,58 +8,55 @@
                 subtitle=""
             >
                 <div
-                    v-if="proposal.applicant_training_completed"
-                    class="form-horizontal col-sm-12"
-                >
-                    <div v-if="proposal.applicant_type == 'ORG'">
-                        <label style="color: green"
-                            >Your online training has already been completed
-                            this year. Please proceed to pay and submit the
-                            application.</label
-                        >
+                        v-if="proposal.applicant_training_completed"
+                        class="form-horizontal col-sm-12"
+                    >
+                        <div v-if="proposal.applicant_type == 'ORG'">
+                            <label style="color: green"
+                                >Your online training has already been completed
+                                this year. Please proceed to pay and submit the
+                                application.</label
+                            >
+                        </div>
+                        <div v-else>
+                            <label style="color: green"
+                                >Your online training has been completed. Please
+                                proceed to pay and submit the
+                                application.</label
+                            >
+                        </div>
                     </div>
                     <div v-else>
-                        <label style="color: green"
-                            >Your online training has been completed. Please
-                            proceed to pay and submit the application.</label
-                        >
-                    </div>
-                </div>
-                <div v-else>
-                    <div
-                        class="form-horizontal col-sm-12 border rounded p-3 mb-3"
-                    >
-                        <div class="form-group row">
-                            <alert
-                                v-if="showError"
-                                type="danger"
-                                style="color: red"
-                                ><strong>{{ errorString }}</strong></alert
-                            >
-                        </div>
-                        <div class="form-group row mb-3">
-                            <label v-if="training_doc_url" class="control-label"
-                                >Complete the questionnaire below. The
-                                Commercial Event Training Program with
-                                information to help you can be downloaded
-                                <a :href="training_doc_url" target="_blank"
-                                    >here</a
-                                >.</label
-                            >
-                            <label v-else class="control-label"
-                                >Complete the questionnaire below. The
-                                Commercial Event Training Program with
-                                information to help you can be downloaded
-                                here.</label
-                            >
-                        </div>
-                        <div class="form-group row">
-                            <form class="form-horizontal">
-                                <ul
-                                    v-for="q in questions"
-                                    :key="q.id"
-                                    class="list-unstyled row"
+                        <div class="form-horizontal col-sm-12 borderDecoration">
+                            <div class="form-group row">
+                                <alert
+                                    v-if="showError"
+                                    type="danger"
+                                    style="color: red"
+                                    ><strong>{{ errorString }}</strong></alert
                                 >
+                            </div>
+                            <div class="form-group row mb-3">
+                                <label
+                                    v-if="training_doc_url"
+                                    class="control-label"
+                                    >Complete the questionnaire below.
+                                    The Commercial Event Training Program with information to help you can be downloaded
+                                    <a :href="training_doc_url" target="_blank"
+                                        >here</a
+                                    >.</label
+                                >
+                                <label v-else class="control-label"
+                                    >Complete the questionnaire below.
+                                    The Commercial Event Training Program with information to help you can be downloaded here.</label
+                                >
+                                <div class="row mt-3">
+                                    <form>
+                                        <ul
+                                            v-for="q in questions"
+                                            :key="q.id"
+                                            class="list-unstyled col-sm-12"
+                                        >
                                     <li class="row">
                                         <div class="col-sm-6">
                                             <label
@@ -190,9 +187,10 @@
                                                 }}</label>
                                             </li>
                                         </ul>
-                                    </li>
-                                </ul>
-                            </form>
+                                        </li>
+                                        </ul>
+                                    </form>
+                                </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-sm-12">

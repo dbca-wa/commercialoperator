@@ -376,13 +376,9 @@ class ProposalOtherDetailsSerializer(serializers.ModelSerializer):
 
 
 class SaveProposalOtherDetailsSerializer(serializers.ModelSerializer):
-    # park=ParkSerializer()
     class Meta:
         model = ProposalOtherDetails
-        # fields = '__all__'
         fields = (
-            # 'accreditation_type',
-            # 'accreditation_expiry',
             "preferred_licence_period",
             "nominated_start_date",
             "insurance_expiry",
@@ -952,6 +948,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
     can_edit_period = serializers.SerializerMethodField()
+    can_edit_licence_term = serializers.SerializerMethodField()
     current_assessor = serializers.SerializerMethodField()
     assessor_data = serializers.SerializerMethodField()
     latest_referrals = ProposalReferralSerializer(many=True)
@@ -1032,6 +1029,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             "training_completed",
             "can_edit_activities",
             "can_edit_period",
+            "can_edit_licence_term",
             "reversion_ids",
             "assessor_assessment",
             "referral_assessments",
@@ -1077,6 +1075,13 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
         )
         return obj.can_edit_period(user)
+
+    def get_can_edit_licence_term(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
+        return obj.can_edit_licence_term(user)
 
     def get_readonly(self, obj):
         return True
