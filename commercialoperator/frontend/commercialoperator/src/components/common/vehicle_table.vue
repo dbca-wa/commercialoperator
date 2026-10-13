@@ -181,6 +181,7 @@ export default {
             this.$refs.edit_vehicle.isModalOpen = true;
         },
         editVehicle: function (id) {
+            this.$refs.edit_vehicle.localVehicleAction = 'edit';
             this.$refs.edit_vehicle.fetchVehicle(id);
             this.$refs.edit_vehicle.isModalOpen = true;
         },
