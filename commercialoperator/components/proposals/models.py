@@ -2083,6 +2083,10 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
         else:
             return False
 
+    def can_edit_vehicles(self, user):
+        # Currently same conditions as for vessels can change conditions here in future if required
+        return self.can_edit_vessels(user)
+
     def assessor_comments_view(self, user):
 
         if (
