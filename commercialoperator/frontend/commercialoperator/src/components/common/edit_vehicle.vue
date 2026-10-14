@@ -7,9 +7,19 @@
             @ok="ok()"
             @cancel="cancel()"
         >
-            <div class="container-fluid">
+            <div v-if="fetchingVehicle">
+                <BootstrapSpinner
+                    :center-of-screen="false"
+                    class="text-primary"
+                />
+            </div>
+            <div v-else-if="vehicle" class="container-fluid">
                 <div class="row">
-                    <form class="form-horizontal" name="vehicleForm">
+                    <form
+                        ref="vehicleForm"
+                        class="form-horizontal"
+                        name="vehicleForm"
+                    >
                         <alert v-if="showError" type="danger"
                             ><strong>{{ errorString }}</strong></alert
                         >
@@ -30,11 +40,16 @@
                                         <select
                                             id="access_type"
                                             ref="access_type"
-                                            v-model="vehicle_access_id"
-                                            class="form-control"
+                                            v-model.number="
+                                                accessTypeIdSelection
+                                            "
+                                            class="form-select"
                                             name="access_type"
                                             required
                                         >
+                                            <option value="" :disabled="true">
+                                                Select a Vehicle Type
+                                            </option>
                                             <option
                                                 v-for="a in access_types"
                                                 :key="a.id"
@@ -152,15 +167,21 @@
 import modal from '@vue-utils/bootstrap-modal.vue';
 import alert from '@vue-utils/alert.vue';
 import { helpers, api_endpoints } from '@/utils/hooks.js';
-import $ from 'jquery';
+import BootstrapSpinner from '../vue2-components/BootstrapSpinner.vue';
+
 export default {
     // eslint-disable-next-line vue/component-definition-name-casing
     name: 'Edit-Vehicle',
     components: {
         modal,
         alert,
+        BootstrapSpinner,
     },
     props: {
+        proposal_id: {
+            type: Number,
+            default: null,
+        },
         // eslint-disable-next-line vue/prop-name-casing
         vehicle_action: {
             type: String,
@@ -176,10 +197,9 @@ export default {
         return {
             isModalOpen: false,
             form: null,
-            vehicle: Object,
-            vehicle_id: Number,
-            vehicle_access_id: null,
+            vehicle: this.defaultVehicle(),
             state: 'proposed_vehicle',
+            fetchingVehicle: false,
             issuingVehicle: false,
             validation_form: null,
             hasErrors: false,
@@ -200,6 +220,16 @@ export default {
                 ? 'Add a new Vehicle record'
                 : 'Edit a vehicle record';
         },
+        accessTypeIdSelection: {
+            get() {
+                return this.vehicle.access_type.id === null
+                    ? ''
+                    : this.vehicle.access_type.id;
+            },
+            set(newValue) {
+                this.vehicle.access_type.id = newValue === '' ? null : newValue;
+            },
+        },
     },
     watch: {
         vehicle_action: {
@@ -208,20 +238,34 @@ export default {
             },
             deep: true,
         },
-    },
-    mounted: function () {
-        let vm = this;
-
-        vm.form = document.forms.vehicleForm;
-        this.$nextTick(() => {
-            vm.addEventListeners();
-        });
+        isModalOpen: {
+            handler(newVal) {
+                if (newVal && this.$refs.access_type) {
+                    this.$nextTick(() => {
+                        this.$refs.access_type?.focus();
+                    });
+                }
+            },
+        },
     },
     methods: {
+        defaultVehicle: function () {
+            return {
+                capacity: null,
+                rego: '',
+                rego_expiry: '',
+                // Provide the empty nested object so the template doesn't crash
+                access_type: {
+                    id: null,
+                },
+            };
+        },
         ok: function () {
             let vm = this;
-            // Check form validity
-            if (helpers.validateForm(vm.form)) {
+            // Use the template ref directly so it's always current
+            let currentForm = vm.$refs.vehicleForm;
+
+            if (currentForm && helpers.validateForm(currentForm)) {
                 console.log('Form is valid');
                 vm.sendData();
             } else {
@@ -233,26 +277,12 @@ export default {
         },
         close: function () {
             this.isModalOpen = false;
-            this.vehicle = {};
+            this.vehicle = this.defaultVehicle();
             this.hasErrors = false;
-            $(this.$refs.rego_expiry).val('');
-            this.$refs.capacity = '';
-            this.$refs.rego = '';
-        },
-        fetchContact: function (id) {
-            let vm = this;
-            helpers.fetchUrl(api_endpoints.contact(id)).then(
-                (response) => {
-                    vm.contact = response;
-                    vm.isModalOpen = true;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
         },
         fetchVehicle: function (vid) {
             let vm = this;
+            vm.fetchingVehicle = true;
             helpers
                 .fetchUrl(
                     helpers.add_endpoint_json(api_endpoints.vehicles, vid)
@@ -260,25 +290,27 @@ export default {
                 .then(
                     (res) => {
                         vm.vehicle = res;
-                        if (vm.vehicle.access_type) {
-                            vm.vehicle_access_id = vm.vehicle.access_type.id;
-                        }
                     },
                     (err) => {
                         console.log(err);
                     }
-                );
+                )
+                .finally(() => {
+                    vm.fetchingVehicle = false;
+                    this.$nextTick(() => {
+                        this.$refs.access_type.focus();
+                    });
+                });
         },
-
         sendData: function () {
             let vm = this;
             vm.hasErrors = false;
-            if (vm.vehicle_access_id != null) {
-                vm.vehicle.access_type = vm.vehicle_access_id;
-            }
             let vehicle = JSON.parse(JSON.stringify(vm.vehicle));
+            vehicle.proposal_id = vm.proposal_id;
+            vehicle.proposal = vm.proposal_id;
+            vehicle.access_type = vm.vehicle.access_type.id;
             vm.issuingVehicle = true;
-            if (vm.localVehicleAction == 'add' && vm.vehicle_id == null) {
+            if (vm.localVehicleAction == 'add' && vm.vehicle.id == null) {
                 helpers
                     .fetchUrl(api_endpoints.vehicles, {
                         method: 'POST',
@@ -290,7 +322,7 @@ export default {
                     .then(
                         (response) => {
                             vm.issuingVehicle = false;
-                            vm.vehicle = {};
+                            vm.vehicle = vm.defaultVehicle();
                             vm.close();
                             swal.fire({
                                 title: 'Created',
@@ -310,7 +342,7 @@ export default {
                     .fetchUrl(
                         helpers.add_endpoint_json(
                             api_endpoints.vehicles,
-                            vm.vehicle_id + '/edit_vehicle'
+                            vm.vehicle.id + '/edit_vehicle'
                         ),
                         {
                             method: 'POST',
@@ -340,24 +372,6 @@ export default {
                     );
             }
         },
-        addEventListeners: function () {
-            helpers.initialiseSelect2.bind(this)(
-                'access_type',
-                'access_type_parent',
-                'vehicle_access_id',
-                'Select a type'
-            );
-        },
     },
 };
 </script>
-
-<style scoped lang="css">
-input[type='date'],
-input[type='text'],
-input[type='number'] {
-    width: 40%;
-    box-sizing: border-box;
-    margin-bottom: 0.25rem;
-}
-</style>
