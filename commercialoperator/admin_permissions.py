@@ -12,9 +12,9 @@ class AdminGroupPermissionMixin:
             request, obj
         )
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return helpers.is_commercialoperator_admin(request) or super().has_add_permission(
-            request
+            request, obj
         )
 
     def has_change_permission(self, request, obj=None):
