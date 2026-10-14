@@ -31,5 +31,5 @@ stages:
         tags: | 
               cols_reporting_latest
               cols_reporting_$(tagDate)
-        containerRegistry: DockerHub
-        repository: dbcawa/commercialoperator
+        containerRegistry: DockerGitHub
+        repository: ghcr.io/dbca-wa/commercialoperator
