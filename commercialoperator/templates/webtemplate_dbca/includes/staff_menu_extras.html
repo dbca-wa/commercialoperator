@@ -1,5 +1,10 @@
 {% load users %}
 {% is_finance_officer as is_finance_officer %}
+{% is_commercialoperator_admin as is_cols_admin %}
+
+{% if is_cols_admin and LEDGER_UI_URL %}
+<li><a class="dropdown-item" href="{{ LEDGER_UI_URL }}/ledger/account-management/" target="_blank">Account Management</a></li>
+{% endif %}
 
 {% if is_finance_officer %}
 <li><a class="dropdown-item" href="{{ LEDGER_UI_URL }}/reports?system_id={{ PAYMENT_SYSTEM_PREFIX }} ">Financial Reports</a></li>
