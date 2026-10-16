@@ -6,8 +6,11 @@
                 class="col-md-12 alert alert-success"
             >
                 <p>
-                    The licence has been issued and has been emailed to
-                    {{ proposal.applicant?.applicant_name || '' }}
+                    <span>The licence has been issued</span>
+
+                    <span v-if="getOrganisationName()">
+                        and has been emailed to {{ getOrganisationName() }}
+                    </span>
                 </p>
                 <p v-if="proposal.proposed_issuance_approval">
                     Expiry date:
@@ -20,8 +23,11 @@
             </div>
             <div v-else class="col-md-12 alert alert-warning">
                 <p>
-                    The application was declined. The decision was emailed to
-                    {{ proposal.applicant?.applicant_name || '' }}
+                    <span>The application was declined.</span>
+                    <span v-if="getOrganisationName()">
+                        The decision was emailed to
+                        {{ getOrganisationName() }}</span
+                    >
                 </p>
             </div>
         </template>
@@ -29,8 +35,10 @@
             <div class="col-md-12 alert alert-info">
                 <p>
                     The licence has been approved, pending payment and an
-                    invoice has been emailed to
-                    {{ proposal.applicant?.applicant_name || '' }}
+                    invoice has been emailed
+                    <span v-if="getOrganisationName()">
+                        to {{ getOrganisationName() }}</span
+                    >
                 </p>
             </div>
         </template>
@@ -164,6 +172,9 @@ export default {
     watch: {},
     mounted: function () {},
     methods: {
+        getOrganisationName() {
+            return this.proposal.org_applicant?.organisation_name || '';
+        },
         readFile: function () {
             let vm = this;
             let _file = null;
