@@ -949,6 +949,8 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
     can_edit_activities = serializers.SerializerMethodField()
     can_edit_period = serializers.SerializerMethodField()
     can_edit_licence_term = serializers.SerializerMethodField()
+    can_edit_vehicles = serializers.SerializerMethodField()
+    can_edit_vessels = serializers.SerializerMethodField()
     current_assessor = serializers.SerializerMethodField()
     assessor_data = serializers.SerializerMethodField()
     latest_referrals = ProposalReferralSerializer(many=True)
@@ -1029,6 +1031,8 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             "training_completed",
             "can_edit_activities",
             "can_edit_period",
+            "can_edit_vehicles",
+            "can_edit_vessels",
             "can_edit_licence_term",
             "reversion_ids",
             "assessor_assessment",
@@ -1075,6 +1079,20 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
         )
         return obj.can_edit_period(user)
+
+    def get_can_edit_vessels(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
+        return obj.can_edit_vessels(user)
+
+    def get_can_edit_vehicles(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
+        return obj.can_edit_vehicles(user)
 
     def get_can_edit_licence_term(self, obj):
         request = self.context["request"]
@@ -1480,6 +1498,8 @@ class InternalFilmingProposalSerializer(
     assessor_mode = serializers.SerializerMethodField()
     can_edit_activities = serializers.SerializerMethodField()
     can_edit_period = serializers.SerializerMethodField()
+    can_edit_vehicles = serializers.SerializerMethodField()
+    can_edit_vessels = serializers.SerializerMethodField()
     current_assessor = serializers.SerializerMethodField()
     assessor_data = serializers.SerializerMethodField()
     latest_referrals = ProposalReferralSerializer(many=True)
@@ -1556,6 +1576,8 @@ class InternalFilmingProposalSerializer(
             "training_completed",
             "can_edit_activities",
             "can_edit_period",
+            "can_edit_vehicles",
+            "can_edit_vessels",
             "reversion_ids",
             "assessor_assessment",
             "referral_assessments",
@@ -1607,6 +1629,20 @@ class InternalFilmingProposalSerializer(
             request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
         )
         return obj.can_edit_period(user)
+
+    def get_can_edit_vessels(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
+        return obj.can_edit_vessels(user)
+
+    def get_can_edit_vehicles(self, obj):
+        request = self.context["request"]
+        user = (
+            request.user._wrapped if hasattr(request.user, "_wrapped") else request.user
+        )
+        return obj.can_edit_vehicles(user)
 
     def get_readonly(self, obj):
         return True
