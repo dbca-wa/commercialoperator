@@ -70,6 +70,7 @@ docopt = "^0.6.2"
 packaging = "^26.3"
 shellingham = "^1.5.4"
 typer = "^0.27.2"
+sentry-sdk = "^2.72.0"
 
 [tool.poetry.group.dev]
 optional = true
