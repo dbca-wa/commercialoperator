@@ -395,7 +395,7 @@ DEFAULT_VITE_DEV_MODE = (
 )
 
 # 3. Allow manual override via env var (.env file or CLI command)
-DJANGO_VITE_DEV_MODE = env.bool("DJANGO_VITE_DEV_MODE", default=DEFAULT_VITE_DEV_MODE)
+DJANGO_VITE_DEV_MODE = env("DJANGO_VITE_DEV_MODE", default=DEFAULT_VITE_DEV_MODE)
 
 # 4. Clean notification: ONLY print once when actually starting runserver (to avoid logs showing up all over the place)
 if RUNNING_DEVSERVER and os.environ.get("RUN_MAIN") == "true":
