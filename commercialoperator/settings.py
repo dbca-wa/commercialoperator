@@ -1,8 +1,13 @@
+#!/usr/bin/env python
+
 import hashlib
+import json
 import logging
 import os
+import sys
 
 import confy
+import decouple
 from confy import env
 
 logger = logging.getLogger(__name__)
@@ -379,42 +384,40 @@ LEDGER_UI_ORGANISATION_MANAGEMENT = [
     {"postal_address": {"options": {"view": True, "edit": True}}},
 ]
 
-DJANGO_VITE_DEV_MODE = env("DJANGO_VITE_DEV_MODE", False)
-if DEBUG and not DJANGO_VITE_DEV_MODE:
-    print(
-        "\nServer running in DEBUG mode, frontend hot module reloading is OFF. Set env var DJANGO_VITE_DEV_MODE to True to enable hot module reloading.\n"
-    )
-else:
-    print(
-        "\nServer running in DEBUG mode, frontend hot module reloading is ON. Set env var DJANGO_VITE_DEV_MODE to False to disable hot module reloading.\n"
-    )
+# 1. Detect runtime environment
+RUNNING_DEVSERVER = "runserver" in sys.argv
+IS_KUBERNETES = "KUBERNETES_SERVICE_HOST" in os.environ
 
-STATIC_URL_PREFIX = (
-    "/static/commercialoperator_vue/"
-    if DJANGO_VITE_DEV_MODE
-    else "commercialoperator_vue/"
+# 2. Determine default Vite dev mode:
+# Only default to True if we're running runserver, in local dev, not inside AKS, and DEBUG is True.
+DEFAULT_VITE_DEV_MODE = (
+    RUNNING_DEVSERVER and DEBUG and EMAIL_INSTANCE == "DEV" and not IS_KUBERNETES
 )
+
+# 3. Allow manual override via env var (.env file or CLI command)
+DJANGO_VITE_DEV_MODE = env.bool("DJANGO_VITE_DEV_MODE", default=DEFAULT_VITE_DEV_MODE)
+
+# 4. Clean notification: ONLY print once when actually starting runserver (to avoid logs showing up all over the place)
+if RUNNING_DEVSERVER and os.environ.get("RUN_MAIN") == "true":
+    status = "ON (HMR)" if DJANGO_VITE_DEV_MODE else "OFF (serving built bundle)"
+    logger.info(f"\n>>> [Vite] Dev mode is {status}\n")
+
+# 5. Vite configuration
+STATIC_URL_PREFIX = "/static/boranga_vue/" if DJANGO_VITE_DEV_MODE else "boranga_vue/"
 
 DJANGO_VITE = {
     "default": {
         "dev_mode": DJANGO_VITE_DEV_MODE,
         "manifest_path": os.path.join(
-            BASE_DIR,
-            "commercialoperator",
-            "static",
-            "commercialoperator_vue",
-            "manifest.json",
+            BASE_DIR, "boranga", "static", "boranga_vue", "manifest.json"
         ),
-        "dev_server_host": "localhost",  # Default host for vite (can change if needed)
-        "dev_server_port": env(
-            "DJANGO_VITE_DEV_SERVER_PORT", 5173
-        ),  # Default port for vite (can change if needed)
+        "dev_server_host": "localhost",
+        "dev_server_port": env.int("DEV_SERVER_PORT", default=9002),
         "static_url_prefix": STATIC_URL_PREFIX,
     }
 }
 
-
 VUE3_ENTRY_SCRIPT = env(
     "VUE3_ENTRY_SCRIPT",
-    default="src/main.js",  # This path will be auto prefixed with the       static_url_prefix from DJANGO_VITE above
-)  # Path of the vue3 entry point script served by vite
+    default="src/main.js",
+)
