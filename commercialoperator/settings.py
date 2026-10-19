@@ -395,7 +395,12 @@ DEFAULT_VITE_DEV_MODE = (
 )
 
 # 3. Allow manual override via env var (.env file or CLI command)
-DJANGO_VITE_DEV_MODE = env("DJANGO_VITE_DEV_MODE", default=DEFAULT_VITE_DEV_MODE)
+raw_vite_mode = env("DJANGO_VITE_DEV_MODE", DEFAULT_VITE_DEV_MODE)
+DJANGO_VITE_DEV_MODE = (
+    raw_vite_mode
+    if isinstance(raw_vite_mode, bool)
+    else str(raw_vite_mode).lower() in ("true", "1", "yes", "t")
+)
 
 # 4. Clean notification: ONLY print once when actually starting runserver (to avoid logs showing up all over the place)
 if RUNNING_DEVSERVER and os.environ.get("RUN_MAIN") == "true":
@@ -412,7 +417,7 @@ DJANGO_VITE = {
             BASE_DIR, "boranga", "static", "boranga_vue", "manifest.json"
         ),
         "dev_server_host": "localhost",
-        "dev_server_port": env.int("DEV_SERVER_PORT", default=9002),
+        "dev_server_port": int(env("DEV_SERVER_PORT", 9002)),
         "static_url_prefix": STATIC_URL_PREFIX,
     }
 }
