@@ -429,6 +429,35 @@ class OrgRequestRequesterSerializer(serializers.ModelSerializer):
         return f"{emailuser.first_name} {emailuser.last_name}" if emailuser else None
 
 
+class LinkedOrganisationSerializer(OrganisationSerializer):
+    """Serialize an already fetched Ledger snapshot without further remote reads."""
+
+    organisation_name = serializers.SerializerMethodField()
+    organisation_abn = serializers.SerializerMethodField()
+    organisation_email = serializers.SerializerMethodField()
+    organisation_address = serializers.SerializerMethodField()
+    phone_number = serializers.SerializerMethodField()
+
+    def get_organisation_name(self, obj):
+        return self.context["ledger_data"].get("organisation_name", "")
+
+    def get_organisation_abn(self, obj):
+        return self.context["ledger_data"].get("organisation_abn", "")
+
+    def get_organisation_email(self, obj):
+        return self.context["ledger_data"].get("organisation_email", "")
+
+    def get_organisation_trading_name(self, obj):
+        return self.context["ledger_data"].get("organisation_trading_name", "")
+
+    def get_phone_number(self, obj):
+        return self.context["ledger_data"].get("phone_number", "")
+
+    def get_organisation_address(self, obj):
+        address = self.context["ledger_data"].get("postal_address")
+        return OrganisationAddressSerializer(address).data if address else None
+
+
 class OrganisationRequestSerializer(serializers.ModelSerializer):
     identification = serializers.FileField()
     requester = OrgRequestRequesterSerializer(source="requester_id", read_only=True)
@@ -449,6 +478,8 @@ class OrganisationRequestSerializer(serializers.ModelSerializer):
         return obj.get_status_display()
 
     def get_organisation(self, obj):
+        if "linked_organisations" in self.context:
+            return self.context["linked_organisations"].get(obj.abn)
         org_response = get_search_organisation(None, obj.abn)
         if org_response["status"] != status.HTTP_200_OK:
             return None
