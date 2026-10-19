@@ -391,21 +391,9 @@ RUNNING_DEVSERVER = "runserver" in sys.argv
 # Check if "userdev" is in the hostname (e.g. commercialoperator-userdev-8dbb5cb9c-mfwv7)
 IS_USERDEV_CONTAINER = "userdev" in os.environ.get("HOSTNAME", "").lower()
 
-# (Optional safeguard) Check if the Vite source entry or package.json exists in this image
-VUE_ENTRY_PATH = os.path.join(
-    BASE_DIR,
-    "commercialoperator",
-    "frontend",
-    "commercialoperator_vue",
-    "src",
-    "main.js",
-)
-HAS_VITE_SOURCE = os.path.exists(VUE_ENTRY_PATH)
-
 # 3. Default to True ONLY in dev pods with runserver and DEBUG
 DEFAULT_VITE_DEV_MODE = (
     RUNNING_DEVSERVER and DEBUG and EMAIL_INSTANCE == "DEV" and IS_USERDEV_CONTAINER
-    # and HAS_VITE_SOURCE  # Uncomment if your production images omit the frontend src/
 )
 
 # 4. Allow manual override via environment variable
