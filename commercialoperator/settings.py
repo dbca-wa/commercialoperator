@@ -2,15 +2,12 @@
 
 import hashlib
 import json
-import logging
 import os
 import sys
 
 import confy
 import decouple
 from confy import env
-
-logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.exists(BASE_DIR + "/.env"):
@@ -63,7 +60,7 @@ GIT_COMMIT_DATE = os.popen(f"cd {BASE_DIR}; git log -1 --format=%cd").read()
 if len(GIT_COMMIT_HASH) == 0:
     GIT_COMMIT_HASH = os.popen("cat /app/git_hash").read()
     if len(GIT_COMMIT_HASH) == 0:
-        logger.error("No git hash available to tag urls for pinned caching")
+        print("No git hash available to tag urls for pinned caching")
 APPLICATION_VERSION = env("APPLICATION_VERSION", "1.0.0") + "-" + GIT_COMMIT_HASH[:7]
 
 if SHOW_DEBUG_TOOLBAR:
