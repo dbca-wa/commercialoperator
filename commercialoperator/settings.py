@@ -36,9 +36,6 @@ BUILD_TAG = env(
 )  # URL of the Dev app.js served by webpack & express
 VERSION_NO = "1.0.1"
 
-if env("CONSOLE_EMAIL_BACKEND", False):
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 SHOW_ROOT_API = env("SHOW_ROOT_API", False)
 SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE", True)
 CSRF_COOKIE_SECURE = env("CSRF_COOKIE_SECURE", True)
@@ -194,8 +191,24 @@ SYSTEM_NAME = env("SYSTEM_NAME", "Commercial Operator Licensing")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "COLS")
 SITE_PREFIX = env("SITE_PREFIX")
 SITE_DOMAIN = env("SITE_DOMAIN")
+
+# Email related settings
+DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
 SUPPORT_EMAIL_FILMING = env("SUPPORT_EMAIL_FILMING", "filming@" + SITE_DOMAIN).lower()
+EMAIL_DELIVERY = env("EMAIL_DELIVERY", "off")
+EMAIL_INSTANCE = env("EMAIL_INSTANCE", "DEV")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
+
+CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
+
+# for ORACLE Job Notification - override settings_base.py
+EMAIL_FROM = DEFAULT_FROM_EMAIL
+CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
+
+if env("CONSOLE_EMAIL_BACKEND", False):
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 DEP_URL = env("DEP_URL", "www." + SITE_DOMAIN)
 DEP_PHONE = env("DEP_PHONE", "(08) 9219 9978")
 DEP_PHONE_FILMING = env("DEP_PHONE_FILMING", "(08) 9219 8411")
@@ -211,7 +224,6 @@ DEP_ADDRESS = env("DEP_ADDRESS", "17 Dick Perry Avenue, Kensington WA 6151")
 SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
 PUBLIC_URL = env("PUBLIC_URL", SITE_URL)
 PUBLIC_URL = PUBLIC_URL if PUBLIC_URL.endswith(os.sep) else PUBLIC_URL + os.sep
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
 ADMIN_GROUP = env("ADMIN_GROUP", "COLS Admin")
 
@@ -242,9 +254,6 @@ COLS_FILMING_HANDBOOK_URL = env(
     "https://parks.dpaw.wa.gov.au/know/commercial-filming-and-photography-handbook",
 )
 CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
-CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
-# for ORACLE Job Notification - override settings_base.py
-EMAIL_FROM = DEFAULT_FROM_EMAIL
 OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque
 
 OSCAR_BASKET_COOKIE_OPEN = "cols_basket"
@@ -256,7 +265,6 @@ PAYMENT_SYSTEM_PREFIX = env(
 os.environ["LEDGER_PRODUCT_CUSTOM_FIELDS"] = (
     "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
 )
-CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
 VERSION_NO = "1.0.1"
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
