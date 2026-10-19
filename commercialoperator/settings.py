@@ -384,17 +384,31 @@ LEDGER_UI_ORGANISATION_MANAGEMENT = [
     {"postal_address": {"options": {"view": True, "edit": True}}},
 ]
 
-# 1. Detect runtime environment
+# 1. Detect if runserver is being executed
 RUNNING_DEVSERVER = "runserver" in sys.argv
-IS_KUBERNETES = "KUBERNETES_SERVICE_HOST" in os.environ
 
-# 2. Determine default Vite dev mode:
-# Only default to True if we're running runserver, in local dev, not inside AKS, and DEBUG is True.
+# 2. Detect if this is an active developer container vs a production/staging AKS pod
+# Check if "userdev" is in the hostname (e.g. commercialoperator-userdev-8dbb5cb9c-mfwv7)
+IS_USERDEV_CONTAINER = "userdev" in os.environ.get("HOSTNAME", "").lower()
+
+# (Optional safeguard) Check if the Vite source entry or package.json exists in this image
+VUE_ENTRY_PATH = os.path.join(
+    BASE_DIR,
+    "commercialoperator",
+    "frontend",
+    "commercialoperator_vue",
+    "src",
+    "main.js",
+)
+HAS_VITE_SOURCE = os.path.exists(VUE_ENTRY_PATH)
+
+# 3. Default to True ONLY in dev pods with runserver and DEBUG
 DEFAULT_VITE_DEV_MODE = (
-    RUNNING_DEVSERVER and DEBUG and EMAIL_INSTANCE == "DEV" and not IS_KUBERNETES
+    RUNNING_DEVSERVER and DEBUG and EMAIL_INSTANCE == "DEV" and IS_USERDEV_CONTAINER
+    # and HAS_VITE_SOURCE  # Uncomment if your production images omit the frontend src/
 )
 
-# 3. Allow manual override via env var (.env file or CLI command)
+# 4. Allow manual override via environment variable
 raw_vite_mode = env("DJANGO_VITE_DEV_MODE", DEFAULT_VITE_DEV_MODE)
 DJANGO_VITE_DEV_MODE = (
     raw_vite_mode
@@ -402,27 +416,34 @@ DJANGO_VITE_DEV_MODE = (
     else str(raw_vite_mode).lower() in ("true", "1", "yes", "t")
 )
 
-# 4. Clean notification: ONLY print once when actually starting runserver (to avoid logs showing up all over the place)
+# 5. Clean notification (using print with RUN_MAIN so it displays once on startup)
 if RUNNING_DEVSERVER and os.environ.get("RUN_MAIN") == "true":
-    status = "ON (HMR)" if DJANGO_VITE_DEV_MODE else "OFF (serving built bundle)"
-    logger.info(f"\n>>> [Vite] Dev mode is {status}\n")
+    if DJANGO_VITE_DEV_MODE:
+        print("\n⚡ [Vite] Dev mode is ON (Hot Module Reloading) 🔥\n")
+    else:
+        print("\n📦 [Vite] Dev mode is OFF (Serving built bundle)\n")
 
-# 5. Vite configuration
-STATIC_URL_PREFIX = "/static/boranga_vue/" if DJANGO_VITE_DEV_MODE else "boranga_vue/"
+# 6. Django Vite configuration
+STATIC_URL_PREFIX = (
+    "/static/commercialoperator_vue/"
+    if DJANGO_VITE_DEV_MODE
+    else "commercialoperator_vue/"
+)
 
 DJANGO_VITE = {
     "default": {
         "dev_mode": DJANGO_VITE_DEV_MODE,
         "manifest_path": os.path.join(
-            BASE_DIR, "boranga", "static", "boranga_vue", "manifest.json"
+            BASE_DIR,
+            "commercialoperator",
+            "static",
+            "commercialoperator_vue",
+            "manifest.json",
         ),
         "dev_server_host": "localhost",
-        "dev_server_port": int(env("DEV_SERVER_PORT", 9002)),
+        "dev_server_port": int(env("DEV_SERVER_PORT", 5173)),
         "static_url_prefix": STATIC_URL_PREFIX,
     }
 }
 
-VUE3_ENTRY_SCRIPT = env(
-    "VUE3_ENTRY_SCRIPT",
-    default="src/main.js",
-)
+VUE3_ENTRY_SCRIPT = env("VUE3_ENTRY_SCRIPT", "src/main.js")
