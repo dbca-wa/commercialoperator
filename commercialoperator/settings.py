@@ -440,3 +440,22 @@ DJANGO_VITE = {
 }
 
 VUE3_ENTRY_SCRIPT = env("VUE3_ENTRY_SCRIPT", "src/main.js")
+
+CONTAINER_IMAGE_TAG = env("CONTAINER_IMAGE_TAG", "CONTAINER_IMAGE_TAG ENV Not Set")
+
+# Sentry settings
+SENTRY_DSN = env("SENTRY_DSN", default=None)
+SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
+SENTRY_TRANSACTION_SAMPLE_RATE = env(
+    "SENTRY_TRANSACTION_SAMPLE_RATE", default=0.0
+)  # Transaction sampling
+if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        sample_rate=SENTRY_SAMPLE_RATE,
+        traces_sample_rate=SENTRY_TRANSACTION_SAMPLE_RATE,
+        environment=EMAIL_INSTANCE.lower(),
+        release=CONTAINER_IMAGE_TAG,
+    )
