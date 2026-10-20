@@ -55,24 +55,26 @@ def approval_search_filter(qs, search_value):
 
     if search_value:
         search_value = search_value.strip()
+        if not search_value:
+            return qs, matching_ids + org_matching_ids
+
         search_q = (
             Q(lodgement_number__icontains=search_value)
             | Q(current_proposal__lodgement_number__icontains=search_value)
             | Q(current_proposal__event_activity__event_name__icontains=search_value)
         )
 
-        if len(search_value) >= 3:
-            matching_ids = search_in_emailuser_fields(search_value)
-            org_matching_ids = search_organisation_properties(search_value, False)
-            search_q = search_q | (
-                Q(proxy_applicant_id__in=matching_ids)
-                | Q(org_applicant_id__in=org_matching_ids)
-                | (
-                    Q(org_applicant__isnull=True)
-                    & Q(proxy_applicant__isnull=True)
-                    & Q(submitter_id__in=matching_ids)
-                )
+        matching_ids = search_in_emailuser_fields(search_value)
+        org_matching_ids = search_organisation_properties(search_value, False)
+        search_q = search_q | (
+            Q(proxy_applicant_id__in=matching_ids)
+            | Q(org_applicant_id__in=org_matching_ids)
+            | (
+                Q(org_applicant__isnull=True)
+                & Q(proxy_applicant__isnull=True)
+                & Q(submitter_id__in=matching_ids)
             )
+        )
 
         qs = qs.filter(search_q)
 

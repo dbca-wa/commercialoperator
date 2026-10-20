@@ -247,11 +247,11 @@ COLS_EVENT_USERGUIDE_URL = env(
 )
 COLS_HANDBOOK_URL = env(
     "COLS_HANDBOOK_URL",
-    "https://parks.dpaw.wa.gov.au/know/commercial-operator-handbook",
+    "https://www.dbca.wa.gov.au/management/nature-based-tourism/commercial-activities/commercial-operator-handbook",
 )
 COLS_FILMING_HANDBOOK_URL = env(
     "COLS_FILMING_HANDBOOK_URL",
-    "https://parks.dpaw.wa.gov.au/know/commercial-filming-and-photography-handbook",
+    "https://www.dbca.wa.gov.au/management/nature-based-tourism/commercial-activities/commercial-filming",
 )
 CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
 OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque

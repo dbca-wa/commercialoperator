@@ -262,7 +262,12 @@ def booking_search_filter(qs, search_value):
 
         # Apply both filters only if we found any matching submitters
         qs = qs.filter(
-            Q(proposal__submitter_id__in=matching_ids) | Q(proposal__proxy_applicant_id__in=matching_ids) | Q(proposal__assigned_officer_id__in=matching_ids) | Q(proposal__org_applicant_id__in=org_matching_ids)
+            Q(proposal__submitter_id__in=matching_ids)
+            | Q(proposal__proxy_applicant_id__in=matching_ids)
+            | Q(proposal__assigned_officer_id__in=matching_ids)
+            | Q(proposal__org_applicant_id__in=org_matching_ids)
+            | Q(proposal__approvals__proxy_applicant_id__in=matching_ids)
+            | Q(proposal__approvals__org_applicant_id__in=org_matching_ids)
         )
 
     return qs, matching_ids+org_matching_ids
@@ -466,12 +471,16 @@ class ProposalFilterBackend(DatatablesFilterBackend):
                         invoices__property_cache__payment_status__iexact=payment_status_filter
                     )
 
-            if search_text and super_queryset != None:
+            if search_text:
                 search_queryset, results_found = booking_search_filter(queryset, search_text)
                 if results_found:
-                    queryset = search_queryset.distinct() | super_queryset   
+                    queryset = search_queryset.distinct()
+                    if super_queryset is not None:
+                        queryset = queryset | super_queryset
+                elif super_queryset is not None:
+                    queryset = queryset.distinct() & super_queryset
                 else:
-                    queryset = queryset.distinct() & super_queryset  
+                    queryset = queryset.none()
 
             if park and park.lower() != "all":
                 queryset = queryset.filter(park_bookings__park__id=park)
