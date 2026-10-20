@@ -1532,7 +1532,7 @@ export default {
                         ? moment(
                               this.proposal.proposed_issuance_approval
                                   .start_date,
-                              'DD/MM/YYYY'
+                              'YYYY-MM-DD'
                           ).format('YYYY-MM-DD')
                         : '';
                 this.$refs.proposed_approval.approval.expiry_date =
@@ -1543,7 +1543,7 @@ export default {
                         ? moment(
                               this.proposal.proposed_issuance_approval
                                   .expiry_date,
-                              'DD/MM/YYYY'
+                              'YYYY-MM-DD'
                           ).format('YYYY-MM-DD')
                         : '';
             }
