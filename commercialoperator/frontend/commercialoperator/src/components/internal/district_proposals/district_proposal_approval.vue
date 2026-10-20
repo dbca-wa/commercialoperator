@@ -6,8 +6,10 @@
                 class="col-md-12 alert alert-success"
             >
                 <p>
-                    The Lawful Authority has been issued and has been emailed to
-                    {{ district_proposal.proposal.applicant }}
+                    <span>The Lawful Authority has been issued</span>
+                    <span v-if="getOrganisationName()">
+                        and has been emailed to {{ getOrganisationName() }}
+                    </span>
                 </p>
                 <p>
                     Expiry date:
@@ -24,8 +26,11 @@
             </div>
             <div v-else class="col-md-12 alert alert-warning">
                 <p>
-                    The application was declined. The decision was emailed to
-                    {{ district_proposal.proposal.applicant }}
+                    <span>The application was declined.</span>
+                    <span v-if="getOrganisationName()">
+                        The decision was emailed to
+                        {{ getOrganisationName() }}</span
+                    >
                 </p>
             </div>
         </template>
@@ -155,6 +160,12 @@ export default {
     watch: {},
     mounted: function () {},
     methods: {
+        getOrganisationName() {
+            return (
+                this.district_proposal.proposal?.org_applicant
+                    ?.organisation_name || ''
+            );
+        },
         readFile: function () {
             let vm = this;
             let _file = null;
