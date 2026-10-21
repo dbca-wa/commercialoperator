@@ -215,7 +215,6 @@ class DistrictProposalApprovalSendNotificationEmail(TemplateEmailBase):
     html_template = (
         "commercialoperator/emails/proposals/send_district_approval_notification.html"
     )
-    # html_template = 'commercialoperator/emails/proposals/send_district_decline_notification.html'
     txt_template = (
         "commercialoperator/emails/proposals/send_district_approval_notification.txt"
     )
@@ -261,14 +260,12 @@ def send_qaofficer_complete_email_notification(
         reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
 
-    # text = proposal.comms_logs.filter(type__icontains='qaofficer').last().text
     if "test-emails" in request.path_info:
         comments = "This is my test comment"
     else:
         comments = request.data["text"]
 
     context = {
-        #'completed_by': text.split(':')[0],
         "proposal": proposal,
         "url": url,
         "completed_by": request.user.get_full_name(),
@@ -347,7 +344,6 @@ def send_referral_complete_email_notification(referral, request):
     attachments = []
     if referral.document:
         file_name = referral.document._file.name
-        # attachment = (file_name, doc._file.file.read(), 'image/*')
         attachment = (file_name, referral.document._file.file.read())
         attachments.append(attachment)
 
@@ -373,7 +369,6 @@ def send_amendment_email_notification(amendment_request, request, proposal):
         email = FilmingAmendmentRequestSendNotificationEmail()
     else:
         email = AmendmentRequestSendNotificationEmail()
-    # reason = amendment_request.get_reason_display()
     reason = amendment_request.reason.reason
     url = request.build_absolute_uri(
         reverse("external-proposal-detail", kwargs={"proposal_pk": proposal.id})
@@ -588,9 +583,7 @@ def send_proposal_approval_email_notification(proposal, request):
         # add requirement documents
         for requirement in proposal.requirements.exclude(is_deleted=True):
             for doc in requirement.requirement_documents.all():
-                # file_name = doc._file.name
                 file_name = doc.name if doc.name else doc._file.name
-                # attachment = (file_name, doc._file.file.read(), 'image/*')
                 attachment = (file_name, doc._file.file.read())
                 attachments.append(attachment)
 
@@ -645,7 +638,6 @@ def send_proposal_awaiting_payment_approval_email_notification(proposal, request
         all_ccs = cc_list.split(",")
 
     url = request.build_absolute_uri(reverse("external"))
-    # payment_url = request.build_absolute_uri(reverse('existing_invoice_payment', kwargs={'invoice_ref':invoice.reference}))
     if "-internal" in url:
         # remove '-internal'. This email is for external submitters
         url = "".join(url.split("-internal"))
@@ -878,7 +870,6 @@ def send_district_proposal_approval_email_notification(
     if "-internal" in url:
         # remove '-internal'. This email is for external submitters
         url = "".join(url.split("-internal"))
-    # print(url)
     attachments = []
     licence_document = approval.licence_document._file
     approved_district_proposals = approval.current_proposal.district_proposals.filter(
@@ -889,15 +880,9 @@ def send_district_proposal_approval_email_notification(
         attachment = (file_name, licence_document.file.read(), "application/pdf")
         attachments.append(attachment)
 
-        # for requirement in district_proposal.district_proposal_requirements.all():
-        #     for doc in requirement.requirement_documents.all():
-        #         file_name = doc._file.name
-        #         attachment = (file_name, doc._file.file.read())
-        #         attachments.append(attachment)
         for dp in approved_district_proposals:
             for requirement in dp.district_proposal_requirements.all():
                 for doc in requirement.requirement_documents.all():
-                    # file_name = doc._file.name
                     file_name = doc.name if doc.name else doc._file.name
                     attachment = (file_name, doc._file.file.read())
                     attachments.append(attachment)
@@ -944,7 +929,6 @@ def send_district_proposal_approval_email_notification_orig(
     if "-internal" in url:
         # remove '-internal'. This email is for external submitters
         url = "".join(url.split("-internal"))
-    # print(url)
     attachments = []
     licence_document = approval.licence_document._file
     if licence_document is not None:
@@ -956,11 +940,8 @@ def send_district_proposal_approval_email_notification_orig(
         for requirement in district_proposal.district_proposal_requirements.all():
             for doc in requirement.requirement_documents.all():
                 file_name = doc._file.name
-                # attachment = (file_name, doc._file.file.read(), 'image/*')
                 attachment = (file_name, doc._file.file.read())
                 attachments.append(attachment)
-
-    # url=''
 
     context = {
         "proposal": proposal,
@@ -975,7 +956,6 @@ def send_district_proposal_approval_email_notification_orig(
         attachments=attachments,
         context=context,
     )
-    # print(msg)
     sender = (
         request.user
         if request
@@ -1020,7 +1000,6 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
         text = smart_text(email_message)
         subject = ""
         to = referral.proposal.applicant_email
-        # to = referral.proposal.applicant.email
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
