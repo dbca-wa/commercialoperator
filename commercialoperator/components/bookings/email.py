@@ -541,8 +541,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
-    customer = customer
-
     staff = sender
 
     kwargs = {
@@ -593,8 +591,6 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
         to = customer
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = customer
 
     staff = sender
 
