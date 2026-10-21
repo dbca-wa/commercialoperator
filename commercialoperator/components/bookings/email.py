@@ -427,25 +427,7 @@ def send_payment_due_notification_failed_tclass(bookings):
     email = PaymentDueNotificationFailedTClassEmail()
 
     context = {"bookings": bookings}
-    msg = email.send(settings.NOTIFICATION_EMAIL, context=context)
-
-
-def send_invoice_payment_due_tclass_email_notification(
-    sender, bookings, recipients, is_test=False
-):
-    email = SendPaymentDueNotificationTClassEmail()
-
-    context = {
-        "bookings": bookings,
-    }
-
-    msg = email.send(booking.proposal.proposal_submitter_email, context=context)
-    # sender = sender if sender else settings.DEFAULT_FROM_EMAIL
-    # _log_proposal_email(msg, booking.proposal, sender=sender)
-    # if booking.proposal.org_applicant:
-    #    _log_org_email(msg, booking.proposal.org_applicant, booking.proposal.submitter, sender=sender)
-    # else:
-    #    _log_user_email(msg, booking.proposal.submitter, booking.proposal.submitter, sender=sender)
+    email.send(settings.NOTIFICATION_EMAIL, context=context)
 
 
 def send_invoice_payment_due_tclass_external_email_notification(
