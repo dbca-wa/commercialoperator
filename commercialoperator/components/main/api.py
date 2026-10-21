@@ -1,44 +1,45 @@
+import logging
+from collections import namedtuple
+
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from commercialoperator.components.main.models import (
-    Region,
-    District,
-    ApplicationType,
-    ActivityMatrix,
     AccessType,
-    Park,
-    Trail,
-    ActivityCategory,
     Activity,
-    RequiredDocument,
-    Question,
+    ActivityCategory,
+    ActivityMatrix,
+    ApplicationType,
+    District,
     GlobalSettings,
+    Park,
+    Question,
+    Region,
+    RequiredDocument,
+    Trail,
 )
 from commercialoperator.components.main.serializers import (
-    RegionSerializer,
-    DistrictSerializer,
-    ApplicationTypeSerializer,
-    ActivityMatrixSerializer,
     AccessTypeSerializer,
-    ParkSerializer,
-    TrailSerializer,
-    ActivitySerializer,
     ActivityCategorySerializer,
-    RequiredDocumentSerializer,
-    QuestionSerializer,
+    ActivityMatrixSerializer,
+    ActivitySerializer,
+    ApplicationTypeSerializer,
+    DistrictSerializer,
+    EventsParkSerializer,
+    EventsTabSerializer,
+    FilmingParkSerializer,
     GlobalSettingsSerializer,
     LandActivityTabSerializer,
     MarineActivityTabSerializer,
-    EventsParkSerializer,
+    ParkSerializer,
+    QuestionSerializer,
+    RegionSerializer,
+    RequiredDocumentSerializer,
+    TrailSerializer,
     TrailTabSerializer,
-    FilmingParkSerializer,
-    EventsTabSerializer,
 )
-from django.db.models import Q
-from collections import namedtuple
-
-import logging
 
 logger = logging.getLogger("payment_checkout")
 
@@ -46,7 +47,8 @@ logger = logging.getLogger("payment_checkout")
 class DistrictViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = District.objects.none()
 
-    serializer_class = DistrictSerializer 
+    serializer_class = DistrictSerializer
+
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
@@ -258,7 +260,7 @@ class ParkViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = Park.objects.all().order_by("id")
             return queryset
         return Park.objects.none()
-    
+
     @action(detail=False, methods=["GET"])
     def all(self, request, *args, **kwargs):
         queryset = self.get_queryset()
