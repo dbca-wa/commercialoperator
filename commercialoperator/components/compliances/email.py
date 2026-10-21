@@ -95,8 +95,7 @@ def send_amendment_email_notification(
         reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
     )
     url = "".join(url.split("-internal"))
-    login_url = request.build_absolute_uri(reverse("external"))
-    login_url = "".join(login_url.split("-internal"))
+
     context = {
         "compliance": compliance,
         "reason": reason,
