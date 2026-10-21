@@ -257,12 +257,16 @@ def is_finance_officer(request):
 
 # NOTE: this is now used only in the UserSerializer for information - it should not be used to determine internal group membership
 def in_dbca_domain(request):
-    user = request.user
-    try:
-        domain = user.email.split("@")[1]
-        return domain in settings.DEPT_DOMAINS
-    except:
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
         return False
+
+    email = getattr(user, "email", None)
+    if not email or "@" not in email:
+        return False
+
+    domain = email.rsplit("@", 1)[1].lower()
+    return domain in settings.DEPT_DOMAINS
 
 
 def is_in_organisation_contacts(request, organisation):
