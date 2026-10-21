@@ -1,22 +1,21 @@
 import logging
 
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.encoding import smart_str as smart_text
-from django.urls import reverse
 from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.urls import reverse
+from django.utils.encoding import smart_str as smart_text
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 logger = logging.getLogger(__name__)
 
 SYSTEM_NAME = settings.SYSTEM_NAME_SHORT + " Automated Message"
 from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
+
 class ComplianceExternalSubmitSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations licence requirement.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations licence requirement."
     html_template = "commercialoperator/emails/send_external_submit_notification.html"
     txt_template = "commercialoperator/emails/send_external_submit_notification.txt"
 
@@ -28,24 +27,20 @@ class ComplianceSubmitSendNotificationEmail(TemplateEmailBase):
 
 
 class ComplianceAcceptNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations- Confirmation - Licence requirement completed.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations- Confirmation - Licence requirement completed."
     html_template = "commercialoperator/emails/compliance_accept_notification.html"
     txt_template = "commercialoperator/emails/compliance_accept_notification.txt"
 
 
 class ComplianceAmendmentRequestSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations licence requirement.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations licence requirement."
     html_template = "commercialoperator/emails/send_amendment_notification.html"
     txt_template = "commercialoperator/emails/send_amendment_notification.txt"
 
 
 class ComplianceReminderNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence requirement overdue.".format(
-        settings.DEP_NAME
+    subject = (
+        f"{settings.DEP_NAME} - Commercial Operations Licence requirement overdue."
     )
     html_template = "commercialoperator/emails/send_reminder_notification.html"
     txt_template = "commercialoperator/emails/send_reminder_notification.txt"
@@ -58,9 +53,7 @@ class ComplianceInternalReminderNotificationEmail(TemplateEmailBase):
 
 
 class ComplianceDueNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence requirement due.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence requirement due."
     html_template = "commercialoperator/emails/send_due_notification.html"
     txt_template = "commercialoperator/emails/send_due_notification.txt"
 
@@ -72,7 +65,7 @@ class ComplianceInternalDueNotificationEmail(TemplateEmailBase):
 
 
 class ComplianceNotificationOnlyEmail(TemplateEmailBase):
-    subject = "{} - Notification of compliance requirement.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Notification of compliance requirement."
     html_template = "commercialoperator/emails/send_notification_only_email.html"
     txt_template = "commercialoperator/emails/send_notification_only_email.txt"
 
@@ -181,7 +174,7 @@ def send_internal_reminder_email_notification(compliance, is_test=False):
     )
     if "-internal" not in url:
         # add it. This email is for internal staff
-        url = "-internal.{}".format(settings.SITE_DOMAIN).join(
+        url = f"-internal.{settings.SITE_DOMAIN}".join(
             url.split("." + settings.SITE_DOMAIN)
         )
 
@@ -259,7 +252,7 @@ def send_internal_due_email_notification(compliance, is_test=False):
     )
     if "-internal" not in url:
         # add it. This email is for internal staff
-        url = "-internal.{}".format(settings.SITE_DOMAIN).join(
+        url = f"-internal.{settings.SITE_DOMAIN}".join(
             url.split("." + settings.SITE_DOMAIN)
         )
 
@@ -320,7 +313,9 @@ def send_compliance_accept_email_notification(compliance, request, is_test=False
 
 def send_external_submit_email_notification(request, compliance, is_test=False):
     email = ComplianceExternalSubmitSendNotificationEmail()
-    url = settings.SITE_URL + reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = settings.SITE_URL + reverse(
+        "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
+    )
     url = "".join(url.split("-internal"))
     submitter = (
         compliance.submitter
@@ -359,11 +354,13 @@ def send_external_submit_email_notification(request, compliance, is_test=False):
 
 def send_submit_email_notification(request, compliance, is_test=False):
     email = ComplianceSubmitSendNotificationEmail()
-    url = settings.SITE_URL + reverse("internal-compliance-detail", kwargs={"compliance_pk": compliance.id})
-    
+    url = settings.SITE_URL + reverse(
+        "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
+    )
+
     if "-internal" not in url:
         # add it. This email is for internal staff
-        url = "-internal.{}".format(settings.SITE_DOMAIN).join(
+        url = f"-internal.{settings.SITE_DOMAIN}".join(
             url.split("." + settings.SITE_DOMAIN)
         )
 
@@ -438,7 +435,7 @@ def send_internal_notification_only_email(compliance, is_test=False):
     )
     if "-internal" not in url:
         # add it. This email is for internal staff
-        url = "-internal.{}".format(settings.SITE_DOMAIN).join(
+        url = f"-internal.{settings.SITE_DOMAIN}".join(
             url.split("." + settings.SITE_DOMAIN)
         )
 
