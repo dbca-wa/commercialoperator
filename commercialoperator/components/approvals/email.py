@@ -119,7 +119,6 @@ def send_approval_expire_email_notification(approval):
         sender_user = EmailUser.objects.get(email__icontains=sender)
 
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -305,7 +304,6 @@ def send_approval_renewal_email_notification(approval):
     )
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -333,15 +331,11 @@ def send_approval_eclass_renewal_email_notification(approval):
         raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
-    # cc list commented below 15-Jul-2021 --> eclass renewal emails should only go to assessors
-    #    if proposal.org_applicant and proposal.org_applicant.email:
-    #        cc_list = proposal.org_applicant.email
-    #        if cc_list:
-    #            all_ccs = [cc_list]
+
+
     msg = email.send(proposal.assessor_recipients, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -369,15 +363,10 @@ def send_approval_eclass_expiry_email_notification(approval):
         raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
-    # cc list commented below 15-Jul-2021 --> eclass expiry emails should only go to assessors
-    #    if proposal.org_applicant and proposal.org_applicant.email:
-    #        cc_list = proposal.org_applicant.email
-    #        if cc_list:
-    #            all_ccs = [cc_list]
+
     msg = email.send(proposal.assessor_recipients, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
