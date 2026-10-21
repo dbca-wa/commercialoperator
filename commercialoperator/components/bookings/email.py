@@ -154,7 +154,7 @@ def send_compliance_fee_invoice_events_email_notification(
     email = ComplianceFeeInvoiceEventsSendNotificationEmail()
 
     context = {
-        "proposal_lodgement_number": proposal.lodgement_number,
+        "proposal_lodgement_number": compliance.proposal.lodgement_number,
         "compliance_lodgement_number": compliance.lodgement_number,
     }
 
@@ -171,7 +171,7 @@ def send_compliance_fee_invoice_events_email_notification(
         if request
         else retrieve_email_user_by_email(settings.DEFAULT_FROM_EMAIL)
     )
-    _log_proposal_email(msg, proposal, sender=sender)
+    _log_proposal_email(msg, compliance.proposal, sender=sender)
     if compliance.proposal.org_applicant:
         _log_org_email(
             msg, compliance.proposal.org_applicant, compliance.submitter, sender=sender
