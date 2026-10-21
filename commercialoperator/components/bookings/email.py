@@ -1,17 +1,25 @@
+#!/usr/bin/env python
+
 import logging
 
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.encoding import smart_str as smart_text
 from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.utils.encoding import smart_str as smart_text
 
-from commercialoperator.components.emails.emails import TemplateEmailBase
 from commercialoperator.components.bookings.confirmation_pdf import (
     create_confirmation_pdf_bytes,
 )
+from commercialoperator.components.bookings.invoice_compliance_pdf import (
+    create_invoice_compliance_pdf_bytes,
+)
+from commercialoperator.components.bookings.models import Booking
 from commercialoperator.components.bookings.monthly_confirmation_pdf import (
     create_monthly_confirmation_pdf_bytes,
 )
-from commercialoperator.components.bookings.models import Booking
+from commercialoperator.components.emails.emails import TemplateEmailBase
+from commercialoperator.components.proposals.email import (
+    ProposalApprovalSendNotificationEmail,
+)
 from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
 
 logger = logging.getLogger(__name__)
@@ -235,7 +243,7 @@ def send_application_fee_confirmation_tclass_email_notification(
         _log_user_email(msg, proposal.submitter, proposal.submitter, sender=sender)
 
 
-#TODO default sender should be no-reply - consider refactoring all email functions to not use the request user email 
+# TODO default sender should be no-reply - consider refactoring all email functions to not use the request user email
 def send_invoice_tclass_email_notification(
     sender, booking, invoice, recipients, is_test=False
 ):
@@ -419,7 +427,7 @@ def send_monthly_invoices_failed_tclass(booking_ids):
             "proposal_org_applicant_organisation_organisation_name",
         ),
     }
-    msg = email.send(settings.NOTIFICATION_EMAIL, context=context)
+    email.send(settings.NOTIFICATION_EMAIL, context=context)
 
 
 def send_payment_due_notification_failed_tclass(bookings):
