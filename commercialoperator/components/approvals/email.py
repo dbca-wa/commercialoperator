@@ -1,16 +1,16 @@
+#!/usr/bin/env python
+
 import logging
 
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.encoding import smart_str as smart_text
-from django.urls import reverse
 from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.urls import reverse
+from django.utils.encoding import smart_str as smart_text
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import get_or_create
 from rest_framework import status
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
-
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import get_or_create
-
 from commercialoperator.components.segregation.models import EmailUserLogEntry
 from commercialoperator.components.segregation.utils import retrieve_email_user
 
@@ -20,15 +20,13 @@ SYSTEM_NAME = settings.SYSTEM_NAME_SHORT + " Automated Message"
 
 
 class ApprovalExpireNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence expired.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence expired."
     html_template = "commercialoperator/emails/approval_expire_notification.html"
     txt_template = "commercialoperator/emails/approval_expire_notification.txt"
 
 
 class FilmingLawfulAuthorityApprovalExpireNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Lawful Authoriy expired.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Lawful Authoriy expired."
     html_template = (
         "commercialoperator/emails/approval_lawful_authority_expire_notification.html"
     )
@@ -38,9 +36,7 @@ class FilmingLawfulAuthorityApprovalExpireNotificationEmail(TemplateEmailBase):
 
 
 class FilmingLicenceApprovalExpireNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Lawful Authoriy expired.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Lawful Authoriy expired."
     html_template = (
         "commercialoperator/emails/approval_filming_expire_notification.html"
     )
@@ -48,41 +44,37 @@ class FilmingLicenceApprovalExpireNotificationEmail(TemplateEmailBase):
 
 
 class ApprovalCancelNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence cancelled.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence cancelled."
     html_template = "commercialoperator/emails/approval_cancel_notification.html"
     txt_template = "commercialoperator/emails/approval_cancel_notification.txt"
 
 
 class ApprovalSuspendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence suspended.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence suspended."
     html_template = "commercialoperator/emails/approval_suspend_notification.html"
     txt_template = "commercialoperator/emails/approval_suspend_notification.txt"
 
 
 class ApprovalSurrenderNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence surrendered.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence surrendered."
     html_template = "commercialoperator/emails/approval_surrender_notification.html"
     txt_template = "commercialoperator/emails/approval_surrender_notification.txt"
 
 
 class ApprovalReinstateNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence reinstated.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence reinstated."
     html_template = "commercialoperator/emails/approval_reinstate_notification.html"
     txt_template = "commercialoperator/emails/approval_reinstate_notification.txt"
 
 
 class ApprovalRenewalNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations licence renewal.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations licence renewal."
     html_template = "commercialoperator/emails/approval_renewal_notification.html"
     txt_template = "commercialoperator/emails/approval_renewal_notification.txt"
 
 
 class ApprovalEclassRenewalNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations E class licence renewal.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations E class licence renewal."
     html_template = (
         "commercialoperator/emails/approval_eclass_renewal_notification.html"
     )
@@ -90,14 +82,13 @@ class ApprovalEclassRenewalNotificationEmail(TemplateEmailBase):
 
 
 class ApprovalEclassExpiryNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations E class licence expiry.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations E class licence expiry."
     html_template = "commercialoperator/emails/approval_eclass_expiry_notification.html"
     txt_template = "commercialoperator/emails/approval_eclass_expiry_notification.txt"
 
 
 def send_approval_expire_email_notification(approval):
+    # External recipients only
     if approval.is_lawful_authority:
         email = FilmingLawfulAuthorityApprovalExpireNotificationEmail()
     if approval.is_filming_licence:
@@ -123,7 +114,7 @@ def send_approval_expire_email_notification(approval):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         EmailUser.objects.create(email=sender, password="")
         sender_user = EmailUser.objects.get(email__icontains=sender)
 
@@ -479,8 +470,8 @@ def _log_approval_email(email_message, approval, sender=None):
 
 
 from commercialoperator.components.organisations.models import (
-    OrganisationLogEntry,
     Organisation,
+    OrganisationLogEntry,
 )
 
 
