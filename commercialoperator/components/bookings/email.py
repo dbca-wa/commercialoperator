@@ -35,12 +35,6 @@ class ComplianceFeeInvoiceEventsSendNotificationEmail(TemplateEmailBase):
     )
 
 
-# class ApplicationAwaitingPaymentInvoiceFilmingSendNotificationEmail(TemplateEmailBase):
-#    subject = 'Your filming fee awaiting payment invoice.'
-#    html_template = 'commercialoperator/emails/bookings/filming/send_filming_fee_awaiting_payment_notification.html'
-#    txt_template = 'commercialoperator/emails/bookings/filmig/send_filming_fee_awaiting_payment_notification.txt'
-
-
 class ApplicationInvoiceFilmingSendNotificationEmail(TemplateEmailBase):
     subject = "Your filming fee invoice."
     html_template = (
