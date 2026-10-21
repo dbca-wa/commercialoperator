@@ -89,7 +89,6 @@ def send_amendment_email_notification(
     amendment_request, request, compliance, is_test=False
 ):
     email = ComplianceAmendmentRequestSendNotificationEmail()
-    # reason = amendment_request.get_reason_display()
     reason = amendment_request.reason.reason
     url = request.build_absolute_uri(
         reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
@@ -133,7 +132,6 @@ def send_amendment_email_notification(
 def send_reminder_email_notification(compliance, is_test=False):
     """Used by the management command, therefore have no request object - therefore explicitly defining base_url"""
     email = ComplianceReminderNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
     url = settings.SITE_URL if settings.SITE_URL else ""
     url += reverse(
         "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
@@ -177,7 +175,6 @@ def send_reminder_email_notification(compliance, is_test=False):
 
 def send_internal_reminder_email_notification(compliance, is_test=False):
     email = ComplianceInternalReminderNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
     url = settings.SITE_URL
     url += reverse(
         "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
@@ -215,7 +212,6 @@ def send_internal_reminder_email_notification(compliance, is_test=False):
 
 def send_due_email_notification(compliance, is_test=False):
     email = ComplianceDueNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
     url = settings.SITE_URL
     url += reverse(
         "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
@@ -257,7 +253,6 @@ def send_due_email_notification(compliance, is_test=False):
 
 def send_internal_due_email_notification(compliance, is_test=False):
     email = ComplianceInternalDueNotificationEmail()
-    # url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
     url = settings.SITE_URL
     url += reverse(
         "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
@@ -395,9 +390,7 @@ def send_submit_email_notification(request, compliance, is_test=False):
 
 
 def send_notification_only_email(compliance, is_test=False):
-    # email = ComplianceDueNotificationEmail()
     email = ComplianceNotificationOnlyEmail()
-    # url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
     url = settings.SITE_URL
     url += reverse(
         "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
@@ -438,9 +431,7 @@ def send_notification_only_email(compliance, is_test=False):
 
 
 def send_internal_notification_only_email(compliance, is_test=False):
-    # email = ComplianceInternalDueNotificationEmail()
     email = ComplianceInternalNotificationOnlyEmail()
-    # url = request.build_absolute_uri(reverse('external-compliance-detail',kwargs={'compliance_pk': compliance.id}))
     url = settings.SITE_URL
     url += reverse(
         "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
