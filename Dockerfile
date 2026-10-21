@@ -2,6 +2,7 @@
 ARG IMAGE_TAG
 ARG IMAGE_NAME
 FROM ghcr.io/dbca-wa/docker-apps-dev:ubuntu_2604_base_python_node AS builder_base_cols
+RUN rm -f /usr/bin/pebble && rm -rf /var/lib/pebble
 ARG IMAGE_TAG
 ARG IMAGE_NAME
 RUN echo "Building version: $IMAGE_TAG for $IMAGE_NAME"
