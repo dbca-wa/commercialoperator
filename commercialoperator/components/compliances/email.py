@@ -9,6 +9,10 @@ from django.utils.encoding import smart_str as smart_text
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
+from commercialoperator.helpers import (
+    convert_external_url_to_internal_url,
+    convert_internal_url_to_external_url,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +92,7 @@ def send_amendment_email_notification(
     url = request.build_absolute_uri(
         reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
     )
-    url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     context = {
         "compliance": compliance,
@@ -127,12 +131,13 @@ def send_amendment_email_notification(
 def send_reminder_email_notification(compliance, is_test=False):
     """Used by the management command, therefore have no request object - therefore explicitly defining base_url"""
     email = ComplianceReminderNotificationEmail()
-    url = settings.SITE_URL if settings.SITE_URL else ""
-    url += reverse(
-        "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
-    login_url = settings.SITE_URL if settings.SITE_URL else ""
-    login_url += reverse("external")
+
+    url = reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_internal_url_to_external_url(url)
+
+    login_url = reverse("external")
+    login_url = convert_internal_url_to_external_url(login_url)
+
     context = {"compliance": compliance, "url": url, "login_url": login_url}
 
     submitter = (
@@ -170,15 +175,9 @@ def send_reminder_email_notification(compliance, is_test=False):
 
 def send_internal_reminder_email_notification(compliance, is_test=False):
     email = ComplianceInternalReminderNotificationEmail()
-    url = settings.SITE_URL
-    url += reverse(
-        "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
-    if "-internal" not in url:
-        # add it. This email is for internal staff
-        url = f"-internal.{settings.SITE_DOMAIN}".join(
-            url.split("." + settings.SITE_DOMAIN)
-        )
+
+    url = reverse("internal-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_external_url_to_internal_url(url)
 
     context = {"compliance": compliance, "url": url}
 
@@ -207,10 +206,10 @@ def send_internal_reminder_email_notification(compliance, is_test=False):
 
 def send_due_email_notification(compliance, is_test=False):
     email = ComplianceDueNotificationEmail()
-    url = settings.SITE_URL
-    url += reverse(
-        "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
+
+    url = reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_internal_url_to_external_url(url)
+
     context = {"compliance": compliance, "url": url}
 
     submitter = (
@@ -248,15 +247,9 @@ def send_due_email_notification(compliance, is_test=False):
 
 def send_internal_due_email_notification(compliance, is_test=False):
     email = ComplianceInternalDueNotificationEmail()
-    url = settings.SITE_URL
-    url += reverse(
-        "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
-    if "-internal" not in url:
-        # add it. This email is for internal staff
-        url = f"-internal.{settings.SITE_DOMAIN}".join(
-            url.split("." + settings.SITE_DOMAIN)
-        )
+
+    url = reverse("internal-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_external_url_to_internal_url(url)
 
     context = {"compliance": compliance, "url": url}
 
@@ -315,10 +308,9 @@ def send_compliance_accept_email_notification(compliance, request, is_test=False
 
 def send_external_submit_email_notification(request, compliance, is_test=False):
     email = ComplianceExternalSubmitSendNotificationEmail()
-    url = settings.SITE_URL + reverse(
-        "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
-    url = "".join(url.split("-internal"))
+    url = reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_internal_url_to_external_url(url)
+
     submitter = (
         compliance.submitter
         if compliance.submitter and compliance.submitter.email
@@ -356,15 +348,9 @@ def send_external_submit_email_notification(request, compliance, is_test=False):
 
 def send_submit_email_notification(request, compliance, is_test=False):
     email = ComplianceSubmitSendNotificationEmail()
-    url = settings.SITE_URL + reverse(
-        "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
 
-    if "-internal" not in url:
-        # add it. This email is for internal staff
-        url = f"-internal.{settings.SITE_DOMAIN}".join(
-            url.split("." + settings.SITE_DOMAIN)
-        )
+    url = reverse("internal-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_external_url_to_internal_url(url)
 
     context = {"compliance": compliance, "url": url}
 
@@ -390,10 +376,10 @@ def send_submit_email_notification(request, compliance, is_test=False):
 
 def send_notification_only_email(compliance, is_test=False):
     email = ComplianceNotificationOnlyEmail()
-    url = settings.SITE_URL
-    url += reverse(
-        "external-compliance-detail", kwargs={"compliance_pk": compliance.id}
-    )
+
+    url = reverse("external-compliance-detail", kwargs={"compliance_pk": compliance.id})
+    url = convert_internal_url_to_external_url(url)
+
     context = {"compliance": compliance, "url": url}
 
     submitter = (
@@ -431,15 +417,11 @@ def send_notification_only_email(compliance, is_test=False):
 
 def send_internal_notification_only_email(compliance, is_test=False):
     email = ComplianceInternalNotificationOnlyEmail()
-    url = settings.SITE_URL
-    url += reverse(
+
+    url = reverse(
         "internal-compliance-detail", kwargs={"compliance_pk": compliance.id}
     )
-    if "-internal" not in url:
-        # add it. This email is for internal staff
-        url = f"-internal.{settings.SITE_DOMAIN}".join(
-            url.split("." + settings.SITE_DOMAIN)
-        )
+    url = convert_external_url_to_internal_url(url)
 
     context = {"compliance": compliance, "url": url}
 
