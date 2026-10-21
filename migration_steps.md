@@ -97,3 +97,12 @@ python manage.py migrate_auth_groups
 ```
 python manage.py populate_file_extension_whitelist
 ```
+
+**Step 7 Set up required ENVs**
+
+ENVs required for converting urls in email between internal and external:
+
+```
+COMMERCIALOPERATOR_EXTERNAL_URL=<appropriate url depending on environment> e.g. cols.dbca.wa.gov.au
+COMMERCIALOPERATOR_INTERNAL_URL=<appropriate url depending on environment> e.g. cols-internal.dbca.wa.gov.au
+```
