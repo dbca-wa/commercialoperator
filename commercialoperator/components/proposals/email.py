@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import logging
 from datetime import datetime
 
@@ -661,7 +663,7 @@ def send_proposal_awaiting_payment_approval_email_notification(proposal, request
     filename_appended = "{}_{}.{}".format(
         "invoice", datetime.now().strftime("%d%b%Y"), "pdf"
     )
-    log_proposal = _log_proposal_email(
+    _log_proposal_email(
         msg, proposal, sender=sender, file_bytes=doc, filename=filename_appended
     )
 
@@ -1173,8 +1175,6 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
         to = customer
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = customer
 
     staff = sender
 
