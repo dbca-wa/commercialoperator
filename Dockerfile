@@ -2,7 +2,6 @@
 ARG IMAGE_TAG
 ARG IMAGE_NAME
 FROM ghcr.io/dbca-wa/docker-apps-dev:ubuntu_2604_base_python_node AS builder_base_cols
-RUN rm -f /usr/bin/pebble && rm -rf /var/lib/pebble
 ARG IMAGE_TAG
 ARG IMAGE_NAME
 RUN echo "Building version: $IMAGE_TAG for $IMAGE_NAME"
@@ -87,6 +86,13 @@ RUN chmod 755 /startup.sh
 #RUN mkdir /app/logs/.ipython
 #RUN export IPYTHONDIR=/app/logs/.ipython/
 #RUN python profile create
+
+# Cleanup
+USER root
+RUN wget -q https://raw.githubusercontent.com/dbca-wa/wagov_utils/refs/heads/main/wagov_utils/bin/package_cleanup_2604.sh -O /tmp/package_cleanup_2604.sh && \
+    bash -e /tmp/package_cleanup_2604.sh && \
+    rm -f /tmp/package_cleanup_2604.sh
+USER oim
 
 EXPOSE 8080
 HEALTHCHECK --interval=1m --timeout=5s --start-period=10s --retries=3 CMD ["wget", "-q", "-O", "-", "http://localhost:8080/"]
