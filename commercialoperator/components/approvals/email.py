@@ -168,14 +168,9 @@ def send_approval_suspend_email_notification(approval, request=None):
     email = ApprovalSuspendNotificationEmail()
     proposal = approval.current_proposal
 
-    if request and "test-emails" in request.path_info:
-        details = "This are my test details"
-        from_date = "01/01/1970"
-        to_date = "01/01/2070"
-    else:
-        details = (approval.suspension_details["details"],)
-        from_date = (approval.suspension_details["from_date"],)
-        to_date = approval.suspension_details["to_date"]
+    details = (approval.suspension_details["details"],)
+    from_date = (approval.suspension_details["from_date"],)
+    to_date = approval.suspension_details["to_date"]
 
     context = {
         "approval": approval,
