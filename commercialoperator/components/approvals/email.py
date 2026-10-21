@@ -298,8 +298,12 @@ def send_approval_renewal_email_notification(approval):
             file_name = approval.renewal_document.name
             attachment = (file_name, renewal_document.file.read(), "application/pdf")
             attachment = [attachment]
-        except:
-            logger.warning(f"{file_name} does not exist.")
+        except (FileNotFoundError, OSError, ValueError, AttributeError) as exc:
+            logger.warning(
+                "Could not load renewal document %s: %s",
+                file_name or approval.id,
+                exc,
+            )
     else:
         attachment = []
     all_ccs = []
