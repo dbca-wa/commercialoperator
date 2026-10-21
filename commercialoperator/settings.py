@@ -1,21 +1,23 @@
-from django.core.exceptions import ImproperlyConfigured
+#!/usr/bin/env python
 
-import os, hashlib
+import hashlib
+import json
+import os
+import sys
+
 import confy
+import decouple
 from confy import env
-import logging
-
-logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.exists(BASE_DIR + "/.env"):
     confy.read_environment_file(BASE_DIR + "/.env")
 os.environ.setdefault("BASE_DIR", BASE_DIR)
 
-from ledger_api_client.settings_base import *  # noqa: F403
+from ledger_api_client.settings_base import *
 
 ROOT_URLCONF = "commercialoperator.urls"
-COMMERCIALOPERATOR_EXTERNAL_URL=env("COMMERCIALOPERATOR_EXTERNAL_URL","")
+COMMERCIALOPERATOR_EXTERNAL_URL = env("COMMERCIALOPERATOR_EXTERNAL_URL", "")
 SITE_ID = 1
 DEPT_DOMAINS = env("DEPT_DOMAINS", ["dpaw.wa.gov.au", "dbca.wa.gov.au"])
 SYSTEM_MAINTENANCE_WARNING = env("SYSTEM_MAINTENANCE_WARNING", 24)  # hours
@@ -23,23 +25,20 @@ SHOW_TESTS_URL = env("SHOW_TESTS_URL", False)
 SHOW_DEBUG_TOOLBAR = env("SHOW_DEBUG_TOOLBAR", False)
 
 FILE_UPLOAD_PERMISSIONS = None
-PRIVATE_MEDIA_DIR_NAME = env('PRIVATE_MEDIA_DIR_NAME', 'private-media')
+PRIVATE_MEDIA_DIR_NAME = env("PRIVATE_MEDIA_DIR_NAME", "private-media")
 PRIVATE_MEDIA_STORAGE_LOCATION = os.path.join(BASE_DIR, PRIVATE_MEDIA_DIR_NAME)
-PRIVATE_MEDIA_BASE_URL = f'/{PRIVATE_MEDIA_DIR_NAME}/'
-SESSION_ENGINE = 'django.contrib.sessions.backends.file'
-SESSION_FILE_PATH = env('SESSION_FILE_PATH', default='/app/session_store/')
+PRIVATE_MEDIA_BASE_URL = f"/{PRIVATE_MEDIA_DIR_NAME}/"
+SESSION_ENGINE = "django.contrib.sessions.backends.file"
+SESSION_FILE_PATH = env("SESSION_FILE_PATH", default="/app/session_store/")
 
 BUILD_TAG = env(
     "BUILD_TAG", hashlib.md5(os.urandom(32)).hexdigest()
 )  # URL of the Dev app.js served by webpack & express
 VERSION_NO = "1.0.1"
 
-if env("CONSOLE_EMAIL_BACKEND", False):
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 SHOW_ROOT_API = env("SHOW_ROOT_API", False)
-SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE', True)
-CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE', True)
+SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE", True)
+CSRF_COOKIE_SECURE = env("CSRF_COOKIE_SECURE", True)
 
 TEMPLATE_TITLE = "Commercial Operator Licensing"
 TEMPLATE_HEADER_LOGO = "/static/commercialoperator/img/logo-park-stay-trunc.gif"
@@ -53,16 +52,12 @@ GEOS_LIBRARY_PATH = os.environ.get(
     "GEOS_LIBRARY_PATH",
 )
 # Use git commit hash for purging cache in browser for deployment changes
-GIT_COMMIT_HASH = os.popen(
-    f"cd {BASE_DIR}; git log -1 --format=%H"
-).read()  # noqa: S605
-GIT_COMMIT_DATE = os.popen(
-    f"cd {BASE_DIR}; git log -1 --format=%cd"
-).read()  # noqa: S605
+GIT_COMMIT_HASH = os.popen(f"cd {BASE_DIR}; git log -1 --format=%H").read()
+GIT_COMMIT_DATE = os.popen(f"cd {BASE_DIR}; git log -1 --format=%cd").read()
 if len(GIT_COMMIT_HASH) == 0:
     GIT_COMMIT_HASH = os.popen("cat /app/git_hash").read()
     if len(GIT_COMMIT_HASH) == 0:
-        logger.error("No git hash available to tag urls for pinned caching")
+        print("No git hash available to tag urls for pinned caching")
 APPLICATION_VERSION = env("APPLICATION_VERSION", "1.0.0") + "-" + GIT_COMMIT_HASH[:7]
 
 if SHOW_DEBUG_TOOLBAR:
@@ -110,7 +105,7 @@ INSTALLED_APPS += [
     "multiselectfield",
     "appmonitor_client",
     "django_vite",
-    'wagov_utils.components.sri_utils',
+    "wagov_utils.components.sri_utils",
 ]
 
 # Not using django cron
@@ -128,8 +123,8 @@ REST_FRAMEWORK = {
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
 }
 
 
@@ -175,7 +170,7 @@ else:
 
 CACHE_TIMEOUT_2_HOURS = 60 * 60 * 2
 CACHE_KEY_FILE_EXTENSION_WHITELIST = "file-extension-whitelist"
-FILE_SIZE_LIMIT_BYTES = env('FILE_SIZE_LIMIT_BYTES' ,128000000)
+FILE_SIZE_LIMIT_BYTES = env("FILE_SIZE_LIMIT_BYTES", 128000000)
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
@@ -184,7 +179,9 @@ STATICFILES_DIRS.append(
     os.path.join(os.path.join(BASE_DIR, "commercialoperator", "static"))
 )
 STATICFILES_DIRS.append(
-  os.path.join(os.path.join(BASE_DIR, "commercialoperator", "static", "commercialoperator_vue"))
+    os.path.join(
+        os.path.join(BASE_DIR, "commercialoperator", "static", "commercialoperator_vue")
+    )
 )
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
@@ -194,8 +191,24 @@ SYSTEM_NAME = env("SYSTEM_NAME", "Commercial Operator Licensing")
 SYSTEM_NAME_SHORT = env("SYSTEM_NAME_SHORT", "COLS")
 SITE_PREFIX = env("SITE_PREFIX")
 SITE_DOMAIN = env("SITE_DOMAIN")
+
+# Email related settings
+DISABLE_EMAIL = env("DISABLE_EMAIL", False)
 SUPPORT_EMAIL = env("SUPPORT_EMAIL", "licensing@" + SITE_DOMAIN).lower()
 SUPPORT_EMAIL_FILMING = env("SUPPORT_EMAIL_FILMING", "filming@" + SITE_DOMAIN).lower()
+EMAIL_DELIVERY = env("EMAIL_DELIVERY", "off")
+EMAIL_INSTANCE = env("EMAIL_INSTANCE", "DEV")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
+
+CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
+
+# for ORACLE Job Notification - override settings_base.py
+EMAIL_FROM = DEFAULT_FROM_EMAIL
+CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
+
+if env("CONSOLE_EMAIL_BACKEND", False):
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 DEP_URL = env("DEP_URL", "www." + SITE_DOMAIN)
 DEP_PHONE = env("DEP_PHONE", "(08) 9219 9978")
 DEP_PHONE_FILMING = env("DEP_PHONE_FILMING", "(08) 9219 8411")
@@ -211,7 +224,6 @@ DEP_ADDRESS = env("DEP_ADDRESS", "17 Dick Perry Avenue, Kensington WA 6151")
 SITE_URL = env("SITE_URL", "https://" + SITE_PREFIX + "." + SITE_DOMAIN)
 PUBLIC_URL = env("PUBLIC_URL", SITE_URL)
 PUBLIC_URL = PUBLIC_URL if PUBLIC_URL.endswith(os.sep) else PUBLIC_URL + os.sep
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", "no-reply@" + SITE_DOMAIN).lower()
 MEDIA_APP_DIR = env("MEDIA_APP_DIR", "cols")
 ADMIN_GROUP = env("ADMIN_GROUP", "COLS Admin")
 
@@ -242,9 +254,6 @@ COLS_FILMING_HANDBOOK_URL = env(
     "https://www.dbca.wa.gov.au/management/nature-based-tourism/commercial-activities/commercial-filming",
 )
 CRON_RUN_AT_TIMES = env("CRON_RUN_AT_TIMES", "04:05")
-CRON_EMAIL = env("CRON_EMAIL", "cron@" + SITE_DOMAIN).lower()
-# for ORACLE Job Notification - override settings_base.py
-EMAIL_FROM = DEFAULT_FROM_EMAIL
 OTHER_PAYMENT_ALLOWED = env("OTHER_PAYMENT_ALLOWED", False)  # Cash/Cheque
 
 OSCAR_BASKET_COOKIE_OPEN = "cols_basket"
@@ -256,7 +265,6 @@ PAYMENT_SYSTEM_PREFIX = env(
 os.environ["LEDGER_PRODUCT_CUSTOM_FIELDS"] = (
     "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
 )
-CRON_NOTIFICATION_EMAIL = env("CRON_NOTIFICATION_EMAIL", NOTIFICATION_EMAIL).lower()
 VERSION_NO = "1.0.1"
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -373,36 +381,81 @@ CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
 ORGANISATION_PERMISSION_MODULE = "commercialoperator.components.permission.permission"
 
 LEDGER_UI_ORGANISATION_MANAGEMENT = [
-        {'organisation_name': {'options' : {'view': True, 'edit': True}}},
-        {'organisation_abn': {'options' : {'view': True, 'edit': True}}},
-        {'organisation_trading_name': {'options' : {'view': True, 'edit': True}}},
-        {'organisation_email': {'options' : {'view': True, 'edit': True}}},
-        {'billing_address': {'options' : {'view': True, 'edit': True}}},
-        {'postal_address': {'options' : {'view': True, 'edit': True}}}
+    {"organisation_name": {"options": {"view": True, "edit": True}}},
+    {"organisation_abn": {"options": {"view": True, "edit": True}}},
+    {"organisation_trading_name": {"options": {"view": True, "edit": True}}},
+    {"organisation_email": {"options": {"view": True, "edit": True}}},
+    {"billing_address": {"options": {"view": True, "edit": True}}},
+    {"postal_address": {"options": {"view": True, "edit": True}}},
 ]
 
-DJANGO_VITE_DEV_MODE = env("DJANGO_VITE_DEV_MODE", False)
-if DEBUG and not DJANGO_VITE_DEV_MODE:
-    print("\nServer running in DEBUG mode, frontend hot module reloading is OFF. Set env var DJANGO_VITE_DEV_MODE to True to enable hot module reloading.\n")
-else:
-    print("\nServer running in DEBUG mode, frontend hot module reloading is ON. Set env var DJANGO_VITE_DEV_MODE to False to disable hot module reloading.\n")
+# 1. Detect if runserver is being executed
+RUNNING_DEVSERVER = "runserver" in sys.argv
 
-STATIC_URL_PREFIX = "/static/commercialoperator_vue/" if DJANGO_VITE_DEV_MODE else "commercialoperator_vue/"
+# 2. Detect if this is an active developer container vs a production/staging AKS pod
+# Check if "userdev" is in the hostname (e.g. commercialoperator-userdev-8dbb5cb9c-mfwv7)
+IS_USERDEV_CONTAINER = "userdev" in os.environ.get("HOSTNAME", "").lower()
+
+# 3. Default to True ONLY in dev pods with runserver and DEBUG
+DEFAULT_VITE_DEV_MODE = (
+    RUNNING_DEVSERVER and DEBUG and EMAIL_INSTANCE == "DEV" and IS_USERDEV_CONTAINER
+)
+
+# 4. Allow manual override via environment variable
+raw_vite_mode = env("DJANGO_VITE_DEV_MODE", DEFAULT_VITE_DEV_MODE)
+DJANGO_VITE_DEV_MODE = (
+    raw_vite_mode
+    if isinstance(raw_vite_mode, bool)
+    else str(raw_vite_mode).lower() in ("true", "1", "yes", "t")
+)
+
+# 5. Clean notification (using print with RUN_MAIN so it displays once on startup)
+if RUNNING_DEVSERVER and os.environ.get("RUN_MAIN") == "true":
+    if DJANGO_VITE_DEV_MODE:
+        print("\n⚡ [Vite] Dev mode is ON (Hot Module Reloading) 🔥\n")
+    else:
+        print("\n📦 [Vite] Dev mode is OFF (Serving built bundle)\n")
+
+# 6. Django Vite configuration
+STATIC_URL_PREFIX = (
+    "/static/commercialoperator_vue/"
+    if DJANGO_VITE_DEV_MODE
+    else "commercialoperator_vue/"
+)
 
 DJANGO_VITE = {
-  "default": {
-    "dev_mode": DJANGO_VITE_DEV_MODE,
-    "manifest_path": os.path.join(
-        BASE_DIR, "commercialoperator", "static", "commercialoperator_vue", "manifest.json"
-    ),
-    "dev_server_host": "localhost", # Default host for vite (can change if needed)
-    "dev_server_port": env("DJANGO_VITE_DEV_SERVER_PORT", 5173), # Default port for vite (can change if needed)
-    "static_url_prefix": STATIC_URL_PREFIX,
-  }
+    "default": {
+        "dev_mode": DJANGO_VITE_DEV_MODE,
+        "manifest_path": os.path.join(
+            BASE_DIR,
+            "commercialoperator",
+            "static",
+            "commercialoperator_vue",
+            "manifest.json",
+        ),
+        "dev_server_host": "localhost",
+        "dev_server_port": int(env("DEV_SERVER_PORT", 5173)),
+        "static_url_prefix": STATIC_URL_PREFIX,
+    }
 }
 
+VUE3_ENTRY_SCRIPT = env("VUE3_ENTRY_SCRIPT", "src/main.js")
 
-VUE3_ENTRY_SCRIPT = env(
-  "VUE3_ENTRY_SCRIPT",
-  default="src/main.js", # This path will be auto prefixed with the       static_url_prefix from DJANGO_VITE above
-) # Path of the vue3 entry point script served by vite
+CONTAINER_IMAGE_TAG = env("CONTAINER_IMAGE_TAG", "CONTAINER_IMAGE_TAG ENV Not Set")
+
+# Sentry settings
+SENTRY_DSN = env("SENTRY_DSN", default=None)
+SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE", default=1.0)  # Error sampling rate
+SENTRY_TRANSACTION_SAMPLE_RATE = env(
+    "SENTRY_TRANSACTION_SAMPLE_RATE", default=0.0
+)  # Transaction sampling
+if not RUNNING_DEVSERVER and SENTRY_DSN and EMAIL_INSTANCE:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        sample_rate=SENTRY_SAMPLE_RATE,
+        traces_sample_rate=SENTRY_TRANSACTION_SAMPLE_RATE,
+        environment=EMAIL_INSTANCE.lower(),
+        release=CONTAINER_IMAGE_TAG,
+    )
