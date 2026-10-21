@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import logging
 
 from django.conf import settings
@@ -150,7 +152,7 @@ def send_reminder_email_notification(compliance, is_test=False):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         sender_user = EmailUser.objects.create(email=sender, password="", is_staff=True)
     _log_compliance_email(msg, compliance, sender=sender_user)
     if compliance.proposal.org_applicant:
@@ -187,7 +189,7 @@ def send_internal_reminder_email_notification(compliance, is_test=False):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         sender_user = EmailUser.objects.create(email=sender, password="")
     _log_compliance_email(msg, compliance, sender=sender_user)
     if compliance.proposal.org_applicant:
@@ -228,7 +230,7 @@ def send_due_email_notification(compliance, is_test=False):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         sender_user = EmailUser.objects.create(email=sender, password="", is_staff=True)
     _log_compliance_email(msg, compliance, sender=sender_user)
     if compliance.proposal.org_applicant:
@@ -265,7 +267,7 @@ def send_internal_due_email_notification(compliance, is_test=False):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         sender_user = EmailUser.objects.create(email=sender, password="", is_staff=True)
     _log_compliance_email(msg, compliance, sender=sender_user)
     if compliance.proposal.org_applicant:
@@ -411,7 +413,7 @@ def send_notification_only_email(compliance, is_test=False):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         sender_user = EmailUser.objects.create(email=sender, password="", is_staff=True)
     _log_compliance_email(msg, compliance, sender=sender_user)
     if compliance.proposal.org_applicant:
@@ -448,7 +450,7 @@ def send_internal_notification_only_email(compliance, is_test=False):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         sender_user = EmailUser.objects.create(email=sender, password="", is_staff=True)
     _log_compliance_email(msg, compliance, sender=sender_user)
     if compliance.proposal.org_applicant:
@@ -550,8 +552,6 @@ def _log_org_email(email_message, organisation, customer, sender=None):
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
-    customer = customer
-
     staff = sender
 
     kwargs = {
@@ -602,8 +602,6 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
         to = customer
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = customer
 
     staff = sender
 
