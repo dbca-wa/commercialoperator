@@ -13,6 +13,7 @@ from rest_framework import status
 from commercialoperator.components.emails.emails import TemplateEmailBase
 from commercialoperator.components.segregation.models import EmailUserLogEntry
 from commercialoperator.components.segregation.utils import retrieve_email_user
+from commercialoperator.helpers import convert_internal_url_to_external_url
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +101,7 @@ def send_approval_expire_email_notification(approval):
     url = settings.SITE_URL if settings.SITE_URL else ""
     url += reverse("external")
 
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     context = {"approval": approval, "proposal": proposal, "url": url}
     all_ccs = []
@@ -253,14 +252,13 @@ def send_approval_surrender_email_notification(approval, request=None):
 
 # approval renewal notice
 def send_approval_renewal_email_notification(approval):
+    # External recipients only
     email = ApprovalRenewalNotificationEmail()
     proposal = approval.current_proposal
     url = settings.SITE_URL if settings.SITE_URL else ""
     url += reverse("external")
 
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     context = {
         "approval": approval,
