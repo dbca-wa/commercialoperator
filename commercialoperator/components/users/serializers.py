@@ -1,35 +1,41 @@
+import logging
+from datetime import timedelta
+
 from django.conf import settings
 from django.db.models import Q
+from django.utils import timezone
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from rest_framework import serializers
+
+from commercialoperator.components.approvals.models import Approval
 from commercialoperator.components.main.mixins import (
     RetrieveUserResidentialAddressMixin,
+)
+from commercialoperator.components.main.models import (
+    ApplicationType,
+    CommunicationsLogEntry,
+    Document,
+    UserSystemSettings,
 )
 from commercialoperator.components.organisations.models import (
     Organisation,
 )
-from commercialoperator.components.main.models import (
-    CommunicationsLogEntry,
-    UserSystemSettings,
-    Document,
-    ApplicationType,
-)
-from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.organisations.utils import (
     can_admin_org,
     is_consultant,
     is_org_access_member,
 )
+from commercialoperator.components.proposals.models import Proposal
 from commercialoperator.components.segregation.utils import (
     retrieve_cols_organisations_from_ledger_org_ids,
     retrieve_ledger_user_info_by_id,
 )
-from commercialoperator.helpers import in_dbca_domain, is_commercialoperator_admin, is_internal, is_payment_admin
-from commercialoperator.components.approvals.models import Approval
-from rest_framework import serializers, status
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from django.utils import timezone
-from datetime import timedelta
-
-import logging
+from commercialoperator.helpers import (
+    in_dbca_domain,
+    is_commercialoperator_admin,
+    is_internal,
+    is_payment_admin,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -281,11 +287,14 @@ class UserSerializer(serializers.ModelSerializer):
         return bool(user_obj.get("residential_address", {}))
 
     def get_contact_details(self, obj):
-        if obj.mobile_number and obj.email:
-            return True
-        elif obj.phone_number and obj.email:
-            return True
-        elif obj.mobile_number and obj.phone_number:
+        if (
+            obj.mobile_number
+            and obj.email
+            or obj.phone_number
+            and obj.email
+            or obj.mobile_number
+            and obj.phone_number
+        ):
             return True
         else:
             return False
@@ -314,18 +323,9 @@ class UserSerializer(serializers.ModelSerializer):
         return serialized_orgs.data
 
     def get_system_settings(self, obj):
-        try:
-            user_id = obj.id
-            # user_id = 119740 # An existing user id for testing
-            user_system_settings = UserSystemSettings.objects.get(user_id=user_id)
-        except UserSystemSettings.DoesNotExist:
-            serialized_settings = UserSystemSettingsSerializer(None).data
-        else:
-            serialized_settings = UserSystemSettingsSerializer(
-                user_system_settings
-            ).data
-        finally:
-            return serialized_settings
+        # getattr handles the RelatedObjectDoesNotExist exception cleanly
+        settings = getattr(obj, "system_settings", None)
+        return UserSystemSettingsSerializer(settings).data
 
     def get_is_commercialoperator_admin(self, obj):
         request = self.context["request"] if self.context else None
@@ -339,11 +339,17 @@ class UserSerializer(serializers.ModelSerializer):
             return is_org_access_member(request.user)
         return False
 
-    def get_acc_mgmt_url(self,obj):
-        request = self.context.get('request')
+    def get_acc_mgmt_url(self, obj):
+        request = self.context.get("request")
         if settings.LEDGER_UI_URL and request and is_internal(request):
-            return settings.LEDGER_UI_URL + "/ledger/account-management/" + str(obj.id) + "/change/"
-        return ''
+            return (
+                settings.LEDGER_UI_URL
+                + "/ledger/account-management/"
+                + str(obj.id)
+                + "/change/"
+            )
+        return ""
+
 
 class PersonalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -396,7 +402,7 @@ class CommunicationLogEntrySerializer(serializers.ModelSerializer):
             "cc",
             "log_type",
             "reference",
-            "subject" "text",
+            "subjecttext",
             "created",
             "staff",
             "emailuser",
@@ -405,6 +411,3 @@ class CommunicationLogEntrySerializer(serializers.ModelSerializer):
 
     def get_documents(self, obj):
         return [[d.name, d._file.url] for d in obj.documents.all()]
-
-
-
