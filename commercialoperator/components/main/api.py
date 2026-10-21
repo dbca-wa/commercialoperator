@@ -118,6 +118,7 @@ class ActivityMatrixViewSet(viewsets.ReadOnlyModelViewSet):
 class ApplicationTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ApplicationType.objects.none()
     serializer_class = ApplicationTypeSerializer
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
@@ -129,6 +130,7 @@ class ApplicationTypeViewSet(viewsets.ReadOnlyModelViewSet):
 class AccessTypeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AccessType.objects.none()
     serializer_class = AccessTypeSerializer
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
@@ -140,6 +142,7 @@ class AccessTypeViewSet(viewsets.ReadOnlyModelViewSet):
 class GlobalSettingsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = GlobalSettings.objects.none
     serializer_class = GlobalSettingsSerializer
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
