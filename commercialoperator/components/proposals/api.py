@@ -2112,7 +2112,8 @@ class ProposalViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             serializer.validated_data["email_group"],
             serializer.validated_data["text"],
         )
-        serializer = InternalProposalSerializer(instance, context={"request": request})
+        serializer_class = self.internal_serializer_class()
+        serializer = serializer_class(instance, context={"request": request})
         return Response(serializer.data)
 
     @action(methods=["post"], detail=True)
