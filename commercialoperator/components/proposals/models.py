@@ -987,6 +987,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     @property
     def fee_paid(self):
         """get cached value, if it exists"""
+        if self.is_amendment_proposal:
+            return True
         if "fee_paid" not in self.property_cache:
             self.update_property_cache()
 
@@ -996,13 +998,15 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
     def _fee_paid(self):
         from commercialoperator.components.bookings.utils import get_invoice_properties
 
+        if self.is_amendment_proposal:
+            return True
         if not self.invoice:
             return False
 
         invoice_properties = get_invoice_properties(self.invoice.id)
         payment_status = invoice_properties.get("invoice", {}).get("payment_status")
 
-        if payment_status in ["paid", "over_paid"] or self.proposal_type == "amendment":
+        if payment_status in ["paid", "over_paid"]:
             return True
         return False
 
@@ -1267,6 +1271,8 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
             return "submitter"
 
     def reset_training_completed(self, request):
+        if self.is_amendment_proposal:
+            return
         today = timezone.now().date()
         timedelta = datetime.timedelta
         if self.application_type.name == ApplicationType.EVENT:
@@ -1338,6 +1344,11 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
 
     @property
     def applicant_training_completed(self):
+        if (
+            self.is_amendment_proposal
+            and self.application_type.name == ApplicationType.EVENT
+        ):
+            return True
         today = timezone.now().date()
         timedelta = datetime.timedelta
         if self.org_applicant:
