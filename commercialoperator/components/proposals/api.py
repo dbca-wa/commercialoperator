@@ -616,6 +616,14 @@ class ProposalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
             return Response([])
 
         qs = self.get_queryset()
+        applicant_id = request.GET.get("org_id")
+        if applicant_id:
+            try:
+                applicant_id = int(applicant_id)
+            except (TypeError, ValueError):
+                qs = qs.none()
+            else:
+                qs = qs.filter(org_applicant__organisation_id=applicant_id)
         qs = self.filter_queryset(qs)
 
         result_page = self.paginator.paginate_queryset(qs, request)
