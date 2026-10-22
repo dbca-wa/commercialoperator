@@ -238,7 +238,7 @@ export default {
             showResult: false,
             showAnswer: false,
             attempt: 1,
-            global_settings: [],
+            global_settings: null,
             answer_one: 'answer_one',
             answer_two: 'answer_two',
             answer_three: 'answer_three',
@@ -249,27 +249,10 @@ export default {
     },
     computed: {
         training_doc_url: function () {
-            let vm = this;
-            let fallback_url = '';
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'event_online_training_document'
-                    ) {
-                        if (vm.global_settings.results[i].value) {
-                            return vm.global_settings.results[i].value;
-                        }
-                    }
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'online_training_document'
-                    ) {
-                        fallback_url = vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return fallback_url;
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'online_training_document'
+            );
         },
         showError: function () {
             var vm = this;
