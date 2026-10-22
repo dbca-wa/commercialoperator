@@ -479,7 +479,7 @@ export default {
             selected_accreditations: [],
             licence_period_choices: [],
             mooring: [''],
-            global_settings: [],
+            global_settings: null,
             pre_event_parks_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,
                 vm.$route.params.proposal_id + '/pre_event_parks'
@@ -488,50 +488,23 @@ export default {
     },
     computed: {
         deed_poll_url: function () {
-            let vm = this;
-            let fallback_url = '';
-            let specific_url = '';
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'deed_poll') {
-                        fallback_url = vm.global_settings.results[i].value;
-                    }
-                    if (
-                        vm.global_settings.results[i].key == 'deed_poll_event'
-                    ) {
-                        specific_url = vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return specific_url || fallback_url;
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'deed_poll_event',
+                'deed_poll'
+            );
         },
         credit_facility_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'credit_facility_link'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'credit_facility_link'
+            );
         },
         fees_and_charges: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'event_fees_and_charges'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'event_fees_and_charges'
+            );
         },
     },
     watch: {
