@@ -998,7 +998,7 @@ export default {
 
             helpers.fetchUrl(api_endpoints.application_types).then(
                 (response) => {
-                    vm.api_app_types = response.results;
+                    vm.api_app_types = response;
                     for (var i = 0; i < vm.api_app_types.length; i++) {
                         this.application_types.push({
                             text: vm.api_app_types[i].name,
