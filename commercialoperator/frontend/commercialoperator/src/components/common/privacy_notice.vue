@@ -71,9 +71,16 @@ export default {
     data() {
         return {
             isExpanded: true,
-            privacyPolicyUrl: 'https://www.dbca.wa.gov.au/privacy', // Default fallback
             globalSettings: null,
         };
+    },
+    computed: {
+        privacyPolicyUrl() {
+            return (
+                this.globalSettings?.privacy_policy_url ||
+                'https://www.dbca.wa.gov.au/privacy'
+            );
+        },
     },
     mounted() {
         this.fetchGlobalSettings();
@@ -87,7 +94,9 @@ export default {
                 this.globalSettings = await helpers.fetchUrl(
                     '/api/global_settings.json'
                 );
-                this.privacyPolicyUrl = this.globalSettings?.privacy_policy_url;
+                this.privacyPolicyUrl =
+                    this.globalSettings?.privacy_policy_url ||
+                    this.privacyPolicyUrl;
             } catch (error) {
                 console.error('Error fetching global settings:', error);
             }
