@@ -85,7 +85,7 @@ class ApplicationFeeView(TemplateView):
         return get_object_or_404(Proposal, id=self.kwargs["proposal_pk"])
 
     def post(self, request, *args, **kwargs):
-
+        application_fee = None
         try:
             proposal = self.get_object()
 
@@ -99,6 +99,11 @@ class ApplicationFeeView(TemplateView):
                     raise PermissionDenied
             except:
                 raise
+
+            if proposal.is_amendment_proposal:
+                raise PermissionDenied(
+                    "No application fee is payable for an amendment application."
+                )
 
             if request.user and isinstance(request.user,EmailUser):
                 if not proposal.submitter:

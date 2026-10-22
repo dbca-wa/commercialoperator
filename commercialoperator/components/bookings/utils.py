@@ -656,6 +656,8 @@ def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=Fa
     """EVENT: Create the ledger lines - line item for application fee sent to payment system"""
 
     def get_application_fee():
+        if proposal.is_amendment_proposal:
+            return Decimal("0.0")
         application_fee = proposal.application_type.application_fee
 
         org = proposal.org_applicant
