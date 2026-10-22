@@ -72,7 +72,7 @@ export default {
         return {
             isExpanded: true,
             privacyPolicyUrl: 'https://www.dbca.wa.gov.au/privacy', // Default fallback
-            globalSettings: [],
+            globalSettings: null,
         };
     },
     mounted() {
