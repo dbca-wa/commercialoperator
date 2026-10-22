@@ -1,17 +1,20 @@
+#!/usr/bin/env python
+
 import logging
-
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.encoding import smart_str as smart_text
-from django.urls import reverse
-from django.conf import settings
-from django.core.files.base import ContentFile
-
-from commercialoperator.components.emails.emails import TemplateEmailBase
 from datetime import datetime
 
-from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
+from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.urls import reverse
+from django.utils.encoding import smart_str as smart_text
 
+from commercialoperator.components.emails.emails import TemplateEmailBase
 from commercialoperator.components.main.models import private_storage
+from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
+from commercialoperator.helpers import (
+    convert_external_url_to_internal_url,
+    convert_internal_url_to_external_url,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +76,7 @@ class ProposalDeclineSendNotificationEmail(TemplateEmailBase):
 
 
 class ProposalApprovalSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence Approved.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence Approved."
     html_template = (
         "commercialoperator/emails/proposals/send_approval_notification.html"
     )
@@ -81,7 +84,7 @@ class ProposalApprovalSendNotificationEmail(TemplateEmailBase):
 
 
 class ProposalFilmingApprovalSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence Approved.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence Approved."
     html_template = (
         "commercialoperator/emails/proposals/send_filming_approval_notification.html"
     )
@@ -91,7 +94,7 @@ class ProposalFilmingApprovalSendNotificationEmail(TemplateEmailBase):
 
 
 class ProposalEventApprovalSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence Approved.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence Approved."
     html_template = (
         "commercialoperator/emails/proposals/send_event_approval_notification.html"
     )
@@ -101,17 +104,13 @@ class ProposalEventApprovalSendNotificationEmail(TemplateEmailBase):
 
 
 class ProposalAwaitingPaymentApprovalSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Application - Pending Payment.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Application - Pending Payment."
     html_template = "commercialoperator/emails/proposals/send_awaiting_payment_approval_notification.html"
     txt_template = "commercialoperator/emails/proposals/send_awaiting_payment_approval_notification.txt"
 
 
 class AmendmentRequestSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Incomplete application.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations Incomplete application."
     html_template = (
         "commercialoperator/emails/proposals/send_amendment_notification.html"
     )
@@ -119,9 +118,7 @@ class AmendmentRequestSendNotificationEmail(TemplateEmailBase):
 
 
 class FilmingAmendmentRequestSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Incomplete application.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Incomplete application."
     html_template = (
         "commercialoperator/emails/proposals/send_amendment_notification.html"
     )
@@ -135,7 +132,7 @@ class SubmitSendNotificationEmail(TemplateEmailBase):
 
 
 class ExternalSubmitSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Confirmation - Application submitted.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Confirmation - Application submitted."
     html_template = (
         "commercialoperator/emails/proposals/send_external_submit_notification.html"
     )
@@ -209,13 +206,10 @@ class DistrictProposalDeclineSendNotificationEmail(TemplateEmailBase):
 
 
 class DistrictProposalApprovalSendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Lawful Authority Approved.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Lawful Authority Approved."
     html_template = (
         "commercialoperator/emails/proposals/send_district_approval_notification.html"
     )
-    # html_template = 'commercialoperator/emails/proposals/send_district_decline_notification.html'
     txt_template = (
         "commercialoperator/emails/proposals/send_district_approval_notification.txt"
     )
@@ -226,11 +220,9 @@ def send_qaofficer_email_notification(proposal, recipients, request, reminder=Fa
     url = request.build_absolute_uri(
         reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
+    url = convert_external_url_to_internal_url(url)
 
-    if "test-emails" in request.path_info:
-        comments = "This is my test comment"
-    else:
-        comments = request.data["text"]
+    comments = request.data["text"]
 
     context = {
         "proposal": proposal,
@@ -260,15 +252,11 @@ def send_qaofficer_complete_email_notification(
     url = request.build_absolute_uri(
         reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
+    url = convert_external_url_to_internal_url(url)
 
-    # text = proposal.comms_logs.filter(type__icontains='qaofficer').last().text
-    if "test-emails" in request.path_info:
-        comments = "This is my test comment"
-    else:
-        comments = request.data["text"]
+    comments = request.data["text"]
 
     context = {
-        #'completed_by': text.split(':')[0],
         "proposal": proposal,
         "url": url,
         "completed_by": request.user.get_full_name(),
@@ -295,12 +283,14 @@ def send_referral_email_notification(referral, recipients, request, reminder=Fal
         proposed_start_date = referral.proposal.filming_activity.commencement_date
     else:
         email = ReferralSendNotificationEmail()
+
     url = request.build_absolute_uri(
         reverse(
             "internal-referral-detail",
             kwargs={"proposal_pk": referral.proposal.id, "referral_pk": referral.id},
         )
     )
+    url = convert_external_url_to_internal_url(url)
 
     filming_handbook_url = settings.COLS_FILMING_HANDBOOK_URL
     context = {
@@ -337,6 +327,7 @@ def send_referral_complete_email_notification(referral, request):
             "internal-proposal-detail", kwargs={"proposal_pk": referral.proposal.id}
         )
     )
+    url = convert_external_url_to_internal_url(url)
 
     context = {
         "completed_by": referral.referral,
@@ -347,7 +338,6 @@ def send_referral_complete_email_notification(referral, request):
     attachments = []
     if referral.document:
         file_name = referral.document._file.name
-        # attachment = (file_name, doc._file.file.read(), 'image/*')
         attachment = (file_name, referral.document._file.file.read())
         attachments.append(attachment)
 
@@ -373,15 +363,12 @@ def send_amendment_email_notification(amendment_request, request, proposal):
         email = FilmingAmendmentRequestSendNotificationEmail()
     else:
         email = AmendmentRequestSendNotificationEmail()
-    # reason = amendment_request.get_reason_display()
     reason = amendment_request.reason.reason
+
     url = request.build_absolute_uri(
         reverse("external-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
-
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     context = {
         "proposal": proposal,
@@ -410,12 +397,11 @@ def send_amendment_email_notification(amendment_request, request, proposal):
 
 def send_submit_email_notification(request, proposal):
     email = SubmitSendNotificationEmail()
-    url = settings.SITE_URL + reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
-    if "-internal" not in url:
-        # add it. This email is for internal staff (assessors)
-        url = "-internal.{}".format(settings.SITE_DOMAIN).join(
-            url.split("." + settings.SITE_DOMAIN)
-        )
+
+    url = settings.SITE_URL + reverse(
+        "internal-proposal-detail", kwargs={"proposal_pk": proposal.id}
+    )
+    url = convert_external_url_to_internal_url(url)
 
     context = {"proposal": proposal, "url": url}
 
@@ -435,11 +421,11 @@ def send_submit_email_notification(request, proposal):
 
 def send_external_submit_email_notification(request, proposal):
     email = ExternalSubmitSendNotificationEmail()
-    url = settings.SITE_URL + reverse("external-proposal-detail", kwargs={"proposal_pk": proposal.id})
 
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = settings.SITE_URL + reverse(
+        "external-proposal-detail", kwargs={"proposal_pk": proposal.id}
+    )
+    url = convert_internal_url_to_external_url(url)
 
     context = {
         "proposal": proposal,
@@ -472,6 +458,8 @@ def send_approver_decline_email_notification(reason, request, proposal):
     url = request.build_absolute_uri(
         reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
+    url = convert_external_url_to_internal_url(url)
+
     context = {"proposal": proposal, "reason": reason, "url": url}
 
     msg = email.send(proposal.approver_recipients, context=context)
@@ -492,6 +480,8 @@ def send_approver_approve_email_notification(request, proposal):
     url = request.build_absolute_uri(
         reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
+    url = convert_external_url_to_internal_url(url)
+
     context = {
         "start_date": proposal.proposed_issuance_approval.get("start_date"),
         "expiry_date": proposal.proposed_issuance_approval.get("expiry_date"),
@@ -544,11 +534,9 @@ def send_proposal_approver_sendback_email_notification(request, proposal):
     url = request.build_absolute_uri(
         reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     )
+    url = convert_external_url_to_internal_url(url)
 
-    if "test-emails" in request.path_info:
-        approver_comment = "This is my test comment"
-    else:
-        approver_comment = proposal.approver_comment
+    approver_comment = proposal.approver_comment
 
     context = {"proposal": proposal, "url": url, "approver_comment": approver_comment}
 
@@ -588,16 +576,13 @@ def send_proposal_approval_email_notification(proposal, request):
         # add requirement documents
         for requirement in proposal.requirements.exclude(is_deleted=True):
             for doc in requirement.requirement_documents.all():
-                # file_name = doc._file.name
                 file_name = doc.name if doc.name else doc._file.name
-                # attachment = (file_name, doc._file.file.read(), 'image/*')
                 attachment = (file_name, doc._file.file.read())
                 attachments.append(attachment)
 
-    url = settings.SITE_URL + reverse("external")
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = reverse("external")
+    url = convert_internal_url_to_external_url(url)
+
     if proposal.is_filming_licence:
         handbook_url = settings.COLS_FILMING_HANDBOOK_URL
     else:
@@ -622,8 +607,8 @@ def send_proposal_approval_email_notification(proposal, request):
     )
 
     email_entry = _log_proposal_email(msg, proposal, sender=sender)
-    path_to_file = "{}/proposals/{}/approvals/{}".format(
-        settings.MEDIA_APP_DIR, proposal.id, file_name
+    path_to_file = (
+        f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/approvals/{file_name}"
     )
     email_entry.documents.get_or_create(_file=path_to_file, name=file_name)
 
@@ -645,10 +630,7 @@ def send_proposal_awaiting_payment_approval_email_notification(proposal, request
         all_ccs = cc_list.split(",")
 
     url = request.build_absolute_uri(reverse("external"))
-    # payment_url = request.build_absolute_uri(reverse('existing_invoice_payment', kwargs={'invoice_ref':invoice.reference}))
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     filename = "invoice.pdf"
     invoice_pdf = get_invoice_pdf(proposal.filming_fee_invoice_reference)
@@ -676,7 +658,7 @@ def send_proposal_awaiting_payment_approval_email_notification(proposal, request
     filename_appended = "{}_{}.{}".format(
         "invoice", datetime.now().strftime("%d%b%Y"), "pdf"
     )
-    log_proposal = _log_proposal_email(
+    _log_proposal_email(
         msg, proposal, sender=sender, file_bytes=doc, filename=filename_appended
     )
 
@@ -698,11 +680,8 @@ def send_district_proposal_submit_email_notification(district_proposal, request)
             },
         )
     )
-    if "-internal" not in url:
-        # add it. This email is for internal staff (assessors)
-        url = "-internal.{}".format(settings.SITE_DOMAIN).join(
-            url.split("." + settings.SITE_DOMAIN)
-        )
+    url = convert_external_url_to_internal_url(url)
+
     proposed_start_date = district_proposal.proposal.filming_activity.commencement_date
 
     context = {
@@ -740,11 +719,9 @@ def send_district_proposal_approver_sendback_email_notification(
             },
         )
     )
+    url = convert_external_url_to_internal_url(url)
 
-    if "test-emails" in request.path_info:
-        approver_comment = "This is my test comment"
-    else:
-        approver_comment = district_proposal.approver_comment
+    approver_comment = district_proposal.approver_comment
 
     context = {
         "proposal": proposal,
@@ -781,6 +758,8 @@ def send_district_approver_decline_email_notification(
             },
         )
     )
+    url = convert_external_url_to_internal_url(url)
+
     context = {
         "proposal": proposal,
         "reason": reason,
@@ -813,6 +792,8 @@ def send_district_approver_approve_email_notification(request, district_proposal
             },
         )
     )
+    url = convert_external_url_to_internal_url(url)
+
     context = {
         "start_date": district_proposal.proposed_issuance_approval.get("start_date"),
         "expiry_date": district_proposal.proposed_issuance_approval.get("expiry_date"),
@@ -875,10 +856,8 @@ def send_district_proposal_approval_email_notification(
         all_ccs = cc_list.split(",")
 
     url = request.build_absolute_uri(reverse("external"))
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
-    # print(url)
+    url = convert_internal_url_to_external_url(url)
+
     attachments = []
     licence_document = approval.licence_document._file
     approved_district_proposals = approval.current_proposal.district_proposals.filter(
@@ -889,15 +868,9 @@ def send_district_proposal_approval_email_notification(
         attachment = (file_name, licence_document.file.read(), "application/pdf")
         attachments.append(attachment)
 
-        # for requirement in district_proposal.district_proposal_requirements.all():
-        #     for doc in requirement.requirement_documents.all():
-        #         file_name = doc._file.name
-        #         attachment = (file_name, doc._file.file.read())
-        #         attachments.append(attachment)
         for dp in approved_district_proposals:
             for requirement in dp.district_proposal_requirements.all():
                 for doc in requirement.requirement_documents.all():
-                    # file_name = doc._file.name
                     file_name = doc.name if doc.name else doc._file.name
                     attachment = (file_name, doc._file.file.read())
                     attachments.append(attachment)
@@ -941,10 +914,8 @@ def send_district_proposal_approval_email_notification_orig(
         all_ccs = cc_list.split(",")
 
     url = request.build_absolute_uri(reverse("external"))
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
-    # print(url)
+    url = convert_internal_url_to_external_url(url)
+
     attachments = []
     licence_document = approval.licence_document._file
     if licence_document is not None:
@@ -956,11 +927,8 @@ def send_district_proposal_approval_email_notification_orig(
         for requirement in district_proposal.district_proposal_requirements.all():
             for doc in requirement.requirement_documents.all():
                 file_name = doc._file.name
-                # attachment = (file_name, doc._file.file.read(), 'image/*')
                 attachment = (file_name, doc._file.file.read())
                 attachments.append(attachment)
-
-    # url=''
 
     context = {
         "proposal": proposal,
@@ -975,7 +943,6 @@ def send_district_proposal_approval_email_notification_orig(
         attachments=attachments,
         context=context,
     )
-    # print(msg)
     sender = (
         request.user
         if request
@@ -1020,7 +987,6 @@ def _log_proposal_referral_email(email_message, referral, sender=None):
         text = smart_text(email_message)
         subject = ""
         to = referral.proposal.applicant_email
-        # to = referral.proposal.applicant.email
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
 
@@ -1104,17 +1070,13 @@ def _log_proposal_email(
         file_obj = io.BytesIO(file_bytes)
         file_obj.name = filename
 
-        # attach the file to the comms_log also        
-        document, _ = email_entry.documents.get_or_create(
-            name=filename
-        )
+        # attach the file to the comms_log also
+        document, _ = email_entry.documents.get_or_create(name=filename)
 
         document.save(
-            path_to_file="{}/proposals/{}/communications/".format(
-                settings.MEDIA_APP_DIR, proposal.id
-            ),
+            path_to_file=f"{settings.MEDIA_APP_DIR}/proposals/{proposal.id}/communications/",
             storage=private_storage,
-            file_content=file_obj
+            file_content=file_obj,
         )
 
     return email_entry
@@ -1205,8 +1167,6 @@ def _log_user_email(email_message, emailuser, customer, sender=None):
         to = customer
         fromm = smart_text(sender) if sender else SYSTEM_NAME
         all_ccs = ""
-
-    customer = customer
 
     staff = sender
 

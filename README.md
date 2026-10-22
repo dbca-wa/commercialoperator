@@ -81,3 +81,5 @@ required environment variables at run time. Example content:
     PS_PAYMENT_SYSTEM_ID='S123'
     DEV_APP_BUILD_URL="http://10.17.0.10:9107/static/commercialoperator_vue/js/app.js"
     ENABLE_DJANGO_LOGIN=True
+    COMMERCIALOPERATOR_EXTERNAL_URL='cols.dbca.wa.gov.au'
+    COMMERCIALOPERATOR_INTERNAL_URL='cols-internal.dbca.wa.gov.au'

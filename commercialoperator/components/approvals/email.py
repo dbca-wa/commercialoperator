@@ -1,18 +1,19 @@
+#!/usr/bin/env python
+
 import logging
 
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.utils.encoding import smart_str as smart_text
-from django.urls import reverse
 from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.urls import reverse
+from django.utils.encoding import smart_str as smart_text
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
+from ledger_api_client.utils import get_or_create
 from rest_framework import status
 
 from commercialoperator.components.emails.emails import TemplateEmailBase
-
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from ledger_api_client.utils import get_or_create
-
 from commercialoperator.components.segregation.models import EmailUserLogEntry
 from commercialoperator.components.segregation.utils import retrieve_email_user
+from commercialoperator.helpers import convert_internal_url_to_external_url
 
 logger = logging.getLogger(__name__)
 
@@ -20,15 +21,13 @@ SYSTEM_NAME = settings.SYSTEM_NAME_SHORT + " Automated Message"
 
 
 class ApprovalExpireNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence expired.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence expired."
     html_template = "commercialoperator/emails/approval_expire_notification.html"
     txt_template = "commercialoperator/emails/approval_expire_notification.txt"
 
 
 class FilmingLawfulAuthorityApprovalExpireNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Lawful Authoriy expired.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Lawful Authoriy expired."
     html_template = (
         "commercialoperator/emails/approval_lawful_authority_expire_notification.html"
     )
@@ -38,9 +37,7 @@ class FilmingLawfulAuthorityApprovalExpireNotificationEmail(TemplateEmailBase):
 
 
 class FilmingLicenceApprovalExpireNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Filming Lawful Authoriy expired.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Filming Lawful Authoriy expired."
     html_template = (
         "commercialoperator/emails/approval_filming_expire_notification.html"
     )
@@ -48,41 +45,37 @@ class FilmingLicenceApprovalExpireNotificationEmail(TemplateEmailBase):
 
 
 class ApprovalCancelNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence cancelled.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence cancelled."
     html_template = "commercialoperator/emails/approval_cancel_notification.html"
     txt_template = "commercialoperator/emails/approval_cancel_notification.txt"
 
 
 class ApprovalSuspendNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence suspended.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence suspended."
     html_template = "commercialoperator/emails/approval_suspend_notification.html"
     txt_template = "commercialoperator/emails/approval_suspend_notification.txt"
 
 
 class ApprovalSurrenderNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence surrendered.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence surrendered."
     html_template = "commercialoperator/emails/approval_surrender_notification.html"
     txt_template = "commercialoperator/emails/approval_surrender_notification.txt"
 
 
 class ApprovalReinstateNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations Licence reinstated.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations Licence reinstated."
     html_template = "commercialoperator/emails/approval_reinstate_notification.html"
     txt_template = "commercialoperator/emails/approval_reinstate_notification.txt"
 
 
 class ApprovalRenewalNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations licence renewal.".format(settings.DEP_NAME)
+    subject = f"{settings.DEP_NAME} - Commercial Operations licence renewal."
     html_template = "commercialoperator/emails/approval_renewal_notification.html"
     txt_template = "commercialoperator/emails/approval_renewal_notification.txt"
 
 
 class ApprovalEclassRenewalNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations E class licence renewal.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations E class licence renewal."
     html_template = (
         "commercialoperator/emails/approval_eclass_renewal_notification.html"
     )
@@ -90,14 +83,13 @@ class ApprovalEclassRenewalNotificationEmail(TemplateEmailBase):
 
 
 class ApprovalEclassExpiryNotificationEmail(TemplateEmailBase):
-    subject = "{} - Commercial Operations E class licence expiry.".format(
-        settings.DEP_NAME
-    )
+    subject = f"{settings.DEP_NAME} - Commercial Operations E class licence expiry."
     html_template = "commercialoperator/emails/approval_eclass_expiry_notification.html"
     txt_template = "commercialoperator/emails/approval_eclass_expiry_notification.txt"
 
 
 def send_approval_expire_email_notification(approval):
+    # External recipients only
     if approval.is_lawful_authority:
         email = FilmingLawfulAuthorityApprovalExpireNotificationEmail()
     if approval.is_filming_licence:
@@ -109,9 +101,7 @@ def send_approval_expire_email_notification(approval):
     url = settings.SITE_URL if settings.SITE_URL else ""
     url += reverse("external")
 
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     context = {"approval": approval, "proposal": proposal, "url": url}
     all_ccs = []
@@ -123,12 +113,11 @@ def send_approval_expire_email_notification(approval):
     sender = settings.DEFAULT_FROM_EMAIL
     try:
         sender_user = EmailUser.objects.get(email__icontains=sender)
-    except:
+    except EmailUser.DoesNotExist:
         EmailUser.objects.create(email=sender, password="")
         sender_user = EmailUser.objects.get(email__icontains=sender)
 
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -177,14 +166,9 @@ def send_approval_suspend_email_notification(approval, request=None):
     email = ApprovalSuspendNotificationEmail()
     proposal = approval.current_proposal
 
-    if request and "test-emails" in request.path_info:
-        details = "This are my test details"
-        from_date = "01/01/1970"
-        to_date = "01/01/2070"
-    else:
-        details = (approval.suspension_details["details"],)
-        from_date = (approval.suspension_details["from_date"],)
-        to_date = approval.suspension_details["to_date"]
+    details = (approval.suspension_details["details"],)
+    from_date = (approval.suspension_details["from_date"],)
+    to_date = approval.suspension_details["to_date"]
 
     context = {
         "approval": approval,
@@ -268,14 +252,13 @@ def send_approval_surrender_email_notification(approval, request=None):
 
 # approval renewal notice
 def send_approval_renewal_email_notification(approval):
+    # External recipients only
     email = ApprovalRenewalNotificationEmail()
     proposal = approval.current_proposal
     url = settings.SITE_URL if settings.SITE_URL else ""
     url += reverse("external")
 
-    if "-internal" in url:
-        # remove '-internal'. This email is for external submitters
-        url = "".join(url.split("-internal"))
+    url = convert_internal_url_to_external_url(url)
 
     context = {
         "approval": approval,
@@ -298,8 +281,12 @@ def send_approval_renewal_email_notification(approval):
             file_name = approval.renewal_document.name
             attachment = (file_name, renewal_document.file.read(), "application/pdf")
             attachment = [attachment]
-        except:
-            logger.warning(f"{file_name} does not exist.")
+        except (FileNotFoundError, OSError, ValueError, AttributeError) as exc:
+            logger.warning(
+                "Could not load renewal document %s: %s",
+                file_name or approval.id,
+                exc,
+            )
     else:
         attachment = []
     all_ccs = []
@@ -315,7 +302,6 @@ def send_approval_renewal_email_notification(approval):
     )
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -343,15 +329,11 @@ def send_approval_eclass_renewal_email_notification(approval):
         raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
-    # cc list commented below 15-Jul-2021 --> eclass renewal emails should only go to assessors
-    #    if proposal.org_applicant and proposal.org_applicant.email:
-    #        cc_list = proposal.org_applicant.email
-    #        if cc_list:
-    #            all_ccs = [cc_list]
+
+
     msg = email.send(proposal.assessor_recipients, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -379,15 +361,10 @@ def send_approval_eclass_expiry_email_notification(approval):
         raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
-    # cc list commented below 15-Jul-2021 --> eclass expiry emails should only go to assessors
-    #    if proposal.org_applicant and proposal.org_applicant.email:
-    #        cc_list = proposal.org_applicant.email
-    #        if cc_list:
-    #            all_ccs = [cc_list]
+
     msg = email.send(proposal.assessor_recipients, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
     _log_approval_email(msg, approval, sender=sender_user)
-    # _log_org_email(msg, approval.applicant, proposal.submitter, sender=sender_user)
     if approval.org_applicant:
         _log_org_email(
             msg, approval.org_applicant, proposal.submitter, sender=sender_user
@@ -475,8 +452,8 @@ def _log_approval_email(email_message, approval, sender=None):
 
 
 from commercialoperator.components.organisations.models import (
-    OrganisationLogEntry,
     Organisation,
+    OrganisationLogEntry,
 )
 
 
