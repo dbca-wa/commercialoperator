@@ -556,19 +556,29 @@ export default {
             return input;
         }
     },
-    getGlobalSetting: function (settings, key) {
+    getGlobalSetting: function (settings, key, fallbackKey = null) {
         if (!settings) {
             return '';
         }
 
-        const value = settings[key];
-        if (!value) {
-            console.error(
-                `Global setting "${key}" was not found in the settings object.`
-            );
-            return '';
+        // 1. Try the primary key
+        if (settings[key]) {
+            return settings[key];
         }
 
-        return value;
+        // 2. Try the fallback key if provided
+        if (fallbackKey && settings[fallbackKey]) {
+            return settings[fallbackKey];
+        }
+
+        // 3. Neither was found
+        const keyMsg = fallbackKey
+            ? `"${key}" (or fallback "${fallbackKey}")`
+            : `"${key}"`;
+
+        console.error(
+            `Global setting ${keyMsg} was not found in the settings object.`
+        );
+        return '';
     },
 };
