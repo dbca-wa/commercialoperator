@@ -36,15 +36,21 @@
                                     :value="c.key"
                                     data-parsley-required
                                     :disabled="!canEditAssessorOtherDetails"
+                                    :checked="
+                                        selected_accreditations.includes(c.key)
+                                    "
                                     @click="selectAccreditation($event, c)"
-                                    :checked="selected_accreditations.includes(c.key)"
                                 />
                                 {{ c.value }}
                             </li>
                         </ul>
                         <div
-                            v-for="accreditation in proposal.other_details.accreditations"
-                            :key="accreditation.id || accreditation.accreditation_type"
+                            v-for="accreditation in proposal.other_details
+                                .accreditations"
+                            :key="
+                                accreditation.id ||
+                                accreditation.accreditation_type
+                            "
                             class="col-sm-12"
                         >
                             <div
@@ -60,7 +66,9 @@
                                     :accreditation="accreditation"
                                     :proposal_id="proposal.id"
                                     :readonly="!canEditAssessorOtherDetails"
-                                    :can-edit-activities="canEditAssessorOtherDetails"
+                                    :can-edit-activities="
+                                        canEditAssessorOtherDetails
+                                    "
                                 ></Accreditation>
                             </div>
                         </div>
@@ -104,22 +112,45 @@
                                 :key="c.key"
                                 class="form-check list-inline-item"
                             >
-                                <input  
-                                    class="form-check-input" 
-                                    ref="Checkbox" 
-                                    type="checkbox" 
-                                    @click="selectInformationStandard($event, c)" 
-                                    :checked="selected_information_standards.includes(c.key)" 
-                                    :value="c.key" 
-                                    data-parsley-required 
+                                <input
+                                    ref="Checkbox"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :checked="
+                                        selected_information_standards.includes(
+                                            c.key
+                                        )
+                                    "
+                                    :value="c.key"
+                                    data-parsley-required
                                     :disabled="!canEditAssessorOtherDetails"
+                                    @click="
+                                        selectInformationStandard($event, c)
+                                    "
                                 />
                                 {{ c.value }}
                             </li>
                         </ul>
-                        <div v-for=" information_standard in proposal.other_details.information_standards">
-                            <div v-if="!information_standard.is_deleted" class="col-sm-12">
-                                <InformationStandard :information_standard="information_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="information_standard" :ref="information_standard.information_standard_type" :canEditActivities="canEditAssessorOtherDetails"></InformationStandard >
+                        <div
+                            v-for="information_standard in proposal
+                                .other_details.information_standards"
+                        >
+                            <div
+                                v-if="!information_standard.is_deleted"
+                                class="col-sm-12"
+                            >
+                                <InformationStandard
+                                    id="information_standard"
+                                    :ref="
+                                        information_standard.information_standard_type
+                                    "
+                                    :information_standard="information_standard"
+                                    :proposal_id="proposal.id"
+                                    :readonly="!canEditAssessorOtherDetails"
+                                    :can-edit-activities="
+                                        canEditAssessorOtherDetails
+                                    "
+                                ></InformationStandard>
                             </div>
                         </div>
                         <label class="form-label fw-bold mb-3"
@@ -131,13 +162,43 @@
                                 :key="c.key"
                                 class="form-check list-inline-item"
                             >
-                                <input  class="form-check-input" ref="Checkbox" type="checkbox" @click="selectEmissionStandard($event, c)" :checked="selected_emission_standards.includes(c.key)" :value="c.key" data-parsley-required :disabled="!canEditAssessorOtherDetails" />
-                                        {{ c.value }}
+                                <input
+                                    ref="Checkbox"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :checked="
+                                        selected_emission_standards.includes(
+                                            c.key
+                                        )
+                                    "
+                                    :value="c.key"
+                                    data-parsley-required
+                                    :disabled="!canEditAssessorOtherDetails"
+                                    @click="selectEmissionStandard($event, c)"
+                                />
+                                {{ c.value }}
                             </li>
                         </ul>
-                        <div v-for=" emission_standard in proposal.other_details.emission_standards">
-                            <div v-if="!emission_standard.is_deleted " class="col-sm-12">
-                                <EmissionStandard :emission_standard="emission_standard":proposal_id="proposal.id" :readonly="!canEditAssessorOtherDetails" id="emission_standard" :ref="emission_standard.emission_standard_type" :canEditActivities="canEditAssessorOtherDetails"></EmissionStandard >
+                        <div
+                            v-for="emission_standard in proposal.other_details
+                                .emission_standards"
+                        >
+                            <div
+                                v-if="!emission_standard.is_deleted"
+                                class="col-sm-12"
+                            >
+                                <EmissionStandard
+                                    id="emission_standard"
+                                    :ref="
+                                        emission_standard.emission_standard_type
+                                    "
+                                    :emission_standard="emission_standard"
+                                    :proposal_id="proposal.id"
+                                    :readonly="!canEditAssessorOtherDetails"
+                                    :can-edit-activities="
+                                        canEditAssessorOtherDetails
+                                    "
+                                ></EmissionStandard>
                             </div>
                         </div>
                     </div>
@@ -738,48 +799,26 @@ export default {
     },
     computed: {
         canEditAssessorOtherDetails: function () {
-            return !this.proposal.readonly ||
+            return (
+                !this.proposal.readonly ||
                 (this.proposal.can_edit_period &&
-                    !this.proposal.pending_amendment_request);
+                    !this.proposal.pending_amendment_request)
+            );
         },
         deed_poll_url: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'deed_poll') {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(this.global_settings, 'deed_poll');
         },
         credit_facility_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'credit_facility_link'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'credit_facility_link'
+            );
         },
         tourism_standards_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'tourism_standards_link'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'tourism_standards_link'
+            );
         },
         canEditLicenceTerm: function () {
             return (
