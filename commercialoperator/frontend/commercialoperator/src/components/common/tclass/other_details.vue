@@ -792,7 +792,7 @@ export default {
             selected_emission_standards: [],
             licence_period_choices: [],
             mooring: [''],
-            global_settings: [],
+            global_settings: null,
             originalLicenceTerm: null,
             licenceTermChanged: false,
         };
