@@ -1,63 +1,60 @@
 <template id="proposal_requirements">
     <div class="col-md-12">
         <div class="row">
-                <FormSection
-                    :form-collapse="false"
-                    label="Requirements"
-                    index="requirements"
-                    subtitle=""
-                >
-                    <form
-                        class="form-horizontal"
-                        action="index.html"
-                        method="post"
-                    >
-                        <div class="col-sm-12">
-                            <div
-                                v-if="
-                                    proposal.application_type ==
-                                    application_type_filming
-                                "
-                                class="row mb-1"
-                            >
-                                <small
-                                    ><br />Only add requirements that are
-                                    additional to the general conditions in the
-                                    Commercial Filming Handbook
-                                    <a
-                                        :href="commercial_filming_handbook"
-                                        target="_blank"
-                                        >here</a
-                                    >. Please ensure each condition added
-                                    references a specific park or district and
-                                    is written in a format consistent with the
-                                    handbook.</small
+            <FormSection
+                :form-collapse="false"
+                label="Requirements"
+                index="requirements"
+                subtitle=""
+            >
+                <form class="form-horizontal" action="index.html" method="post">
+                    <div class="col-sm-12">
+                        <div
+                            v-if="
+                                proposal.application_type ==
+                                application_type_filming
+                            "
+                            class="border rounded p-3 mb-3"
+                        >
+                            <p>
+                                Only add requirements that are additional to the
+                                general conditions in the
+                                <a
+                                    :href="commercial_filming_handbook"
+                                    target="_blank"
+                                    >Commercial Filming Handbook</a
+                                >.
+                            </p>
+                            <p class="mb-0">
+                                Please ensure each condition added references a
+                                specific park or district and is written in a
+                                format consistent with the handbook.
+                            </p>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <button
+                                    v-if="
+                                        hasAssessorMode ||
+                                        hasReferralMode ||
+                                        hasDistrictAssessorMode
+                                    "
+                                    class="btn btn-primary mb-3 float-end"
+                                    @click.prevent="addRequirement()"
                                 >
-                            </div>
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <button
-                                        v-if="
-                                            hasAssessorMode ||
-                                            hasReferralMode ||
-                                            hasDistrictAssessorMode
-                                        "
-                                        class="btn btn-primary mb-3 float-end"
-                                        @click.prevent="addRequirement()"
-                                    >
-                                        Add Requirement
-                                    </button>
-                                </div>
+                                    Add Requirement
+                                </button>
                             </div>
                         </div>
-                        <datatable
-                            :id="datatableId"
-                            ref="requirements_datatable"
-                            :dt-options="requirement_options"
-                            :dt-headers="requirement_headers"
-                        />
-                    </form>
-                </FormSection>
+                    </div>
+                    <datatable
+                        :id="datatableId"
+                        ref="requirements_datatable"
+                        :dt-options="requirement_options"
+                        :dt-headers="requirement_headers"
+                    />
+                </form>
+            </FormSection>
         </div>
         <RequirementDetail
             ref="requirement_detail"
@@ -79,7 +76,7 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import '@/../../../static/commercialoperator/css/extra.css';
 import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'InternalProposalRequirements',
     components: {
@@ -118,7 +115,7 @@ export default {
     data: function () {
         let vm = this;
         return {
-            global_settings: [],
+            global_settings: null,
             panelBody: 'proposal-requirements-' + uuid(),
             requirements: [],
             requirement_headers: [
@@ -340,18 +337,16 @@ export default {
             return this.proposal.assessor_mode.has_assessor_mode;
         },
         commercial_filming_handbook: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'commercial_filming_handbook'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
+            const url = this.global_settings?.commercial_filming_handbook;
+
+            if (!url) {
+                console.error(
+                    'Missing global setting: commercial_filming_handbook'
+                );
+                return '';
             }
-            return '';
+
+            return url;
         },
         application_type_tclass: function () {
             return api_endpoints.t_class;
