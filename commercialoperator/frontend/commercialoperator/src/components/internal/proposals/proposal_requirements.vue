@@ -337,16 +337,10 @@ export default {
             return this.proposal.assessor_mode.has_assessor_mode;
         },
         commercial_filming_handbook: function () {
-            const url = this.global_settings?.commercial_filming_handbook;
-
-            if (!url) {
-                console.error(
-                    'Missing global setting: commercial_filming_handbook'
-                );
-                return '';
-            }
-
-            return url;
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'commercial_filming_handbook'
+            );
         },
         application_type_tclass: function () {
             return api_endpoints.t_class;
