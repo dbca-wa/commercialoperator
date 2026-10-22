@@ -568,6 +568,9 @@ export default {
 
         // 2. Try the fallback key if provided
         if (fallbackKey && settings[fallbackKey]) {
+            console.warn(
+                `Global setting "${key}" not found, falling back to "${fallbackKey}")`
+            );
             return settings[fallbackKey];
         }
 
