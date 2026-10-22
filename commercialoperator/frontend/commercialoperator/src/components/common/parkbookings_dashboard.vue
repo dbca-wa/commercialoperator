@@ -536,7 +536,7 @@ export default {
 
             helpers.fetchUrl(api_endpoints.overdue_invoices).then(
                 (response) => {
-                    vm.overdue_invoices = response.results;
+                    vm.overdue_invoices = response;
                 },
                 (error) => {
                     console.log(error);
