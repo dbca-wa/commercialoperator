@@ -239,18 +239,10 @@ export default {
     },
     computed: {
         training_doc_url: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'online_training_document'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'online_training_document'
+            );
         },
         showError: function () {
             var vm = this;
