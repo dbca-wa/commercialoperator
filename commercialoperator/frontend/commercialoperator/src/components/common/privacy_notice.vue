@@ -82,26 +82,15 @@ export default {
         toggleExpanded() {
             this.isExpanded = !this.isExpanded;
         },
-        fetchGlobalSettings() {
-            helpers
-                .fetchUrl('/api/global_settings.json')
-                .then((response) => {
-                    this.globalSettings = response;
-                    console.log('Fetched global settings:', this.globalSettings);
-                    // Find privacy_policy_url in the settings
-                    if(this.globalSettings && this.globalSettings.results) {
-                        const privacySetting = this.globalSettings.results.find(
-                            (setting) => setting.key === 'privacy_policy_url'
-                        );
-                        if (privacySetting && privacySetting.value) {
-                            this.privacyPolicyUrl = privacySetting.value;
-                        }
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error fetching global settings:', error);
-                    // Keep using the default fallback URL
-                });
+        async fetchGlobalSettings() {
+            try {
+                this.globalSettings = await helpers.fetchUrl(
+                    '/api/global_settings.json'
+                );
+                this.privacyPolicyUrl = this.globalSettings?.privacy_policy_url;
+            } catch (error) {
+                console.error('Error fetching global settings:', error);
+            }
         },
     },
 };
@@ -151,7 +140,10 @@ export default {
 /* Slide transition for smooth expand/collapse */
 .slide-enter-active,
 .slide-leave-active {
-    transition: max-height 0.3s ease-out, padding 0.3s ease-out, opacity 0.3s ease-out;
+    transition:
+        max-height 0.3s ease-out,
+        padding 0.3s ease-out,
+        opacity 0.3s ease-out;
     max-height: 500px;
     overflow: hidden;
 }
