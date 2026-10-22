@@ -228,7 +228,7 @@ export default {
             showResult: false,
             showAnswer: false,
             attempt: 1,
-            global_settings: [],
+            global_settings: null,
             answer_one: 'answer_one',
             answer_two: 'answer_two',
             answer_three: 'answer_three',
