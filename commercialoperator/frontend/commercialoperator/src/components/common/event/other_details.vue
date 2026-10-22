@@ -494,12 +494,6 @@ export default {
                 'deed_poll'
             );
         },
-        credit_facility_link: function () {
-            return helpers.getGlobalSetting(
-                this.global_settings,
-                'credit_facility_link'
-            );
-        },
         fees_and_charges: function () {
             return helpers.getGlobalSetting(
                 this.global_settings,
