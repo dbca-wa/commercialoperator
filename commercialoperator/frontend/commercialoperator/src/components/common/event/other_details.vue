@@ -490,8 +490,7 @@ export default {
         deed_poll_url: function () {
             return helpers.getGlobalSetting(
                 this.global_settings,
-                'deed_poll_event',
-                'deed_poll'
+                'deed_poll_event'
             );
         },
         fees_and_charges: function () {
