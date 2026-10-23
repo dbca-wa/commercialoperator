@@ -2,21 +2,23 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action as list_route
+from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 
 from commercialoperator.components.bookings.models import (
     Booking,
-    ParkBooking,
     BookingInvoice,
+    ParkBooking,
 )
 from commercialoperator.components.bookings.serializers import (
     BookingSerializer,
     DTParkBookingSerializer,
     OverdueBookingInvoiceSerializer,
 )
-from commercialoperator.components.segregation.utils import retrieve_delegate_organisation_ids
-from commercialoperator.helpers import is_internal
-from rest_framework_datatables.pagination import DatatablesPageNumberPagination
 from commercialoperator.components.proposals.api import ProposalFilterBackend
+from commercialoperator.components.segregation.utils import (
+    retrieve_delegate_organisation_ids,
+)
+from commercialoperator.helpers import is_internal
 
 
 class BookingPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,6 +66,7 @@ class BookingPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
 class OverdueBookingInvoiceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = BookingInvoice.objects.none()
     serializer_class = OverdueBookingInvoiceSerializer
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
@@ -71,20 +74,30 @@ class OverdueBookingInvoiceViewSet(viewsets.ReadOnlyModelViewSet):
             bi = BookingInvoice.objects.exclude(
                 booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY
             ).filter(
-                (Q(property_cache__payment_status="Unpaid")|Q(property_cache__payment_status="Partially Paid")) &
-                Q(deferred_payment_date__lt=timezone.now().date())
+                (
+                    Q(property_cache__payment_status="Unpaid")
+                    | Q(property_cache__payment_status="Partially Paid")
+                )
+                & Q(deferred_payment_date__lt=timezone.now().date())
             )
 
             return bi
         else:
             cols_org_ids = retrieve_delegate_organisation_ids(user)
 
-            bi = BookingInvoice.objects.filter(
-                Q(booking__proposal__org_applicant_id__in=cols_org_ids)
-                | Q(booking__proposal__submitter_id=user.id)
-            ).exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY).filter(
-                (Q(property_cache__payment_status="Unpaid")|Q(property_cache__payment_status="Partially Paid")) &
-                Q(deferred_payment_date__lt=timezone.now().date())
+            bi = (
+                BookingInvoice.objects.filter(
+                    Q(booking__proposal__org_applicant_id__in=cols_org_ids)
+                    | Q(booking__proposal__submitter_id=user.id)
+                )
+                .exclude(booking__booking_type=Booking.BOOKING_TYPE_TEMPORARY)
+                .filter(
+                    (
+                        Q(property_cache__payment_status="Unpaid")
+                        | Q(property_cache__payment_status="Partially Paid")
+                    )
+                    & Q(deferred_payment_date__lt=timezone.now().date())
+                )
             )
             return bi
 
