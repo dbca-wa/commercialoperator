@@ -398,9 +398,7 @@ def send_amendment_email_notification(amendment_request, request, proposal):
 def send_submit_email_notification(request, proposal):
     email = SubmitSendNotificationEmail()
 
-    url = settings.SITE_URL + reverse(
-        "internal-proposal-detail", kwargs={"proposal_pk": proposal.id}
-    )
+    url = reverse("internal-proposal-detail", kwargs={"proposal_pk": proposal.id})
     url = convert_external_url_to_internal_url(url)
 
     context = {"proposal": proposal, "url": url}
@@ -422,9 +420,7 @@ def send_submit_email_notification(request, proposal):
 def send_external_submit_email_notification(request, proposal):
     email = ExternalSubmitSendNotificationEmail()
 
-    url = settings.SITE_URL + reverse(
-        "external-proposal-detail", kwargs={"proposal_pk": proposal.id}
-    )
+    url = reverse("external-proposal-detail", kwargs={"proposal_pk": proposal.id})
     url = convert_internal_url_to_external_url(url)
 
     context = {
