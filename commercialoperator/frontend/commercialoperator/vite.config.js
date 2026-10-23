@@ -33,7 +33,6 @@ export default defineConfig({
         }),
         viteStaticCopy({
             targets: [
-                // Your existing copies...
                 {
                     src: 'src/assets/*.gif',
                     dest: 'src',
@@ -49,7 +48,6 @@ export default defineConfig({
                     dest: 'src',
                     rename: { stripBase: true },
                 },
-                // ADD THIS: Copy FontAwesome webfonts so the CSS relative paths resolve correctly
                 {
                     src: 'node_modules/@fortawesome/fontawesome-free/webfonts',
                     dest: '', // Copies them to the root of outDir (e.g., static/commercialoperator_vue/webfonts)
