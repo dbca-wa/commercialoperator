@@ -154,6 +154,13 @@ class GlobalSettingsViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
         return GlobalSettings.objects.none()
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        # A dictionary is much better to work with on the frontend as one doesn't have to loop through a list
+        data = {item.key: item.value for item in queryset}
+        
+        return Response(data)
 
 class LandActivityTabViewSet(viewsets.ReadOnlyModelViewSet):
     """

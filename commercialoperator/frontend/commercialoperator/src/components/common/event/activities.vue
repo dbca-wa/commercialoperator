@@ -380,36 +380,21 @@ export default {
             selected_trail_ids: [],
             trail_activities: [],
             selected_trails_activities: [],
-            global_settings: [],
+            global_settings: null,
         };
     },
     computed: {
         trail_section_map: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key == 'trail_section_map'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'trail_section_map'
+            );
         },
         dwer_application_form: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'dwer_application_form'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'dwer_application_form'
+            );
         },
     },
     watch: {

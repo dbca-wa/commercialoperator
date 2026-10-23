@@ -783,23 +783,15 @@ export default {
         return {
             lBody: 'lBody' + uuid(),
             values: null,
-            global_settings: [],
+            global_settings: null,
         };
     },
     computed: {
         event_traffic_code_of_practice: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'event_traffic_code_of_practice'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'event_traffic_code_of_practice'
+            );
         },
     },
     mounted: function () {

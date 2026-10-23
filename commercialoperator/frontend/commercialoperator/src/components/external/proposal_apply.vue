@@ -59,26 +59,27 @@
                                             Consultant)
                                         </label>
                                     </div>
-                                        <div>
-                                            <label v-show="profile.is_internal">
-                                                <input
-                                                    v-model="org_applicant"
-                                                    type="radio"
-                                                    name="behalf_of_org"
-                                                    value="external"
-                                                />
-                                                On behalf of an external organisation
-                                            </label>
-                                        </div>
-                                        <div v-show="org_applicant=='external'">
-                                            <TextFilteredOrgField
-                                                ref="orgField"
-                                                id="id_org"
-                                                :url="filtered_org_url"
-                                                name="SearchOrganisation"
-                                                @selected="onOrgSelected"
+                                    <div>
+                                        <label v-show="profile.is_internal">
+                                            <input
+                                                v-model="org_applicant"
+                                                type="radio"
+                                                name="behalf_of_org"
+                                                value="external"
                                             />
-                                        </div>
+                                            On behalf of an external
+                                            organisation
+                                        </label>
+                                    </div>
+                                    <div v-show="org_applicant == 'external'">
+                                        <TextFilteredOrgField
+                                            id="id_org"
+                                            ref="orgField"
+                                            :url="filtered_org_url"
+                                            name="SearchOrganisation"
+                                            @selected="onOrgSelected"
+                                        />
+                                    </div>
                                 </div>
                                 <div v-else>
                                     <p style="color: red">
@@ -94,7 +95,12 @@
                     </FormSection>
 
                     <FormSection
-                        v-show="(org_applicant != '' && (org_applicant != 'external' || selected_org != '')) || yourself != ''"
+                        v-show="
+                            (org_applicant != '' &&
+                                (org_applicant != 'external' ||
+                                    selected_org != '')) ||
+                            yourself != ''
+                        "
                         :form-collapse="false"
                         label="Apply for"
                         index="license_apply_for"
@@ -561,28 +567,26 @@ export default {
             filtered_org_url: api_endpoints.filtered_organisations + '?search=',
         };
     },
-    watch: {
-        selected_org: {
-            immediate: true,
-            handler(val) {
-                if (this.org_applicant === 'external' && val) {
-                    this.fetchOrg();
-                }
-            }
-        }
-    },
     computed: {
         isLoading: function () {
             return this.loading.length > 0;
         },
         org: function () {
             let vm = this;
-            if (vm.org_applicant != '' && vm.org_applicant != 'yourself' && vm.org_applicant != 'external') {
+            if (
+                vm.org_applicant != '' &&
+                vm.org_applicant != 'yourself' &&
+                vm.org_applicant != 'external'
+            ) {
                 return vm.profile.commercialoperator_organisations.find(
                     (org) => parseInt(org.id) === parseInt(vm.org_applicant)
                 ).name;
-            } else if (vm.org_applicant == 'external' && this.selected_org && this.fetched_org) {
-                return this.fetched_org.name
+            } else if (
+                vm.org_applicant == 'external' &&
+                this.selected_org &&
+                this.fetched_org
+            ) {
+                return this.fetched_org.name;
             }
             return vm.org_applicant;
         },
@@ -590,7 +594,12 @@ export default {
             return this.districts.length > 1;
         },
         organisation_url: function () {
-            return api_endpoints.organisation + "/" + this.selected_org + "/commercialoperator_organisation";
+            return (
+                api_endpoints.organisation +
+                '/' +
+                this.selected_org +
+                '/commercialoperator_organisation'
+            );
         },
         proposal_type_help_url: function () {
             return api_endpoints.proposal_type_help_url;
@@ -634,6 +643,16 @@ export default {
         },
         application_type_event: function () {
             return api_endpoints.event;
+        },
+    },
+    watch: {
+        selected_org: {
+            immediate: true,
+            handler(val) {
+                if (this.org_applicant === 'external' && val) {
+                    this.fetchOrg();
+                }
+            },
         },
     },
     mounted: function () {
@@ -736,11 +755,16 @@ export default {
             // returns active 'T Class' proposals - cannot have more than 1 active 'T Class' application at a time
             let vm = this;
             var proposals = [];
-            if (this.org_applicant === "external" && this.selected_org !== "" && this.fetched_org !== null && vm.selected_application_name == vm.application_type_tclass) {
+            if (
+                this.org_applicant === 'external' &&
+                this.selected_org !== '' &&
+                this.fetched_org !== null &&
+                vm.selected_application_name == vm.application_type_tclass
+            ) {
                 proposals = this.fetched_org.active_proposals.find(
                     (el) => el.application_type === vm.application_type_tclass
                 ).proposals;
-                return proposals
+                return proposals;
             }
             var org = vm.profile.commercialoperator_organisations.find(
                 (el) => el.name === vm.org
@@ -926,7 +950,11 @@ export default {
         isDisabled: function () {
             let vm = this;
             if (
-                ((vm.org_applicant == '' || (vm.org_applicant == 'external' && (this.selected_org == '' || this.fetched_org == null))) && vm.yourself == '') ||
+                ((vm.org_applicant == '' ||
+                    (vm.org_applicant == 'external' &&
+                        (this.selected_org == '' ||
+                            this.fetched_org == null))) &&
+                    vm.yourself == '') ||
                 vm.selected_application_id == '' ||
                 vm.submitInProgress
             ) {
@@ -998,7 +1026,7 @@ export default {
 
             helpers.fetchUrl(api_endpoints.application_types).then(
                 (response) => {
-                    vm.api_app_types = response.results;
+                    vm.api_app_types = response;
                     for (var i = 0; i < vm.api_app_types.length; i++) {
                         this.application_types.push({
                             text: vm.api_app_types[i].name,
