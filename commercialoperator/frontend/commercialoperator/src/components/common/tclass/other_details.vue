@@ -239,7 +239,7 @@
                 </div>
 
                 <template v-if="canEditLicenceTerm && licenceTermChanged">
-                    <div class="row mb-3">
+                    <div class="row mb-3" v-if="is_internal">
                         <div class="col">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -278,8 +278,8 @@
                                         processed manually outside the system.
                                     </p>
                                     <p class="mb-0">
-                                        Please record the payment receipt
-                                        recorded in the communications log.
+                                        Please record the payment receipt 
+                                        in the communications log.
                                     </p>
                                 </div>
                             </div>
@@ -764,6 +764,10 @@ export default {
         EmissionStandard,
     },
     props: {
+        is_internal: {
+            type: Boolean,
+            default: false,
+        },
         proposal: {
             type: Object,
             required: true,

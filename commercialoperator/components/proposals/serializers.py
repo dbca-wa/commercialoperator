@@ -560,7 +560,7 @@ class BaseProposalSerializer(serializers.ModelSerializer):
     def get_fee_invoice_url(self, obj):
         return (
             f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
-            if obj.fee_paid
+            if obj.fee_paid and obj.fee_invoice_reference
             else None
         )
 
@@ -722,7 +722,7 @@ class ListProposalSerializer(serializers.ModelSerializer):
     def get_fee_invoice_url(self, obj):
         return (
             f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
-            if obj.fee_paid
+            if obj.fee_paid and obj.fee_invoice_reference
             else None
         )
 
@@ -1125,7 +1125,7 @@ class InternalProposalSerializer(BaseProposalSerializer, ProposedIssuanceApprova
     def get_fee_invoice_url(self, obj):
         return (
             f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
-            if obj.fee_paid
+            if obj.fee_paid and obj.fee_invoice_reference
             else None
         )
 
@@ -1665,7 +1665,7 @@ class InternalFilmingProposalSerializer(
     def get_fee_invoice_url(self, obj):
         return (
             f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
-            if obj.fee_paid
+            if obj.fee_paid and obj.fee_invoice_reference
             else None
         )
 
@@ -1938,7 +1938,7 @@ class InternalEventProposalSerializer(BaseProposalSerializer):
     def get_fee_invoice_url(self, obj):
         return (
             f"/cols/payments/invoice-pdf/{obj.fee_invoice_reference}"
-            if obj.fee_paid
+            if obj.fee_paid and obj.fee_invoice_reference
             else None
         )
 

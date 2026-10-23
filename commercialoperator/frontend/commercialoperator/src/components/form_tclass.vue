@@ -264,6 +264,7 @@
                         ref="other_details"
                         :proposal="proposal"
                         :can-edit-activities="canEditActivities"
+                        :is_internal="is_internal"
                     ></OtherDetails>
                 </div>
                 <div
