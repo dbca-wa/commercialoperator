@@ -1,0 +1,4 @@
+Commercial Operator cron tasks completed.
+
+Log output:
+{{ log_txt }}

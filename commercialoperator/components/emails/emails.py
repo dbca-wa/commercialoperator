@@ -27,3 +27,9 @@ class ExportReportEmail(TemplateEmailBase):
     subject = f"Attached: Commercial Operator - {model_name.capitalize()} Report"
     html_template = "commercialoperator/emails/report_attached.html"
     txt_template = "commercialoperator/emails/report_attached.txt"
+
+
+class CronNotificationEmail(TemplateEmailBase):
+    subject = "Commercial Operator - Cronjob"
+    html_template = "commercialoperator/emails/base_cron.html"
+    txt_template = "commercialoperator/emails/base_cron.txt"
