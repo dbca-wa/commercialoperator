@@ -8,7 +8,17 @@
                 subtitle=""
             >
                 <div
-                        v-if="proposal.applicant_training_completed"
+                    v-if="proposal.is_amendment_proposal"
+                    class="form-horizontal col-sm-12"
+                >
+                    <label style="color: green"
+                        >The questionnaire and application fee are not required
+                        for an amendment application. Please submit your
+                        application.</label
+                    >
+                </div>
+                <div
+                        v-else-if="proposal.applicant_training_completed"
                         class="form-horizontal col-sm-12"
                     >
                         <div v-if="proposal.applicant_type == 'ORG'">

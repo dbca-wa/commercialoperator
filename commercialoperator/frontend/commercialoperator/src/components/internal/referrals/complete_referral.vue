@@ -60,7 +60,20 @@
                                                     margin-top: 10px;
                                                 "
                                             >
-                                                {{ uploadedFileName() }}
+                                                File: {{ uploadedFileName() }}
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-link p-0 ms-2"
+                                                    title="Remove file"
+                                                    aria-label="Remove file"
+                                                    style="color: red"
+                                                    @click="removeFile()"
+                                                >
+                                                    <i
+                                                        class="fas fa-trash"
+                                                        aria-hidden="true"
+                                                    ></i>
+                                                </button>
                                             </span>
                                         </div>
                                     </div>
@@ -149,7 +162,6 @@ export default {
         removeFile: function () {
             let vm = this;
             vm.uploadedFile = null;
-            vm.save();
         },
         save: function () {
             let vm = this;
