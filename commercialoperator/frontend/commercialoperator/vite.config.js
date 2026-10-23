@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
 import svgLoader from 'vite-svg-loader';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const applicationNameShort = 'commercialoperator';
 const port = process.env.PORT ? parseInt(process.env.PORT) : 5173;
@@ -29,6 +30,31 @@ export default defineConfig({
         vue(),
         svgLoader({
             defaultImport: 'url',
+        }),
+        viteStaticCopy({
+            targets: [
+                // Your existing copies...
+                {
+                    src: 'src/assets/*.gif',
+                    dest: 'src',
+                    rename: { stripBase: true },
+                },
+                {
+                    src: 'src/assets/*.png',
+                    dest: 'src',
+                    rename: { stripBase: true },
+                },
+                {
+                    src: 'src/assets/*.json',
+                    dest: 'src',
+                    rename: { stripBase: true },
+                },
+                // ADD THIS: Copy FontAwesome webfonts so the CSS relative paths resolve correctly
+                {
+                    src: 'node_modules/@fortawesome/fontawesome-free/webfonts',
+                    dest: '', // Copies them to the root of outDir (e.g., static/commercialoperator_vue/webfonts)
+                },
+            ],
         }),
     ],
     resolve: {
