@@ -3,8 +3,9 @@ import subprocess
 from pathlib import Path
 
 from django.conf import settings
-from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
+
+from commercialoperator.components.emails.emails import CronNotificationEmail
 
 logger = logging.getLogger(__name__)
 
@@ -54,18 +55,15 @@ class Command(BaseCommand):
 
     def send_email(self):
         log_txt = Path(LOGFILE).read_text()
-        subject = f"{settings.SYSTEM_NAME_SHORT} - Cronjob"
-        body = ""
         to = (
             settings.CRON_NOTIFICATION_EMAIL
-            if isinstance(settings.NOTIFICATION_EMAIL, list)
+            if isinstance(settings.CRON_NOTIFICATION_EMAIL, list)
             else [settings.CRON_NOTIFICATION_EMAIL]
         )
-        send_mail(
-            subject,
-            body,
-            settings.EMAIL_FROM,
-            to,
-            fail_silently=False,
-            html_message=log_txt,
-        )
+
+        context = {
+            "log_txt": log_txt,
+        }
+
+        email = CronNotificationEmail()
+        email.send(to, context=context)
