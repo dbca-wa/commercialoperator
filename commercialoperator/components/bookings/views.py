@@ -571,9 +571,11 @@ class ComplianceFeeSuccessViewPreload(views.APIView):
                     send_compliance_fee_invoice_events_email_notification( #TODO fix this
                         request, compliance, inv, recipients=[compliance.proposal.submitter.email]
                     )
-                except:
-                    #log the error but do not invalidate the payment and subsequent compliance submission
-                    logger.error("Unable to send compliance fee invoice email notification")
+                except Exception:
+                    # log the error but do not invalidate the payment and subsequent compliance submission
+                    logger.exception(
+                        "Unable to send compliance fee invoice email notification"
+                    )
 
         return Response(status=status.HTTP_200_OK)
     
@@ -775,9 +777,10 @@ class ApplicationFeeSuccessViewPreload(views.APIView):
                     send_application_fee_invoice_tclass_email_notification(
                         request, proposal, inv, recipients=[recipient]
                     )
-                except:
-                    #log the error but do not invalidate the payment and subsequent compliance submission
-                    logger.error("Unable to send compliance fee invoice email notification")
+                except Exception:
+                    # log the error but do not invalidate the payment and subsequent compliance submission
+                    logger.error("Unable to send compliance fee invoice email notification"
+                    )
 
         return Response(status=status.HTTP_200_OK)
 
