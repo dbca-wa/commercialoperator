@@ -196,11 +196,11 @@ class ApprovalPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ApprovalPaymentFilterViewSet(generics.ListAPIView):
-
     queryset = Approval.objects.none()
     serializer_class = ApprovalPaymentSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ("id",)
+    pagination_class = None
 
     def get_queryset(self):
         """

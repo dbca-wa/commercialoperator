@@ -98,9 +98,7 @@ def send_approval_expire_email_notification(approval):
         email = ApprovalExpireNotificationEmail()
     proposal = approval.current_proposal
 
-    url = settings.SITE_URL if settings.SITE_URL else ""
-    url += reverse("external")
-
+    url = reverse("external")
     url = convert_internal_url_to_external_url(url)
 
     context = {"approval": approval, "proposal": proposal, "url": url}
@@ -255,9 +253,8 @@ def send_approval_renewal_email_notification(approval):
     # External recipients only
     email = ApprovalRenewalNotificationEmail()
     proposal = approval.current_proposal
-    url = settings.SITE_URL if settings.SITE_URL else ""
-    url += reverse("external")
 
+    url = reverse("external")
     url = convert_internal_url_to_external_url(url)
 
     context = {
@@ -329,7 +326,6 @@ def send_approval_eclass_renewal_email_notification(approval):
         raise ValueError(f"Error getting or creating email user for sender {sender}")
 
     all_ccs = []
-
 
     msg = email.send(proposal.assessor_recipients, cc=all_ccs, context=context)
     sender = settings.DEFAULT_FROM_EMAIL
