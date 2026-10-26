@@ -66,7 +66,7 @@ django5-six = {git = "https://github.com/dbca-wa/django5-utils-six.git"}
 django-phonenumber-field = "^7.3"
 babel = "^2.14"
 pytz = ">=2020.1"
-setuptools = "^84.0.0"
+setuptools = "^84.1.0"
 urllib3 = "^2.6.2"
 gdal = "^3.13.3"
 docopt = "^0.6.2"
