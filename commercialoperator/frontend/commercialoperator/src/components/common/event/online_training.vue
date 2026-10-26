@@ -276,7 +276,7 @@ export default {
         training_doc_url: function () {
             return helpers.getGlobalSetting(
                 this.global_settings,
-                'online_training_document'
+                'event_online_training_document'
             );
         },
         showError: function () {
