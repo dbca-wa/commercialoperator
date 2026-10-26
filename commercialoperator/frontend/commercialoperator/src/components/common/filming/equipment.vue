@@ -458,7 +458,7 @@ export default {
             lBody: 'lBody' + uuid(),
             values: null,
             access_types: [],
-            global_settings: [],
+            global_settings: null,
             vehicles_url: helpers.add_endpoint_json(
                 api_endpoints.proposals,
                 vm.$route.params.proposal_id + '/vehicles'
@@ -471,18 +471,10 @@ export default {
     },
     computed: {
         casa_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'civil_aviation_safety_authority_link'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'civil_aviation_safety_authority_link'
+            );
         },
     },
     mounted: function () {
@@ -491,17 +483,6 @@ export default {
         vm.fetchGlobalSettings();
     },
     methods: {
-        fetchAccessTypes: function () {
-            let vm = this;
-            helpers.fetchUrl(api_endpoints.access_types).then(
-                (response) => {
-                    vm.access_types = response;
-                },
-                (error) => {
-                    console.log(error);
-                }
-            );
-        },
         fetchGlobalSettings: function () {
             let vm = this;
             helpers
@@ -523,7 +504,7 @@ export default {
                 (response) => {
                     vm.access_types = Array.isArray(response)
                         ? response
-                        : response.results || [];
+                        : response || [];
                 },
                 (error) => {
                     console.log(error);

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import $ from 'jquery'
+import $ from 'jquery';
 const ERRORS = {
     NETWORK_ERROR: `NETWORK ERROR: Please check your internet connection and try again.`,
 };
@@ -33,7 +33,11 @@ const formatValidationError = (errors) => {
     }
 
     const fieldError = errors[fieldName];
-    if (fieldError && typeof fieldError === 'object' && !Array.isArray(fieldError)) {
+    if (
+        fieldError &&
+        typeof fieldError === 'object' &&
+        !Array.isArray(fieldError)
+    ) {
         return formatValidationError(fieldError);
     }
 
@@ -118,7 +122,9 @@ export default {
         // Handle fetch-style rejected payloads (array/string/object) directly.
         if (Array.isArray(resp)) {
             text = resp[0] || '';
-            return String(text).replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+            return String(text)
+                .replace(/[[\]"]/g, '')
+                .replace(/^['"](.*)['"]$/, '$1');
         }
 
         if (typeof resp === 'string') {
@@ -126,12 +132,20 @@ export default {
         }
 
         if (resp instanceof Error) {
-            return (resp.message || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+            return (resp.message || '')
+                .replace(/[[\]"]/g, '')
+                .replace(/^['"](.*)['"]$/, '$1');
         }
 
-        if (resp && typeof resp === 'object' && typeof resp.status === 'undefined') {
+        if (
+            resp &&
+            typeof resp === 'object' &&
+            typeof resp.status === 'undefined'
+        ) {
             if (Object.prototype.hasOwnProperty.call(resp, 'message')) {
-                return String(resp.message || '').replace(/[[\]"]/g, '').replace(/^['"](.*)['"]$/, '$1');
+                return String(resp.message || '')
+                    .replace(/[[\]"]/g, '')
+                    .replace(/^['"](.*)['"]$/, '$1');
             }
             if (Object.prototype.hasOwnProperty.call(resp, 'detail')) {
                 return formatValidationError(resp.detail);
@@ -541,5 +555,33 @@ export default {
         } else {
             return input;
         }
+    },
+    getGlobalSetting: function (settings, key, fallbackKey = null) {
+        if (!settings) {
+            return '';
+        }
+
+        // 1. Try the primary key
+        if (settings[key]) {
+            return settings[key];
+        }
+
+        // 2. Try the fallback key if provided
+        if (fallbackKey && settings[fallbackKey]) {
+            console.warn(
+                `Global setting "${key}" not found, falling back to "${fallbackKey}")`
+            );
+            return settings[fallbackKey];
+        }
+
+        // 3. Neither was found
+        const keyMsg = fallbackKey
+            ? `"${key}" (or fallback "${fallbackKey}")`
+            : `"${key}"`;
+
+        console.error(
+            `Global setting ${keyMsg} was not found in the settings object.`
+        );
+        return '';
     },
 };

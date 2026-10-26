@@ -410,57 +410,23 @@ export default {
             cBody: 'cBody' + uuid(),
             dBody: 'dBody' + uuid(),
             values: null,
-            global_settings: [],
+            global_settings: null,
         };
     },
     computed: {
         deed_poll_url: function () {
-            let vm = this;
-            let fallback_url = '';
-            let specific_url = '';
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'deed_poll') {
-                        fallback_url = vm.global_settings.results[i].value;
-                    }
-                    if (
-                        vm.global_settings.results[i].key == 'deed_poll_filming'
-                    ) {
-                        specific_url = vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return specific_url || fallback_url;
-        },
-        credit_facility_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'credit_facility_link'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'deed_poll_filming'
+            );
         },
         fees_and_charges: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key == 'fees_and_charges'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'fees_and_charges'
+            );
         },
     },
-    watch: {},
     mounted: function () {
         let vm = this;
         vm.fetchGlobalSettings();

@@ -765,47 +765,27 @@ export default {
                 api_endpoints.proposals,
                 vm.$route.params.proposal_id + '/filming_parks'
             ),
-            global_settings: [],
+            global_settings: null,
         };
     },
     computed: {
         park_finder_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key == 'park_finder_link'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'park_finder_link'
+            );
         },
         commercial_filming_handbook: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (
-                        vm.global_settings.results[i].key ==
-                        'commercial_filming_handbook'
-                    ) {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'commercial_filming_handbook'
+            );
         },
         park_stay_link: function () {
-            let vm = this;
-            if (vm.global_settings && vm.global_settings.results) {
-                for (var i = 0; i < vm.global_settings.results.length; i++) {
-                    if (vm.global_settings.results[i].key == 'park_stay_link') {
-                        return vm.global_settings.results[i].value;
-                    }
-                }
-            }
-            return '';
+            return helpers.getGlobalSetting(
+                this.global_settings,
+                'park_stay_link'
+            );
         },
     },
     mounted: function () {

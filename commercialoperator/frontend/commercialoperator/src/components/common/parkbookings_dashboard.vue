@@ -40,126 +40,125 @@
                         </p>
                     </div>
                 </div>
-                    <FormSection
-                        :form-collapse="false"
-                        label="Park Entry Fees (per Park)"
-                        index="parl_entry_fees_per_park"
-                        subtitle=""
-                    >
-                        <div class="row mb-1">
-                            <div class="col-md-3">
-                                <div
-                                    id="select_parkbooking_status_parent"
-                                    class="form-group"
+                <FormSection
+                    :form-collapse="false"
+                    label="Park Entry Fees (per Park)"
+                    index="parl_entry_fees_per_park"
+                    subtitle=""
+                >
+                    <div class="row mb-1">
+                        <div class="col-md-3">
+                            <div
+                                id="select_parkbooking_status_parent"
+                                class="form-group"
+                            >
+                                <label for="select_parkbooking_status"
+                                    >Status</label
                                 >
-                                    <label for="select_parkbooking_status"
-                                        >Status</label
-                                    >
-                                    <select
-                                        id="select_parkbookings_status"
-                                        ref="select_parkbookings_status"
-                                        v-model="filterProposalStatus"
-                                        class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="s in payment_status"
-                                            :key="s.value"
-                                            :value="s.value"
-                                        >
-                                            {{ s.name }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div
-                                    id="select_parkbookings_payment_method_parent"
-                                    class="form-group"
+                                <select
+                                    id="select_parkbookings_status"
+                                    ref="select_parkbookings_status"
+                                    v-model="filterProposalStatus"
+                                    class="form-control"
                                 >
-                                    <label
-                                        for="select_parkbookings_payment_method"
-                                        >Payment Method</label
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in payment_status"
+                                        :key="s.value"
+                                        :value="s.value"
                                     >
-                                    <select
-                                        id="select_parkbookings_payment_method"
-                                        ref="select_parkbookings_payment_method"
-                                        v-model="filterProposalPaymentMethod"
+                                        {{ s.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div
+                                id="select_parkbookings_payment_method_parent"
+                                class="form-group"
+                            >
+                                <label for="select_parkbookings_payment_method"
+                                    >Payment Method</label
+                                >
+                                <select
+                                    id="select_parkbookings_payment_method"
+                                    ref="select_parkbookings_payment_method"
+                                    v-model="filterProposalPaymentMethod"
+                                    class="form-control"
+                                >
+                                    <option value="All">All</option>
+                                    <option
+                                        v-for="s in payment_method"
+                                        :key="s.value"
+                                        :value="s.value"
+                                    >
+                                        {{ s.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div v-if="is_external" class="col-md-3">
+                            <div class="form-group">
+                                <router-link
+                                    style="margin-top: 25px"
+                                    class="btn btn-primary pull-right"
+                                    :to="{ name: 'external-payment_order' }"
+                                    >Make Payment</router-link
+                                >
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="input_parkbookings_arrival_to"
+                                    >Arrival From</label
+                                >
+                                <div
+                                    ref="proposalDateFromPicker"
+                                    class="input-group date"
+                                >
+                                    <input
+                                        id="input_parkbookings_arrival_from"
+                                        v-model="filterProposalLodgedFrom"
+                                        type="date"
                                         class="form-control"
-                                    >
-                                        <option value="All">All</option>
-                                        <option
-                                            v-for="s in payment_method"
-                                            :key="s.value"
-                                            :value="s.value"
-                                        >
-                                            {{ s.name }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div v-if="is_external" class="col-md-3">
-                                <div class="form-group">
-                                    <router-link
-                                        style="margin-top: 25px"
-                                        class="btn btn-primary pull-right"
-                                        :to="{ name: 'external-payment_order' }"
-                                        >Make Payment</router-link
-                                    >
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="input_parkbookings_arrival_to"
-                                        >Arrival From</label
-                                    >
-                                    <div
-                                        ref="proposalDateFromPicker"
-                                        class="input-group date"
-                                    >
-                                        <input
-                                            id="input_parkbookings_arrival_from"
-                                            v-model="filterProposalLodgedFrom"
-                                            type="date"
-                                            class="form-control"
-                                            max="2999-12-31"
-                                            placeholder="DD/MM/YYYY"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label for="input_parkbookings_arrival_to"
-                                        >Arrival To</label
-                                    >
-                                    <div
-                                        ref="proposalDateToPicker"
-                                        class="input-group date"
-                                    >
-                                        <input
-                                            id="input_parkbookings_arrival_to"
-                                            v-model="filterProposalLodgedTo"
-                                            type="date"
-                                            class="form-control"
-                                            max="2999-12-31"
-                                            placeholder="DD/MM/YYYY"
-                                        />
-                                    </div>
+                                        max="2999-12-31"
+                                        placeholder="DD/MM/YYYY"
+                                    />
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <datatable
-                                    :id="datatable_id"
-                                    ref="proposal_datatable"
-                                    :dt-options="proposal_options"
-                                    :dt-headers="proposal_headers"
-                                />
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="input_parkbookings_arrival_to"
+                                    >Arrival To</label
+                                >
+                                <div
+                                    ref="proposalDateToPicker"
+                                    class="input-group date"
+                                >
+                                    <input
+                                        id="input_parkbookings_arrival_to"
+                                        v-model="filterProposalLodgedTo"
+                                        type="date"
+                                        class="form-control"
+                                        max="2999-12-31"
+                                        placeholder="DD/MM/YYYY"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </FormSection>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <datatable
+                                :id="datatable_id"
+                                ref="proposal_datatable"
+                                :dt-options="proposal_options"
+                                :dt-headers="proposal_headers"
+                            />
+                        </div>
+                    </div>
+                </FormSection>
             </div>
         </div>
     </div>
@@ -169,7 +168,7 @@ import FormSection from '@/components/forms/section_toggle.vue';
 import datatable from '@/utils/vue/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -416,7 +415,10 @@ export default {
                                         'over_paid'
                                 ) {
                                     links += `<a href='/cols/payments/invoice-payment-view/${full.fee_invoice_reference}' target='_blank'>View Payment</a><br/>`;
-                                } else if (full.payment_method.toLowerCase() == 'invoice not found') {
+                                } else if (
+                                    full.payment_method.toLowerCase() ==
+                                    'invoice not found'
+                                ) {
                                     links += ``;
                                 } else if (full.invoice_reference !== null) {
                                     links += `<a href='/cols/payments/invoice-payment-view/${full.invoice_reference}' target='_blank'>Record Payment</a><br/>`;
@@ -520,9 +522,7 @@ export default {
         $('a[data-bs-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'fa-chevron-down fa-chevron-up'
-                );
+                $(chev).toggleClass('fa-chevron-down fa-chevron-up');
             }, 100);
         });
         this.$nextTick(() => {
@@ -536,7 +536,7 @@ export default {
 
             helpers.fetchUrl(api_endpoints.overdue_invoices).then(
                 (response) => {
-                    vm.overdue_invoices = response.results;
+                    vm.overdue_invoices = response;
                 },
                 (error) => {
                     console.log(error);
