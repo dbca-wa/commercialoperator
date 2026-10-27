@@ -18,9 +18,6 @@ from ledger_api_client.utils import (
     get_organisation,
     get_search_organisation,
 )
-from ledger_api_client.utils import (
-    oracle_parser as ledger_oracle_parser,
-)
 from rest_framework import status
 
 from commercialoperator.components.segregation.decorators import log_execution_time
@@ -767,13 +764,6 @@ def createCustomBasket(*args, **kwargs):
     logger.error(ledger_create_basket_session)
     raise NotImplementedError(
         "ledger.checkout.utils.createCustomBasket needs to be implemented with ledger api client"
-    )
-
-
-def oracle_parser(*args, **kwargs):
-    logger.error(ledger_oracle_parser)
-    raise NotImplementedError(
-        "ledger.payments.utils.oracle_parser needs to be implemented with ledger api client"
     )
 
 
