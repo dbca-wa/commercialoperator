@@ -26,7 +26,7 @@
                         to pay and submit the application.</label
                     >
                 </div>
-                <div>
+                <div v-else>
                     <div
                         class="form-horizontal col-sm-12 border rounded p-3 mb-3"
                     >
