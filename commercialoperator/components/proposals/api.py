@@ -317,7 +317,7 @@ class ProposalFilterBackend(DatatablesFilterBackend):
     def filter_queryset(self, request, queryset, view):
 
         total_count = queryset.count()
-        super_queryset = None
+        super_queryset = queryset
         try:
             super_queryset = super(ProposalFilterBackend, self).filter_queryset(request, queryset, view).distinct()
         except Exception as e:
