@@ -271,21 +271,23 @@ def send_approval_renewal_email_notification(approval):
     else:
         raise ValueError(f"Error getting or creating email user for sender {sender}")
 
+    attachments = []
+
     # attach renewal notice
     if approval.renewal_document and approval.renewal_document._file is not None:
+        file_name = None
         try:
             renewal_document = approval.renewal_document._file
             file_name = approval.renewal_document.name
-            attachment = (file_name, renewal_document.file.read(), "application/pdf")
-            attachment = [attachment]
+            file_tuple = (file_name, renewal_document.file.read(), "application/pdf")
+            attachments = [file_tuple]
         except (FileNotFoundError, OSError, ValueError, AttributeError) as exc:
             logger.warning(
                 "Could not load renewal document %s: %s",
                 file_name or approval.id,
                 exc,
             )
-    else:
-        attachment = []
+
     all_ccs = []
     if proposal.org_applicant and proposal.org_applicant.email:
         cc_list = proposal.org_applicant.email
@@ -294,7 +296,7 @@ def send_approval_renewal_email_notification(approval):
     msg = email.send(
         proposal.proposal_submitter_email,
         cc=all_ccs,
-        attachments=attachment,
+        attachments=attachments,
         context=context,
     )
     sender = settings.DEFAULT_FROM_EMAIL
