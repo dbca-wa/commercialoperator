@@ -3,10 +3,7 @@
         <div class="col-sm-12">
             <div class="row mb-1">
                 <div class="col-md-3">
-                    <div
-                        id="select_proposal_status_parent"
-                        class="form-group"
-                    >
+                    <div id="select_proposal_status_parent" class="form-group">
                         <label for="select_proposal_status">Status</label>
                         <div v-show="isLoading">
                             <select class="form-control">
@@ -31,13 +28,10 @@
                             </select>
                         </div>
                     </div>
-                </div>                    
+                </div>
                 <div class="col-md-3 mb-3">
                     <label for="input_lodged_from_date">Lodged From</label>
-                    <div
-                        ref="proposalDateFromPicker"
-                        class="input-group date"
-                    >
+                    <div ref="proposalDateFromPicker" class="input-group date">
                         <input
                             id="input_lodged_from_date"
                             v-model="filterProposalLodgedFrom"
@@ -50,10 +44,7 @@
                 </div>
                 <div class="col-md-3">
                     <label for="input_lodged_to_date">Lodged To</label>
-                    <div
-                        ref="proposalDateToPicker"
-                        class="input-group date"
-                    >
+                    <div ref="proposalDateToPicker" class="input-group date">
                         <input
                             id="input_lodged_to_date"
                             v-model="filterProposalLodgedTo"
@@ -96,13 +87,10 @@
                         </div>
                     </div>
                 </div>
-            </div>          
-            
+            </div>
+
             <div class="row mb-3 justify-content-end">
-                <div
-                    v-if="is_external"
-                    class="col-md-3"
-                >
+                <div v-if="is_external" class="col-md-3">
                     <div class="form-group mt-auto mb-0 align-self-end">
                         <a
                             href="/external/proposal"
@@ -110,9 +98,9 @@
                             >New Application</a
                         >
                     </div>
-                </div>  
-            </div> 
-            
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-lg-12">
                     <datatable
@@ -138,7 +126,7 @@
 import datatable from '@/utils/vue/datatable.vue';
 import { api_endpoints, constants, helpers } from '@/utils/hooks';
 import { v4 as uuid } from 'uuid';
-import $ from 'jquery'
+import $ from 'jquery';
 export default {
     name: 'ProposalTableDash',
     components: {
@@ -223,13 +211,13 @@ export default {
                     { responsivePriority: 1, targets: 0 },
                     {
                         responsivePriority: 2,
-                        targets: -1
+                        targets: -1,
                     },
                 ],
                 searching: true,
                 responsive: true,
                 serverSide: true,
-                pageLength:10,
+                pageLength: 10,
                 order: [[0, 'desc']],
                 lengthMenu: [
                     [10, 25, 50, 100],
@@ -406,7 +394,7 @@ export default {
                     { responsivePriority: 1, targets: 0 },
                     {
                         responsivePriority: 2,
-                        targets:8
+                        targets: 8,
                     },
                 ],
                 searching: true,
@@ -442,7 +430,7 @@ export default {
                             vm.filterProposalStatus;
                         d.datatable_filter_application_type__name =
                             vm.filterApplicationType;
-                        return d
+                        return d;
                     },
                 },
                 dom: constants.DATATABLE_DOM_HTML,
@@ -641,9 +629,7 @@ export default {
         $('a[data-bs-toggle="collapse"]').on('click', function () {
             var chev = $(this).children()[0];
             window.setTimeout(function () {
-                $(chev).toggleClass(
-                    'fa-chevron-down fa-chevron-up'
-                );
+                $(chev).toggleClass('fa-chevron-down fa-chevron-up');
             }, 100);
         });
         this.$nextTick(() => {
