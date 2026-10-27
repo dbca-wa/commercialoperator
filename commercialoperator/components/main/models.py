@@ -20,7 +20,6 @@ private_storage = FileSystemStorage(
 
 
 class FileExtensionWhitelist(models.Model):
-
     name = models.CharField(
         max_length=16,
         help_text="The file extension without the dot, e.g. jpg, pdf, docx, etc",
@@ -42,8 +41,10 @@ class FileExtensionWhitelist(models.Model):
             map(
                 lambda m: (m, m),
                 filter(
-                    lambda m: Document
-                    in apps.get_app_config("commercialoperator").models[m].__bases__,
+                    lambda m: (
+                        Document
+                        in apps.get_app_config("commercialoperator").models[m].__bases__
+                    ),
                     apps.get_app_config("commercialoperator").models,
                 ),
             )
@@ -560,9 +561,7 @@ class UserAction(SanitiseMixin):
 
     def __str__(self):
         who = retrieve_email_user(self.who_id)
-        return "{what} ({who} at {when})".format(
-            what=self.what, who=who, when=self.when
-        )
+        return f"{self.what} ({who} at {self.when})"
 
     class Meta:
         abstract = True
@@ -673,6 +672,9 @@ class GlobalSettings(models.Model):
         app_label = "commercialoperator"
         verbose_name_plural = "Global Settings"
 
+    def __str__(self):
+        return f"GlobalSettings object ({self.id}). Key -> {self.key}, Value -> {self.value}"
+
 
 class SystemMaintenance(models.Model):
     name = models.CharField(max_length=100)
@@ -696,9 +698,7 @@ class SystemMaintenance(models.Model):
         verbose_name_plural = "System maintenance"
 
     def __str__(self):
-        return "System Maintenance: {} ({}) - starting {}, ending {}".format(
-            self.name, self.description, self.start_date, self.end_date
-        )
+        return f"System Maintenance: {self.name} ({self.description}) - starting {self.start_date}, ending {self.end_date}"
 
 
 class UserSystemSettings(models.Model):
