@@ -1,27 +1,27 @@
-from itertools import islice, chain
+import logging
+from collections.abc import Iterable, Mapping
+from itertools import chain, islice
+from typing import override
 
 from django.apps import apps
-from django.db import models, connection
 from django.conf import settings
 from django.core.cache import cache
-from rest_framework import status
-
-from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-from typing import Iterable, Mapping, Optional, Sequence
+from django.db import connection, models
 from django.db.models import QuerySet
+from ledger_api_client.common import get_ledger_user_info_by_id
+from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 from ledger_api_client.utils import (
     create_basket_session as ledger_create_basket_session,
-    oracle_parser as ledger_oracle_parser,
-    update_payments as ledger_update_payments,
+)
+from ledger_api_client.utils import (
     get_all_organisation,
     get_organisation,
     get_search_organisation,
 )
-from ledger_api_client.common import get_ledger_user_info_by_id
-
-from typing import override
-
-import logging
+from ledger_api_client.utils import (
+    oracle_parser as ledger_oracle_parser,
+)
+from rest_framework import status
 
 from commercialoperator.components.segregation.decorators import log_execution_time
 from commercialoperator.components.segregation.mixins import (
@@ -38,9 +38,9 @@ def retrieve_email_user(email_user_id):
         return None
 
     if isinstance(email_user_id, EmailUser):
-        #logger.warning(
+        # logger.warning(
         #    f"Retrieved EmailUser object {email_user_id} directly. Returning."
-        #)
+        # )
         return email_user_id
 
     cache_key = settings.CACHE_KEY_LEDGER_EMAIL_USER.format(email_user_id)
@@ -131,19 +131,21 @@ def rgetattr(obj, dotted_path: str, *, raise_exception: bool = False):
     Works for Django related objects that are already loaded.
     """
     try:
-        for part in dotted_path.split('.'):
+        for part in dotted_path.split("."):
             obj = getattr(obj, part)
         return obj
     except AttributeError:
         if raise_exception:
-            raise ValueError(f"Property {dotted_path} does not exist on {type(obj).__name__}")
+            raise ValueError(
+                f"Property {dotted_path} does not exist on {type(obj).__name__}"
+            )
         return None
 
 
 def expand_organisation_fields(
     queryset: QuerySet,
     organisation_foreign_key_field: str,
-    organisation_properties: Optional[Iterable[str]] = None,
+    organisation_properties: Iterable[str] | None = None,
 ) -> QuerySet:
 
     if not organisation_foreign_key_field:
@@ -158,7 +160,9 @@ def expand_organisation_fields(
 
     # Prepare structures
     ledger_org_ids: list[int] = []
-    row_org_ids: list[int] = []  # local FK PKs associated with rows, used to anchor CASE
+    row_org_ids: list[
+        int
+    ] = []  # local FK PKs associated with rows, used to anchor CASE
     row_property_values: dict[int, dict[str, str]] = {}
 
     # Pre-calculate mapping: '<ledger_object>__prop' -> list of 'prop' to read from ledger record
@@ -167,7 +171,9 @@ def expand_organisation_fields(
     for prop in organisation_properties:
         parts = prop.split("__", 1)
         if len(parts) != 2:
-            raise ValueError(f"Invalid organisation property '{prop}'. Expected '<object>__<field>'.")
+            raise ValueError(
+                f"Invalid organisation property '{prop}'. Expected '<object>__<field>'."
+            )
         ledger_object_name, ledger_prop = parts
         ledger_id_field_name = f"{ledger_object_name}_id"
         ledger_prop_map.setdefault(ledger_id_field_name, []).append(ledger_prop)
@@ -193,7 +199,10 @@ def expand_organisation_fields(
             # Retrieve ledger organisation record
             ledger_org: Mapping[str, str] | None = retrieve_organisation(ledger_org_id)
             if not ledger_org:
-                logger.error("Organisation with id %s does not exist in the ledger", ledger_org_id)
+                logger.error(
+                    "Organisation with id %s does not exist in the ledger",
+                    ledger_org_id,
+                )
                 continue
 
             # Collect unique ledger IDs
@@ -214,7 +223,9 @@ def expand_organisation_fields(
     case_whens: dict[str, models.Case] = {}
     for prop in organisation_properties:
         # Final field name: '<fk>_<object>_<prop>' with double underscores flattened
-        annotated_field_name = f"{organisation_foreign_key_field}_{prop}".replace("__", "_")
+        annotated_field_name = f"{organisation_foreign_key_field}_{prop}".replace(
+            "__", "_"
+        )
 
         whens: list[models.When] = []
         for row_org_id_value in row_org_ids:
@@ -239,14 +250,18 @@ def expand_organisation_fields(
     exists_field_name = f"{organisation_foreign_key_field}_exists"
     annotations = {
         exists_field_name: models.Case(
-            models.When(**{f"{org_fk_field_id}__in": ledger_org_ids}, then=models.Value(True)),
+            models.When(
+                **{f"{org_fk_field_id}__in": ledger_org_ids}, then=models.Value(True)
+            ),
             default=models.Value(False),
             output_field=models.BooleanField(),
         )
     }
     annotations.update(case_whens)
 
-    logger.debug("Annotating queryset with organisation properties: %s", list(case_whens.keys()))
+    logger.debug(
+        "Annotating queryset with organisation properties: %s", list(case_whens.keys())
+    )
     annotated_qs = queryset.annotate(**annotations)
 
     return annotated_qs
@@ -264,7 +279,11 @@ def expand_emailuser_fields(queryset, emailuser_fk_field, emailuser_properties=N
 
     for obj in queryset:
         emailuser_fk_field_id_value = getattr(obj, emailuser_fk_field_id, None)
-        emailuser = retrieve_email_user(emailuser_fk_field_id_value) if emailuser_fk_field_id_value else None
+        emailuser = (
+            retrieve_email_user(emailuser_fk_field_id_value)
+            if emailuser_fk_field_id_value
+            else None
+        )
         if emailuser:
             setattr(obj, emailuser_fk_field, emailuser)
             if emailuser.id not in emailuser_fk_field_ids:
@@ -272,13 +291,18 @@ def expand_emailuser_fields(queryset, emailuser_fk_field, emailuser_properties=N
             if emailuser.id not in emailuser_fk_field_property_values:
                 emailuser_fk_field_property_values[emailuser.id] = {}
             for prop in emailuser_properties:
-                emailuser_fk_field_property_values[emailuser.id][prop] = getattr(emailuser, prop)
+                emailuser_fk_field_property_values[emailuser.id][prop] = getattr(
+                    emailuser, prop
+                )
 
     # Annotate queryset with Case expressions
     case_whens = {
         f"{emailuser_fk_field}_{prop}".replace("__", "_"): models.Case(
             *[
-                models.When(**{emailuser_fk_field_id: id_val}, then=models.Value(emailuser_fk_field_property_values[id_val][prop]))
+                models.When(
+                    **{emailuser_fk_field_id: id_val},
+                    then=models.Value(emailuser_fk_field_property_values[id_val][prop]),
+                )
                 for id_val in emailuser_fk_field_ids
             ],
             default=models.Value(""),
@@ -290,7 +314,10 @@ def expand_emailuser_fields(queryset, emailuser_fk_field, emailuser_properties=N
     return queryset.annotate(
         **{
             f"{emailuser_fk_field}_exists": models.Case(
-                models.When(**{f"{emailuser_fk_field_id}__in": emailuser_fk_field_ids}, then=models.Value(True)),
+                models.When(
+                    **{f"{emailuser_fk_field_id}__in": emailuser_fk_field_ids},
+                    then=models.Value(True),
+                ),
                 default=models.Value(False),
                 output_field=models.BooleanField(),
             )
@@ -358,7 +385,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
                 emailuser_fk_field_id_value = self.rgetattr(
                     obj, emailuser_fk_field_id_dotnotation, raise_exception=True
                 )
-            except ValueError as e:
+            except ValueError:
                 raise ValueError(
                     f"Property {emailuser_fk_field_id_dotnotation} does not exist in the {self.model.__name__} object"
                 )
@@ -453,7 +480,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
                 cols_organisation = self.rgetattr(
                     obj, organisation_fk_field_dotnotation, raise_exception=True
                 )
-            except ValueError as e:
+            except ValueError:
                 raise ValueError(
                     f"Property {organisation_fk_field_dotnotation} does not exist in the {self.model.__name__} object"
                 )
@@ -619,7 +646,6 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
             orderings_with_lower = []
             # If the ordering contains Lower functions, annotate the queryset with them
             from django.db.models.functions import Lower
-            from django.db.models import F, Func
 
             for idx, ordering in enumerate(orderings):
                 ordering = orderings[idx]
@@ -641,7 +667,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
                 qs = qs.reverse()
             return qs
 
-    # Handle ledger lookup ordering logic here if needed
+        # Handle ledger lookup ordering logic here if needed
 
         # A dictionary of each ledger lookup field and its subfields
         expand_fields = {}
@@ -736,7 +762,7 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
         return values_list
 
 
-#TODO review the anything that "needs to be implemented with ledger api client", remove if not applicable
+# TODO review the anything that "needs to be implemented with ledger api client", remove if not applicable
 def createCustomBasket(*args, **kwargs):
     logger.error(ledger_create_basket_session)
     raise NotImplementedError(
@@ -748,13 +774,6 @@ def oracle_parser(*args, **kwargs):
     logger.error(ledger_oracle_parser)
     raise NotImplementedError(
         "ledger.payments.utils.oracle_parser needs to be implemented with ledger api client"
-    )
-
-
-def update_payments(*args, **kwargs):
-    logger.error(ledger_update_payments)
-    raise NotImplementedError(
-        "ledger.payments.utils.update_payments needs to be implemented with ledger api client"
     )
 
 
@@ -829,7 +848,6 @@ def retrieve_delegate_ledger_organisation_ids(email_user_id):
 
 def retrieve_organisation_delegate_ids(organisation_id):
     from commercialoperator.components.organisations.models import (
-        Organisation,
         UserDelegation,
     )
 
@@ -870,7 +888,9 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
     user_ledger_org_ids = retrieve_delegate_ledger_organisation_ids(user_id)
     user_delegate_org_ids = retrieve_delegate_organisation_ids(user_id)
     canonical_organisation_by_abn = {}
-    for organisation in Organisation.objects.filter(id__in=user_delegate_org_ids).order_by("id"):
+    for organisation in Organisation.objects.filter(
+        id__in=user_delegate_org_ids
+    ).order_by("id"):
         abn = organisation.abn
         if abn and abn not in canonical_organisation_by_abn:
             canonical_organisation_by_abn[abn] = organisation
@@ -879,7 +899,6 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
     seen_abns = set()
 
     for org_id in user_ledger_org_ids:
-
         cache_key = settings.CACHE_KEY_LEDGER_ORGANISATION.format(org_id)
         cache_timeout = settings.CACHE_TIMEOUT_5_MINUTES
 
@@ -889,7 +908,10 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
             organisations_response = get_organisation(org_id)
         else:
             logger.debug(f"Organisation {org_id} found in cache")
-            organisations_response = {"status": status.HTTP_200_OK, "data": ledger_organisation}
+            organisations_response = {
+                "status": status.HTTP_200_OK,
+                "data": ledger_organisation,
+            }
 
         if organisations_response.get("status", None) == status.HTTP_200_OK:
             # Get the organisation object from ledger
@@ -934,7 +956,6 @@ def retrieve_cols_organisations_from_ledger_org_ids(user):
 
 
 class ListAsQuerySet(list):
-
     def __init__(self, *args, model, **kwargs):
         self.model = model
         super().__init__(*args, **kwargs)
@@ -966,7 +987,7 @@ def filter_organisation_list(view, request, *args, **kwargs):
         ledger_organisations = ledger_organisation_response["data"]
     else:
         logger.debug(
-            f"Failed to retrieve organisations from ledger: {ledger_organisation_response.get("message", "")}"
+            f"Failed to retrieve organisations from ledger: {ledger_organisation_response.get('message', '')}"
         )
         return LedgerOrganisation.objects.none()
 
@@ -984,7 +1005,7 @@ def filter_organisation_list(view, request, *args, **kwargs):
     return organisations
 
 
-class QuerySetChain(object):
+class QuerySetChain:
     """
     Chains multiple subquerysets (possibly of different models) and behaves as
     one queryset.  Supports minimal methods needed for use with
