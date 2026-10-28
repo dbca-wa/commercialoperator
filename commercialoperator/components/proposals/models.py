@@ -2212,15 +2212,15 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                 ret1 = send_submit_email_notification(request, self)
                 ret2 = send_external_submit_email_notification(request, self)
 
-                if ret1 and ret2:
-                    self.processing_status = "with_assessor"
-                    self.customer_status = "with_assessor"
-                    self.documents.all().update(can_delete=False)
-                    self.save()
-                else:
-                    raise ValidationError(
+                if not(ret1 and ret2):
+                    logger.error(
                         "An error occurred while submitting proposal (Submit email notifications failed)"
                     )
+                self.processing_status = "with_assessor"
+                self.customer_status = "with_assessor"
+                self.documents.all().update(can_delete=False)
+                self.save()
+                    
                 # Create assessor checklist with the current assessor_list type questions
                 # Assessment instance already exits then skip.
                 try:
