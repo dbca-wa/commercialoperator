@@ -43,7 +43,7 @@ def _normalize_url_parts(value):
 def _prepare_url(url, ext_host, int_host):
     """Disambiguate schemeless host URLs from true relative paths:
 
-    - 'apiary-dev.../path' -> '//apiary-dev.../path' (recognized as netloc)
+    - 'commercialoperator-dev.../path' -> '//commercialoperator-dev.../path' (recognized as netloc)
     - '/internal/path'     -> '/internal/path'        (recognized as path)
     - 'internal/path'      -> '/internal/path'        (recognized as path)
     """
@@ -60,7 +60,7 @@ def _prepare_url(url, ext_host, int_host):
     if url.startswith("/"):
         return url
 
-    # 3. Schemeless domain URL (e.g. 'apiary-dev.dbca.wa.gov.au/path')
+    # 3. Schemeless domain URL (e.g. 'commercialoperator-dev.dbca.wa.gov.au/path')
     lower_url = url.lower()
     if (ext_host and lower_url.startswith(ext_host)) or (
         int_host and lower_url.startswith(int_host)
