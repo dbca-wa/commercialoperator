@@ -282,7 +282,6 @@ if not VALID_SYSTEMS:
     VALID_SYSTEMS = [PAYMENT_SYSTEM_ID]
 
 CRON_CLASSES = [
-    "commercialoperator.cron.OracleIntegrationCronJob",
     "appmonitor_client.cron.CronJobAppMonitorClient",
 ]
 

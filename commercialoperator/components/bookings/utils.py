@@ -41,7 +41,6 @@ from commercialoperator.components.segregation.classes import DecimalEncoder
 from commercialoperator.components.segregation.decorators import basic_exception_handler
 from commercialoperator.components.segregation.utils import (
     createCustomBasket,
-    oracle_parser,
 )
 from ledger_api_client.ledger_models import Invoice
 
@@ -1063,13 +1062,6 @@ def checkout_existing_invoice(
         )
 
     return HttpResponseRedirect(payment_session["payment_url"])
-
-
-def oracle_integration(date, override):
-    system = "0557"
-    oracle_codes = oracle_parser(
-        date, system, "Commercial Operator Licensing", override=override
-    )
 
 
 def redirect_to_zero_payment_view(request, proposal, lines):
