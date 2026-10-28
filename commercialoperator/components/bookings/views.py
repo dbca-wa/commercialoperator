@@ -895,15 +895,15 @@ class BookingSuccessViewPreload(views.APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, reference, format=None):
-        print("BookingSuccessViewPreload")
+        logger.info("BookingSuccessViewPreload")
 
         invoice_ref = request.GET.get("invoice")
 
         try:
             proposal = Proposal.objects.get(lodgement_number=reference)
-            print("proposal:", proposal)
-        except Exception as e:
-            print(e)
+            logger.info(f"proposal: {proposal}")
+        except Proposal.DoesNotExist:
+            logger.exception(f"No proposal found with lodgement_number {reference}")
             return redirect("home")
 
         # use the latest Fee record

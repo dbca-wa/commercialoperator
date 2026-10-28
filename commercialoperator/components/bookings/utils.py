@@ -9,14 +9,15 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 from ledger_api_client.ledger_models import Invoice
 from ledger_api_client.utils import (
+    FakeRequestSessionObj,
     create_basket_session,
     create_checkout_session,
     generate_payment_session,
+    process_create_future_invoice,
 )
 from rest_framework import status
 from taggit import serializers
@@ -39,9 +40,6 @@ from commercialoperator.components.main.models import ApplicationType, Park
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.proposals.models import Proposal, ProposalUserAction
 from commercialoperator.components.segregation.classes import DecimalEncoder
-from commercialoperator.components.segregation.utils import (
-    createCustomBasket,
-)
 
 logger = logging.getLogger("payment_checkout")
 
@@ -1020,31 +1018,6 @@ def checkout_existing_invoice(
     return HttpResponseRedirect(payment_session["payment_url"])
 
 
-def redirect_to_zero_payment_view(request, proposal, lines):
-    """
-    redirect to Zero Payment preview, instead of Credit Card checkout view
-    """
-    template_name = "commercialoperator/booking/preview.html"
-
-    if proposal.allow_full_discount:
-        logger.info(
-            "{} built payment line item {} for Application Fee and handing over to ZERO Payment preview".format(
-                f"User {proposal.submitter.get_full_name()} with id {proposal.submitter.id}",
-                proposal.id,
-            )
-        )
-        basket = createCustomBasket(lines, request.user, settings.PAYMENT_SYSTEM_ID)
-        context = {
-            "basket": basket,
-            "lines": basket.lines.all(),
-            "line_details": basket.lines.all(),  # request.POST['payment'],
-            "proposal_id": proposal.id,
-            "payment_method": "ZERO",
-            "redirect_url": reverse("zero_fee_success"),
-        }
-        return render(request, template_name, context)
-
-
 def create_invoice(booking, payment_method="bpay"):
     """
     This will create and invoice and order from a basket bypassing the session
@@ -1053,28 +1026,62 @@ def create_invoice(booking, payment_method="bpay"):
 
     from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
-    from commercialoperator.components.segregation.classes import CreateInvoiceBasket
-    from commercialoperator.components.segregation.utils import createCustomBasket
+    # The return preload success page expects the proposal lodgement number as reference
+    booking_reference = booking.proposal.lodgement_number
 
-    # products = Booking.objects.last().as_line_items
     products = booking.as_line_items
+    email = booking.proposal.applicant_email.lower()
     try:
-        user = EmailUser.objects.get(email=booking.proposal.applicant_email.lower())
-    except Exception:
-        user = EmailUser.objects.get(email=booking.proposal.submitter.email.lower())
+        user = EmailUser.objects.get(email=email)
+    except EmailUser.DoesNotExist:
+        logger.exception(
+            f"Unable to create invoice for Booking id {booking.id} (Proposal: {booking_reference}) as EmailUserRO with email {email} does not exist"
+        )
 
     if payment_method == "monthly_invoicing":
-        invoice_text = "Monthly Payment Invoice"
+        invoice_type = "Monthly Payment Invoice"
     elif payment_method == "bpay":
-        invoice_text = "BPAY Payment Invoice"
+        invoice_type = "BPAY Payment Invoice"
     else:
-        invoice_text = "Payment Invoice"
+        invoice_type = "Payment Invoice"
 
-    basket = createCustomBasket(products, user, settings.PAYMENT_SYSTEM_ID)
-    order = CreateInvoiceBasket(
-        payment_method=payment_method, system=settings.PAYMENT_SYSTEM_PREFIX
-    ).create_invoice_and_order(
-        basket, 0, None, None, user=user, invoice_text=invoice_text
+    booking_admission_number = booking.admission_number
+
+    invoice_text = f"Application: {booking_reference}, Booking Admission: {booking_admission_number}: {invoice_type}"
+
+    basket_params = {
+        "products": products,
+        "vouchers": [],
+        "system": settings.PAYMENT_SYSTEM_ID,
+        "custom_basket": True,
+        "booking_reference": booking_reference,
+        "booking_reference_link": booking_reference,
+        "no_payment": False,
+        "tax_override": True,
+    }
+    logger.info(f"basket_params: {basket_params}")
+
+    request = FakeRequestSessionObj()
+    request.user = user
+
+    basket_hash = create_basket_session(request, user.id, basket_params)
+
+    return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(
+        "public_booking_success_preload", kwargs={"reference": booking_reference}
+    )
+
+    basket_hash_split = basket_hash.split("|")
+
+    invoice_name = user.get_full_name()
+
+    payment_due_date = booking.deferred_payment_date or None
+
+    pcfi = process_create_future_invoice(
+        basket_hash_split[0],
+        invoice_text,
+        return_preload_url,
+        invoice_name,
+        payment_due_date,
     )
 
     return order
