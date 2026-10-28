@@ -679,7 +679,7 @@ def create_event_fee_lines(proposal, invoice_text=None, vouchers=[], internal=Fa
             ]
 
             logger.info(
-                f"{proposal} - {org}: Fees paid between {year_start} - {year_end}\{fees_paid})"
+                f"{proposal} - {org}: Fees paid between {year_start} - {year_end}\\{fees_paid})"
             )
             if fees_paid:
                 # application fee has already been paid at least once for the calendar period
