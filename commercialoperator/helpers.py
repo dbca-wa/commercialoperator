@@ -10,7 +10,7 @@ def _normalize_url_parts(value):
     """Extract (scheme, netloc) whether given as 'host.com', 'https://host.com',
 
     'localhost:8000', or 'http://localhost:8000'.
-    Ignores placeholder strings like 'APIARY_INTERNAL_URL not configured'.
+    Ignores placeholder strings like 'COMMERCIALOPERATOR_INTERNAL_URL not configured'.
     """
     if not value:
         return None, None
@@ -43,7 +43,7 @@ def _normalize_url_parts(value):
 def _prepare_url(url, ext_host, int_host):
     """Disambiguate schemeless host URLs from true relative paths:
 
-    - 'apiary-dev.../path' -> '//apiary-dev.../path' (recognized as netloc)
+    - 'commercialoperator-dev.../path' -> '//commercialoperator-dev.../path' (recognized as netloc)
     - '/internal/path'     -> '/internal/path'        (recognized as path)
     - 'internal/path'      -> '/internal/path'        (recognized as path)
     """
@@ -60,7 +60,7 @@ def _prepare_url(url, ext_host, int_host):
     if url.startswith("/"):
         return url
 
-    # 3. Schemeless domain URL (e.g. 'apiary-dev.dbca.wa.gov.au/path')
+    # 3. Schemeless domain URL (e.g. 'commercialoperator-dev.dbca.wa.gov.au/path')
     lower_url = url.lower()
     if (ext_host and lower_url.startswith(ext_host)) or (
         int_host and lower_url.startswith(int_host)
@@ -75,10 +75,10 @@ def convert_external_url_to_internal_url(url):
     from django.conf import settings  # Prevents circular imports
 
     ext_scheme, ext_host = _normalize_url_parts(
-        getattr(settings, "APIARY_EXTERNAL_URL", None)
+        getattr(settings, "COMMERCIALOPERATOR_EXTERNAL_URL", None)
     )
     int_scheme, int_host = _normalize_url_parts(
-        getattr(settings, "APIARY_INTERNAL_URL", None)
+        getattr(settings, "COMMERCIALOPERATOR_INTERNAL_URL", None)
     )
 
     target_host = int_host or ext_host
@@ -87,11 +87,10 @@ def convert_external_url_to_internal_url(url):
     if not target_host or not url:
         return url
 
-    # Fix schemeless domains before urlparse sees them
     cleaned_url = _prepare_url(url, ext_host, int_host)
     parsed = urlparse(cleaned_url)
 
-    # 1. True relative path (e.g. '/internal/proposal/1234')
+    # 1. True relative path / path-only URL -> Forcefully prepend target scheme & host
     if not parsed.netloc:
         path = parsed.path if parsed.path.startswith("/") else f"/{parsed.path}"
         return urlunparse(
@@ -136,10 +135,10 @@ def convert_internal_url_to_external_url(url):
     from django.conf import settings  # Prevents circular imports
 
     ext_scheme, ext_host = _normalize_url_parts(
-        getattr(settings, "APIARY_EXTERNAL_URL", None)
+        getattr(settings, "COMMERCIALOPERATOR_EXTERNAL_URL", None)
     )
     int_scheme, int_host = _normalize_url_parts(
-        getattr(settings, "APIARY_INTERNAL_URL", None)
+        getattr(settings, "COMMERCIALOPERATOR_INTERNAL_URL", None)
     )
 
     target_host = ext_host or int_host
@@ -148,11 +147,10 @@ def convert_internal_url_to_external_url(url):
     if not target_host or not url:
         return url
 
-    # Fix schemeless domains before urlparse sees them
     cleaned_url = _prepare_url(url, ext_host, int_host)
     parsed = urlparse(cleaned_url)
 
-    # 1. True relative path (e.g. '/external/proposal/1234')
+    # 1. True relative path / path-only URL -> Forcefully prepend target scheme & host
     if not parsed.netloc:
         path = parsed.path if parsed.path.startswith("/") else f"/{parsed.path}"
         return urlunparse(
