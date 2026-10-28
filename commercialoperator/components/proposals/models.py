@@ -28,6 +28,7 @@ from multiselectfield import MultiSelectField
 from rest_framework import status
 from reversion.models import Version
 from taggit.models import TaggedItemBase
+from taggit import serializers
 
 from commercialoperator import exceptions
 from commercialoperator.components.main.mixins import RevisionedMixin, SanitiseMixin
@@ -3238,8 +3239,13 @@ class Proposal(DirtyFieldsMixin, RevisionedMixin):
                     "no_payment": False,
                 }
 
+                try:
+                    email_user_id = self.submitter.id if self.submitter else request.user.id
+                except:
+                    raise serializers.ValidationError("No submitter or request user id")
+
                 basket_hash = create_basket_session(
-                    request, request.user.id, basket_params
+                    request, email_user_id, basket_params
                 )
 
                 basket_hash_split = basket_hash.split("|")
