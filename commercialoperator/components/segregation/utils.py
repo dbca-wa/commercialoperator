@@ -759,14 +759,6 @@ class EmailUserQuerySet(models.QuerySet, RecursiveGetAttributeMixin, FilterHelpe
         return values_list
 
 
-# TODO review the anything that "needs to be implemented with ledger api client", remove if not applicable
-def createCustomBasket(*args, **kwargs):
-    logger.error(ledger_create_basket_session)
-    raise NotImplementedError(
-        "ledger.checkout.utils.createCustomBasket needs to be implemented with ledger api client"
-    )
-
-
 def retrieve_group_members(group_object, app_label="commercialoperator"):
     """Retrieves m2m-field members that belong to a group-object (single object or queryset), using the associated through model"""
 
