@@ -249,10 +249,10 @@
                                     @change="readFile"
                                 />
                                 <div id="passwordHelpBlock" class="form-text">
-                                    Please upload a letter on your
-                                    organisation's official letter head stating
-                                    that you are an employee of this
-                                    organisation.
+                                    This organisation has not been registered with the system. 
+                                    Please provide a letter or other written confirmation that you are an authorised 
+                                    employee of this organisation to apply for licences and 
+                                    manage the account on its behalf.
                                 </div>
                             </div>
                         </div>
