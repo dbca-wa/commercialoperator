@@ -272,6 +272,9 @@ PAYMENT_SYSTEM_PREFIX = env(
 os.environ["LEDGER_PRODUCT_CUSTOM_FIELDS"] = (
     "('ledger_description','quantity','price_incl_tax','price_excl_tax','oracle_code')"
 )
+
+DEFAULT_MONTHLY_PAYMENT_DUE_DAYS = env("DEFAULT_MONTHLY_PAYMENT_DUE_DAYS", 30)
+
 VERSION_NO = "1.0.1"
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 

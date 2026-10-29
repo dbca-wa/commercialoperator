@@ -354,7 +354,8 @@ def calc_payment_due_date(booking, _date):
         and org_applicant.monthly_payment_due_period > 0
     ):
         return _date + relativedelta(days=org_applicant.monthly_payment_due_period)
-    return _date + relativedelta(days=30)
+
+    return _date + relativedelta(days=settings.DEFAULT_MONTHLY_PAYMENT_DUE_DAYS)
 
 
 def is_invoicing_period(booking):
