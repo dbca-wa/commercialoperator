@@ -42,6 +42,7 @@ from commercialoperator.components.proposals.models import Proposal, ProposalUse
 from commercialoperator.components.segregation.classes import DecimalEncoder
 from commercialoperator.exceptions import (
     CreateFutureInvoiceFailedException,
+    LedgerApiFailureException,
     LedgerMalformedApiResponseException,
 )
 
@@ -158,57 +159,113 @@ TEST 2:
 """
 
 
-def create_monthly_invoice(user, offset_months=-1):
+def create_monthly_invoice(
+    user,
+    offset_months: int = -1,
+) -> list[int]:
+    """
+    Create invoices for eligible monthly-invoicing bookings.
+
+    Bookings are selected from the month specified by ``offset_months`` and
+    must not already have an associated invoice. For each eligible booking,
+    an invoice is created in Ledger, a corresponding BookingInvoice record is
+    created, notification emails are sent, and the action is logged.
+
+    Payment due dates are calculated prior to invoice creation and passed to
+    Ledger as part of the invoice creation request.
+
+    Args:
+        user: The user performing the invoice creation.
+        offset_months: Relative month offset used when selecting bookings.
+            Defaults to -1 (previous month).
+
+    Returns:
+        A list of booking IDs for which invoice creation failed.
+    """
+    current_time = timezone.now()
+
     bookings = Booking.objects.filter(
         invoices__isnull=True,
         booking_type=Booking.BOOKING_TYPE_MONTHLY_INVOICING,
-        created__month=(timezone.now() + relativedelta(months=offset_months)).month,
+        created__month=(current_time + relativedelta(months=offset_months)).month,
     )
 
     failed_bookings = []
+
     for booking in bookings:
-        with transaction.atomic():
-            if is_invoicing_period(booking) and is_monthly_invoicing_allowed(booking):
-                try:
-                    logger.info(
-                        f"Creating monthly invoice for booking {booking.admission_number}"
-                    )
-                    order = create_invoice(booking, payment_method="monthly_invoicing")
-                    invoice = Invoice.objects.get(order_number=order.number)
-                    # invoice.settlement_date = calc_payment_due_date(booking, invoice.created + relativedelta(months=1))
-                    # invoice.save()
+        if not is_invoicing_period(booking):
+            continue
 
-                    deferred_payment_date = calc_payment_due_date(
-                        booking, invoice.created
-                    )
-                    book_inv = BookingInvoice.objects.create(
-                        booking=booking,
-                        invoice_reference=invoice.reference,
-                        payment_method=invoice.payment_method,
-                        deferred_payment_date=deferred_payment_date,
-                    )
+        if not is_monthly_invoicing_allowed(booking):
+            continue
 
-                    recipients = list(
-                        set([booking.proposal.applicant_email, user.email])
-                    )  # unique list
-                    send_monthly_invoice_tclass_email_notification(
-                        user, booking, invoice, recipients=recipients
+        try:
+            with transaction.atomic():
+                logger.info(
+                    "Creating monthly invoice for booking %s",
+                    booking.admission_number,
+                )
+
+                invoice_date = timezone.now()
+
+                payment_due_date = calc_payment_due_date(
+                    booking,
+                    invoice_date,
+                )
+
+                order_number = create_invoice(
+                    booking,
+                    payment_method="monthly_invoicing",
+                    payment_due_date=payment_due_date,
+                )
+
+                invoice = Invoice.objects.get(
+                    order_number=order_number,
+                )
+
+                BookingInvoice.objects.create(
+                    booking=booking,
+                    invoice_reference=invoice.reference,
+                    payment_method=invoice.payment_method,
+                    deferred_payment_date=payment_due_date,
+                )
+
+                recipients = list(
+                    dict.fromkeys(
+                        [
+                            booking.proposal.applicant_email,
+                            user.email,
+                        ]
                     )
-                    ProposalUserAction.log_action(
-                        booking.proposal,
-                        ProposalUserAction.ACTION_SEND_MONTHLY_INVOICE.format(
-                            invoice.reference,
-                            booking.proposal.id,
-                            ", ".join(recipients),
-                        ),
-                        user,
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"Failed to create monthly invoice for booking_id {booking.id}"
-                    )
-                    logger.error(f"{e}")
-                    failed_bookings.append(booking.id)
+                )
+
+                send_monthly_invoice_tclass_email_notification(
+                    user,
+                    booking,
+                    invoice,
+                    recipients=recipients,
+                )
+
+                ProposalUserAction.log_action(
+                    booking.proposal,
+                    ProposalUserAction.ACTION_SEND_MONTHLY_INVOICE.format(
+                        invoice.reference,
+                        booking.proposal.id,
+                        ", ".join(recipients),
+                    ),
+                    user,
+                )
+
+        except (
+            LedgerApiFailureException,
+            LedgerMalformedApiResponseException,
+            CreateFutureInvoiceFailedException,
+        ):
+            logger.exception(
+                "Failed to create monthly invoice for booking_id %s",
+                booking.id,
+            )
+            failed_bookings.append(booking.id)
 
     return failed_bookings
 
