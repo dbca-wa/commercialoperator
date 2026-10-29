@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
 from commercialoperator.components.bookings.email import (
@@ -27,10 +27,13 @@ class Command(BaseCommand):
         failed booking IDs are reported by email and included in the command
         output.
         """
-        user, _ = EmailUser.objects.get_or_create(
-            email=settings.CRON_EMAIL,
-            defaults={"password": ""},
-        )
+        try:
+            user = EmailUser.objects.get(
+                email=settings.CRON_EMAIL,
+                defaults={"password": ""},
+            )
+        except EmailUser.DoesNotExist:
+            raise CommandError(f"Cron user {settings.CRON_EMAIL} does not exist")
 
         logger.info("Running command %s", __name__)
 
