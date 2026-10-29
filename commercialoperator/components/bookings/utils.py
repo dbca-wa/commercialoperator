@@ -1023,7 +1023,11 @@ def checkout_existing_invoice(
     return HttpResponseRedirect(payment_session["payment_url"])
 
 
-def create_invoice(booking: Booking, payment_method: str = "bpay") -> str:
+def create_invoice(
+    booking: Booking,
+    payment_method: str = "bpay",
+    payment_due_date=None,
+) -> str:
     """
     Create an invoice and corresponding order for a booking while bypassing
     the normal session and BPoint payment flow constraints.
@@ -1107,7 +1111,7 @@ def create_invoice(booking: Booking, payment_method: str = "bpay") -> str:
         invoice_text,
         return_preload_url,
         user.get_full_name(),
-        booking.deferred_payment_date,
+        payment_due_date,
     )
 
     required_keys = {"status", "message"}
