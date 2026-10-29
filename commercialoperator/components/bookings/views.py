@@ -639,7 +639,10 @@ class ComplianceFeeSuccessView(TemplateView):
 
         user = request.user
         try:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            try:
+                user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            except:
+                user_orgs = []
             if not (
                 is_internal(self.request)
                 or compliance.proposal.org_applicant in user_orgs
@@ -755,7 +758,10 @@ class FilmingFeeSuccessView(TemplateView):
 
         user = request.user
         try:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            try:
+                user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            except:
+                user_orgs = []
             if not (
                 is_internal(self.request)
                 or proposal.org_applicant in user_orgs
@@ -894,7 +900,10 @@ class ApplicationFeeSuccessView(TemplateView):
 
         user = request.user
         try:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            try:
+                user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            except:
+                user_orgs = []
             if not (
                 is_internal(self.request)
                 or proposal.org_applicant in user_orgs
@@ -1047,7 +1056,10 @@ class BookingSuccessView(TemplateView):
 
         user = request.user
         try:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            try:
+                user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
+            except:
+                user_orgs = []
             if not (
                 is_internal(self.request)
                 or proposal.org_applicant in user_orgs
