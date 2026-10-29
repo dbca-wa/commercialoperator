@@ -363,6 +363,14 @@ class DeferredInvoicingPreviewView(TemplateView):
             raise
 
 
+# TODO / NOTE:
+# Investigation during Ledger invoice refactoring suggests this view may
+# be unused. The associated URL is referenced from
+# `preview_deferred.html`, however no references to that template were
+# identified at the time of writing.
+#
+# Before modifying or removing this workflow, confirm whether the
+# deferred invoicing UI is still reachable through the application.
 class DeferredInvoicingView(TemplateView):
     """
     Handles BPAY, Monthly Invoicing and Other payment methods.
