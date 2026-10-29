@@ -421,12 +421,6 @@ def create_bpay_invoice(user, booking) -> list[int]:
             booking.id,
         )
         failed_bookings.append(booking.id)
-    except Exception:
-        logger.exception(
-            "Unexpected error creating BPAY invoice for booking_id %s",
-            booking.id,
-        )
-        failed_bookings.append(booking.id)
 
     return failed_bookings
 
@@ -487,13 +481,6 @@ def create_other_invoice(_user, booking) -> list[int]:
     ):
         logger.exception(
             "Failed to create OTHER invoice for booking_id %s",
-            booking.id,
-        )
-        failed_bookings.append(booking.id)
-
-    except Exception:
-        logger.exception(
-            "Unexpected error creating OTHER invoice for booking_id %s",
             booking.id,
         )
         failed_bookings.append(booking.id)
