@@ -28,10 +28,7 @@ class Command(BaseCommand):
         output.
         """
         try:
-            user = EmailUser.objects.get(
-                email=settings.CRON_EMAIL,
-                defaults={"password": ""},
-            )
+            user = EmailUser.objects.get(email=settings.CRON_EMAIL)
         except EmailUser.DoesNotExist:
             raise CommandError(f"Cron user {settings.CRON_EMAIL} does not exist")
 
