@@ -20,7 +20,10 @@ from commercialoperator.components.emails.emails import TemplateEmailBase
 from commercialoperator.components.proposals.email import (
     ProposalApprovalSendNotificationEmail,
 )
-from commercialoperator.components.segregation.utils import retrieve_email_user_by_email
+from commercialoperator.components.segregation.utils import (
+    expand_organisation_fields,
+    retrieve_email_user_by_email,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -384,7 +387,7 @@ def send_monthly_invoice_tclass_email_notification(
     }
 
     filename = "monthly_invoice.pdf"
-    invoice_pdf = get_invoice_pdf(invoice.get("reference"))
+    invoice_pdf = get_invoice_pdf(invoice.reference)
     attachment = (filename, invoice_pdf.content, "application/pdf")
 
     msg = email.send(recipients, attachments=[attachment], context=context)
@@ -410,8 +413,8 @@ def send_monthly_invoices_failed_tclass(booking_ids):
     email = MonthlyInvoicesFailedTClassEmail()
 
     bookings = Booking.objects.filter(id__in=booking_ids)
-    bookings = bookings.expand_organisation_fields(
-        "proposal__org_applicant", ["organisation__organisation_name"]
+    bookings = expand_organisation_fields(
+        bookings, "proposal__org_applicant", ["organisation__organisation_name"]
     )
     context = {
         "bookings": bookings.values_list(
