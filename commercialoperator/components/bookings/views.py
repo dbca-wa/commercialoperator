@@ -363,99 +363,132 @@ class DeferredInvoicingPreviewView(TemplateView):
             raise
 
 
-# TODO replace below with appropriate payment functionality (may not be needed, in which case remove)
 class DeferredInvoicingView(TemplateView):
+    """
+    Handles BPAY, Monthly Invoicing and Other payment methods.
+    Bookings are created immediately. Invoice payment terms and due dates
+    vary based on the selected payment method.
+    """
+
     template_name = "commercialoperator/booking/success.html"
 
     def post(self, request, *args, **kwargs):
+        payment_method = request.POST.get("method")
+        context = template_context(request)
 
-        payment_method = self.request.POST.get("method")
-        context = template_context(self.request)
-        proposal_id = int(kwargs["proposal_pk"])
-        proposal = Proposal.objects.get(id=proposal_id)
+        proposal = Proposal.objects.get(id=int(kwargs["proposal_pk"]))
 
         user = request.user
+
+        user_org_ids = [org.id for org in user.commercialoperator_organisations.all()]
+
+        if not (
+            is_internal(request)
+            or (proposal.org_applicant and proposal.org_applicant.id in user_org_ids)
+            or proposal.submitter == user
+        ):
+            raise PermissionDenied
+
+        submitter = proposal.applicant or proposal.submitter
+
+        if not isinstance(proposal.org_applicant, Organisation):
+            logger.error(
+                "Proposal %s is not associated with an organisation",
+                proposal.id,
+            )
+            raise PermissionDenied
+
+        booking = None
+
         try:
-            user_orgs = [org.id for org in user.commercialoperator_organisations.all()]
-            if not (
-                is_internal(self.request)
-                or proposal.org_applicant in user_orgs
-                or proposal.submitter == user
+            if proposal.org_applicant.bpay_allowed and payment_method == "bpay":
+                booking_type = Booking.BOOKING_TYPE_INTERNET
+
+            elif (
+                proposal.org_applicant.monthly_invoicing_allowed
+                and payment_method == "monthly_invoicing"
             ):
-                raise PermissionDenied
-        except:
-            raise
+                booking_type = Booking.BOOKING_TYPE_MONTHLY_INVOICING
 
-        try:
-            submitter = proposal.applicant
-        except:
-            submitter = proposal.submitter
+            else:
+                booking_type = Booking.BOOKING_TYPE_RECEPTION
 
-        if isinstance(proposal.org_applicant, Organisation):
-            try:
-                if proposal.org_applicant.bpay_allowed and payment_method == "bpay":
-                    booking_type = Booking.BOOKING_TYPE_INTERNET
-                elif (
-                    proposal.org_applicant.monthly_invoicing_allowed
-                    and payment_method == "monthly_invoicing"
-                ):
-                    booking_type = Booking.BOOKING_TYPE_MONTHLY_INVOICING
-                else:
-                    booking_type = Booking.BOOKING_TYPE_RECEPTION
+            booking = create_booking(
+                request,
+                proposal,
+                booking_type=booking_type,
+            )
 
-                booking = create_booking(request, proposal, booking_type=booking_type)
-                invoice_reference = None
-                if booking and payment_method == "bpay":
-                    # BPAY/OTHER invoice are created immediately. Monthly invoices are created later by Cron
-                    ret = create_bpay_invoice(submitter, booking)
-                    invoice_reference = booking.invoice.reference
+            invoice_reference = None
 
-                if booking and payment_method == "other":
-                    # BPAY/Other invoice are created immediately. Monthly invoices are created later by Cron
-                    ret = create_other_invoice(submitter, booking)
-                    invoice_reference = booking.invoice.reference
-
-                if booking and payment_method == "monthly_invoicing":
-                    # For monthly_invoicing, invoice is created later by Cron. Now we only create a confirmation
-                    ret = create_monthly_confirmation(submitter, booking)
-
-                logger.info(
-                    "{} Created Park Bookings with payment method {} for Proposal ID {}".format(
-                        f"User {proposal.submitter.get_full_name()} with id {proposal.submitter.id}",
-                        payment_method,
-                        proposal.id,
-                    )
+            if booking and payment_method == "bpay":
+                # BPAY invoices are created immediately.
+                create_bpay_invoice(
+                    submitter,
+                    booking,
                 )
-                # send_monthly_invoicing_confirmation_tclass_email_notification(request, booking, invoice, recipients=[recipient])
-                context.update(
-                    {
-                        "booking": booking,
-                        "booking_id": booking.id,
-                        "submitter": submitter,
-                        "monthly_invoicing": (
-                            True if payment_method == "monthly_invoicing" else False
-                        ),
-                        "invoice_reference": invoice_reference,
-                    }
-                )
-                if payment_method == "other":
-                    if is_payment_admin(request.user):
-                        return HttpResponseRedirect(
-                            reverse("payments:invoice-payment")
-                            + f"?invoice={invoice_reference}"
-                        )
-                    else:
-                        raise PermissionDenied
-                else:
-                    return render(request, self.template_name, context)
+                invoice_reference = booking.invoice.reference
 
-            except Exception as e:
-                logger.error(f"Error Creating booking: {e}")
-                if booking:
-                    booking.delete()
-                raise
-        else:
-            logger.error(f"Error Creating booking: {e}")
+            elif booking and payment_method == "other":
+                # OTHER invoices are created immediately.
+                create_other_invoice(
+                    submitter,
+                    booking,
+                )
+                invoice_reference = booking.invoice.reference
+
+            elif booking and payment_method == "monthly_invoicing":
+                # Monthly invoices are created later by cron.
+                create_monthly_confirmation(
+                    submitter,
+                    booking,
+                )
+
+            logger.info(
+                (
+                    "User %s (id=%s) created park bookings "
+                    "with payment method %s for proposal %s"
+                ),
+                proposal.submitter.get_full_name(),
+                proposal.submitter.id,
+                payment_method,
+                proposal.id,
+            )
+
+            context.update(
+                {
+                    "booking": booking,
+                    "booking_id": booking.id,
+                    "submitter": submitter,
+                    "monthly_invoicing": (payment_method == "monthly_invoicing"),
+                    "invoice_reference": invoice_reference,
+                }
+            )
+
+            if payment_method == "other":
+                if not is_payment_admin(request.user):
+                    raise PermissionDenied
+
+                return HttpResponseRedirect(
+                    reverse("payments:invoice-payment")
+                    + f"?invoice={invoice_reference}"
+                )
+
+            return render(
+                request,
+                self.template_name,
+                context,
+            )
+
+        except Exception:
+            logger.exception(
+                "Error creating booking for proposal %s",
+                proposal.id,
+            )
+
+            if booking:
+                booking.delete()
+
             raise
 
 
