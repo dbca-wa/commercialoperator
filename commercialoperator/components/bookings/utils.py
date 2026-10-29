@@ -40,6 +40,10 @@ from commercialoperator.components.main.models import ApplicationType, Park
 from commercialoperator.components.organisations.models import Organisation
 from commercialoperator.components.proposals.models import Proposal, ProposalUserAction
 from commercialoperator.components.segregation.classes import DecimalEncoder
+from commercialoperator.exceptions import (
+    CreateFutureInvoiceFailedException,
+    LedgerMalformedApiResponseException,
+)
 
 logger = logging.getLogger("payment_checkout")
 
@@ -1018,36 +1022,55 @@ def checkout_existing_invoice(
     return HttpResponseRedirect(payment_session["payment_url"])
 
 
-def create_invoice(booking, payment_method="bpay"):
+def create_invoice(booking: Booking, payment_method: str = "bpay") -> str:
     """
-    This will create and invoice and order from a basket bypassing the session
-    and payment bpoint code constraints.
-    """
+    Create an invoice and corresponding order for a booking while bypassing
+    the normal session and BPoint payment flow constraints.
 
+    Args:
+        booking: The booking to create the invoice for.
+        payment_method: The payment method used to determine the invoice type.
+
+    Returns:
+        The Ledger order number as a string.
+
+    Raises:
+        EmailUser.DoesNotExist: If the applicant email is not associated
+            with a Ledger user.
+        LedgerMalformedApiResponseException: If Ledger returns an unexpected
+            response structure.
+        CreateFutureInvoiceFailedException: If invoice creation fails or
+            Ledger returns a non-200 response.
+    """
     from ledger_api_client.ledger_models import EmailUserRO as EmailUser
 
-    # The return preload success page expects the proposal lodgement number as reference
     booking_reference = booking.proposal.lodgement_number
-
+    booking_admission_number = booking.admission_number
     products = booking.as_line_items
     email = booking.proposal.applicant_email.lower()
+
     try:
         user = EmailUser.objects.get(email=email)
     except EmailUser.DoesNotExist:
         logger.exception(
-            f"Unable to create invoice for Booking id {booking.id} (Proposal: {booking_reference}) as EmailUserRO with email {email} does not exist"
+            "Unable to create invoice for Booking id %s (Proposal: %s) "
+            "as EmailUserRO with email %s does not exist",
+            booking.id,
+            booking_reference,
+            email,
         )
+        raise
 
-    if payment_method == "monthly_invoicing":
-        invoice_type = "Monthly Payment Invoice"
-    elif payment_method == "bpay":
-        invoice_type = "BPAY Payment Invoice"
-    else:
-        invoice_type = "Payment Invoice"
+    invoice_type = {
+        "monthly_invoicing": "Monthly Payment Invoice",
+        "bpay": "BPAY Payment Invoice",
+    }.get(payment_method, "Payment Invoice")
 
-    booking_admission_number = booking.admission_number
-
-    invoice_text = f"Application: {booking_reference}, Booking Admission: {booking_admission_number}: {invoice_type}"
+    invoice_text = (
+        f"Application: {booking_reference}, "
+        f"Booking Admission: {booking_admission_number}: "
+        f"{invoice_type}"
+    )
 
     basket_params = {
         "products": products,
@@ -1059,32 +1082,60 @@ def create_invoice(booking, payment_method="bpay"):
         "no_payment": False,
         "tax_override": True,
     }
-    logger.info(f"basket_params: {basket_params}")
+
+    logger.info(
+        "Creating invoice basket for booking=%s reference=%s items=%s",
+        booking.id,
+        booking_reference,
+        len(products),
+    )
 
     request = FakeRequestSessionObj()
     request.user = user
 
     basket_hash = create_basket_session(request, user.id, basket_params)
+    basket_id = basket_hash.split("|")[0]
 
     return_preload_url = settings.COMMERCIALOPERATOR_EXTERNAL_URL + reverse(
-        "public_booking_success_preload", kwargs={"reference": booking_reference}
+        "public_booking_success_preload",
+        kwargs={"reference": booking_reference},
     )
 
-    basket_hash_split = basket_hash.split("|")
-
-    invoice_name = user.get_full_name()
-
-    payment_due_date = booking.deferred_payment_date or None
-
-    pcfi = process_create_future_invoice(
-        basket_hash_split[0],
+    response = process_create_future_invoice(
+        basket_id,
         invoice_text,
         return_preload_url,
-        invoice_name,
-        payment_due_date,
+        user.get_full_name(),
+        booking.deferred_payment_date,
     )
 
-    return order
+    required_keys = {"status", "message"}
+    missing_keys = required_keys - response.keys()
+
+    if missing_keys:
+        raise LedgerMalformedApiResponseException(
+            f"Missing keys in response from process_create_future_invoice: {sorted(missing_keys)}"
+        )
+
+    if response["status"] != 200:
+        raise CreateFutureInvoiceFailedException(
+            f"Request to process_create_future_invoice failed with response code "
+            f"{response['status']} ({response['message']})"
+        )
+
+    if "data" not in response:
+        raise LedgerMalformedApiResponseException(
+            "data key not found in response from process_create_future_invoice"
+        )
+
+    data = response["data"]
+
+    if "order" not in data:
+        raise LedgerMalformedApiResponseException(
+            "order key not found in successful response from process_create_future_invoice"
+        )
+
+    return str(data["order"])
 
 
 def get_invoice_properties(invoice_id):
