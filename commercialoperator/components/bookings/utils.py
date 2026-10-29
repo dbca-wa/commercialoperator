@@ -266,7 +266,12 @@ def create_monthly_invoice(
                 booking.id,
             )
             failed_bookings.append(booking.id)
-
+        except Exception:
+            logger.exception(
+                "Unexpected error creating monthly invoice for booking_id %s",
+                booking.id,
+            )
+            failed_bookings.append(booking.id)
     return failed_bookings
 
 
@@ -306,100 +311,192 @@ def create_monthly_confirmation(user, booking):
     return failed_bookings
 
 
-def create_bpay_invoice(user, booking):
+def _calculate_deferred_payment_date(booking):
+    now = timezone.now().date()
 
+    first_day_next_month = date(now.year, now.month, 1) + relativedelta(months=1)
+
+    return calc_payment_due_date(
+        booking,
+        first_day_next_month,
+    ) - relativedelta(days=1)
+
+
+def create_bpay_invoice(user, booking) -> list[int]:
+    """
+    Create a BPAY invoice for an eligible booking.
+
+    The booking must be an internet booking belonging to an organisation that
+    allows BPAY payments. A Ledger invoice and corresponding BookingInvoice
+    record are created, notification emails are sent, and the action is logged.
+
+    The payment due date is calculated as the organisation's payment period
+    from the first day of the following month, less one day.
+
+    Args:
+        user: The user performing the invoice creation.
+        booking: The booking to create the BPAY invoice for.
+
+    Returns:
+        A list containing the booking ID if invoice creation failed,
+        otherwise an empty list.
+    """
     failed_bookings = []
-    with transaction.atomic():
-        if (
-            booking.booking_type == Booking.BOOKING_TYPE_INTERNET
-            and booking.proposal.org_applicant
-            and booking.proposal.org_applicant.bpay_allowed
-        ):
-            try:
-                now = timezone.now().date()
-                dt = date(now.year, now.month, 1) + relativedelta(months=1)
-                logger.info(
-                    f"Creating BPAY invoice for booking {booking.admission_number}"
-                )
-                order = create_invoice(booking, payment_method="bpay")
-                invoice = Invoice.objects.get(order_number=order.number)
-                # invoice.settlement_date = calc_payment_due_date(booking, dt) - relativedelta(days=1)
-                # invoice.save()
 
-                deferred_payment_date = calc_payment_due_date(
-                    booking, dt
-                ) - relativedelta(days=1)
-                book_inv = BookingInvoice.objects.create(
-                    booking=booking,
-                    invoice_reference=invoice.reference,
-                    payment_method=invoice.payment_method,
-                    deferred_payment_date=deferred_payment_date,
-                )
+    if booking.booking_type != Booking.BOOKING_TYPE_INTERNET:
+        return failed_bookings
 
-                # send_monthly_invoice_tclass_email_notification(user, booking, invoice, recipients=[booking.proposal.applicant_email])
-                recipients = list(
-                    set([booking.proposal.applicant_email, user.email])
-                )  # unique list
-                send_invoice_tclass_email_notification(
-                    user, booking, invoice, recipients=recipients
+    if not booking.proposal.org_applicant:
+        return failed_bookings
+
+    if not booking.proposal.org_applicant.bpay_allowed:
+        return failed_bookings
+
+    try:
+        with transaction.atomic():
+            logger.info(
+                "Creating BPAY invoice for booking %s",
+                booking.admission_number,
+            )
+
+            payment_due_date = _calculate_deferred_payment_date(booking)
+
+            order_number = create_invoice(
+                booking,
+                payment_method="bpay",
+                payment_due_date=payment_due_date,
+            )
+
+            invoice = Invoice.objects.get(
+                order_number=order_number,
+            )
+
+            BookingInvoice.objects.create(
+                booking=booking,
+                invoice_reference=invoice.reference,
+                payment_method=invoice.payment_method,
+                deferred_payment_date=payment_due_date,
+            )
+
+            recipients = list(
+                dict.fromkeys(
+                    [
+                        booking.proposal.applicant_email,
+                        user.email,
+                    ]
                 )
-                send_confirmation_tclass_email_notification(
-                    user, booking, invoice, recipients=recipients
-                )
-                ProposalUserAction.log_action(
-                    booking.proposal,
-                    ProposalUserAction.ACTION_SEND_BPAY_INVOICE.format(
-                        invoice.reference, booking.proposal.id, ", ".join(recipients)
-                    ),
-                    user,
-                )
-            except Exception as e:
-                logger.error(
-                    f"Failed to create BPAY invoice for booking_id {booking.id}"
-                )
-                logger.error(f"{e}")
-                failed_bookings.append(booking.id)
+            )
+
+            send_invoice_tclass_email_notification(
+                user,
+                booking,
+                invoice,
+                recipients=recipients,
+            )
+
+            send_confirmation_tclass_email_notification(
+                user,
+                booking,
+                invoice,
+                recipients=recipients,
+            )
+
+            ProposalUserAction.log_action(
+                booking.proposal,
+                ProposalUserAction.ACTION_SEND_BPAY_INVOICE.format(
+                    invoice.reference,
+                    booking.proposal.id,
+                    ", ".join(recipients),
+                ),
+                user,
+            )
+
+    except (
+        LedgerApiFailureException,
+        LedgerMalformedApiResponseException,
+        CreateFutureInvoiceFailedException,
+    ):
+        logger.exception(
+            "Failed to create BPAY invoice for booking_id %s",
+            booking.id,
+        )
+        failed_bookings.append(booking.id)
+    except Exception:
+        logger.exception(
+            "Unexpected error creating BPAY invoice for booking_id %s",
+            booking.id,
+        )
+        failed_bookings.append(booking.id)
 
     return failed_bookings
 
 
-def create_other_invoice(user, booking):
-    """This method allows internal payments officer to pay via ledger directly i.e. over the phone credit card details or cheque by post or cash etc
-
-    Currently not USED in COLS (Only Payments by CC, BPAY and Monthly Invoicing is allowed), but implemented for use possibly in the future
+def create_other_invoice(_user, booking) -> list[int]:
     """
+    Create an invoice for a reception booking using the "other" payment
+    method (e.g. cash, cheque, or manual payment processes).
 
+    This functionality is currently unused by COLS but is retained for
+    potential future use.
+
+    Args:
+        user: The user performing the invoice creation.
+        booking: The booking to create the invoice for.
+
+    Returns:
+        A list containing the booking ID if invoice creation failed,
+        otherwise an empty list.
+    """
     failed_bookings = []
-    with transaction.atomic():
-        # if booking.booking_type == Booking.BOOKING_TYPE_RECEPTION and booking.proposal.org_applicant.other_allowed:
-        if booking.booking_type == Booking.BOOKING_TYPE_RECEPTION:
-            try:
-                now = timezone.now().date()
-                dt = date(now.year, now.month, 1) + relativedelta(months=1)
-                logger.info(
-                    f"Creating OTHER (CASH/CHEQUE) invoice for booking {booking.admission_number}"
-                )
-                order = create_invoice(booking, payment_method="other")
-                invoice = Invoice.objects.get(order_number=order.number)
 
-                deferred_payment_date = calc_payment_due_date(
-                    booking, dt
-                ) - relativedelta(days=1)
-                book_inv = BookingInvoice.objects.create(
-                    booking=booking,
-                    invoice_reference=invoice.reference,
-                    payment_method=invoice.payment_method,
-                    deferred_payment_date=deferred_payment_date,
-                )
+    if booking.booking_type != Booking.BOOKING_TYPE_RECEPTION:
+        return failed_bookings
 
-                # send_monthly_invoice_tclass_email_notification(user, booking, invoice, recipients=[booking.proposal.applicant_email])
-                # ProposalUserAction.log_action(booking.proposal,ProposalUserAction.ACTION_SEND_MONTHLY_INVOICE.format(booking.proposal.id),booking.proposal.applicant_email)
-            except Exception as e:
-                logger.error(
-                    f"Failed to create OTHER invoice for booking_id {booking.id}"
-                )
-                logger.error(f"{e}")
-                failed_bookings.append(booking.id)
+    try:
+        with transaction.atomic():
+            logger.info(
+                "Creating OTHER (CASH/CHEQUE) invoice for booking %s",
+                booking.admission_number,
+            )
+
+            payment_due_date = _calculate_deferred_payment_date(
+                booking,
+            )
+
+            order_number = create_invoice(
+                booking,
+                payment_method="other",
+                payment_due_date=payment_due_date,
+            )
+
+            invoice = Invoice.objects.get(
+                order_number=order_number,
+            )
+
+            BookingInvoice.objects.create(
+                booking=booking,
+                invoice_reference=invoice.reference,
+                payment_method=invoice.payment_method,
+                deferred_payment_date=payment_due_date,
+            )
+
+    except (
+        LedgerApiFailureException,
+        LedgerMalformedApiResponseException,
+        CreateFutureInvoiceFailedException,
+    ):
+        logger.exception(
+            "Failed to create OTHER invoice for booking_id %s",
+            booking.id,
+        )
+        failed_bookings.append(booking.id)
+
+    except Exception:
+        logger.exception(
+            "Unexpected error creating OTHER invoice for booking_id %s",
+            booking.id,
+        )
+        failed_bookings.append(booking.id)
 
     return failed_bookings
 
