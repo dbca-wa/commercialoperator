@@ -1193,6 +1193,17 @@ def create_invoice(
     booking_reference = booking.proposal.lodgement_number
     booking_admission_number = booking.admission_number
     products = booking.as_line_items
+
+    # ledger api client needs strings as it doesn't decode Decimals
+    products = [
+        {
+            **product,
+            "price_incl_tax": str(product["price_incl_tax"]),
+            "price_excl_tax": str(product["price_excl_tax"]),
+        }
+        for product in booking.as_line_items
+    ]
+
     email = booking.proposal.applicant_email.lower()
 
     try:
