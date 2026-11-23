@@ -56,6 +56,35 @@ from commercialoperator.helpers import is_internal
 logger = logging.getLogger("payment_checkout")
 
 
+def calculate_same_tour_group_counts(
+    park, arrival, same_tour_group, visitor_counts, visitors_by_date
+):
+    """Return whether the row is grouped and its billable visitor counts."""
+    is_separate_fee_park = park.name.strip().casefold().startswith(
+        ("yanchep", "nambung")
+    )
+    same_tour_group = bool(same_tour_group)
+    apply_same_tour_group = same_tour_group and not is_separate_fee_park
+    previous_counts = visitors_by_date.get(arrival, (0, 0, 0))
+
+    billable_counts = (
+        tuple(
+            max(count - previous_counts[index], 0)
+            for index, count in enumerate(visitor_counts)
+        )
+        if apply_same_tour_group
+        else (None, None, None)
+    )
+
+    if not is_separate_fee_park:
+        visitors_by_date[arrival] = tuple(
+            max(previous_counts[index], count)
+            for index, count in enumerate(visitor_counts)
+        )
+
+    return same_tour_group, billable_counts
+
+
 def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORARY):
     """Create the ledger lines - line items for invoice sent to payment system"""
 
@@ -94,19 +123,36 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
         payment_serialized = request.POST.getlist("payment", [""])[0]
         lines = json.loads(payment_serialized).get("tbody", [])
 
+    visitors_by_date = {}
     for row in lines:
         park_id = row[0]  # ["value"]
         arrival = row[1]
-        same_tour_group = True if row[2] == True else False
+        same_tour_group = row[2] is True
         no_adults = int(row[3]) if row[3] else 0
         no_children = int(row[4]) if row[4] else 0
         no_free_of_charge = int(row[5]) if row[5] else 0
         park = Park.objects.get(id=park_id)
 
-        # same tour group visitors
-        no_adults_same_tour = int(row[7]) if len(row) > 7 and row[7] else 0
-        no_children_same_tour = int(row[8]) if len(row) > 8 and row[8] else 0
-        no_free_of_charge_same_tour = int(row[9]) if len(row) > 9 and row[9] else 0
+        same_tour_group, billable_counts = calculate_same_tour_group_counts(
+            park,
+            arrival,
+            same_tour_group,
+            (no_adults, no_children, no_free_of_charge),
+            visitors_by_date,
+        )
+        no_adults_same_tour, no_children_same_tour, no_free_of_charge_same_tour = (
+            billable_counts
+        )
+        billable_adults = (
+            no_adults_same_tour
+            if no_adults_same_tour is not None
+            else no_adults
+        )
+        billable_children = (
+            no_children_same_tour
+            if no_children_same_tour is not None
+            else no_children
+        )
 
         if any([no_adults, no_children, no_free_of_charge]) > 0:
             park_booking = ParkBooking.objects.create(
@@ -116,7 +162,8 @@ def create_booking(request, proposal, booking_type=Booking.BOOKING_TYPE_TEMPORAR
                 no_adults=no_adults,
                 no_children=no_children,
                 no_free_of_charge=no_free_of_charge,
-                cost=no_adults * park.adult_price + no_children * park.child_price,
+                cost=billable_adults * park.adult_price
+                + billable_children * park.child_price,
                 no_adults_same_tour=no_adults_same_tour,
                 no_children_same_tour=no_children_same_tour,
                 no_free_of_charge_same_tour=no_free_of_charge_same_tour,
@@ -880,29 +927,28 @@ def create_lines(request, invoice_text=None, vouchers=[], internal=False):
 
     lines = []
     tbody = json.loads(request.POST["payment"])["tbody"]
+    visitors_by_date = {}
     for row in tbody:
         park_id = row[0]["value"]
         arrival = row[1]
-        same_tour_group = True if row[2] else False
+        same_tour_group = bool(row[2])
         no_adults = int(row[3]) if row[3] else 0
         no_children = int(row[4]) if row[4] else 0
         no_free_of_charge = int(row[5]) if row[5] else 0
         park = Park.objects.get(id=park_id)
 
-        # same tour group visitors
-        no_adults_same_tour = (
-            int(row[7]) if (row[7] != "" and row[7] is not None) else None
+        same_tour_group, billable_counts = calculate_same_tour_group_counts(
+            park,
+            arrival,
+            same_tour_group,
+            (no_adults, no_children, no_free_of_charge),
+            visitors_by_date,
         )
-        no_children_same_tour = (
-            int(row[8]) if (row[8] != "" and row[8] is not None) else None
-        )
-        no_free_of_charge_same_tour = (
-            int(row[9]) if (row[9] != "" and row[9] is not None) else None
-        )
-
-        # no_adults = no_adults if no_adults_same_tour==0 else no_adults_same_tour
-        # no_children = no_children if no_children_same_tour==0 else no_children_same_tour
-        # no_free_of_charge = no_free_of_charge if no_free_of_charge_same_tour==0 else no_free_of_charge_same_tour
+        (
+            no_adults_same_tour,
+            no_children_same_tour,
+            no_free_of_charge_same_tour,
+        ) = billable_counts
 
         if same_tour_group and no_adults_same_tour is not None:
             if no_adults_same_tour > 0:
