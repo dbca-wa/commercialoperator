@@ -237,6 +237,7 @@ export default {
             filterProposalPark: 'All',
             filterProposalStatus: 'All',
             filterProposalPaymentMethod: 'All',
+            paymentMethodsDraw: 0,
             filterProposalLodgedFrom: '',
             filterProposalLodgedTo: '',
             filterProposalSubmitter: 'All',
@@ -248,12 +249,7 @@ export default {
                 { name: 'Unpaid', value: 'unpaid' },
                 { name: 'Overdue', value: 'overdue' },
             ],
-            payment_method: [
-                { name: 'Credit Card', value: '0' },
-                { name: 'BPAY', value: '1' },
-                { name: 'Monthly Invoicing', value: '2' },
-                { name: 'Other', value: '3' },
-            ],
+            payment_method: [],
             parks: [],
             proposal_headers: [
                 'Number',
@@ -288,10 +284,16 @@ export default {
                 ],
                 ajax: {
                     url: api_endpoints.booking_paginated_internal,
-                    dataSrc: 'data',
+                    dataSrc: function (response) {
+                        if (Number(response.draw) >= vm.paymentMethodsDraw) {
+                            vm.updatePaymentMethods(response.payment_methods);
+                        }
+                        return response.data;
+                    },
 
                     // adding extra GET params for Custom filtering
                     data: function (d) {
+                        vm.paymentMethodsDraw = d.draw;
                         d.park =
                             vm.filterProposalPark != 'All' &&
                             vm.filterProposalPark != null
@@ -597,6 +599,22 @@ export default {
         });
     },
     methods: {
+        updatePaymentMethods: function (methods) {
+            this.payment_method = methods;
+            if (
+                this.filterProposalPaymentMethod !== 'All' &&
+                !methods.some(
+                    (method) => method.value === this.filterProposalPaymentMethod
+                )
+            ) {
+                this.filterProposalPaymentMethod = 'All';
+            }
+            this.$nextTick(() => {
+                $(this.$refs.select_park_entry_fees_payment_method).trigger(
+                    'change.select2'
+                );
+            });
+        },
         fetchOverdueInvoices: function () {
             let vm = this;
 

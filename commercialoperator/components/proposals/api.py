@@ -428,7 +428,9 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             payment_status = request.GET.get("payment_status")
             park = request.GET.get("park")
 
-            if payment_method:
+            if payment_method and not getattr(
+                view, "exclude_payment_method_filter", False
+            ):
                 if payment_method == str(
                     BookingInvoice.PAYMENT_METHOD_MONTHLY_INVOICING
                 ):
@@ -496,7 +498,9 @@ class ProposalFilterBackend(DatatablesFilterBackend):
             payment_status = request.GET.get("payment_status")
             park = request.GET.get("park")
 
-            if payment_method:
+            if payment_method and not getattr(
+                view, "exclude_payment_method_filter", False
+            ):
                 if payment_method == str(
                     BookingInvoice.PAYMENT_METHOD_MONTHLY_INVOICING
                 ):

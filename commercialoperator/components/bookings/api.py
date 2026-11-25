@@ -1,5 +1,6 @@
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.utils import timezone
+from ledger_api_client.ledger_models import Invoice
 from rest_framework import viewsets
 from rest_framework.decorators import action as list_route
 from rest_framework.response import Response
@@ -22,6 +23,48 @@ from commercialoperator.components.segregation.utils import (
     retrieve_delegate_organisation_ids,
 )
 from commercialoperator.helpers import is_internal
+
+
+def payment_methods_for_bookings(queryset):
+    latest_invoice = BookingInvoice.objects.filter(booking_id=OuterRef("pk")).order_by(
+        "-pk"
+    )
+    bookings = queryset.order_by().annotate(
+        latest_invoice_id=Subquery(latest_invoice.values("pk")[:1]),
+        latest_invoice_reference=Subquery(
+            latest_invoice.values("invoice_reference")[:1]
+        ),
+    )
+    references = set()
+    methods = set()
+    for booking_type, invoice_id, reference in bookings.values_list(
+        "booking_type", "latest_invoice_id", "latest_invoice_reference"
+    ).distinct():
+        if invoice_id is None and booking_type == Booking.BOOKING_TYPE_MONTHLY_INVOICING:
+            methods.add(Invoice.PAYMENT_METHOD_MONTHLY_INVOICING)
+        elif reference:
+            references.add(reference)
+
+    methods.update(
+        Invoice.objects.filter(reference__in=references)
+        .values_list("payment_method", flat=True)
+        .distinct()
+    )
+    return [
+        {"name": name, "value": str(value)}
+        for value, name in Invoice.PAYMENT_METHOD_CHOICES
+        if value in methods
+    ]
+
+
+def payment_method_queryset(view, queryset):
+    if not view.request.GET.get("payment_method"):
+        return view.filter_queryset(queryset)
+    view.exclude_payment_method_filter = True
+    try:
+        return view.filter_queryset(queryset)
+    finally:
+        view.exclude_payment_method_filter = False
 
 
 class BookingPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,14 +107,21 @@ class BookingPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
         Paginated serializer for datatables - used by the internal and external dashboard (filtered by the get_queryset method)
         """
 
-        qs = self.get_queryset()
-        qs = self.filter_queryset(qs)
+        queryset = self.get_queryset()
+        method_queryset = payment_method_queryset(self, queryset)
+        qs = (
+            self.filter_queryset(queryset)
+            if request.GET.get("payment_method")
+            else method_queryset
+        )
 
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = BookingSerializer(
             result_page, context={"request": request}, many=True
         )
-        return self.paginator.get_paginated_response(serializer.data)
+        response = self.paginator.get_paginated_response(serializer.data)
+        response.data["payment_methods"] = payment_methods_for_bookings(method_queryset)
+        return response
 
 
 class OverdueBookingInvoiceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -144,11 +194,21 @@ class ParkBookingPaginatedViewSet(viewsets.ReadOnlyModelViewSet):
         Paginated serializer for datatables - used by the internal and external dashboard (filtered by the get_queryset method)
         """
 
-        qs = self.get_queryset()
-        qs = self.filter_queryset(qs)
+        queryset = self.get_queryset()
+        method_queryset = payment_method_queryset(self, queryset)
+        qs = (
+            self.filter_queryset(queryset)
+            if request.GET.get("payment_method")
+            else method_queryset
+        )
 
         result_page = self.paginator.paginate_queryset(qs, request)
         serializer = DTParkBookingSerializer(
             result_page, context={"request": request}, many=True
         )
-        return self.paginator.get_paginated_response(serializer.data)
+        response = self.paginator.get_paginated_response(serializer.data)
+        bookings = Booking.objects.filter(
+            pk__in=method_queryset.order_by().values("booking_id")
+        )
+        response.data["payment_methods"] = payment_methods_for_bookings(bookings)
+        return response
