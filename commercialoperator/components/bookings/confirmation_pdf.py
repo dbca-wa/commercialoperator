@@ -343,21 +343,24 @@ def _create_header(canvas, doc, draw_page_number=True):
     current_y -= 25
     canvas.setFont(BOLD_FONTNAME, SMALL_FONTSIZE)
     current_x = PAGE_MARGIN + 5
+    contact = getattr(doc, "confirmation_contact", None)
     if booking.proposal.org_applicant:
         canvas.drawString(
             current_x,
             current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER),
-            booking.proposal.applicant_obj.name,
+            contact["organisation_name"]
+            if contact is not None
+            else booking.proposal.applicant_obj.name,
         )
     canvas.drawString(
         current_x,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 2,
-        invoice.owner.get_full_name(),
+        contact["name"] if contact is not None else invoice.owner.get_full_name(),
     )
     canvas.drawString(
         current_x,
         current_y - (SMALL_FONTSIZE + HEADER_SMALL_BUFFER) * 3,
-        invoice.owner.email,
+        contact["email"] if contact is not None else invoice.owner.email,
     )
     current_x += 435
 
@@ -463,6 +466,15 @@ def _create_confirmation(confirmation_buffer, invoice, booking):
     # this is the only way to get data into the onPage callback function
     doc.invoice = invoice
     doc.booking = booking
+    doc.confirmation_contact = None
+    if hasattr(booking, "invoices"):
+        booking_invoice = booking.invoices.filter(
+            invoice_reference=invoice.reference
+        ).last()
+        if booking_invoice:
+            doc.confirmation_contact = (booking_invoice.property_cache or {}).get(
+                "confirmation_contact"
+            )
 
     elements = []
 

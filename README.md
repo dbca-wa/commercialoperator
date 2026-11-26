@@ -7,6 +7,11 @@ The Commercial Operator Licensing System (COLS) is used by customers applying fo
 
 It is a database-backed Django application, using REST API with Vue.js as the client side app and integrates into the ledger system.
 
+Booking confirmation PDFs for organisations display the current organisation
+name and email, not the invoice owner's personal contact details. Individual
+confirmations retain the invoice owner's name and email. This does not change
+payment or invoice ownership.
+
 # Requirements
 
 - Python (>=3.12, <4.0)

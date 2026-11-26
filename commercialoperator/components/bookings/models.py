@@ -430,6 +430,17 @@ class BookingInvoice(RevisionedMixin):
         app_label = "commercialoperator"
 
     def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.property_cache = dict(self.property_cache or {})
+            organisation = self.booking.proposal.org_applicant
+            if organisation:
+                from commercialoperator.components.organisations.utils import (
+                    get_confirmation_contact_details,
+                )
+
+                self.property_cache["confirmation_contact"] = (
+                    get_confirmation_contact_details(organisation)
+                )
         self.update_property_cache(False)
         super(BookingInvoice, self).save(*args, **kwargs)
 
