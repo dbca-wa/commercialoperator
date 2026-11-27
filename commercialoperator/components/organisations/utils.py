@@ -1,35 +1,9 @@
 import string
 import random
-import logging
 
 from commercialoperator.components.segregation.utils import retrieve_group_members
 
 from ledger_api_client.ledger_models import EmailUserRO as EmailUser
-
-
-def get_confirmation_contact_details(organisation):
-    from commercialoperator.components.organisations.models import UserDelegation
-
-    active_emails = set(
-        organisation.contacts.filter(user_status="active").values_list("email", flat=True)
-    )
-    # Link rows have no timestamp and are recreated when a user is relinked.
-    links = UserDelegation.objects.filter(organisation=organisation).order_by("-pk")
-    user = None
-    for link in links:
-        linked_user = link.user
-        if linked_user.email in active_emails:
-            user = linked_user
-            break
-    if user is None:
-        logging.getLogger(__name__).warning(
-            "No active linked user for organisation %s", organisation.pk
-        )
-    return {
-        "organisation_name": organisation.name,
-        "name": user.get_full_name() if user else "",
-        "email": user.email if user else organisation.email or "",
-    }
 
 
 def can_manage_org(organisation, user):
