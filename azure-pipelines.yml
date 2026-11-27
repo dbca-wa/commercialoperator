@@ -52,10 +52,10 @@ stages:
         docker push $(imageName):latest
         docker push $(imageName):$(tagDate)-$(shortSha)
       displayName: 'Push Main Image'
-
     # 5. FIXED: Build Dev Image using native Bash
     - bash: |
         export DOCKER_BUILDKIT=1
+        docker system prune -af ; 
         docker build \
           --build-arg IMAGE_TAG="$(tagDate)-$(shortSha)" \
           --build-arg IMAGE_NAME="$(devImageName)" \
